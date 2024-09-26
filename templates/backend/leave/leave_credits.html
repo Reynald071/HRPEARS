@@ -1,0 +1,253 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style type="text/css">
+	.dropdown-menu {
+	    width: 100%;
+	    font-size: 13px;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">Leave Credits</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					Admin
+				</li>
+				<li class="breadcrumb-item">
+					Leave Management
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>Leave Credits</strong>
+				</li>
+			</ol>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-md-9">
+			<div class="card card-info card-outline">
+				<div class="card-body">
+					<form method="get">
+					<div class="row">
+						<div class="form-group col-md-5">
+							<input type="text" class="form-control typeahead_2 filter_employee" placeholder="Search Employee" id="search" name="search" value="{{ request.GET.search }}" autocomplete="off">
+						</div>
+						<div class="form-group col-md-2">
+							<button type="submit" class="btn btn-info btn-block">Search</button>
+						</div>
+						<div class="col-md-5">
+							<button type="button" class="btn btn-info float-right" data-toggle="modal" data-target="#import-leave-credits">Import</button>
+						</div>
+					</div>
+					</form>
+					<hr>
+						<div class="">
+						{% if request.GET.search is None %}
+						<center>Search to show employee leave credit record.</center>
+						{% else %}
+						<div class="row">
+							<div class="col-sm-3">
+								<center>
+									<img loading="lazy"  src="{{ employee.picture.url }}" id="picture" class="img-circle mt-4" style="width: 200px; height: 200px; object-fit: cover; margin-bottom: 10px;">
+								</center>
+							</div>
+							<div class="col-sm-9">
+								<table width="100%" style="font-size: 13px;">
+									<tr>
+										<td width="20%">Name</td>
+										<td>{{ employee.pi.user.first_name }} {{ employee.pi.user.middle_name|to_middleinitial }} {{ employee.pi.user.last_name }}</td>
+										<td width="15%">Extension</td>
+										<td>{% if employee.pi.ext.name %}{{ employee.pi.ext.name }}{% else %}N/A{% endif %}</td>
+									</tr>
+									<tr>
+										<td width="20%">Position</td>
+										<td>{{ employee.position.name }}</td>
+										<td width="15%">Salary Rate</td>
+										<td>{{ employee.salary_rate }}</td>
+									</tr>
+									<tr>
+										<td width="20%">Employment Status</td>
+										<td>{{ employee.empstatus.name }}</td>
+									</tr>
+								</table>
+								<hr>
+								<div class="pull-left">
+								<h3>Leave Balances</h3>
+								</div>
+								<div class="pull-right">
+									<button class="btn btn-info" data-toggle="modal" data-target="#add-leave-balance"><i class="fas fa-plus"></i> Add Credits</button>
+								</div>
+								<br><br><br>
+								<table class="table table-bordered">
+									<thead>
+										<th>Action</th>
+										<th>Leave Type</th>
+										<th>Total</th>
+									</thead>
+									<tbody>
+										{% if leave_credits %}
+											{% for row in leave_credits %}
+											<tr>
+												<td>
+													<a href="javascript:void(0);" data-role="update" data-id="{{ row.id }}">Update</a>
+												</td>
+												<td>{{ row.leavetype.name }}</td>
+												<td>{{ row.leave_total }}</td>
+											</tr>
+											{% endfor %}
+										{% else %}
+										<tr>
+											<td colspan="3" class="text-center">No data available.</td>
+										</tr>
+										{% endif %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>	
+</div>
+<div class="modal" id="add-leave-balance" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add Leave Credits</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form id="submitLeaveCredits">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+	        	<div class="alertDiv"></div>
+	        	<input type="hidden" name="pk" value="{{ employee.id }}">
+	        	<div class="form-group">
+	        		<label>Leave Type</label>
+	        		<select class="form-control select" name="leavetype">
+	        			<option></option>
+	        			{% for row in leave_type %}
+	        			<option value="{{ row.id }}">{{ row.name }}</option>
+	        			{% endfor %}
+	        		</select>
+	        	</div>
+	        	<div class="form-group">
+	        		<label>Total</label>
+	        		<input type="text" class="form-control" name="total" value="0.000" onkeypress="return isNumberKey(event)">
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+	        	<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+			</form>
+	    </div>
+	</div>
+</div>
+
+<div class="modal" id="update-leave-balance" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Update Leave Credits</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<div class="modal-body"></div>
+	    </div>
+	</div>
+</div>
+
+<div class="modal" id="import-leave-credits" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					Import Bulk Leave Credits
+					<p><small>Hasten creation of leave credits by uploading a CSV file.</small></p>
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form method="POST" action="{% url 'bulk_import_leave_credits' %}" enctype="multipart/form-data">
+	        {% csrf_token %}
+        	<div class="modal-body">
+            	<div class="row">
+            		<div class="col-sm-12">
+            			<div class="form-group">
+            				<label>List of Leave Credits</label>
+            				<input type="file" style="border:none; padding:5px;" class="form-control file-control" accept=".csv" name="bulk-import" onchange="triggerFileTypeValidation(this)" required>
+		              	</div>
+            		</div>
+            	</div>
+            </div>
+            <div class="modal-footer">
+				<div class="btn-group">
+					<a href="{% static 'templates/backend/Bulk Import Leave Credits.csv' %}" class="btn btn-default" type="button">Download Template</a>
+	            	<button type="submit" class="btn btn-info">Start Bulk Import</button>
+				</div>
+            </div>
+            </form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	var regex = new RegExp("(.*?)\.(csv)$");
+	function triggerFileTypeValidation(el) {
+		if (!(regex.test(el.value.toLowerCase()))) {
+			el.value = '';
+			alert('Only allowed file type for bulk import is CSV.');
+		}
+	}
+
+	$(document).on('click', 'a[data-role=update]',function(){
+		$('#update-leave-balance').modal('show').find('.modal-body').empty();
+		$('#update-leave-balance').modal('show').find('.modal-body').load('/backend/update-leave-credits/' + $(this).data('id'));
+	});
+
+	$(".filter_employee").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $('#submitLeaveCredits').on('submit', function(e){
+    	$.ajax({
+    		data: new FormData(this),
+    		url: "{% url 'leave-credits' %}",
+    		type: "POST",
+    		cache       : false,
+            contentType : false,
+            processData : false
+    	})
+    	.done(function(data){
+    		if (data.data == 'success'){
+    			$('#submitLeaveCredits').trigger('reset');
+       			window.location.href = '{{ request.get_full_path }}';
+            } else {
+            	$('.alertDiv').empty();
+            	$('.alertDiv').append('<p class="text-danger">*The specified leave credits already exists!</p>')
+    		}
+    	});
+    	e.preventDefault();
+    });
+</script>
+{% endblock %}

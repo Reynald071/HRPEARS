@@ -1,0 +1,65 @@
+{% load frontend_tags %}
+{% load static %}
+{% get_services_additional_info services.id as additional_info %}
+<div style="padding: 20px!important; border: 1px solid #e7eaec;">
+    <div class="feed-activity-list">
+        <div class="feed-element" style="border-bottom: 0px solid !important;">
+    {% if request.session.emp_id == services.assigned_emp_id %}
+        <a class="float-left" href="profile.html">
+            <img loading="lazy"  alt="image" class="img-circle" src="{{ services.requested_by.picture.url }}" width="50px">
+        </a>
+        <div class="media-body">
+            <small>&emsp;Chat with</small> <br>
+            <strong>&emsp;{{ services.requested_by.pi.user.get_fullname }}</strong>
+        </div>
+    {% else %}
+        <a class="float-left" href="profile.html">
+            <img loading="lazy"  alt="image" class="img-circle" src="{{ services.assigned_emp.picture.url }}" width="50px">
+        </a>
+        <div class="media-body">
+            <small>&emsp;Chat with</small> <br>
+            <strong>&emsp;{{ services.assigned_emp.pi.user.get_fullname }}</strong>
+        </div>
+    {% endif %}
+        </div>
+    </div>
+</div>
+<div class="chat-discussion" id="chat-discussion">
+    {% if additional_info %}
+        {% for row in additional_info %}
+            {% if row.emp_id == request.session.emp_id %}
+            <div class="chat-message" {% if forloop.last %}id="last-message"{% endif %}>
+                <div class="message" style="background-color: #00bfa5 !important">
+                    <span class="message-date text-white"> {{ row.date_sent }} </span>
+                    <span class="message-content text-white">
+                        {{ row.description|safe }}
+                    </span>
+                </div>
+            </div>
+            {% else %}
+            <div class="chat-message left" {% if forloop.last %}id="last-message"{% endif %}>
+                <img loading="lazy"  class="message-avatar" src="{{ row.emp.picture.url }}" alt="" >
+                <small>{{ row.emp.pi.user.get_fullname }}</small>
+                <div class="message">
+                    <span class="message-date"> {{ row.date_sent }} </span>
+                    <br>
+                    <span class="message-content">
+                        {{ row.description|safe }}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p class="text-center">No message yet.</p>
+    {% endif %}
+</div>
+{% block script %}
+<script>
+     $(function () {
+        var ChatDiv = $('.chat-discussion');
+        var height = ChatDiv[0].scrollHeight;
+        ChatDiv.scrollTop(height);
+    });
+</script>
+{% endblock %}

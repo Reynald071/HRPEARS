@@ -1,0 +1,46 @@
+{% load static %}
+<form id="editPostForm">
+{% csrf_token %}
+<div class="modal-body">
+    <div class="mb-3">
+        <label>Employee Name <span class="text-danger">*</span></label>
+        <input type="text" class="form-control filter-employee-all" name="employee" value="[{{ data.emp.id_number }}] {{ data.emp.pi.user.get_fullname|upper }}" readonly>
+    </div>
+    <div class="mb-3">
+        <label>Dates <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="dates" value="{{ data.dates }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Details <span class="text-danger">*</span></label>
+        <textarea class="form-control" name="details" required>{{ data.details }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label>Status <span class="text-danger">*</span></label>
+        <select class="form-control" name="status" required>
+            <option value="0" {% if data.status == 0 %}selected{% endif %}>Not submitted</option>
+            <option value="1" {% if data.status == 1 %}selected{% endif %}>Submitted</option>
+        </select>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Save changes</button>
+</div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#editPostForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "edit_tracker_announcements" data.id  %}';
+        var title = "Are you sure";
+        var text = "You want to edit this post";
+        var modal_id = "#edit-post-modal";
+        var table_id = '#table-announcements';
+
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, modal_id: modal_id});
+
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

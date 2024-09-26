@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Regional Special Order</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0px !important;
+				border: 0.5px solid transparent;
+				width: 100% !important;
+				zoom: 125% !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		}
+		@page {
+			size: auto;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;"><strong>Regional Special Order</strong></a>
+		<ul class="navbar-nav ml-auto">
+			<li><button type="button" class="btn btn-success" data-toggle="modal" data-target="#update-drn-modal"><i class="fas fa-file"></i> Update DRN</button>&emsp;</li>
+			<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	<page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+		<div class="containerX">
+            <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="20%">&emsp;&emsp;&emsp;
+            <br>
+            <span style="font-family: Times New Roman; font-size: 10.7px;"><em>DSWD-GF-010</em> | <em>REV 01 / 17 AUG 2022</em></span>
+{#            <img loading="lazy"  src="{% static 'image/fo_insignia.png' %}" width="22%" style="margin-top: -50px; margin-left: 30px;">#}
+            &emsp;&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -50px;">
+            <hr>
+            <span class="pull-right" style="font-family: Arial; font-size: 10.7px" id="generate_drn">
+				{% if generated_drn %}<strong><u>DRN: {{ generated_drn }}</u></strong>{% endif %}
+			</span>
+            <br><br>
+            <p style="font-size: 15px">
+                Regional Special Order<br>
+                No. ________________<br>
+                Series of {{ today|date:'Y' }}
+            </p><br>
+            <p style="font-size: 15px" class="text-center">
+                Subject: Authority
+            </p><br><br>
+            <p style="font-size: 15px" class="text-justify">
+                This is to authorize the following employees/officials to attend the {{ training.training.tt_name }} on
+                {{ training.get_inclusive_dates }} at {{ training.venue }}, to wit: <br><br>
+            </p>
+			<table border="1" width="100%" style="font-size: 14px;">
+				<tbody style="border: 1px black !important;">
+					{% for row in first_page %}
+						{% if row.position == 1 or row.position == 0 %}
+						<tr>
+							<td colspan="3" class="text-center">
+								<strong>{{ row.full_name|upper }}</strong>
+							</td>
+						</tr>
+						<tr>
+							<td class="text-center"><strong>NO.</strong></td>
+							<td {% if not row.position %}colspan="2"{% endif %}><strong>&emsp;NAME</strong></td>
+							{% if row.position %}<td><strong>&emsp;POSITION</strong></td>{% endif %}
+						</tr>
+						{% else %}
+						<tr>
+							<td class="text-center" width="7%">
+								{{ row.id }}
+							</td>
+							<td {% if not row.position %}colspan="2"{% endif %}>
+								&emsp;{{ row.full_name|upper }}
+							</td>
+							{% if row.position %}<td>&emsp;{{ row.position|upper }}</td>{% endif %}
+						</tr>
+						{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+			{% if pagination == 1 %}
+			<div class="mt-3" id="signatory-content">
+				<p style="font-size: 15px;">
+					Issued this {{ today|date:'jS' }} day of {{ today|date:'F Y' }} at DSWD Field Office X, Cagayan de Oro City.
+					<br><br><br>
+				</p>
+				{% getemployeebyempid rd.emp_id as rd_obj %}
+				<p style="font-size: 15px" class="text-center">
+					<strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong><br>
+					{{ rd.name }}
+				</p>
+			</div>
+			{% else %}
+			<br><br>
+			<center>
+				<small>
+					----------------------------------------------- continuation on next page -----------------------------------------------
+				</small>
+			</center>
+			{% endif %}
+			<div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+				<br><br>
+				<center>
+					<small style="position: absolute; margin-left: 270px;">Page 1 of {{ pagination }}</small>
+					<img loading="lazy"  src="{% static 'image/footer.png' %}" width="100%">
+				</center>
+			</div>
+		</div>
+    </page>
+	{% for page in actual_pagination|times %}
+    {% if forloop.first %}
+	<page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+		<div class="containerX">
+            <table border="1" width="100%" style="font-size: 14px;">
+				<tbody style="border: 1px black !important;">
+					{% for row in pages|slice:":40" %}
+						{% if row.position == 1 or row.position == 0 %}
+						<tr>
+							<td colspan="3" class="text-center">
+								<strong>{{ row.full_name|upper }}</strong>
+							</td>
+						</tr>
+						{% else %}
+						<tr>
+							<td class="text-center" width="7%">
+								{{ row.id }}
+							</td>
+							<td {% if not row.position %}colspan="2"{% endif %}>
+								&emsp;{{ row.full_name|upper }}
+							</td>
+							{% if row.position %}<td>&emsp;{{ row.position|upper }}</td>{% endif %}
+						</tr>
+						{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+			{% if actual_pagination == 1 %}
+			<div id="signatory-content" class="mt-3">
+				<p style="font-size: 15px;">
+					Issued this {{ today|date:'jS' }} day of {{ today|date:'F Y' }} at DSWD Field Office X, Cagayan de Oro City.
+					<br><br><br>
+				</p>
+				{% getemployeebyempid rd.emp_id as rd_obj %}
+				<p style="font-size: 15px" class="text-center">
+					<strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong><br>
+					{{ rd.name }}
+				</p>
+			</div>
+			{% else %}
+			<br><br>
+			<center>
+				<small>
+					----------------------------------------------- continuation on next page -----------------------------------------------
+				</small>
+			</center>
+			{% endif %}
+			<div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+				<br>
+				<center>
+					<small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+					<img loading="lazy"  src="{% static 'image/footer-2.png' %}" width="100%">
+				</center>
+			</div>
+		</div>
+    </page>
+	{% elif forloop.last %}
+	<page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+		<div class="containerX">
+            <table border="1" width="100%" style="font-size: 14px;">
+				<tbody style="border: 1px black !important;">
+					{% get_page_range page 40 as page_range %}
+					{% for row in pages|slice:page_range.0 %}
+						{% if row.position == 1 or row.position == 0 %}
+						<tr>
+							<td colspan="3" class="text-center">
+								<strong>{{ row.full_name|upper }}</strong>
+							</td>
+						</tr>
+						{% else %}
+						<tr>
+							<td class="text-center" width="7%">
+								{{ row.id }}
+							</td>
+							<td {% if not row.position %}colspan="2"{% endif %}>
+								&emsp;{{ row.full_name|upper }}
+							</td>
+							{% if row.position %}<td>&emsp;{{ row.position|upper }}</td>{% endif %}
+						</tr>
+						{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+			<div id="signatory-content" class="mt-3">
+				<p style="font-size: 15px;">
+					Issued this {{ today|date:'jS' }} day of {{ today|date:'F Y' }} at DSWD Field Office X, Cagayan de Oro City.
+					<br><br><br>
+				</p>
+				{% getemployeebyempid rd.emp_id as rd_obj %}
+				<p style="font-size: 15px" class="text-center">
+					<strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong><br>
+					{{ rd.name }}
+				</p>
+			</div>
+			<br><br>
+			<div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+				<br>
+				<center>
+					<small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+					<img loading="lazy"  src="{% static 'image/footer-2.png' %}" width="100%">
+				</center>
+			</div>
+		</div>
+    </page>
+	{% else %}
+	<page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+		<div class="containerX">
+            <table border="1" width="100%" style="font-size: 14px;">
+				<tbody style="border: 1px black !important;">
+					{% get_page_range page 40 as page_range %}
+					{% for row in pages|slice:page_range.0 %}
+						{% if row.position == 1 or row.position == 0 %}
+						<tr>
+							<td colspan="3" class="text-center">
+								<strong>{{ row.full_name|upper }}</strong>
+							</td>
+						</tr>
+						{% else %}
+						<tr>
+							<td class="text-center" width="7%">
+								{{ row.id }}
+							</td>
+							<td {% if not row.position %}colspan="2"{% endif %}>
+								&emsp;{{ row.full_name|upper }}
+							</td>
+							{% if row.position %}<td>&emsp;{{ row.position|upper }}</td>{% endif %}
+						</tr>
+						{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+			<br><br>
+			<center>
+				<small>
+					----------------------------------------------- continuation on next page -----------------------------------------------
+				</small>
+			</center>
+			<br><br>
+			<div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+				<br>
+				<center>
+					<small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+					<img loading="lazy"  src="{% static 'image/footer-2.png' %}" width="100%">
+				</center>
+			</div>
+		</div>
+    </page>
+	{% endif %}
+	{% endfor %}
+
+    <div class="modal" id="update-drn-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<h3 class="modal-title" style="font-size: 16px;">
+						UPDATE DRN
+					</h3>
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				</div>
+				<form id="updateDRNForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">DRN<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control" name="drn" id="drn" value="{{ generated_drn }}" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    <script>
+		$(document).ready(function(){
+			$('#generateDRNForm').on('submit', function(e){
+				var form = new FormData(this);
+				Swal.fire({
+					title: "Are you sure?",
+					text: "You want to generate a DRN for this document",
+					icon: "info",
+					showCancelButton: true,
+					confirmButtonText: "Yes",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+					showLoaderOnConfirm: true,
+					preConfirm: function (){
+						return $.ajax({
+							data        : form,
+							url         : '{% url "generate_drn_for_rso" %}',
+							type        : 'POST',
+							cache       : false,
+							contentType : false,
+							processData : false,
+						});
+					},
+				}).then(function (data){
+					if (data.value.data == "success"){
+						Swal.fire({
+							title: data.value.drn,
+							html: "New DRN has been created. Please copy the generated DRN to your designated document.",
+							icon: "success",
+							confirmButtonColor: "#3498DB",
+							allowOutsideClick: false,
+						}).then((result) => {
+							if (result.isConfirmed){
+								window.location.href = "{% url 'print_rso' training.id %}"
+							}
+						});
+					} else {
+						Swal.fire({
+							title: "Ooops!",
+							html: data.value.msg,
+							icon: "warning",
+						})
+					}
+				});
+				e.preventDefault();
+			});
+
+            $('#updateDRNForm').on('submit', function(e){
+                var form = this;
+
+                var url = '{% url "print_rso" training.id %}';
+                var title = "Are you sure";
+                var text = "You want to upload this DRN";
+                var link_attr = '{% url "print_rso" training.id %}';
+
+                submitFormWithConfirmation(form, url, title, text, {link_attr: link_attr});
+
+                e.preventDefault();
+            });
+		});
+	</script>
+</body>
+</html>

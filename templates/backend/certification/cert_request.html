@@ -1,0 +1,437 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Certificate Requests</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Certification Management
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Certificate Requests</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-left">
+						<button class="btn btn-info" data-toggle="modal" data-target="#request-certificate"><i class="fas fa-plus"></i> Request for a Certificate</button>
+					</div>
+						<div class="pull-right">
+							Showing {{ leave.start_index }} - {{ leave.end_index }} of {{ leave.paginator.count }} entries&emsp;
+							<div class="btn-group">
+								{% if leave.has_other_pages %}
+								  {% if leave.has_previous %}
+									<a class="btn btn-white" href="?page={{ leave.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+								  {% else %}
+									<a class="btn btn-white disabled">Previous</a>
+								  {% endif %}
+									{% for row in leave.paginator.page_range %}
+										{% if leave.number == row %}
+											<a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+										{% elif row > leave.number|add:-3 and row < leave.number|add:3 %}
+											<a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+										{% endif %}
+									{% endfor %}
+								  {% if leave.has_next %}
+									<a class="btn btn-white" href="?page={{ leave.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+								  {% else %}
+									<a class="btn btn-white disabled">Next</a>
+								  {% endif %}
+								{% endif %}
+							</div>
+							<a class="btn btn-white" href="{% url 'certificate-requests' %}">Refresh</a>
+						</div>
+					<br><br><br>
+					{% if leave %}
+					<div class="table-responsive">
+					<table class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>TRACKING NO.</th>
+								<th class="capslock">REQUESTED BY</th>
+								<th class="capslock">Certificate Requested</th>
+								<th class="capslock text-center">Date of Request</th>
+								<th class="capslock text-center">Status</th>
+								<th class="capslock text-center">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for row in leave %}
+							<tr>
+								<td>{{ row.tracking_no }}</td>
+								<td>{{ row.emp.pi.user.first_name|title }} {{ row.emp.pi.user.middle_name|to_middleinitial }} {{ row.emp.pi.user.last_name|title }}</td>
+								<td>{{ row.template.name }}</td>
+								<td class="text-center">
+									{{ row.date_of_filing }}
+								</td>
+								<td class="text-center" style="vertical-align:middle;">
+									{% if row.status == 0 %}
+										<span class="label label-primary">Pending</span>
+									{% elif row.status == 1 %}
+										<span class="label label-success">Approved</span>
+									{% elif row.status == 2 %}
+										<span class="label label-warning">Cancelled</span>
+									{% else %}
+										<span class="label label-danger">Declined</span>
+									{% endif %}
+								</td>
+								<td>
+									<center>
+									{% if row.status == 0 %}
+										<a href="javascript:;" class="clickfordetails" data-track="{{ row.tracking_no }}" data-purpose="{{ row.purpose }}" data-user="{{ row.emp.id_number }}" data-template="{{ row.template.id }}" data-id="{{ row.id }}" data-role="view">Details</a>&nbsp;
+									{% elif row.status == 1 %}
+										<a target="_blank" href="{% url 'print-certificate' row.id %}" data-id="{{ row.id }}" data-role="print">Print</a>&nbsp;
+									{% else %}
+									{% endif %}
+									</center>
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					{% else %}
+						<img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" style="margin: 0 auto;">
+						<p class="text-center">There is no data to show you right now.</p>
+					{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="ibox">
+				<div class="ibox-title bg-primary">
+					1
+				</div>
+				<div class="ibox-content">
+					<form method="get">
+						<h4>By keyword</h4>
+						<input type="text" class="form-control" name="search" value="{{ request.GET.search }}" autocomplete="off">
+					</form><br>
+					<h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item {% if request.GET.status == '' or request.GET.status == None or request.GET.search == '' %}{% if request.GET.search is None %}active{% endif %}{% endif %}" href='?status={% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>All</a>
+						<a class="list-group-item {% if request.GET.status == '0' and request.GET.search is None %}active{% endif %}" href='?status=0{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Pending</a>
+						<a class="list-group-item {% if request.GET.status == '1' and request.GET.search is None %}active{% endif %}" href='?status=1{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Approved</a>
+						<a class="list-group-item {% if request.GET.status == '3' and request.GET.search is None %}active{% endif %}" href='?status=3{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Declined</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal" id="view-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h4 class="modal-title">Certificate Request Details</h4>
+	        </div>
+			<form id="submitForm">
+			{% csrf_token %}
+			<input type="hidden" name="id" id="id">
+			<input type="hidden" name="temp-id" id="temp-id">
+			<input type="hidden" name="track-id" id="track-id">
+			<input type="hidden" name="id-number" id="id-number">
+			<input type="hidden" name="purpose" id="purpose">
+	        <div class="modal-body" style="padding: 0px;">
+
+			</div>
+			<button id="submitFormBtn" style="display:none;"></button>
+			</form>
+			<div class="modal-footer">
+				<div class="pull-left alert alert-info" style="height: 34px; padding: 6px 12px;">
+					<a class="alert-link" href="javascript:;">Purpose/Note/Remark: </a><span id="contenthere"></span>
+				</div>
+				<button onclick="$('#submitFormBtn').click();" class="btn btn-info">Approve</button>
+				<button id="declineBtn" class="btn btn-danger">Decline</button>
+			</div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="request-certificate" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">Request for a Certificate</h3>
+	        </div>
+	        <form id="submitRequestForm">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+	        	<div class="row">
+					<div class="col-md-5">
+						<div class="form-group">
+							<label>Requesting Employee<span class="asteriskField">*</span></label>
+							<div class="input-group">
+								<input type="text" id="employee" class="form-control typeahead_2 filter_employee b-r-sm" name="employee" required autocomplete="off" placeholder="e.g. [16-12345] Juan dela Cruz">
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-info preview-template" style="height: 34px;">Preview</button>
+								</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label>Certification Type<span class="asteriskField">*</span></label>
+							<select class="form-control select" name="template" id="template" required>
+								{% for row in templates %}
+									<option value="{{ row.id }}">{{ row.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div id="div_id_description" class="form-group">
+							<label for="purpose" class="control-label requiredField">
+								Purpose / Notes / Remarks<span class="asteriskField">*</span>
+							</label>
+							<div class="controls ">
+								<textarea name="purpose" rows="7" style="resize: vertical;" class="textarea form-control" required="" id="requestpurpose"></textarea>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-7">
+		        		<label>Preview of Certificate</label>
+						<div class="ibox-content" id="component-contents" style="border: 1px solid rgba(231, 234, 236, 1); padding:0px;">
+
+						</div>
+					</div>
+	        	</div>
+			</div>
+	        <div class="modal-footer">
+	        	<button class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+
+
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	function resizeLocal(){
+		var container = $('.modal-body').height();
+		var handler = $('#handler').height();
+		var a4div = $('#a4div').height();
+		if (handler > a4div) {
+			$('#a4div').css('height', handler);
+		}
+	}
+
+	function resizeLocal2(){
+		var container = $('#component-contents').height();
+		var handler = $('#handler').height();
+		var a4div = $('#a4div').height();
+		if (handler > a4div) {
+			$('#a4div').css('height', handler);
+		}
+	}
+
+	$('.clickfordetails').on('click', function(){
+		$('#id').val($(this).data('id'));
+		$('#temp-id').val($(this).data('template'));
+		$('#track-id').val($(this).data('track'));
+		$('#id-number').val($(this).data('user'));
+		$('#purpose').val($(this).data('purpose'));
+	});
+
+	$(document).on('click', 'a[data-role=view]', function(){
+		$('#view-modal').modal('show').find('.modal-body').empty();
+		$('#view-modal').modal('show').find('.modal-body').load("/backend/libraries/certifications/templates/view/" + $('#temp-id').val() + "/" + $('#id-number').val(), function(){
+			$("#a4div :input").each(function(e){
+				$(this).attr('required','required');
+			});
+			$('#contenthere').html($('#purpose').val());
+			resize();
+			resizeLocal();
+			$("#a4div").append('<div class="covid"><small><b>TRACKING NO. '+$('#track-id').val()+'</b></small></div>');
+		});
+	});
+
+	$('.preview-template').on('click', function(){
+		var id = $('#employee').val();
+		if (id.substring(0,1) == '[') {
+			id = id.substring(1,9);
+		}
+
+		if (id != '') {
+			$('#component-contents').load("/backend/libraries/certifications/templates/view/" + $('#template').val() + "/" + id, function(){
+				$("#component-contents :input").each(function(e){
+					$(this).attr('readonly','readonly');
+				});
+				resize();
+				resizeLocal2();
+			});
+		} else {
+			$('#component-contents').load("/backend/libraries/certifications/templates/view/" + $('#template').val(), function(){
+				$("#component-contents :input").each(function(e){
+					$(this).attr('readonly','readonly');
+				});
+				resize();
+				resizeLocal2();
+			});
+		}
+	});
+
+	$('#template').on('change', function(){
+		$('.preview-template').click();
+	});
+
+	$('#employee').on('blur', function(){
+		$('.preview-template').click();
+	});
+
+	$(document).on('shown.bs.modal', function(){
+		$.get('{% url "filter_employee" %}', function(data){
+			$(".filter_employee").typeahead({
+				source:data,
+			});
+	    },'json');
+		$('.preview-template').click();
+	});
+
+	$('#view-modal').on('hidden.bs.modal', function(e){
+		$('.wrapper').removeClass('animated');
+		location.reload();
+	});
+
+	$(document).on('hidden.bs.modal', function(e){
+		$('#id').val('');
+		$('#temp-id').val('');
+		$('#track-id').val('');
+		$('#id-number').val('');
+		$('#purpose').val('');
+	});
+
+	$('#declineBtn').on('click', function(e){
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to decline this request for certification?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+			if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url         : "/backend/decline-certificate-request/"+$('#id').val(),
+					type        : 'GET',
+					cache       : false,
+					contentType : false,
+					processData : false
+				})
+				.done(function(data){
+					var data = data.data;
+					if (data){
+						Swal.fire({
+						  title: "Request declined",
+						  text: "Certificate request with tracking no. " + data +" has been declined.",
+						  icon: "success",
+						  allowOutsideClick: false,
+						}).then((result) => {
+							if (result.isConfirmed) {
+								window.location.href = "/backend/certificate-requests/";
+							}
+						});
+					}
+				});
+			}
+		});
+    });
+
+	$('#submitForm').on('submit', function(e){
+		var form = new FormData(this);
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to approve this request for certification?",
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					data        : form,
+					url         : "{% url 'approve-certificate-request' %}",
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false
+				})
+				.done(function(data){
+					var data = data.data;
+					if (data){
+						Swal.fire({
+						  title: "Good job!",
+						  text: "Certificate request with tracking no. " + data +" has been approved. You may now print the generated certificate. Thank you :)",
+						  icon: "success",
+						  allowOutsideClick: false,
+						}).then((result) => {
+							if (result.isConfirmed) {
+								window.location.href = "/backend/certificate-requests/";
+							}
+						});
+					}
+				});
+			}
+		});
+		e.preventDefault();
+    });
+
+	$('#submitRequestForm').on('submit', function(e){
+		var form = new FormData(this);
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to submit this request for certification?",
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					data        : form,
+					url         : "/backend/request-certification/",
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false
+				})
+				.done(function(data){
+					var data = data.data;
+					if (data){
+						Swal.fire({
+						  	title: "Good job!",
+						  	text: "This will serve as your tracking no. " + data +". Please wait for the review of you request for certification. Thank you :)",
+						  	icon: "success",
+						  	confirmButtonColor: "#3498DB",
+		  					allowOutsideClick: false,
+						}).then((result) => {
+		    				if (result.isConfirmed) {
+						  		window.location.href = "/backend/certificate-requests/";
+						  	}
+						});
+					}
+				});
+			}
+		});
+		e.preventDefault();
+    });
+</script>
+{% endblock %}

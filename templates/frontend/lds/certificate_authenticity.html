@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+{% load static %}
+{% load qr_code %}
+{% load frontend_tags %}
+<html>
+<head>
+    <meta charset="utf-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <title>DSWD My PORTAL | Certificate Authenticity</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/font-awesome.css' %}" rel="stylesheet">
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+
+<body class="white-bg">
+    <div class="loginColumns text-center" style="color: black;">
+        <div class="row">
+            <div class="col-lg-5">
+                {% getHash training.id as pk_training %}
+				{% getHash row.emp_id as pk_id %}
+				{% get_certificate_link "https://caraga-portal.dswd.gov.ph/learning-and-development/certificate-authenticity" pk_training pk_id as qr_url %}
+				<center>
+                    {% qr_from_text qr_url size="S" format_dark_color="red" finder_dark_color="#1d58a6" %}
+                </center>
+            </div>
+            <div class="col-lg-7">
+                <img loading="lazy"  src="{% static 'image/branding.png' %}" width="350px;"><br><br>
+                <p style="font-size: 25px; color: white; background: #DAA520;">
+                    <strong>CERTIFICATE OF AUTHENTICITY</strong>
+                </p>
+                <p style="font-size: 12px">Name</p>
+                <p style="font-size: 15px">
+                    <strong>{{ employee.pi.user.get_fullname|upper }}</strong>
+                </p><br>
+                <p style="font-size: 12px">Training Title</p>
+                <p style="font-size: 15px">
+                    <strong>{{ training.training.tt_name|upper }}</strong>
+                </p><br>
+                <p style="font-size: 12px">Venue</p>
+                <p style="font-size: 15px">
+                    <strong>{{ training.venue }}</strong>
+                </p><br>
+                <p style="font-size: 12px">Date</p>
+                <p style="font-size: 15px">
+                    <strong>{{ training.get_inclusive_dates }}</strong>
+                </p><br>
+                <p style="font-size: 10.7px">
+                    Guaranteed original and genuine.
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</body>
+</html>

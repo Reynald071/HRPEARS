@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Portal | Print Batch DTR</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+        @media print {
+			.containerX {
+				padding: 0px;
+				margin: 0px;
+				zoom: 67% !important;
+				height: 0% !important;
+			}
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+			}
+            body{-webkit-print-color-adjust: exact !important;}
+			.vertical-right, .vertical-left {
+				margin: 0px !important;
+			}
+			.vertical-cut {
+				height:95%;
+				width:25px;
+			}
+
+            #note {
+                display: none !important;
+            }
+        }
+
+		.vertical-cut {
+			height:95%;
+			width:25px;
+		}
+
+		.containerX {
+			zoom: 60%;
+		}
+
+		body{
+			font-size: 12px;
+			font-family: 'Inter';
+			color: black;
+		}
+
+		.table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td{
+			padding: 5px !important;
+		}
+
+		.no-margins {
+		  margin: 0 !important;
+		}
+
+		.vertical-right {
+			position: absolute;
+			top: 0;
+			margin-top: 12mm;
+			left: 50%;
+			height: 100%;
+        }
+
+		.vertical-left {
+			position: absolute;
+			top: 0;
+			margin-top: 12mm;
+			right: 50%;
+			height: 100%;
+        }
+
+        .bold{
+        	font-weight: bold;
+        }
+
+        input{
+        	text-align: center;
+        }
+        .inputtext {
+		  border: 0;
+		  outline: 0;
+		  background: transparent;
+		  border-bottom: 1px solid black;
+		  width: 540px;
+		}
+		.inputtext1 {
+		  border: 0;
+		  outline: 0;
+		  background: transparent;
+		  border-bottom: 1px solid black;
+		  width: 300px;
+		}
+		.col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+			  float: left!important;
+			}
+			.col-sm-12 {
+			  width: 100%;
+			}
+			.col-sm-11 {
+			  width: 91.66666666666666%;
+			}
+			.col-sm-10 {
+			  width: 83.33333333333334%;
+			}
+			.col-sm-9 {
+			  width: 75%;
+			}
+			.col-sm-8 {
+			  width: 66.66666666666666%;
+			}
+			.col-sm-7 {
+			  width: 58.333333333333336%;
+			}
+			.col-sm-6 {
+			  width: 50%;
+			}
+			.col-sm-5 {
+			  width: 41.66666666666667%;
+			}
+			.col-sm-4 {
+			  width: 33.33333333333333%;
+			}
+			.col-sm-3 {
+			  width: 25%;
+			}
+			.col-sm-2 {
+			  width: 16.666666666666664%;
+			}
+			.col-sm-1 {
+			  width: 8.333333333333332%;
+			}
+		table {
+		  border-collapse: collapse;
+		  border: 1px solid black;
+		}
+		.table-bordered {
+		  border: 1px solid #EBEBEB;
+		}
+		.table-bordered > thead > tr > th,
+		.table-bordered > thead > tr > td {
+		  background-color: #F5F5F6;
+		  border-bottom-width: 1px;
+		}
+		.table-bordered > thead > tr > th,
+		.table-bordered > tbody > tr > th,
+		.table-bordered > tfoot > tr > th,
+		.table-bordered > thead > tr > td,
+		.table-bordered > tbody > tr > td,
+		.table-bordered > tfoot > tr > td {
+		  border: 1px solid #e7e7e7;
+		}
+		.table > thead > tr > th {
+		  border-bottom: 1px solid #DDDDDD;
+		  vertical-align: bottom;
+		}
+		.table > thead > tr > th,
+		.table > tbody > tr > th,
+		.table > tfoot > tr > th,
+		.table > thead > tr > td,
+		.table > tbody > tr > td,
+		.table > tfoot > tr > td {
+		  line-height: 1.42857;
+		  padding: 8px;
+		  vertical-align: top;
+		  border: 1.7px solid black
+		}
+		#border {
+		  border-top-style: dotted;
+		  border-right-style: solid;
+		  border-bottom-style: dotted;
+		  border-left-style: solid;
+		}
+
+		p{
+			font-size: 16px;
+		}
+
+		hr{
+			border-top: 1px solid black;
+		}
+
+		.magic{
+			border:1px solid black !important;
+		}
+	</style>
+</head>
+<body>
+	<nav class="navbar navbar-default" style="font-family: 'Inter';">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<i class="fas fa-bars"></i>
+				</button>
+				<a class="navbar-brand" href="javascript:;">Daily Time Records</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+                    <li><button class="btn btn-success" data-toggle="modal" data-target="#signatory-modal" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-signature"></i> Signatories</button>&emsp;</li>
+                    <li><button class="btn btn-info print-button" id="floatprint" title="Print" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button></li>
+                </ul>
+			</div>
+		</div>
+	</nav>
+	{% for datas in employees %}
+	<page size="A4flex" style="padding: 35px; position: relative; page-break-after: always;">
+		<div class="containerX">
+			{% for row in 2|times %}
+			<div style="width:50%; {% if row == 0 %}float:left;padding-right:35px;{% endif %} {% if row == 1 %}margin-left:50%;padding-left:35px;{% endif %}">
+				<p>CIVIL SERVICE FORM NO. 48</p>
+				<br>
+				<h2 class="text-center" style="font-size: 21px;"><strong>Daily Time Record</strong></h2>
+				<br>
+				<h4 class="text-center no-margins" style="font-size: 17px;"><strong>{{ datas.pi.user.last_name|title }} , {{ datas.pi.user.first_name|title }}  {{datas.pi.user.middle_name|to_middleinitial }}</strong></h4>
+				<p class="text-center">(Name)</p>
+
+				<p>
+					{% if start_date|date:"F" == end_date|date:"F" %}
+						For the period of: <strong>{{ start_date|date:"F d" }} - {{ end_date|date:"d, Y" }}</strong>
+					{% else %}
+						For the period of: <strong>{{ start_date|date:"F d" }} - {{ end_date|date:"F d, Y" }}</strong>
+					{% endif %}
+				</p>
+
+				<table class="small table table-display table-bordered" style="font-size: 13px;">
+					<tr>
+						<th rowspan="3" class="text-center nopadding magic">
+	                        DAY
+	                    </th>
+						<th colspan="2" class="text-center nopadding magic">
+	                        AM
+	                    </th>
+	                    <th colspan="2" class="text-center nopadding magic">
+	                        PM
+	                    </th>
+						<th colspan="2" class="text-center nopadding magic">
+	                        UnderTime
+	                    </th>
+					</tr>
+					<tr>
+	            		<td class="text-center nopadding">Time In</td>
+	            		<td class="text-center nopadding">Time Out</td>
+	            		<td class="text-center nopadding">Time In</td>
+	            		<td class="text-center nopadding">Time Out</td>
+						<td class="text-center nopadding">Hours</td>
+	            		<td class="text-center nopadding">Minutes</td>
+	            	</tr>
+					<tr></tr>
+					{% for one_day in all_days %}
+						<tr class="tr-{{ datas.id }}-{{ one_day|date:'d' }}"></tr>
+					{% endfor %}
+				</table>
+				<div class="row" style="font-size:15px; height:19px; margin-top:-17px;">
+					<div class="col-xs-12">
+						<div class="col-xs-2" style="padding:0px;">[T]-Travel</div>
+						<div class="col-xs-3" style="padding:0px;">&emsp;&emsp;&emsp;[L]-Leave</div>
+						<div class="col-xs-3" style="padding:0px;">&emsp;[H]-Holiday</div>
+						<div class="col-xs-4" style="padding:0px;">[OB]-Official Business</div>
+					</div>
+				</div>
+				<hr>
+				<hr style="margin-top: -18px;">
+				<div style="text-align:justify; font-size: 16px; margin-top: -18px;">&emsp;&emsp;&emsp;&emsp;&emsp; I CERTIFY on my honor that above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival and departure from office.</div>
+				<br><br>
+				<p class="text-center" style="font-size: 20px;">{{datas.pi.user.last_name|title}} , {{datas.pi.user.first_name|title }}  {{datas.pi.user.middle_name|to_middleinitial}}</p>
+				<hr style="border: 1px solid black; margin-top: -7px;">
+				<hr style="margin-top: -12px;">
+				<hr style="margin-top: -18px;">
+				<p style="margin-top: -12px;">Verified as to the prescribed office hours.</p>
+				<br>
+				<center>
+					{% get_signatory datas.id as signatory %}
+					<p style="font-size: 20px;" contenteditable="true"><u><span class="set_approved_by">{{ signatory.signatory }}</span></u></p>
+					<p style="font-size: 18px; margin-top:5px; width: 60%;" contenteditable="true"><b><span class="set_approved_by_pos">{{ signatory.signatory_pos }}</span></b></p>
+				</center>
+                {% get_color_coding datas.id as color_coding %}
+                {% if color_coding %}
+                <br><br>
+                <div id="color-coding" style="display: inline-block; height: 20px; width: 20px; background-color: {{ color_coding }} !important;"></div>
+                <p id="color-text" style="display: inline-block; margin-left: 10px; vertical-align: top;">{{ color_coding|upper }}</p>
+                <p class="text-muted text-justify" id="note" style="font-size: 13px;">Note: Utilizing color coding can significantly enhance document management and tracking, making it easier to identify, categorize, and retrieve documents quickly and efficiently.</p>
+                {% endif %}
+			</div>
+			{% endfor %}
+			<div class="vertical-right">
+				<img loading="lazy"  src="{% static 'image/cut_right.png' %}" class="vertical-cut">
+			</div>
+			<div class="vertical-left">
+				<img loading="lazy"  src="{% static 'image/cut_left.png' %}" class="vertical-cut">
+			</div>
+		</div>
+	</page>
+	{% endfor %}
+    <div class="modal" id="signatory-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<button type="button" class="close text-white" data-dismiss="modal" style="color: white !important; opacity: 1;"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h3 class="modal-title">SET SIGNATORIES</h3>
+				</div>
+				<form id="setSignatureForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+                        {% get_signatory request.session.emp_id as set_signatory %}
+						<label style="font-size: 13px; color: #1b2a33;">Approved By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee" name="approved_by" id="approved_by" value="[{{ set_signatory.signatory_sl_div_id_number }}] {{ set_signatory.signatory|get_first_val:"," }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+	<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+	<script type="text/javascript">
+    $(document).ready(function(){
+        $('#signatory-modal').modal('show');
+
+        $(".filter_employee").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee_all" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+
+        $('#setSignatureForm').on('submit', function(e){
+            e.preventDefault();
+            var form = new FormData(this);
+            $.ajax({
+                data: form,
+                url: '{% url "set_signature_leave" %}',
+                type: 'POST',
+                success: function(response) {
+                    $('.set_approved_by').text(response.second_level_w_pos);
+                    $('.set_approved_by_pos').text(response.second_level_pos_not_acronym);
+                    $('#signatory-modal').modal('hide');
+                },
+                cache       : false,
+                contentType : false,
+                processData : false,
+            });
+        });
+    });
+
+	{% for datas in employees %}
+		{% for one_day in all_days %}
+			$.post({
+				url: '{% url "get_employee_time_async" %}',
+				data: {
+					emp_id: '{{ datas.id }}',
+					date: '{{ one_day|date:"Y-m-d" }}'
+				},
+				success: function(response){
+					var time_entries = response.data;
+					if(time_entries['check_in'].includes('OB') || time_entries['check_in'].includes('L')) {
+						$('.tr-' + '{{ datas.id }}' + "-{{ one_day|date:'d' }}").append(`
+							<td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+							<td class="nopadding-left" colspan="4">&emsp;`+
+								time_entries['check_in']
+							+`</td>
+							<td></td>
+							<td></td>
+						`);
+					} else if(time_entries['check_in'] == 'Saturday') {
+						$('.tr-' + '{{ datas.id }}' + "-{{ one_day|date:'d' }}").append(`
+							<td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+							<td class="nopadding text-center" colspan="4" style="letter-spacing:4px; font-size:90%;">SATURDAY</td>
+							<td></td>
+							<td></td>
+						`);
+					} else if (time_entries['check_in'] == 'Sunday'){
+						$('.tr-' + '{{ datas.id }}' + "-{{ one_day|date:'d' }}").append(`
+							<td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+							<td class="nopadding text-center" colspan="4" style="letter-spacing:4px; font-size:90%;">SUNDAY</td>
+							<td></td>
+							<td></td>
+						`);
+					} else {
+						if (time_entries['check_in'] || time_entries['break_out'] || time_entries['break_in'] || time_entries['check_out']) {
+							$('.tr-' + '{{ datas.id }}' + "-{{ one_day|date:'d' }}").append(`
+								<td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+								<td class="nopadding text-center">` + time_entries['check_in'] + `</td>
+								<td class="nopadding text-center">` + time_entries['break_out'] + `</td>
+								<td class="nopadding text-center">` + time_entries['break_in'] + `</td>
+								<td class="nopadding text-center">` + time_entries['check_out'] + `</td>
+								<td></td>
+								<td></td>
+							`);
+						} else {
+							$('.tr-' + '{{ datas.id }}' + "-{{ one_day|date:'d' }}").append(`
+								<td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+								<td class="nopadding text-center"></td>
+								<td class="nopadding text-center"></td>
+								<td class="nopadding text-center"></td>
+								<td class="nopadding text-center"></td>
+								<td></td>
+								<td></td>
+							`);
+						}
+					}
+				}
+			});
+		{% endfor %}
+	{% endfor %}
+	$(document).ready(function(){
+		Swal.fire({
+		  icon: 'warning',
+		  title: 'Warning',
+		  html: 'Data alteration is strongly prohibited. Anyone caught editing/altering any information' +
+		  		' in the daily time record entries will be dealt with accordingly.',
+		  footer: 'The My PORTAL Team',
+		  confirmButtonText: 'Proceed',
+		});
+		
+		var page = $('.page').height();
+		var container = $('.containerX').height();
+
+		if (container > page) {
+			$('.page').css('height', container + 45);
+		}
+
+		$(document).keydown(function (event) {
+			if (event.keyCode == 123) {
+				return false;
+			} else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+				return false;
+			}
+		});
+	});
+	</script>
+</body>
+</html>

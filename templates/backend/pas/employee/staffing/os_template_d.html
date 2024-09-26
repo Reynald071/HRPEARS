@@ -1,0 +1,233 @@
+{% load tags %}
+<div id="printable">
+    <div class="row">
+        <div class="col-lg-9">
+            <h5>COMPLETE DATABASE OF STAFFING IN OPERATIONAL STRUCTURE</h5>
+            <small>FIELD OFFICE CARAGA</small><br>
+            <small>AS OF {{ as_of|upper }}</small>
+            <h5>TEMPLATE D - BREAKDOWN OF SOLO PARENT, PERSON WITH DISABILITY, SENIOR CITIZEN, AND INDIGENOUS PEOPLE PER STATUS OF EMPLOYMENT</h5>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="date" id="date" value="{{ as_of|date:'Y-m-d' }}" class="form-control">
+                    <span class="input-group-btn"><button type="button" class="btn btn-info" data-role="generate">Generate</button></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="table-responsive">
+    <table class="table table-bordered" id="template-d">
+        <thead style="font-size: 9px;">
+            <tr>
+                <th rowspan="3">PARTICULARS</th>
+            </tr>
+            <tr>
+                <th colspan="3" class="text-center">PERMANENT</th>
+                <th colspan="3" class="text-center">COTERMINOUS WITH THE INCUMBENT (CTI)</th>
+                <th colspan="3" class="text-center">CASUAL</th>
+                <th colspan="3" class="text-center">CONTRACTUAL</th>
+                <th colspan="3" class="text-center">CONTRACT OF SERVICE</th>
+                <th colspan="3" class="text-center">JOB ORDER</th>
+                <th colspan="3" class="text-center">TOTAL</th>
+            </tr>
+            <tr>
+                <th class="text-center">FEMALE</th>
+                <th class="text-center">MALE</th>
+                <th class="text-center">TOTAL</th>
+                <!-- CTI -->
+                <th class="text-center">FEMALE</th>
+                <th class="text-center">MALE</th>
+                <th class="text-center">TOTAL</th>
+                <!-- Casual -->
+                <th class="text-center">FEMALE</th>
+                <th class="text-center">MALE</th>
+                <th class="text-center">TOTAL</th>
+                <!-- Contractual -->
+                <th class="text-center">FEMALE</th>
+                <th class="text-center">MALE</th>
+                <th class="text-center">TOTAL</th>
+                <!-- Contract of Service -->
+                <th class="text-center">FEMALE</th>
+                <th class="text-center">MALE</th>
+                <th class="text-center">TOTAL</th>
+                <!-- JO -->
+                <th class="text-center">FEMALE</th>
+                <th class="text-center">MALE</th>
+                <th class="text-center">TOTAL</th>
+                <!-- Total -->
+                <th class="text-center">FEMALE</th>
+                <th class="text-center">MALE</th>
+                <th class="text-center">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>SOLO PARENT</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=2 empstatus='Regular' as sp_regular_female %}{{ sp_regular_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=1 empstatus='Regular' as sp_regular_male %}{{ sp_regular_male}}</td>
+                <td class="text-center">{{ sp_regular_female|add:sp_regular_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=2 empstatus='Regular-Contractual' as sp_reg_cont_female %}{{ sp_reg_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=1 empstatus='Regular-Contractual' as sp_reg_cont_male %}{{ sp_reg_cont_male }}</td>
+                <td class="text-center">{{ sp_reg_cont_female|add:sp_reg_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=2 empstatus='Casual' as sp_casual_female %}{{ sp_casual_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=1 empstatus='Casual' as sp_casual_male %}{{ sp_casual_male }}</td>
+                <td class="text-center">{{ sp_casual_female|add:sp_casual_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=2 empstatus='Contractual' as sp_cont_female %}{{ sp_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=1 empstatus='Contractual' as sp_cont_male %}{{ sp_cont_male }}</td>
+                <td class="text-center">{{ sp_cont_female|add:sp_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=2 empstatus='Contract of Service' as sp_cos_female %}{{ sp_cos_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=1 empstatus='Contract of Service' as sp_cos_male %}{{ sp_cos_male }}</td>
+                <td class="text-center">{{ sp_cos_female|add:sp_cos_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=2 empstatus='Job Order' as sp_jo_female %}{{ sp_jo_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=1 empstatus='Job Order' as sp_jo_male %}{{ sp_jo_male }}</td>
+                <td class="text-center">{{ sp_jo_female|add:sp_jo_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=2 empstatus='' as sp_female %}{{ sp_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='Solo Parent' gender=1 empstatus='' as sp_male %}{{ sp_male }}</td>
+                <td class="text-center">{{ sp_female|add:sp_male }}</td>
+            </tr>
+            <tr>
+                <td>PERSON WITH DISABILITY</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=2 empstatus='Regular' as pwd_regular_female %}{{ pwd_regular_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=1 empstatus='Regular' as pwd_regular_male %}{{ pwd_regular_male}}</td>
+                <td class="text-center">{{ pwd_regular_female|add:pwd_regular_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=2 empstatus='Regular-Contractual' as pwd_reg_cont_female %}{{ pwd_reg_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=1 empstatus='Regular-Contractual' as pwd_reg_cont_male %}{{ pwd_reg_cont_male }}</td>
+                <td class="text-center">{{ pwd_reg_cont_female|add:pwd_reg_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=2 empstatus='Casual' as pwd_casual_female %}{{ pwd_casual_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=1 empstatus='Casual' as pwd_casual_male %}{{ pwd_casual_male }}</td>
+                <td class="text-center">{{ pwd_casual_female|add:pwd_casual_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=2 empstatus='Contractual' as pwd_cont_female %}{{ pwd_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=1 empstatus='Contractual' as pwd_cont_male %}{{ pwd_cont_male }}</td>
+                <td class="text-center">{{ pwd_cont_female|add:pwd_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=2 empstatus='Contract of Service' as pwd_cos_female %}{{ pwd_cos_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=1 empstatus='Contract of Service' as pwd_cos_male %}{{ pwd_cos_male }}</td>
+                <td class="text-center">{{ pwd_cos_female|add:pwd_cos_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=2 empstatus='Job Order' as pwd_jo_female %}{{ pwd_jo_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=1 empstatus='Job Order' as pwd_jo_male %}{{ pwd_jo_male }}</td>
+                <td class="text-center">{{ pwd_jo_female|add:pwd_jo_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=2 empstatus='' as pwd_female %}{{ pwd_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='PWD' gender=1 empstatus='' as pwd_male %}{{ pwd_male }}</td>
+                <td class="text-center">{{ pwd_female|add:pwd_male }}</td>
+            </tr>
+            <tr>
+                <td>SENIOR CITIZEN</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=2 empstatus='Regular' as sc_regular_female %}{{ sc_regular_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=1 empstatus='Regular' as sc_regular_male %}{{ sc_regular_male}}</td>
+                <td class="text-center">{{ sc_regular_female|add:sc_regular_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=2 empstatus='Regular-Contractual' as sc_reg_cont_female %}{{ sc_reg_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=1 empstatus='Regular-Contractual' as sc_reg_cont_male %}{{ sc_reg_cont_male }}</td>
+                <td class="text-center">{{ sc_reg_cont_female|add:sc_reg_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=2 empstatus='Casual' as sc_casual_female %}{{ sc_casual_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=1 empstatus='Casual' as sc_casual_male %}{{ sc_casual_male }}</td>
+                <td class="text-center">{{ sc_casual_female|add:sc_casual_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=2 empstatus='Contractual' as sc_cont_female %}{{ sc_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=1 empstatus='Contractual' as sc_cont_male %}{{ sc_cont_male }}</td>
+                <td class="text-center">{{ sc_cont_female|add:sc_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=2 empstatus='Contract of Service' as sc_cos_female %}{{ sc_cos_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=1 empstatus='Contract of Service' as sc_cos_male %}{{ sc_cos_male }}</td>
+                <td class="text-center">{{ sc_cos_female|add:sc_cos_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=2 empstatus='Job Order' as sc_jo_female %}{{ sc_jo_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=1 empstatus='Job Order' as sc_jo_male %}{{ sc_jo_male }}</td>
+                <td class="text-center">{{ sc_jo_female|add:sc_jo_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=2 empstatus='' as sc_female %}{{ sc_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='SC' gender=1 empstatus='' as sc_male %}{{ sc_male }}</td>
+                <td class="text-center">{{ sc_female|add:sc_male }}</td>
+            </tr>
+            <tr>
+                <td>INDIGENOUS PEOPLE</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=2 empstatus='Regular' as id_regular_female %}{{ id_regular_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=1 empstatus='Regular' as id_regular_male %}{{ id_regular_male}}</td>
+                <td class="text-center">{{ id_regular_female|add:id_regular_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=2 empstatus='Regular-Contractual' as id_reg_cont_female %}{{ id_reg_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=1 empstatus='Regular-Contractual' as id_reg_cont_male %}{{ id_reg_cont_male }}</td>
+                <td class="text-center">{{ id_reg_cont_female|add:id_reg_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=2 empstatus='Casual' as id_casual_female %}{{ id_casual_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=1 empstatus='Casual' as id_casual_male %}{{ id_casual_male }}</td>
+                <td class="text-center">{{ id_casual_female|add:id_casual_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=2 empstatus='Contractual' as id_cont_female %}{{ id_cont_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=1 empstatus='Contractual' as id_cont_male %}{{ id_cont_male }}</td>
+                <td class="text-center">{{ id_cont_female|add:id_cont_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=2 empstatus='Contract of Service' as id_cos_female %}{{ id_cos_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=1 empstatus='Contract of Service' as id_cos_male %}{{ id_cos_male }}</td>
+                <td class="text-center">{{ id_cos_female|add:id_cos_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=2 empstatus='Job Order' as id_jo_female %}{{ id_jo_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=1 empstatus='Job Order' as id_jo_male %}{{ id_jo_male }}</td>
+                <td class="text-center">{{ id_jo_female|add:id_jo_male }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=2 empstatus='' as id_female %}{{ id_female }}</td>
+                <td class="text-center">{% get_employee_reports date=as_of value='ID' gender=1 empstatus='' as id_male %}{{ id_male }}</td>
+                <td class="text-center">{{ id_female|add:id_male }}</td>
+            </tr>
+        </tbody>
+        <thead id="total">
+            <tr>
+                <th>TOTAL</th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+                <th class="text-center"></th>
+            </tr>
+        </thead>
+    </table>
+    </div>
+    <br><br>
+    <table width="100%" style="font-size: 12px !important;">
+        <tr>
+            <td>PREPARED BY:</td>
+            <td>CERTIFIED TRUE AND CORRECT BY:</td>
+        </tr>
+        <tr>
+            <td>
+                <br><br><strong>{{ requested_by.pi.user.get_fullname|upper }}</strong></td>
+            <td>
+                <br><br><strong>{{ requested_by.get_division_chief.pi.user.get_fullname|upper }}</strong></td>
+            </td>
+        </tr>
+        <tr>
+            <td>{{ requested_by.section.sec_acronym|upper }} OFFICER</td>
+            <td>{{ requested_by.get_division_chief.section.div.div_acronym|upper }} DIVISION CHIEF</td>
+        </tr>
+    </table>
+</div>
+{% block script %}
+<script>
+    $('#template-d thead th').each(function(i){
+        if(i != 0){
+            calculateColumn(i);
+        }
+    });
+
+    function calculateColumn(index)
+    {
+        var total = 0;
+        $('#template-d tbody tr').each(function()
+        {
+            var value = parseInt($('td', this).eq(index).text());
+            if (!isNaN(value))
+            {
+                total += value;
+            }
+        });
+
+        $('#template-d #total th').eq(index).text(total);
+    };
+</script>
+{% endblock %}

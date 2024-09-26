@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load frontend_tags %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSWD My PORTAL | Print Nominees Report</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style type="text/css">
+        @media print {
+			.containerX {
+				padding: 0px;
+				margin: 40px;
+				zoom: 120% !important;
+				height: 0% !important;
+				width: 100%;
+			}
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+			}
+			.vertical-right, .vertical-left {
+				margin: 0px !important;
+			}
+			body{-webkit-print-color-adjust: exact;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+		  	}
+        }
+
+        @page {
+			size: auto;
+		}
+
+        .containerX {
+			zoom: 100%;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;">Nominees for ({{ awards.name|upper }})</a>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="javascript:;" class="btn btn-info print-button" id="floatprint" title="Print"><i class="fas fa-print"></i> Print</a></li>
+        </ul>
+	</div>
+</nav>
+<body>
+    <page size="longflex" class="page" style="padding: 70px; position: relative; font-family: 'Inter';">
+		<div class="containerX">
+            {% for row in data %}
+                <div style="page-break-after:always;">
+                <img loading="lazy"  src="{% static 'image/awards_print_banner.png' %}" style="width:100%; float:left;">
+                <h4 class="bold text-center">Regional Nominee for {{ awards.name|upper }}</h4>
+                <br>
+                {% if not row.awards.category.needs_title %}
+                    <table class="table table-bordered" style="font-size: 12px;">
+                        <tbody>
+                            <tr>
+                                <td class="bold" width="30%">Name of Nominee</td>
+                                <td>{{ row.nominee.pi.user.first_name|title }} {{ row.nominee.pi.user.middle_name|to_middleinitial|title }} {{ row.nominee.pi.user.last_name|title }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Position</td>
+                                <td>{{ row.nominee.position.name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Status of Employment</td>
+                                <td>{{ row.nominee.empstatus.name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Designation</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Length of Service in the DSWD</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Length of Service in the Position</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Office</td>
+                                <td>{{ row.nominee.section.sec_name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Division</td>
+                                <td>{{ row.nominee.section.div.div_name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Unit</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Contact Number</td>
+                                <td>{{ row.nominee.pi.mobile_no }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold">Email Address</td>
+                                <td>{{ row.nominee.pi.user.email }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% else %}
+                    <table class="table table-bordered" style="font-size: 12px;">
+                        <tbody>
+                            <tr>
+                                <td class="bold" width="30%">Name of {{ row.awards.category.name }}</td>
+                                <td>{{ row.title }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold" width="30%">Office/Bureau/Service</td>
+                                <td>{{ row.nominee.section.sec_name }} / {{ row.nominee.section.div.div_acronym }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold" width="30%">Name of Team Leader</td>
+                                <td>{{ row.nominee.pi.user.first_name|title }} {{ row.nominee.pi.user.middle_name|to_middleinitial|title }} {{ row.nominee.pi.user.last_name|title }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold" width="30%">Position</td>
+                                <td>{{ row.nominee.position.name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold" width="30%">Designation (if any)</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td class="bold" width="30%">Contact Number</td>
+                                <td>{{ row.nominee.pi.mobile_no }}</td>
+                            </tr>
+                            <tr>
+                                <td class="bold" width="30%">Email Address</td>
+                                <td>{{ row.nominee.pi.user.email }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% endif %}
+                <table class="table table-bordered" style="font-size: 12px;">
+                    <tbody>
+                        <tr>
+                            <td class="bold" width="30%">Name of Nominator</td>
+                            <td>{{ row.nominated_by.pi.user.first_name|title }} {{ row.nominated_by.pi.user.middle_name|to_middleinitial|title }} {{ row.nominated_by.pi.user.last_name|title }}</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Position</td>
+                            <td>{{ row.nominated_by.position.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Designation (if any)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Office/Division/Unit</td>
+                            <td>{{ row.nominated_by.section.sec_name }} / {{ row.nominated_by.section.div.div_acronym }}</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Contact Number</td>
+                            <td>{{ row.nominated_by.pi.mobile_no }}</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Email Address</td>
+                            <td>{{ row.nominated_by.pi.user.email }}</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Date of Submission</td>
+                            <td>{{ row.datetime }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-bordered" style="font-size: 12px;">
+                    <tbody>
+                        <tr>
+                            <td class="bold" width="30%">Overall statement on the consistent demonstration of exemplary ethical behavior and render of extraordinary work performance or service.</td>
+                            <td>{{ row.why }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            {% endfor %}
+        </div>
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script>
+        $('#floatprint_mod').click(function(){
+            window.print();
+        });
+    </script>
+</body>
+</html>

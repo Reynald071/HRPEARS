@@ -1,0 +1,136 @@
+{% extends 'landing/layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<style>
+    .text-underline {
+        text-decoration: underline;
+    }
+    @media only screen and (min-width: 992px) {
+        #content-wrapper {
+            width: 60%;
+        }
+    }
+    .table-borderless th {
+        padding: 0;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div id="content-wrapper" class="p-4 ml-0 mx-auto">
+    <div class="card card-info card-outline">
+        <div class="card-body">
+            <form id="trackingForm" method="GET">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <label for="tracking_no">Tracking No.</label>
+                        <input id="tracking_no" type="text" name="tracking_no" class="form-control b-r-sm" value="{% if tracking_no %}{{ tracking_no }}{% endif %}" autocomplete="off" required placeholder="Tracking No.">
+                    </div>
+                    <div class="col-lg-3">
+                        <button type="submit" class="btn btn-info" style="margin-top: 27px;">Track</button>
+                    </div>
+                </div>
+                {% if application %}
+                <hr class="my-4">
+                <div class="text-center mt-5">
+                    <h2 class="font-weight-bold" style="font-size: 20px;">Application of <span class="text-underline">{{ application.get_fullname }}</span> for</h2>
+                    <h2 class="font-weight-bold text-info">{{ application.vacancy.get_position_with_status }}</h2>
+                    {% comment %}
+                    <div class="">
+                        <img src="{% static 'icons8/blank-circle.png' %}" class="img-circle" height="48" width="48">
+                        <img src="{% static 'icons8/loading.png' %}" class="img-circle" height="48" width="48">
+                        <img src="{% static 'icons8/success-np.png' %}" class="img-circle elevation-2" height="48" width="48">
+                        <img src="{% static 'icons8/reject-np.png' %}" class="img-circle elevation-2" height="48" width="48">
+                    </div>
+                    {% endcomment %}
+                    <div class="d-flex flex-wrap justify-content-around my-5 px-3">
+                        {% for row in status %}
+                            {% if row.order != 0 %}
+                            <div style="width: 100px;">
+                                {% if application.app_status.order|add:"1" == row.order %}
+                                    {% if application.is_rejected == 1 %}
+                                    <img src="{% static 'icons8/reject-np.png' %}" class="img-circle elevation-2" height="48" width="48">
+                                    {% else %}
+                                    <img src="{% static 'icons8/loading.png' %}" class="img-circle" height="48" width="48">
+                                    {% endif %}
+                                    <p class="mt-3 font-weight-bold">{{ row.name }}</p>
+                                {% elif application.app_status.order >= row.order %}
+                                    <img src="{% static 'icons8/success-np.png' %}" class="img-circle elevation-2" height="48" width="48">
+                                    <p class="mt-3 text-success">{{ row.name }}</p>
+                                {% else %}
+                                    <img src="{% static 'icons8/blank-circle.png' %}" class="img-circle" height="48" width="48">
+                                    <p class="mt-3">{{ row.name }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="p-3" style="font-size: 16px;">
+                    <p>Tracking No: <span class="font-weight-bold">{{ tracking_no }}</span></p>
+                    <p>Remarks: <span class="font-weight-bold">{{ application.remarks|default_if_none:"" }}</span></p><br>
+                    {% comment %}
+                        <p>Submitted Files:</p>
+                        <div class="table-responsive">
+                            <table class="table table-borderless w-50 mt-3">
+                                <tbody>
+                                    <tr>
+                                        <th>Transcript of Records:</th>
+                                        <td><a href="{{ application.tor.url }}" target="_blank">{{ application.tor }}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Application Letter:</th>
+                                        <td><a href="{{ application.app_letter.url }}" target="_blank">{{ application.app_letter }}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Personal Data Sheet:</th>
+                                        <td><a href="{{ application.pds.url }}" target="_blank">{{ application.pds }}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Work Experience Sheet:</th>
+                                        <td><a href="{{ application.we_sheet.url }}" target="_blank">{{ application.we_sheet }}</a></td>
+                                    </tr>
+                                    {% if application.cert_training %}
+                                    <tr>
+                                        <th>Certificate of Training:</th>
+                                        <td><a href="{{ application.cert_training.url }}" target="_blank">{{ application.cert_training }}</a></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if application.cert_employment %}
+                                    <tr>
+                                        <th>Certificate of Employment:</th>
+                                        <td><a href="{{ application.cert_employment.url }}" target="_blank">{{ application.cert_employment }}</a></td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if application.ipcr %}
+                                    <tr>
+                                        <th>IPCR/Performance Evaluation:</th>
+                                        <td><a href="{{ application.ipcr.url }}" target="_blank">{{ application.ipcr }}</a></td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endcomment %}
+                </div>
+                {% elif tracking_no %}
+                <div class="text-center">
+                    <br><br>
+                    <img src="{% static 'image/no-data.png' %}" >
+                    <h3>This job application doesn't exist.</h3>
+                    <br><br>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(function() {
+
+    });
+</script>
+{% endblock %}

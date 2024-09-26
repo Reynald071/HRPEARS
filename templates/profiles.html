@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <title>DSWD My PORTAL | Profiles</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+<body class="gray-bg">
+    <div class="loginColumns">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% load qr_code %}
+                                {% qr_from_text data.id_number size=5 %}
+                                <center>
+                                    <img loading="lazy"  src="{{ data.picture.url }}" class="img-circle" style="width: 200px; margin-top: -10px;">
+                                </center>
+                                <h2 class="text-center">{{ data.pi.user.first_name|title }} {{ data.pi.user.middle_name|to_middleinitial|title }} {{ data.pi.user.last_name|title }}</h2>
+                                <h3 class="text-center bold no-margins">{{ data.position.name }}</h3>
+                                <h4 class="text-center">{{ data.empstatus.name }}</h4>
+                                <ul class="list-group clear-list m-t">
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {{ data.pi.user.email }}
+                                        </span>
+                                        Email
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {{ data.id_number }}
+                                        </span>
+                                        ID Number
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {{ data.pi.mobile_no }}
+                                        </span>
+                                        Contact Number
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {{ data.section.div.div_acronym }}
+                                        </span>
+                                        Division
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {{ data.section.sec_name }}
+                                        </span>
+                                        Section
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {% getbloodtype data.pi.bt_id as bloodtype %}
+                                            {{ bloodtype.name }}
+                                        </span>
+                                        Blood Type
+                                    </li>
+                                </ul>
+                                <br>
+                                <center>
+                                <p>You can also visit them through Social Media</p>
+                                <a href="{{ sm.facebook_url }}" class="btn btn-success btn-circle btn-lg" target="_blank">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="{{ sm.instagram_url }}" class="btn btn-warning btn-circle btn-lg" target="_blank">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="{{ sm.twitter_url }}" class="btn btn-info btn-circle btn-lg" target="_blank">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                </center>
+                            </div>
+                            <div class="col-md-6">
+                                <br><br>
+                                <h3 class="text-center">IN CASE OF EMERGENCY</h3>
+                                <ul class="list-group clear-list m-t">
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {{ incase_of_emergency.contact_name }}
+                                        </span>
+                                        Name
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="pull-right">
+                                            {{ incase_of_emergency.contact_number }}
+                                        </span>
+                                        Contact Number
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

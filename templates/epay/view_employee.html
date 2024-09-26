@@ -1,0 +1,125 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% load tags %}
+{% block content %}
+{% generate_token employee.emp_id as token %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'manage_payroll_employee' %}">Manage Employee</a></li>
+                <li class="breadcrumb-item active">{{ employee.emp.pi.user.get_fullname }}</li>
+            </ol>
+        </nav>
+        <div class="row mt-3">
+            <div class="col-lg-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <br>
+                        <center>
+                            <img src="{{ employee.emp.picture.url }}" class="rounded-circle img-thumbnail" style="width: 200px; object-fit: cover;">
+                            <br><br>
+                            <h5 class="fw-bold">{{ employee.emp.pi.user.get_fullname }}</h5>
+                            <p class="text-muted">{{ employee.emp.position.name }}</p>
+                        </center>
+                        <br>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p><strong>CTDO REQUESTS</strong></p>
+                        <a href="{% url 'view_employee_ctdo_requests' token %}" class="btn btn-info btn-sm float-end" style="margin-top: -40px !important;">View All</a>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>TRACKING NO.</th>
+                                    <th class="text-center">CTDO DATES</th>
+                                    <th class="text-center">DATE FILED</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if ctdo_requests %}
+                                {% for row in ctdo_requests %}
+                                    <tr>
+                                        <td>{{ row.tracking_no }}</td>
+                                        <td class="text-center">{{ row.get_inclusive }}</td>
+                                        <td class="text-center">{{ row.date_filed }}</td>
+                                    </tr>
+                                {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3">No data available.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p><strong>LEAVE APPLICATION</strong></p>
+                        <a href="{% url 'view_employee_leave_application' token %}" class="btn btn-info btn-sm float-end" style="margin-top: -40px !important;">View All</a>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>TRACKING NO.</th>
+                                    <th class="text-center">LEAVE DATES</th>
+                                    <th class="text-center">DATE FILED</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if leave_application %}
+                                {% for row in leave_application %}
+                                    <tr>
+                                        <td>{{ row.tracking_no }}</td>
+                                        <td class="text-center">{{ row.get_inclusive }}</td>
+                                        <td class="text-center">{{ row.date_of_filing }}</td>
+                                    </tr>
+                                {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3">No data available.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p><strong>TRAVEL HISTORY</strong></p>
+                        <a href="{% url 'view_employee_travel_history' token %}" class="btn btn-info btn-sm float-end" style="margin-top: -40px !important;">View All</a>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>TRACKING NO.</th>
+                                    <th>PLACE</th>
+                                    <th class="text-center">DATES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if travel_history %}
+                                {% for row in travel_history %}
+                                    <tr>
+                                        <td>{{ row.detail.rito.tracking_no }}</td>
+                                        <td>{{ row.detail.place }}</td>
+                                        <td class="text-center">{{ row.detail.get_inclusive }}</td>
+                                    </tr>
+                                {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3">No data available.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

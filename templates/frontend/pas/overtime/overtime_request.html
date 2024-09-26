@@ -1,0 +1,432 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Overtime Requests</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Personnel
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Overtime Requests</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button class="btn btn-info" data-toggle="modal" data-target="#overtime_requests_modal"><i class="fas fa-plus"></i> Add Overtime Requests</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#request-view"> Requests View</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#overtime-workflow">Overtime Workflow</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#drafts">Drafts</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="request-view" class="tab-pane active">
+                                <div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered" id="overtime-details-table" width="100%">
+                                            <thead>
+                                                <tr>
+                                                    <th>Place</th>
+                                                    <th>Employee</th>
+                                                    <th>Start Date</th>
+                                                    <th>End Date</th>
+                                                    <th>Nature of Overtime</th>
+                                                    <th>Authorized Claims</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                    <hr>
+                                    <form id="submitOvertimeRequestsForm">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="pk" id="pk">
+                                        <button type="submit" class="btn btn-info">Submit</button>
+                                        <button type="button" id="saveasdraft" class="btn btn-default">Save as Draft</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div id="overtime-workflow" class="tab-pane">
+                                <div class="panel-body">
+                                     <div class="table-responsive">
+                                         <table class="table table-hover table-bordered" id="overtime-workflow-table" width="100%">
+                                             <thead>
+                                                <tr>
+                                                    <th>Action</th>
+                                                    <th>Tracking Number</th>
+                                                    <th>Staff</th>
+                                                    <th class="text-center">Date Filed</th>
+                                                    <th class="text-right">Status</th>
+                                                </tr>
+                                             </thead>
+                                         </table>
+                                    </div>
+                                 </div>
+                            </div>
+                            <div id="drafts" class="tab-pane">
+                                 <div class="panel-body">
+                                     <div class="table-responsive">
+                                         <table class="table table-hover table-bordered" id="overtime-details-drafts-table" width="100%">
+                                             <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Date Created</th>
+                                                </tr>
+                                             </thead>
+                                         </table>
+                                    </div>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="overtime_requests_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">OVERTIME REQUESTS</h3>
+	        </div>
+            <form id="submitOvertimeForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label>Place<span class="asteriskField">*</span></label>
+                            <input type="text" class="form-control" name="place" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label>Start Date<span class="asteriskField">*</span></label>
+                                    <input type="date" class="form-control" name="start_date" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label>End Date<span class="asteriskField">*</span></label>
+                                    <input type="date" class="form-control" name="end_date" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nature of Overtime<span class="asteriskField">*</span></label>
+                            <textarea class="form-control" name="nature_of_ot" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Authorized Claims<span class="asteriskField">*</span></label>
+                            <select class="form-control select" name="claims" required>
+                                <option></option>
+                                {% for row in overtime_claims %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <label>Employee ID Number<span class="asteriskField">*</span></label>
+						<div id="items">
+							<div class="form-group">
+								<div class="input-group">
+									<input type="text" class="form-control typeahead_2 filter_employee_to b-r-sm" name="employee[]" required autocomplete="off" placeholder="e.g. [16-12345] Firstname Lastname"> <span class="input-group-btn"> <button type="button" class="btn btn-info add" style="height: 34px;"><i class="fas fa-plus"></i></button> </span>
+								</div>
+							</div>
+						</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save changes</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document.body).on("click", "a[data-toggle='tab']", function(event) {
+        location.hash = this.getAttribute("href");
+    });
+
+    $('.add').on('click', function(){
+		$('#items').append('<div class="form-group"><div class="input-group minus-remove"><input type="text" class="form-control typeahead_2 filter_employee_to b-r-sm" name="employee[]" required autocomplete="off" placeholder="e.g. [16-11626] Firstname Lastname"> <span class="input-group-btn"> <button type="button" class="btn btn-danger remove_field" style="height: 33px;"><i class="fa fa-minus"></i></button> </span></div></div></div>');
+
+		$.get('{% url "filter_employee" %}', function(data){
+			$(".filter_employee_to").typeahead({
+				source:data,
+			});
+	    },'json');
+	});
+
+	$.get('{% url "filter_employee" %}', function(data){
+		$(".filter_employee_to").typeahead({
+			source:data,
+			highlight: true
+		});
+    },'json');
+
+    $('#items').on("click", ".remove_field", function(e){
+		e.preventDefault();
+		$(this).parent().parent().remove();
+	});
+
+	$('#submitOvertimeForm').on('submit', function(e){
+	    var form = new FormData(this);
+	    Swal.fire({
+		    title: "Are you sure",
+		    text: "You want to add this overtime request",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "overtime_requests" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                });
+		    },
+		}).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                    title: "Heads up!",
+                    text: "Overtime request was successfully added.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if(result.isConfirmed){
+                        $('#submitOvertimeForm').trigger('reset');
+                        $('.select').empty();
+                        $('#overtime-details-table').DataTable().ajax.reload();
+                        $('#overtime_requests_modal').modal('hide');
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('#overtime-details-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 2, 'desc' ]],
+        'lengthMenu': [ 25, 50, 100 ],
+        'ajax': {
+            'url': '/api/overtime/details/?format=datatables&status=0',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'place'},
+            {'data': 'employee_list', 'searchable': false },
+            {'data': 'start_date' },
+            {'data': 'end_date' },
+            {'data': 'nature_of_ot' },
+            {'data': 'claims', 'name': 'claims.name' },
+        ],
+    });
+
+    $('#saveasdraft').on('click', function(){
+        if (!$('#overtime-details-table').DataTable().data().any()){
+    		Swal.fire("Oh snap!", "Sorry, it seems like you have an empty request.", "error");
+		} else {
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to save this as draft?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        url         : '{% url "overtime_save_as_draft" %}',
+                        type        : 'POST',
+                    });
+                },
+            }).then(function (response){
+                if(response.value.data == "success") {
+                    Swal.fire({
+                        title: "Good job!",
+                        text: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if(result.isConfirmed){
+                            $('#overtime-details-table').DataTable().ajax.reload();
+                            $('#overtime-details-drafts-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    $('#overtime-details-drafts-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 1, 'desc' ]],
+        'lengthMenu': [ 25, 50, 100 ],
+        'ajax': {
+            'url': '/api/overtime/?format=datatables&status=4',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'hash_id', 'searchable': false,
+                'render': function(data, type, row, meta) {
+                    return "<a href='javascript:;' data-role='move-to' data-content='"+ data +"'>"+ data +"</a>"
+                }
+            },
+            {'data': 'date_requested', 'searchable': false },
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=move-to]', function(){
+        if ($('#overtime-details-table').DataTable().data().any()){
+            Swal.fire("Oh snap!", "Sorry, it seems like you have an ongoing requests. Please submit or saved as draft your requests.", "error");
+        } else {
+            var id = $(this).data('content');
+            $.ajax({
+                url: "/overtime/move-to-requests/" + id,
+                type: "POST",
+                success: function (response) {
+                    if(response.data == "success") {
+                        $('#overtime-details-table').DataTable().ajax.reload();
+                        $('#overtime-details-drafts-table').DataTable().ajax.reload();
+                        $('a[href="#request-view"]').trigger('click');
+                    }
+                }
+            });
+        }
+    });
+
+    $('#submitOvertimeRequestsForm').on('submit', function(e){
+        if (!$('#overtime-details-table').DataTable().data().any()){
+    		Swal.fire("Oh snap!", "Sorry, it seems like you have an empty request.", "error");
+		} else {
+		    var form = new FormData(this);
+		     Swal.fire({
+                title: "Are you sure",
+                text: "You want to submit this overtime requests?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        url: '{% url "overtime_request_submit" %}',
+                        type: "POST",
+                        data: form,
+                        cache       : false,
+                        contentType : false,
+                        processData : false
+                    });
+                },
+            }).then(function (response){
+                if(response.value.data == "success") {
+                    Swal.fire({
+                        title: "Good job!",
+                        text: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if(result.isConfirmed){
+                            $('#overtime-details-table').DataTable().ajax.reload();
+                            $('#overtime-workflow-table').DataTable().ajax.reload();
+                            $('a[href="#request-view"]').trigger('click');
+                        }
+                    });
+                }
+            });
+        }
+        e.preventDefault();
+    });
+
+    $('#overtime-workflow-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 3, 'desc' ]],
+        'lengthMenu': [ 25, 50, 100 ],
+        'ajax': {
+            'url': '/api/overtime/?format=datatables&status=1',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'hash_id', 'searchable': false,
+                'render': function(data, type, row, meta) {
+                    return "<a href='/overtime/request/print/" + data + "' target='_blank'>Details</a>"
+                }
+            },
+            {'data': 'tracking_no' },
+            {'data': 'employee_list', 'searchable': false },
+            {'data': 'date_requested', 'className': 'text-center' },
+            {'data': 'status',
+                'render': function(data, type, row, meta) {
+                    if(data == 1){
+                        return "<span class='label label-primary'>Pending</span>";
+                    } else if(data == 2) {
+                        return "<span class='label label-success'>Approved</span>";
+                    } else if (data == 3) {
+                        return "<span class='label label-warning'>Cancelled</span>";
+                    }
+                },
+                'className': 'text-right'
+            }
+        ],
+    });
+</script>
+{% endblock %}

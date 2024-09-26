@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h2>Settings</h2>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'my-profile' %}">My Profile</a>
+            </li>
+            <li class="breadcrumb-item">
+            	Settings
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>General</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-2">
+			<div class="list-group">
+				<a href="{% url 'edit-profile' employee.id %}" class="list-group-item active"><i class="fas fa-cogs"></i>&emsp;General</a>
+				<a href="{% url 'change-password' %}" class="list-group-item"><i class="fas fa-lock"></i>&emsp;Security</a>
+			</div>
+		</div>
+		<div class="col-md-10">
+			
+		</div>
+	</div>
+	
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$('#id_picture').on('change', function(){
+		readURL(this);
+	});
+
+	function readURL(input) {
+	    var url = input.value;
+	    var ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
+	    if (input.files && input.files[0]&& (ext == "gif" || ext == "png" || ext == "jpeg" || ext == "jpg")) {
+	        var reader = new FileReader();
+
+	        reader.onload = function (e) {
+	            $('#picture').attr('src', e.target.result);
+	        }
+
+	        reader.readAsDataURL(input.files[0]);
+	    }
+	}
+
+	$('#btn-upload-picture').on('click', function(){
+		$('#id_picture').trigger('click'); 
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+		{% load tags %}
+		<form method="POST" action="{% url 'update-outpass' op.id %}">
+			{% csrf_token %}
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="col-sm-4">
+						<label>Request in Behalf of</label>
+						<div id="items">
+							<div class="form-group">
+								{% getemployee opdetails.outpass.in_behalf_of.id_number as gemp %}
+								<input type="text" value="[{{ opdetails.outpass.in_behalf_of.id_number }}] {{ gemp.pi.user.first_name|upper }} {{ gemp.pi.user.last_name|upper }}" class="form-control typeahead_2 filter_employee" name="in_behalf_of" autocomplete="off">
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label>Date <sup class="text-danger">*</sup></label>
+							<input value="{{ opdetails.date|date:'Y-m-d' }}" type="date" name="date" class="form-control" required>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group">
+							<label>Time Out <sup class="text-danger">*</sup></label>
+							<input type="time" value="{{ opdetails.time_out|date:'H:i:s' }}" name="time_out" class="form-control" required>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label>Destination</label>
+							<textarea class="form-control" name="destination" placeholder="Write something..">{{ opdetails.destination }}</textarea>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label>Activity to be Attended</label>
+							<textarea class="form-control" name="activity" placeholder="Write something..">{{ opdetails.activity }}</textarea>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label>Nature of Business <sup class="text-danger">*</sup></label>
+							<select class="form-control select" id="nature" name="nature" required>
+                                <option></option>
+								{% if opdetails.nature == 1 %}
+                                <option value="1" selected>Official</option>
+                                <option value="2">Personal</option>
+								{% else %}
+                                <option value="1">Official</option>
+                                <option value="2" selected>Personal</option>
+								{% endif %}
+                            </select>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label>Authorized Official / Signatory <sup class="text-danger">*</sup></label>
+							<input type="text" value="{{ opdetails.signatory }}" name="signatory" class="form-control" required>
+						</div>
+					</div>
+					<div class="row">
+					<div class="form-group col-sm-12" style="margin-left: 17px;">
+						<button type="submit" class="btn btn-info">Save</button>
+					</div>
+					</div>
+				</div>
+			</div>
+		</form>
+
+{% block script %}
+<script type="text/javascript">
+    $.get('{% url "filter_employee_except_me" %}', function(data){
+		$(".filter_employee").typeahead({
+			source:data,
+		});
+    },'json');
+</script>
+{% endblock %}

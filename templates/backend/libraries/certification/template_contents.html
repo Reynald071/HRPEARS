@@ -1,0 +1,220 @@
+{% load frontend_tags %}
+{% load tags %}
+
+{% block style %}
+<style>
+.dropdown-toggle {
+    height: 26px;
+    padding-top: 2px;
+}
+
+div.div-disabled {
+    pointer-events: none;
+
+    /* for "disabled" effect */
+    opacity: 0.6;
+}
+</style>
+{% endblock %}
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="ibox" style="margin-bottom:30px;">
+            <div class="ibox-title bg-default" style="border: 1px solid rgba(231, 234, 236, 1); padding-bottom:35px !important;">
+                <h5>TEMPLATE DETAILS</h5>
+            </div>
+            <div id="toErase">
+                <div class="ibox-content" id="template-details" style="padding:5px; border: 1px solid rgba(231, 234, 236, 1); border-top:none;">
+                    <div class="list-group" id="toAdd">
+                        <a class="list-group-item" href="javascript:;" style="border:none">Title:<br><b>{{ template.name|upper }}</b></a>
+                        <a class="list-group-item" href="javascript:;" style="border:none">Status:
+                            {% if template.status %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}
+                        </a>
+                        <a class="list-group-item" href="javascript:;" style="border:none">Last Updated: <br><b>{{ template.date_update|date|upper }}</b></a>
+                        <a class="list-group-item" href="javascript:;" style="border:none">By: <br><b>{{ template.emp.pi.user.first_name|upper }} {{ template.emp.pi.user.middle_name|to_middleinitial|upper }} {{ template.emp.pi.user.last_name|upper }}</b></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ibox" style="margin-bottom:30px;">
+            <div class="ibox-title bg-default" style="border: 1px solid rgba(231, 234, 236, 1); padding-bottom:35px !important;">
+                <h5>COMPONENTS</h5>
+            </div>
+            <div class="ibox-content" style="border: 1px solid rgba(231, 234, 236, 1); border-top:none;">
+                <div class="list-group">
+                    <a class="list-group-item compname active preview" data-id="{{ pk }}" href='javascript:;'>Preview</a>
+                    {% for row in components %}
+                        <a class="list-group-item compname" data-isfromfile="{{ row.component.is_fromfile }}" data-iseditable="{{ row.component.is_contenteditable }}" data-id="{{ row.id }}" href='javascript:;'>{{ row.component.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="ibox keywords" style="margin-bottom:30px;">
+            <div class="ibox-title bg-default" style="border: 1px solid rgba(231, 234, 236, 1); padding-bottom:35px !important;">
+                <h5>KEYWORDS</h5>
+            </div>
+            <div class="ibox-content" style="border: 1px solid rgba(231, 234, 236, 1); border-top:none;">
+                <select class="form-control select" id="myKeywords">
+                    <option></option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="ibox">
+            <div class="ibox-title bg-default" style="border: 1px solid rgba(231, 234, 236, 1); padding-bottom:35px !important;">
+                <h5>CONTENTS <small style="color:rgb(156,0,0); font-size:65%;" class="blinking" id="content-details"></small></h5>
+                <div class="pull-right savebutton" style="margin-top:-7px; margin-right:-5px; display:none;">
+                    <button type="button" class="btn btn-info btn-sm" style="height:30px;" onclick="$('#tc-form').submit();">Save</button>
+                </div>
+                <div class="previewbutton input-group pull-right col-xs-6" style="margin-top:-7px;margin-right:-5px;">
+                    <input type="text" class="form-control typeahead_2 filter_employee b-r-sm input-sm" id="employee" required="" autocomplete="off" placeholder="e.g. [16-12345] Juan dela Cruz">
+                    <span class="input-group-btn"> <button data-id="{{ pk }}" id="previewbutton" type="button" class="btn btn-info btn-sm">Preview</button> </span>
+                </div>
+                <div class="previewbutton2 input-group pull-right col-xs-6" style="margin-top:-7px; margin-right:-5px;">
+                    <input type="text" class="form-control typeahead_2 filter_employee b-r-sm input-sm" id="employee2" required="" autocomplete="off" placeholder="e.g. [16-12345] Juan dela Cruz">
+                    <span class="input-group-btn"> <button data-id="{{ pk }}" id="previewbutton2" type="button" class="btn btn-info btn-sm">Preview</button> </span>
+                </div>
+            </div>
+            <div class="ibox-content" id="component-contents" style="border: 1px solid rgba(231, 234, 236, 1); border-top:none; padding:0px;">
+
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+    <script>
+        function resizeLocal(){
+            $('#component-contents').css('height', '1147.17');
+            var container = $('#component-contents').height();
+            var handler = $('#handler').height();
+            if (handler > container) {
+                $('#component-contents').css('height', handler);
+            }
+        }
+
+        $(document).ready(function(){
+            $.get('{% url "get-keywords" %}', function(data){
+                $("#myKeywords").select2({
+                    data:data,
+                });
+            },'json');
+
+            $('#myKeywords').on('select2:select', function(e){
+                var keyword_element = '<small id="'+ e.params.data.text +'" class="label label-primary" style="line-height:18px; display:inline-block; margin-bottom:5px;" draggable="true">' + e.params.data.text + '&emsp; <i style="font-size:8px; cursor:pointer;" class="fa fa-copy" title="Copy to <clipboard></clipboard>" onclick="copyToClipboard(`#keyword_roster`, `<< '+ e.params.data.text +' >>`);"></i> <i style="cursor:pointer;" title="Remove from roster" class="fa fa-times" onclick="this.parentElement.remove()"></i></small> ';
+                if ($('#keyword_roster').has('#'+e.params.data.text).length) {
+                    toastrOptions();
+                    toastr.info("Keyword '"+ e.params.data.text +"' already exists in the roster.", "Adding to roster..");
+                } else {
+                    $('#keyword_roster').append(keyword_element);
+                }
+            });
+
+            $('.compname').on('click',function(){
+                $('.compname').each(function(i, obj) {
+                    $(this).removeClass('active');
+                });
+
+                $(this).addClass('active');
+
+                if ($(this).hasClass('preview')) {
+                    $('.savebutton').hide();
+                    $('.keywords').hide();
+                    $('.previewbutton').show();
+                    $('.previewbutton2').hide();
+                    $('#component-contents').empty();
+                    $('#content-details').html('');
+
+                    var id = $('#employee').val();
+                    if (id.substring(0,1) == '[') {
+                        id = id.substring(1,9);
+                    }
+
+                    if (id != '') {
+                        $('#component-contents').load("/backend/libraries/certifications/templates/view/" + $(this).data('id') + "/" + id, function(){
+                            $("#component-contents :input").each(function(e){
+                                $(this).attr('readonly','readonly');
+                            });
+                            resize();
+                            resizeLocal();
+                        });
+                    } else {
+                        $('#component-contents').load("/backend/libraries/certifications/templates/view/" + $(this).data('id'), function(){
+                            $("#component-contents :input").each(function(e){
+                                $(this).attr('readonly','readonly');
+                            });
+                            resize();
+                            resizeLocal();
+                        });
+                    }
+                } else {
+                    $('#component-contents').css('padding','0px');
+                    $('.savebutton').show();
+                    $('.keywords').show();
+                    $('.previewbutton').hide();
+                    $('.previewbutton2').hide();
+                    $('#component-contents').empty();
+                    if ($(this).data('iseditable') == 1) {
+                        $('#component-contents').load("/backend/libraries/certifications/templates/contents/form/" + $(this).data('id'), function(){
+                            $('#component-contents').css('height', '777.297');
+                        });
+                        $('#content-details').html('');
+                    } else {
+                        if ($(this).data('isfromfile') == 1) {
+                            $('#content-details').html('NOTE: CONTENT IS NOT EDITABLE AND IS RENDERED FROM A FILE.');
+                            $('.keywords').hide();
+                            $('.savebutton').hide();
+                            $('.previewbutton2').show();
+                            $('#previewbutton2').click();
+                        } else {
+                            $('#component-contents').load("/backend/libraries/certifications/templates/contents/form/" + $(this).data('id') + "/1", function(){
+                        $('#component-contents').css('height', '777.297');
+                            });
+                            $('#content-details').html('NOTE: CONTENT IS NOT EDITABLE.');
+                        }
+                    }
+                }
+                select2Init();
+            });
+
+            $('#previewbutton').on('click', function(){
+                $('.preview').click();
+            });
+
+            $('#previewbutton2').on('click', function(){
+                var id = $('#employee2').val();
+                if (id.substring(0,1) == '[') {
+                    id = id.substring(1,9);
+                }
+
+                $('#component-contents').empty();
+                if (id != '') {
+                    $('#component-contents').load("/backend/libraries/certifications/templates/employment/"+id, function(){
+                        $('#component-contents').css('height', '777.297');
+                    });
+                } else {
+                    {% getemployeebyempid request.session.emp_id as emp %}
+                    $('#component-contents').load("/backend/libraries/certifications/templates/employment/{{ emp.id_number }}", function(){
+                        $('#component-contents').css('height', '777.297');
+                    });
+                }
+            });
+
+            $(".filter_employee").typeahead({
+                source: function(query, process){
+                    return $.get({
+                        url: '{% url "filter_employee" %}',
+                        data: { query: query },
+                        datatype: 'json',
+                        success: function (data) {
+                            return process(data);
+                        }
+                    });
+                },
+                highlight: true,
+            });
+
+            $('.preview').click();
+        });
+    </script>
+{% endblock %}

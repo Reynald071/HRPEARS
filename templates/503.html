@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+
+    <meta charset="utf-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/hrpearlogo_192.png' %}"/>
+
+    <title>DSWD My PORTAL | We'll be back shortly!</title>
+
+    <link href="{% static 'css/tailwind.min.css' %}" rel="stylesheet" />
+    <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap");
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;900&display=swap");
+            body {
+                font-family: Inter !important;
+            }
+        </style>
+</head>
+
+<body class="white-bg text-center mt-44">
+    <span class="text-4xl block font-extrabold">Caraga <span class="text-green-500">PORTAL</span></span><br>
+    <center><img loading="lazy"  src="{% static 'image/maintenance.png' %}" style="width: 500px;"></center>
+    <span class="text-lg block text-green-500 font-bold">Our site is getting a little tune up and some love</span>
+    <span class="text-sm font-bold">We apologize for the inconvenience but we're performing some maintenance. We'll be back shortly!</span>
+</body>
+</html>

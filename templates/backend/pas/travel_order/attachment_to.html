@@ -1,0 +1,57 @@
+{% load frontend_tags %}
+<form id="uploadTOAttachmentForm" enctype="multipart/form-data">
+<div class="modal-body">
+    {% csrf_token %}
+    {% travel_order_attachment rito.tracking_no as attachment %}
+    {% if attachment.attachment %}File: <a href="{{ attachment.attachment.url }}" target="_blank">{{ attachment.attachment }}</a>{% else %}No file yet. Please upload a file.{% endif %}
+    <input type="file" name="file" class="form-control file-control border-0" accept="application/pdf,application/vnd.ms-excel" required>
+    <br>
+    Date uploaded: {{ attachment.date_uploaded }}
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Upload</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('#uploadTOAttachmentForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+		  title: "Are you sure",
+          text: "You upload this attachment in travel order no. " + "{% if rito.tracking_merge %}{{ rito.tracking_merge }}{% else %}{{ rito.tracking_no }}{% endif %}" + "?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  	    data        : form,
+		  		url         : "/backend/attachment/travel/" + "{% if rito.tracking_merge %}{{ rito.tracking_merge }}{% else %}{{ rito.tracking_no }}{% endif %}",
+		  		type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false,
+		  	});
+		  }
+		}).then(function (response){
+		    if (response.value.data == 'success'){
+		    	Swal.fire({
+				  title: "Good job!",
+				  text: "Travel Order No. " + response.value.tracking_no + " attachment was successfully uploaded.",
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+					    $('#to_attachment_content').load('/backend/attachment/travel/' + $(this).data('filter'));
+						$('#table-workflow').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+</script>
+{% endblock %}

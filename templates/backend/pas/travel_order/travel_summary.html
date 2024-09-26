@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Travel Summary</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @page {
+			size: auto;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;">Travel Summary</a>
+        <ul class="navbar-nav ml-auto">
+            <li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button>&emsp;</li>
+        </ul>
+	</div>
+</nav>
+<body>
+    <page size="longflex" layout="landscape" class="page" style="padding: 45px; position: relative;">
+		<div class="containerX">
+            <center>
+                <h4 style="font-size: 14px;" class="font-weight-bold">TRAVEL ORDER REPORT: {{ start_date }} - {{ end_date }}</h4>
+            </center>
+            <br>
+            <table class="table-hover" border=1 width="100%">
+                <thead>
+                    <th style="padding:10px;">TRACKING NUMBER</th>
+                    <th class="text-center" style="padding:10px;">RITO DATE</th>
+                    <th class="text-center" style="padding:10px;">RITO RECEIVED</th>
+                    <th class="text-center" style="padding:10px;">DATE ADMINISTERED</th>
+                    <th class="text-center" style="padding:10px;">DATE FORWARDED</th>
+                    <th class="text-center" style="padding:10px;">DATE RETURNED</th>
+                    <th class="text-center" style="padding:10px;">REMARKS</th>
+                </thead>
+                <tbody>
+                    {% for row in to %}
+                        <tr>
+                            <td style="padding:5px;">{{ row.tracking_no }}</td>
+                            <td class="text-center" style="padding:5px;">{{ row.date }}</td>
+                            <td class="text-center" style="padding:5px;">{% if row.date_received %}{{ row.date_received }}{% endif %}</td>
+                            <td class="text-center" style="padding:5px;">{% if row.date_administered %}{{ row.date_administered }}{% endif %}</td>
+                            <td class="text-center" style="padding:5px;">{% if row.date_forwarded %}{{ row.date_forwarded }}{% endif %}</td>
+                            <td class="text-center" style="padding:5px;">{% if row.date_returned %}{{ row.date_returned }}{% endif %}</td>
+                            <td class="text-center" style="padding:5px;">{% if row.remarks %}{{ row.remarks }}{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+	<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

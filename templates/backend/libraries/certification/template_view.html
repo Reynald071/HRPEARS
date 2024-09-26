@@ -1,0 +1,58 @@
+{% load static %}
+{% block style %}
+<style>
+    #a4div {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    }
+</style>
+{% endblock %}
+<div id="a4div" style="position:relative; height:297mm; width:210mm; margin:auto;">
+    <div id="handler">
+    {% if contents is not None %}
+        <div class="row">
+            <div class="col-xs-12">
+                <img loading="lazy"  src="{% static 'image/dswd_logo.png' %}" class="picture pull-left header-img" style="height: 60px;">
+                <img loading="lazy"  src="{% static 'image/iso.png' %}" class="picture pull-right header-img" style="height: 60px;">
+            </div>
+        </div>
+        <br>
+        {{ contents|safe }}
+    {% else %}
+        <div style="padding:0px 15px !important; text-align:center;">
+            <div class="row" style="padding-bottom:15px">
+                <div class="" style="text-align:center;">
+                    <img loading="lazy"  src="{% static 'image/no-preview.png' %}" class="img-responsive" style="height:450px; width:auto; margin: 0 auto; object-fit: cover;">
+                </div>
+                <div class="row col-md-8 col-md-offset-2">
+                    <p>
+                        Sorry. We have not found an employee with ID Number: '{{ id }}'. Please try again.
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    </div>
+</div>
+
+{% block script %}
+    <script id="removeScript">
+        var origwidth = 210;
+        var origmargin = 65;
+
+        function resize() {
+            var width = $('#a4div').parent().width() * 0.2645833333333;
+            var percentage = width / origwidth;
+            $('#a4div').css('zoom', (percentage * 100) + '%');
+            $('#a4div').parent().css('padding', origmargin * percentage)
+        }
+
+        $(document).ready(function(){
+            resize();
+            $('.destroyable').remove();
+        });
+
+        $(window).resize(function(){
+            resize();
+        });
+    </script>
+{% endblock %}

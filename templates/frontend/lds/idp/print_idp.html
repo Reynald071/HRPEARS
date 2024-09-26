@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSWD My PORTAL | Individual Development Plan</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+            page {
+                margin: 0 !important;
+                padding: 20px 30px 30px 30px !important;
+                border: 0.5px solid transparent;
+            }
+            body{
+                -webkit-print-color-adjust: exact;
+            }
+
+            table .light-orange {
+                background-color: #ffe598 !important;
+            }
+
+            table .light-green {
+                background: #a8d08d !important;
+            }
+
+            table .light-blue {
+                background: #9cc2e5 !important;
+            }
+        }
+
+        @page {
+			size: auto;
+		}
+
+        .padding-all {
+            padding: 1px;
+        }
+
+        .light-orange {
+            background: #ffe598;
+        }
+
+        .light-green {
+            background: #a8d08d;
+        }
+
+        .light-blue {
+            background: #9cc2e5;
+        }
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+    <div class="container">
+        <a class="navbar-brand" href="javascript:;">Individual Development Plan <small>- {{ idp.year }}</small></a>
+        <ul class="navbar-nav ml-auto">
+            <li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+        </ul>
+    </div>
+</nav>
+<body style="font-family: 'Arial';">
+    <page size="A4flex" layout="landscape" class="page" style="padding: 30px; color: black; height: auto">
+        <div class="containerX" style="page-break-after: always !important;">
+            <h3 class="text-center font-weight-bold" style="font-size: 14.67px;">Department of Social Welfare and Development</h3>
+            <br>
+            <h3 class="text-center font-weight-bold m-0" style="font-size: 14.67px;">INDIVIDUAL DEVELOPMENT PLAN</h3>
+            <h3 class="text-center font-weight-bold" style="font-size: 14.67px;">CY {{ idp.year }}</h3>
+            <table border="1" width="100%" style="font-size: 13.33px;">
+                <thead>
+                    <tr>
+                        <th width="20%">&nbsp;Name of Ratee:</th>
+                        <th>&nbsp;{{ idp.emp.pi.user.get_fullname|upper }}</th>
+                    </tr>
+                    <tr>
+                        <th>&nbsp;Position:</th>
+                        <th>&nbsp;{{ idp.emp.position.name|upper }}</th>
+                    </tr>
+                    <tr>
+                        <th>&nbsp;Designation:</th>
+                        <th>&nbsp;N/A</th>
+                    </tr>
+                    <tr>
+                        <th>&nbsp;Office:</th>
+                        <th>&nbsp;{{ idp.emp.section.sec_name|upper }}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="2">&nbsp;</th>
+                    </tr>
+                    <tr>
+                        <th width="15%" class="text-center">&nbsp;AIM:</th>
+                        <td class="text-justify"><small>{{ idp.aim }}</small></td>
+                    </tr>
+                </thead>
+            </table>
+            <br>
+            <table border="1" width="100%" style="font-size: 13.33px;" id="table-1">
+                <tr>
+                    <th colspan="7" class="text-center light-orange">JOB REQUIREMENTS</th>
+                </tr>
+                <tr class="light-orange">
+                    <th width="20%" class="padding-all">&nbsp;</th>
+                    <th class="text-center padding-all" width="10%">Current Status</th>
+                    <th class="text-center padding-all" width="12%">Target Status</th>
+                    <th class="text-center padding-all" width="25%">Proposed Interventions to be Undertaken</th>
+                    <th class="text-center padding-all" width="10%">Target Date</th>
+                    <th class="text-center padding-all" width="13%">Results of Target</th>
+                    <th class="text-center padding-all" width="10%">Remarks / Next Steps</th>
+                </tr>
+                {% for row in job_requirements %}
+                <tr>
+                    <td class="padding-all">{{ row.title }}</td>
+                    <td class="text-center padding-all">{{ row.cc_level }}</td>
+                    <td class="text-center padding-all">{{ row.target_level }}</td>
+                    <td class="padding-all">{{ row.intervention }}</td>
+                    <td class="text-center padding-all">{{ row.target_date }}</td>
+                    <td class="padding-all">{{ row.results }}</td>
+                    <td class="padding-all">{{ row.remarks }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <table border="1" width="100%" style="font-size: 13.33px;">
+                <tr>
+                    <th colspan="7" class="text-center light-green">CORE COMPETENCIES</th>
+                </tr>
+                <tr class="light-green">
+                    <th width="20%" class="padding-all">&nbsp;</th>
+                    <th class="text-center padding-all" width="10%">Current Competency Level</th>
+                    <th class="text-center padding-all" width="12%">Target Competency Level</th>
+                    <th class="text-center padding-all" width="25%">Proposed Interventions to be Undertaken</th>
+                    <th class="text-center padding-all" width="10%">Target Date</th>
+                    <th class="text-center padding-all" width="13%">Results of Target</th>
+                    <th class="text-center padding-all" width="10%">Remarks / Next Steps</th>
+                </tr>
+                {% for row in core_leadership %}
+                <tr>
+                    <td class="padding-all">{{ row.title }}</td>
+                    <td class="text-center padding-all">{{ row.cc_level }}</td>
+                    <td class="text-center padding-all">{{ row.target_level }}</td>
+                    <td class="padding-all">{{ row.intervention }}</td>
+                    <td class="text-center padding-all">{{ row.target_date }}</td>
+                    <td class="padding-all">{{ row.results }}</td>
+                    <td class="padding-all">{{ row.remarks }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <table border="1" width="100%" style="font-size: 13.33px;">
+                <tr>
+                    <th colspan="7" class="text-center light-green">MANAGERIAL / LEADERSHIP COMPETENCIES</th>
+                </tr>
+                <tr class="light-green">
+                    <th width="20%" class="padding-all">&nbsp;</th>
+                    <th class="text-center padding-all" width="10%">Current Competency Level</th>
+                    <th class="text-center padding-all" width="12%">Target Competency Level</th>
+                    <th class="text-center padding-all" width="25%">Proposed Interventions to be Undertaken</th>
+                    <th class="text-center padding-all" width="10%">Target Date</th>
+                    <th class="text-center padding-all" width="13%">Results of Target</th>
+                    <th class="text-center padding-all" width="10%">Remarks / Next Steps</th>
+                </tr>
+                {% for row in managerial_leadership %}
+                <tr>
+                    <td class="padding-all">{{ row.title }}</td>
+                    <td class="text-center padding-all">{{ row.cc_level }}</td>
+                    <td class="text-center padding-all">{{ row.target_level }}</td>
+                    <td class="padding-all">{{ row.intervention }}</td>
+                    <td class="text-center padding-all">{{ row.target_date }}</td>
+                    <td class="padding-all">{{ row.results }}</td>
+                    <td class="padding-all">{{ row.remarks }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <table border="1" width="100%" style="font-size: 13.33px;">
+                <tr>
+                    <th colspan="7" class="text-center light-blue">FUNCTIONAL COMPETENCY</th>
+                </tr>
+                <tr class="light-blue">
+                    <th width="20%" class="padding-all">&nbsp;</th>
+                    <th class="text-center padding-all" width="10%">Current Competency Level</th>
+                    <th class="text-center padding-all" width="12%">Target Competency Level</th>
+                    <th class="text-center padding-all" width="25%">Proposed Interventions to be Undertaken</th>
+                    <th class="text-center padding-all" width="10%">Target Date</th>
+                    <th class="text-center padding-all" width="13%">Results of Target</th>
+                    <th class="text-center padding-all" width="10%">Remarks / Next Steps</th>
+                </tr>
+                {% for row in functional_tasks %}
+                <tr>
+                    <td class="padding-all">{{ row.title }}</td>
+                    <td class="text-center padding-all">{{ row.cc_level }}</td>
+                    <td class="text-center padding-all">{{ row.target_level }}</td>
+                    <td class="padding-all">{{ row.intervention }}</td>
+                    <td class="text-center padding-all">{{ row.target_date }}</td>
+                    <td class="padding-all">{{ row.results }}</td>
+                    <td class="padding-all">{{ row.remarks }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <br>
+            <br>
+            <table width="100%">
+                <tr>
+                    {% get_latest_workexperience request.session.pi_id as latest_work_experience %}
+                    <td width="20%">Prepared by:</td>
+                    <th width="22%" style="border-bottom: 1px solid black;">{{ idp.emp.pi.user.get_fullname|upper }}</th>
+                    <td width="25%" class="text-right">Date:</td>
+                    <td width="10%" class="text-right" style="border-bottom: 1px solid black;">{{ latest_work_experience|date:"m/d/Y" }}</td>
+                    <th width="13%"></th>
+                    <th width="10%"></th>
+                </tr>
+                <tr>
+                    <td>Position:</td>
+                    <td>{{ idp.emp.position.name|upper }}</td>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    {% getemployeebyempid idp.emp.section.div.div_chief_id as ra %}
+                    <td width="20%">Recommending Approval:</td>
+                    <th contenteditable width="22%" style="border-bottom: 1px solid black;">{{ ra.pi.user.get_fullname|upper }}</th>
+                    <td width="25%" class="text-right">Date:</td>
+                    <td width="10%" class="text-right" style="border-bottom: 1px solid black;"></td>
+                    <th width="13%"></th>
+                    <th width="10%"></th>
+                </tr>
+                <tr>
+                    <td>Position:</td>
+                    <td contenteditable>CHIEF, {{ idp.emp.section.div.div_acronym }}</td>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    {% getemployeebyempid idp.emp.section.div.designation.emp_id as ab %}
+                    <td width="20%">Approved by:</td>
+                    <th contenteditable width="22%" style="border-bottom: 1px solid black;">{{ ab.pi.user.get_fullname|upper }}</th>
+                    <td width="25%" class="text-right">Date:</td>
+                    <td width="10%" class="text-right" style="border-bottom: 1px solid black;"></td>
+                    <th width="13%"></th>
+                    <th width="10%"></th>
+                </tr>
+                <tr>
+                    <td>Position:</td>
+                    <td contenteditable>{{ idp.emp.section.div.designation.name|upper }}</td>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </table>
+        </div>
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

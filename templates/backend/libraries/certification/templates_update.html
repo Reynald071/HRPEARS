@@ -1,0 +1,122 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/libraries.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Templates</h1>
+        <ol class="breadcrumb">
+			<li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Libraries
+            </li>
+			<li class="breadcrumb-item">
+                Certifications
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'templates' %}">Templates</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Update</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-4">
+            <div class="ibox">
+                <form id="submitForm" novalidate="">
+                    <div class="ibox-content">
+                        <div class="alert alert-warning alert-dismissable" style="margin-bottom: 20px !important;">
+                            <p align="justify">
+                                For now, updating of components for a template is disabled.
+                                This is to avoid updating or deletion of components already with assigned contents, thus,
+                                preserving data integrity among the templates.
+                            </p>
+                        </div>
+                        {% csrf_token %}
+                        {{ form.name|as_crispy_field }}
+                        <div class="form-group">
+                            <label>Components*</label>
+                            <select class="select" style="width:100%;" name="components" id="components" data-reorder="1" multiple disabled>
+                                {% for row in components %}
+                                    <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div id="div_id_status" class="checkbox">
+                                <label for="id_status" class="">
+                                    <input type="checkbox" name="status" value="0" class="checkboxinput" id="id_status" {% if form.status.value == 1 %}checked{% endif %}> Status
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ibox-footer">
+                        <button class="btn btn-info">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $("#components").on('select2:select', function(e){
+        var id = e.params.data.id;
+        var option = $(e.target).children('[value='+id+']');
+        option.detach();
+        $(e.target).append(option).change();
+    });
+
+	$('#submitForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		$.ajax({
+			url: window.location.pathname,
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				$('.error').remove();
+
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else {
+                    window.location = "{% url 'templates' %}";
+                }
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+
+    $(document).ready(function(){
+        var comps = [];
+        {% for row in template_components %}
+            comps.push('{{ row.component_id }}');
+
+            var id = '{{ row.component_id }}';
+            var option = $('#components').children('[value='+id+']');
+            option.detach();
+            $('#components').append(option).change();
+        {% endfor %}
+        $('#components').val(comps);
+        $('#components').trigger('change');
+
+        $('.select2-selection--multiple').css('background-color', 'white');
+    });
+</script>
+{% endblock %}

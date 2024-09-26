@@ -1,0 +1,87 @@
+	<form id="update_ir_db">
+        {% csrf_token %}
+		<center>
+			<img loading="lazy"  src="{{ data.emp.picture.url }}" id="picture" class="img-circle" style="width: 200px; height: 200px; object-fit: cover; margin-bottom: 10px;">
+		</center>
+		<br>
+        <div class="tabs-container" style="border: 0px !important;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a aria-controls="announcement" role="tab" data-toggle="tab" href="#tab-1" class="bg-transparent" style="border: 0px !important;">Basic Information</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" id="tab-1" class="tab-pane active">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive text-nowrap table-scroll">
+                                <br>
+                                <div class="list-group">
+                                    <input type="text" name="ir_id" value="{{data.id}}" hidden>
+                                    <div class="form-group">
+                                        <h5>REMARKS, IF ANY<span class="asteriskField">*</span></h5>
+                                        <textarea class="form-control" name="remarks" id="" rows="3">{{data.remarks}}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Upload PDF File here</label>
+                                        <input name="file" type="file" class="form-control file-control" required>
+                                    <table id="file_type_upload">
+                                        <tbody>
+                                            <td><h3>Attachment Here: <a target="_blank" href="{{files.attachment_data.url }}"><i class='bx bx-file'></i>{{files.attachment_data}}</a></h3></td>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                <div class="pull-right">
+                                    <button type="submit" class="btn btn-info">Update</button>
+                                </div>
+                                <br>
+                                <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</form>
+    <script>
+    $('#update_ir_db').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "You want to Add an Attachment?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'insert_ir_attachment' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully updated the data",
+                      icon: "info",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#ir_modal').modal('show').find('#load_data').load('/welfare/IncidentReport/modal/{{pk}}');
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+    </script>

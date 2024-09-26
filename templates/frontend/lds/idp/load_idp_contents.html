@@ -1,0 +1,354 @@
+<style>
+    td.p-0 {
+		text-align: center;
+	}
+</style>
+<p>CY <strong>{{ idp.year }}</strong></p>
+<p class="text-justify"><strong>AIM:</strong> {{ idp.aim }}</p>
+<div class="table-responsive">
+    {% for row in type %}
+    <table class="table table-bordered" id="table-{{ row.id }}">
+        <tr>
+            <th class="text-center" colspan="8">{{ row.name }}</th>
+        </tr>
+        <tr>
+            <th width="15%">
+                {% if row.id == 2 or row.id == 3 %}
+                <button type="button" class="btn btn-info btn-sm" id="add-{{ row.id }}">Add</button>
+                {% endif %}
+            </th>
+            <th class="text-center" width="15%">
+                {% if row.id == 1 %}
+                Current Status
+                {% elif row.id == 2 or row.id == 3 %}
+                Current Competency Level
+                {% endif %}
+            </th>
+            <th class="text-center" width="15%">
+                {% if row.id == 1 %}
+                Target Status
+                {% elif row.id == 2 %}
+                Target Competency Level
+                {% elif row.id == 3 %}
+                Target Level of Accomplishment
+                {% endif %}
+            </th>
+            <th class="text-center" width="20%">Proposed Interventions to be Undertaken</th>
+            <th class="text-center" width="10%">Target Date</th>
+            <th class="text-center" width="10%">Results of Target</th>
+            <th class="text-center" width="10%">Remarks / Next Steps</th>
+            <th width="5%"></th>
+        </tr>
+        {% if row.id == 1 %}
+        {% for jr in job_requirements %}
+        <tr>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="title-{{ jr.id }}" name="jr_title[]" value="{{ jr.title }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="cc_level-{{ jr.id }}" name="jr_cc_level[]" value="{{ jr.cc_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="target_level-{{ jr.id }}"  name="jr_target_level[]" value="{{ jr.target_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="intervention-{{ jr.id }}" name="jr_intervention[]" value="{{ jr.intervention }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="month" class="form-control border-0" id="target_date-{{ jr.id }}" name="jr_target_date[]" value="{{ jr.target_date }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="results-{{ jr.id }}" name="jr_results[]" value="{{ jr.results }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="remarks-{{ jr.id }}" name="jr_remarks[]" value="{{ jr.remarks }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default" data-role="zoom" data-id="{{ jr.id }}"><i class="fas fa-expand"></i></button>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        {% elif row.id == 2 %}
+        {% for cmc in core_leadership %}
+        <tr>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="title-{{ cmc.id }}" name="cmc_title[]" value="{{ cmc.title }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="cc_level-{{ cmc.id }}" name="cmc_cc_level[]" value="{{ cmc.cc_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="target_level-{{ cmc.id }}"  name="cmc_target_level[]" value="{{ cmc.target_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="intervention-{{ cmc.id }}" name="cmc_intervention[]" value="{{ cmc.intervention }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="month" class="form-control border-0" id="target_date-{{ cmc.id }}" name="cmc_target_date[]" value="{{ cmc.target_date }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="results-{{ cmc.id }}" name="cmc_results[]" value="{{ cmc.results }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="remarks-{{ cmc.id }}" name="cmc_remarks[]" value="{{ cmc.remarks }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default" data-role="zoom" data-id="{{ cmc.id }}"><i class="fas fa-expand"></i></button>
+                    <button type="button" class="btn btn-danger" data-role="remove" data-id="{{ cmc.id }}"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        {% elif row.id == 4 %}
+        {% for mls in managerial_leadership %}
+        <tr>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="title-{{ mls.id }}" name="mls_title[]" value="{{ mls.title }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="cc_level-{{ mls.id }}" name="mls_cc_level[]" value="{{ mls.cc_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="target_level-{{ mls.id }}"  name="mls_target_level[]" value="{{ mls.target_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="intervention-{{ mls.id }}" name="mls_intervention[]" value="{{ mls.intervention }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="month" class="form-control border-0" id="target_date-{{ mls.id }}" name="mls_target_date[]" value="{{ mls.target_date }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="results-{{ mls.id }}" name="mls_results[]" value="{{ mls.results }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="remarks-{{ mls.id }}" name="mls_remarks[]" value="{{ mls.remarks }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default" data-role="zoom" data-id="{{ mls.id }}"><i class="fas fa-expand"></i></button>
+                    <button type="button" class="btn btn-danger" data-role="remove" data-id="{{ mls.id }}"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        {% elif row.id == 3 %}
+        {% for ft in functional_tasks %}
+        <tr>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="title-{{ ft.id }}" name="ft_title[]" value="{{ ft.title }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="cc_level-{{ ft.id }}" name="ft_cc_level[]" value="{{ ft.cc_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="target_level-{{ ft.id }}"  name="ft_target_level[]" value="{{ ft.target_level }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="intervention-{{ ft.id }}" name="ft_intervention[]" value="{{ ft.intervention }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="month" class="form-control border-0" id="target_date-{{ ft.id }}" name="ft_target_date[]" value="{{ ft.target_date }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="results-{{ ft.id }}" name="ft_results[]" value="{{ ft.results }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="text" class="form-control border-0" id="remarks-{{ ft.id }}" name="ft_remarks[]" value="{{ ft.remarks }}" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default" data-role="zoom" data-id="{{ ft.id }}"><i class="fas fa-expand"></i></button>
+                    <button type="button" class="btn btn-danger" data-role="remove" data-id="{{ ft.id }}"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </table>
+    <br>
+    {% endfor %}
+</div>
+{% block script %}
+<script>
+    function makeid(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
+    /* Core Leadership and Management Competencies */
+
+    localStorage.setItem('cmc-counter', makeid(10));
+
+    $('#add-2').on('click', function(){
+        var template_two = `
+            <tr>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="cmc-title-`+ localStorage.getItem('cmc-counter') +`" name="cmc_title[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="cmc-cc_level-`+ localStorage.getItem('cmc-counter') +`" name="cmc_cc_level[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="cmc-target_level-`+ localStorage.getItem('cmc-counter') +`"  name="cmc_target_level[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="cmc-intervention-`+ localStorage.getItem('cmc-counter') +`" name="cmc_intervention[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="month" class="form-control border-0" id="cmc-target_date-`+ localStorage.getItem('cmc-counter') +`" name="cmc_target_date[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="cmc-results-`+ localStorage.getItem('cmc-counter') +`" name="cmc_results[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="cmc-remarks-`+ localStorage.getItem('cmc-counter') +`" name="cmc_remarks[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default" data-role="cmc-zoom" data-id="`+ localStorage.getItem('cmc-counter') +`"><i class="fas fa-expand"></i></button>
+                        <button type="button" class="btn btn-danger" data-role="remove"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        cmc_count = parseInt(localStorage.getItem('cmc-counter'));
+        $('#table-2 tbody').append(template_two);
+        localStorage.setItem('cmc-counter', makeid(10));
+    });
+
+    $(document).on('click', 'button[data-role=cmc-zoom]', function(){
+        var id = $(this).data('id');
+
+        $('#m-title-2').val($('#cmc-title-'+id).val());
+        $('#m-cc_level-2').val($('#cmc-cc_level-'+id).val());
+        $('#m-target_level-2').val($('#cmc-target_level-'+id).val());
+        $('#m-intervention-2').val($('#cmc-intervention-'+id).val());
+        $('#m-target_date-2').val($('#cmc-target_date-'+id).val());
+        $('#m-results-2').val($('#cmc-results-'+id).val());
+        $('#m-remarks-2').val($('#cmc-remarks-'+id).val());
+        $('#idp-content-2').val(id);
+        $('#zoom-idp-contents-2').modal('show');
+    });
+
+    /* Functional Task */
+
+    localStorage.setItem('ft-counter', makeid(10));
+
+    $('#add-3').on('click', function(){
+        var template_three = `
+            <tr>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="ft-title-`+ localStorage.getItem('ft-counter') +`" name="ft_title[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="ft-cc_level-`+ localStorage.getItem('ft-counter') +`" name="ft_cc_level[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="ft-target_level-`+ localStorage.getItem('ft-counter') +`"  name="ft_target_level[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="ft-intervention-`+ localStorage.getItem('ft-counter') +`" name="ft_intervention[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="month" class="form-control border-0" id="ft-target_date-`+ localStorage.getItem('ft-counter') +`" name="ft_target_date[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="ft-results-`+ localStorage.getItem('ft-counter') +`" name="ft_results[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="ft-remarks-`+ localStorage.getItem('ft-counter') +`" name="ft_remarks[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default" data-role="ft-zoom" data-id="`+ localStorage.getItem('ft-counter') +`"><i class="fas fa-expand"></i></button>
+                        <button type="button" class="btn btn-danger" data-role="remove"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        ft_count = parseInt(localStorage.getItem('ft-counter'));
+        $('#table-3 tbody').append(template_three);
+        localStorage.setItem('ft-counter', makeid(10));
+    });
+
+    $(document).on('click', 'button[data-role=ft-zoom]', function(){
+        var id = $(this).data('id');
+
+        console.log($('#ft-title-'+id).val());
+        $('#m-title-3').val($('#ft-title-'+id).val());
+        $('#m-cc_level-3').val($('#ft-cc_level-'+id).val());
+        $('#m-target_level-3').val($('#ft-target_level-'+id).val());
+        $('#m-intervention-3').val($('#ft-intervention-'+id).val());
+        $('#m-target_date-3').val($('#ft-target_date-'+id).val());
+        $('#m-results-3').val($('#ft-results-'+id).val());
+        $('#m-remarks-3').val($('#ft-remarks-'+id).val());
+        $('#idp-content-3').val(id);
+        $('#zoom-idp-contents-3').modal('show');
+    });
+
+    /* Managerial Leadership */
+
+    localStorage.setItem('mls-counter', makeid(10));
+
+    $('#add-4').on('click', function(){
+        var template_four = `
+            <tr>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="mls-title-`+ localStorage.getItem('mls-counter') +`" name="mls_title[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="mls-cc_level-`+ localStorage.getItem('mls-counter') +`" name="mls_cc_level[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="mls-target_level-`+ localStorage.getItem('mls-counter') +`"  name="mls_target_level[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="mls-intervention-`+ localStorage.getItem('mls-counter') +`" name="mls_intervention[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="month" class="form-control border-0" id="mls-target_date-`+ localStorage.getItem('mls-counter') +`" name="mls_target_date[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="mls-results-`+ localStorage.getItem('mls-counter') +`" name="mls_results[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <input type="text" class="form-control border-0" id="mls-remarks-`+ localStorage.getItem('mls-counter') +`" name="mls_remarks[]" autocomplete="off">
+                </td>
+                <td class="p-0">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default" data-role="mls-zoom" data-id="`+ localStorage.getItem('mls-counter') +`"><i class="fas fa-expand"></i></button>
+                        <button type="button" class="btn btn-danger" data-role="remove"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        mls_count = parseInt(localStorage.getItem('mls-counter'));
+        $('#table-4 tbody').append(template_four);
+        localStorage.setItem('mls-counter', makeid(10));
+    });
+
+    $(document).on('click', 'button[data-role=mls-zoom]', function(){
+        var id = $(this).data('id');
+        $('#m-title-4').val($('#mls-title-'+id).val());
+        $('#m-cc_level-4').val($('#mls-cc_level-'+id).val());
+        $('#m-target_level-4').val($('#mls-target_level-'+id).val());
+        $('#m-intervention-4').val($('#mls-intervention-'+id).val());
+        $('#m-target_date-4').val($('#mls-target_date-'+id).val());
+        $('#m-results-4').val($('#mls-results-'+id).val());
+        $('#m-remarks-4').val($('#mls-remarks-'+id).val());
+        $('#idp-content-4').val(id);
+        $('#zoom-idp-contents-4').modal('show');
+    });
+</script>
+{% endblock %}

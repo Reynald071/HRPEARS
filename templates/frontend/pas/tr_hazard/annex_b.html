@@ -1,0 +1,135 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Annex B</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Travel Report During Hazards/Hardships
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Annex B</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-xs-4">
+        <div class="title-action">
+            <button class="btn btn-default" data-toggle="modal" data-target="#print-modal"><i class="fas fa-print"></i> Print Annex B</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="ibox">
+                <div class="ibox-content">
+					<table class="table table-bordered table-hover" id="table-annex-b" width="100%">
+						<thead>
+							<th>ACTION</th>
+                            <th>EMPLOYEE NAME</th>
+							<th class="text-center">DATE</th>
+							<th class="text-right">STATUS</th>
+						</thead>
+					</table>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+			<div class="ibox">
+				<div class="ibox-title bg-primary">
+					<h5>FILTER</h5>
+				</div>
+				<div class="ibox-content">
+	    			<h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+						<a class="list-group-item"  id="status-2" href="javascript:;" data-role="status" data-filter="2">Locked</a>
+						<a class="list-group-item"  id="status-3" href="javascript:;" data-role="status" data-filter="3">Created</a>
+					</div>
+				</div>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="print-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">PRINT TRAVEL REPORT DURING HAZARDS/HARDSHIP</h3>
+	        </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Start Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="hazard_start_date" id="hazard_start_date" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="hazard_end_date" id="hazard_end_date" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" id="printBtn">Print</button>
+            </div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#table-annex-b').DataTable({
+		'serverSide': true,
+		'processing': true,
+		'deferRender': true,
+		'order': [[ 0, 'desc' ]],
+		'lengthMenu': [ 25, 50, 100 ],
+		'ajax': {
+			'url': '/api/tr-hazard/annex-b/?format=datatables&employee_id={{ request.session.emp_id }}',
+			'type': 'GET',
+			'beforeSend': function (request) {
+				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+			}
+		},
+		'fnCreatedRow': function (row, data, index) {
+			$(row).attr('id', data['id']);
+		},
+		'columns': [
+			{'data': 'id',
+				'render': function(data, type, row, meta) {
+					template = '<a target="_blank" href="/personnel/tr-hazard/annex-b/print/'+ data +'">Details</a>'
+					return template;
+				},
+			},
+			{'data': 'fullname', 'name': 'emp.pi.user.first_name, emp.pi.user.last_name'},
+			{'data': 'date', 'className': 'text-center' },
+			{'data': 'status', 'className': 'text-right', 'searchable': false,
+			 	'render': function(data, type, row, meta) {
+					if (row['status'] == 1) {
+						status = '<span class="label label-info">Locked</span>'
+					}
+					else {
+						status = '<span class="label label-success">Created</span>'
+					}
+					return status;
+				},
+			},
+		],
+	});
+
+	$('#printBtn').on('click', function(){
+        var url = '/personnel/travel-hazard/annex-b/print/' + $('#hazard_start_date').val() + '/' + $('#hazard_end_date').val();
+        window.open(url, '_blank');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Stocks</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Administrator</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Stock In</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            {% if user|check_permission:'superadmin' or user|check_permission:'staffing' %}
+				<div class="btn-group">
+					<a class="btn btn-default" href='#' data-role="">Add Staff</a>
+					<button type="button" data-toggle="dropdown" class="btn btn-info dropdown-toggle"><span class="loading open-circle" style="display:none;"></span><i class="fas fa-file-export"></i> Action <span class="caret"></span></button>
+                    <ul class="dropdown-menu">
+                        <li><a href="javascript:;" target="blank">Print</a></li>
+                    </ul>
+				</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-hover table-bordered" id="stocks_inventory" width="100%">
+							<thead>
+								<tr>
+									<th class="capslock">Action</th>
+									<th class="capslock">Title</th>
+									<th class="capslock">Item</th>
+									<th class="capslock">Stocks</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="myModal" class="modal fade" role="dialog" aria-labelledby="myExtraLargeModalLabel" data-backdrop="static"  aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+        	<h3 class="modal-title">Update Quantity of items</h3>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+          <div class="modal-body" id="load_data"> 
+			<form id="updatestock">
+				<div class="table-responsive">
+				    <table width="100%" cellspacing="0" class="table table-bordered notboldandbig" id="input_fields_wrap">
+				        <tr>
+				            <td style="display:none;">
+				                <input type="text" id="empid" name="id">
+				            </td>
+				            <td>
+				            	<label for="recipient-name" class="col-form-label">Name of Item<span class="asteriskField">*</span> </label>
+				                <input type="text" class="form-control" id="name_of_item">
+				            </td>
+				            <td>
+				                <label for="recipient-name" class="col-form-label">Stocks<span class="asteriskField">*</span> </label>
+				                <input type="text" class="form-control" id="stocks" name="stocks" style="width:100%;" autocomplete="off">
+				            </td>
+				            <td>
+				                <label for="recipient-name" class="col-form-label">Add stock<span class="asteriskField">*</span> </label>
+				                <input type="text" class="form-control" name="case" id="add_stocks" style="width:100%;" autocomplete="off">
+				            </td>
+				            <td>
+				                <label for="recipient-name" class="col-form-label">Total Stocks<span class="asteriskField">*</span> </label>
+				                <input type="text" class="form-control" id="total" name="total_stocks" style="width:100%;">
+
+				            </td>
+				        </tr>
+				    </table>
+				</div>
+			    <div class="modal-footer">
+			        <button type="submit" class="btn btn-info">Save</button>
+			        <button class="btn btn-light" data-dismiss="modal">Close</button>
+			    </div>
+			</form>    
+          </div> 
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script>
+		datatable_stocks();
+		function datatable_stocks(){
+			$('#stocks_inventory').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'order': [[ 1, 'asc' ]],
+				'lengthMenu': [25,50,100],
+				'ajax': {
+					'url': '/api/hrws/stock_views?format=datatables',
+					'type': 'GET',
+					'beforeSend': function (request) {
+						request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+					}
+				},
+				'fnCreatedRow': function (row, data, index) {
+					$(row).attr('id', data['id']);
+				},
+				'columns': [
+					{'data': 'id',
+						'render': function(data, type, row, meta) {
+                            return "<a href='#' data-role='view' data-id='["+ data + "]'>Details</a>"
+                        }
+					},
+					{'data': 'activity', 'className': 'text-center', 'name':'activity.activity'},
+					{'data': 'item'},
+					{'data': 'inventory',
+						'render': function(data,type,row,meta){
+							if(row['inventory'] == null){
+								return '<td>0</td>'
+							}else{
+								return row['inventory']
+							}
+						}
+					},
+				],
+			});
+		}
+
+	$(".typeahead, .typeahead3, .typeahead4").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $(document).on('click','a[data-role=view]', function(){ // FOR MODAL PASS TO DIFFERENT MODAL
+      var id = $(this).data('id');
+      var name_item= $('#'+id).find('td:eq(2)').text();
+      var inventory = $('#'+id).find('td:eq(3)').text();
+      $('#empid').val(id)
+      $('#stocks').val(inventory);
+      $('#name_of_item').val(name_item);
+      $('#myModal').modal('show')
+    });
+	$("#add_stocks, #stocks").keyup(function () { 
+	  $("#total").val(+$("#add_stocks").val() + +$("#stocks").val());
+	});
+
+    $('#updatestock').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "This employee borrowed a Vest?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'insert_stocks' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data == "Success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You Successfull updated stocks",
+                      icon: "info",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#stocks_inventory').DataTable().ajax.reload();
+                        }
+                    });
+                }else if(data == 'Fail'){
+                    Swal.fire({
+                      title: "Insert Failed!",
+                      text: "Stock not Updated",
+                      icon: "error",
+                      confirmButtonColor: "#3498DB",
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

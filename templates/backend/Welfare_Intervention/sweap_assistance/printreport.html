@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+
+{% load welfare_tags %}
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>DSWD My PORTAL | Sweap Report</title>
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <link href="{% static 'image/logo.ico' %}" rel="shortcut icon" type="image/png"/>
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/summernote/summernote.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adjustments.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/mod.css' %}" rel="stylesheet" type="text/css">
+
+    <style type="text/css">
+        @media print {
+      .containerX {
+        padding: 0px;
+        margin: 0px;
+        zoom: 100% !important;
+        height: 0% !important;
+        -webkit-print-color-adjust: exact; 
+      }
+      page {
+        margin: 0px;
+        border: 0.5px;
+        height: 204mm !important;
+
+      }
+      .vertical-right, .vertical-left {
+        margin: 0px !important;
+      }
+      body{-webkit-print-color-adjust: exact;}
+        ::-webkit-input-placeholder { /* WebKit browsers */
+          color: transparent;
+        }
+        :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+          color: transparent;
+        }
+        ::-moz-placeholder { /* Mozilla Firefox 19+ */
+          color: transparent;
+        }
+        :-ms-input-placeholder { /* Internet Explorer 10+ */
+          color: transparent;
+        }
+        }
+
+    .containerX {
+      zoom: 95%;
+    }
+
+    body{
+      font-size: 12px;
+      font-family: 'Inter';
+      color: black;
+    }
+    .bold{
+      font-weight: bold;
+    }
+    th{
+      font-size: 10px;
+    }
+    #table2{
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .text-center{
+      text-align: center;
+    }
+    page[size="long"][layout="landscape"] {
+        width: 400.2mm;
+        height: 230.9mm;
+    }
+    input {border:0;outline:0;}
+    input:focus {outline:none!important;}
+
+    #div1{
+      width: 20.33%;
+      float:right;
+      margin-top: -75px;
+
+    }
+    #div2{
+      width: 33.33%;
+      float:left;
+    }
+    #div3{
+      width: 33.33%;
+      margin: 0 auto;
+    }
+    td {
+      text-align: center;
+    }
+
+    </style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+    <div class="container">
+        <div class="navbar-header">
+            <button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar"
+                    data-toggle="collapse" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="javascript:;">SUMMARY REPORT OF SWEAP</a>
+        </div>
+        <div class="navbar-collapse collapse" id="navbar">
+            {% if name.status == 0 %}
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="javascript:;" id="btn-edit-modal" style="font-size: 14px;" title="Edit"><i
+                        class="fas fa-pen"></i> Edit</a></li>
+            </ul>
+            {% endif %}
+            <ul class="nav navbar-nav navbar-right">
+                <li><a class="print-button" id="floatprint" style="font-size: 14px;" title="Print"><i
+                        class="fas fa-print"></i> Print</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<body>
+<page class="page" layout="landscape" size="long" style="padding: 45px; position: relative;">
+    <div class="containerX">
+        <img loading="lazy"  align="left" height="100" src="{% static 'image/hrwdswd.png' %}" width="200">
+        <img loading="lazy"  align="right" height="100" src="{% static 'image/iso.png' %}" width="80">
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <div class="text-center" style="margin-top: -80px; margin-left: ">
+            <h4>DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT <br>
+                SWEAP MEDICAL & MORTUARY ASSISTANCE <br>
+                List of Qualified Recepient/s ( CY {{year}} )
+            </h4>
+        </div>
+
+        <div class="card-body">
+            <div>
+                <br>
+                <br>
+				<br>
+				<br>
+                <br>
+				<h5>Note that this is a system generated report. If you have any further inquiries, please refer to
+                HR Welfare.</h5>
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th style="width: 20px;">#</th>
+                        <th style="width: 120px;">EMP ID</th>
+                        <th style="width: 180px;">FULL NAME</th>
+                        <th style="width: 180px;">EMPLOYMENT STATUS</th>
+                        <th style="width: 180px;">SECTION</th>
+                        <th style="width: 180px;">TYPE OF ASSISTANCE</th>
+                        <th style="width: 150px;">PARTICULAR</th>
+                        <th style="width: 150px;">AMOUNT OF EXCESS</th>
+                        <th style="width: 150px;">AMOUNT EXTENDED</th>
+                        <th style="width: 200px;">RELATIONSHIP TO THE DECEASED</th>
+                        <th style="width: 200px;">SHARE CONTRIBUTION</th>
+                        <th style="width: 200px;">PERIOD APPLIED</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% load humanize %}
+                    {% for row in data %}
+                    <tr>
+                        <td >{{ forloop.counter0|add:data.start_index }}</td>
+                        <td>{{row.emp_id}}</td>
+                        {% getallempdata row.emp_id as empdata %}
+                        {% for data in empdata %}
+                        <td>{{data.pi.user.first_name}} {{data.pi.user.last_name}}</td>
+                        <td>{{data.empstatus}}</td>
+                        <td>{{data.section}}</td>
+                        {% endfor %}
+                        <td>{{row.typeofassistant}}</td>
+                        <td>{% if row.particular == "" %} N/A {% else %} {{row.particular}} {% endif %}</td>
+                        <td>{% if row.amount_excess == "" %} N/A {% else %} {{row.amount_excess}} {% endif %}</td>
+                        <td>{% if row.amount_extended == "" %} N/A {% else %} {{row.amount_extended}} {% endif %}</td>
+                        <td>{% if row.relationship == "" %} N/A {% else %} {{row.relationship}} {% endif %}</td>
+                        <td>{{row.share_contrib}}</td>
+                        <td>{{row.period_applied}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="9"></td>
+                        <td>Total Amount</td>
+                        <td colspan="2">{{calculate.total_payment|intcomma}}</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <table style="width:100%">
+                <div id="div2">Prepared By: <br><br><br>JOANA MARIE G. MORDENO<br>AA II / SWEAP FOCAL</div>
+                <div id="div3">Noted By: <br><br><br>RYAN V. PIAMONTE<br>SWEAP-Treasurer</div>
+                <div id="div1">Recieved By: <br>
+                    <br>
+                    &nbsp;<input autocomplete="off" class="text-right" id="total" name="total" placeholder="Total"
+                                 type="text"><br>
+                    Ma. Genebeth F. Callet - <input autocomplete="off" id="ma" name="calculate" placeholder="Input"
+                                                    type="text">
+                    <br>Mary Ann N. Baysa - <input autocomplete="off" id="mary" name="calculate" placeholder="Input"
+                                                   type="text"><br>
+                    Resty Mae I. Salazar - <input autocomplete="off" id="resty" name="calculate" placeholder="Input"
+                                                  type="text">
+                    <br>Gregorio B. Cabañog - <input autocomplete="off" id="gregorio" name="calculate" placeholder="Input"
+                                                     type="text">
+                    <br>Roslyn P. Sabay - <input autocomplete="off" id="jackielou" name="calculate" placeholder="Input"
+                                                    type="text">
+                    <br>Dante R.Rosales - <input autocomplete="off" id="dante" name="calculate" placeholder="Input"
+                                                 type="text">
+                    <br>Marieta S. Jandayan - <input autocomplete="off" id="marieta" name="calculate" placeholder="Input"
+                                                     type="text">
+                </div>
+            </table>
+
+        </div>
+    </div>
+    </div>
+    <br>
+    <br><br>
+    </div>
+</page>
+</body>
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+<script src="{% static 'js/functions.js' %}"></script>
+<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'js/plugins/summernote/summernote.min.js' %}"></script>
+<script type="text/javascript">
+    var page = $('.page').height();
+    var container = $('.containerX').height();
+
+    if (container > page) {
+      $('.page').css('height', container + 45);
+    }
+
+    $('#floatprint_mod').on('click', function(){
+      if ($('#name1').val() == "" | $('#name2').val() == "" | $('#designate1').val() == "" | $('#designate2').val() == ""){
+        Swal.fire("Print Warning",
+        "Please fill in the 'Requested by' field and 'Recommending approval' field before printing. Thank you.",
+        "warning");
+      } else {
+          window.setTimeout(function() { printObject(); }, 0);
+      }
+    });
+
+</script>
+</body>
+</html>

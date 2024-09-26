@@ -1,0 +1,428 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Health Checklist</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+			<li class="breadcrumb-item">
+                Employees
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Health Checklist</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-right">
+						Showing {{ checklists.start_index }} - {{ checklists.end_index }} of {{ checklists.paginator.count }} entries&emsp;
+						<div class="btn-group">
+							{% if checklists.has_other_pages %}
+							  	{% if checklists.has_previous %}
+									<a class="btn btn-default" href="?page={{ checklists.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.motx %}&motx={{ request.GET.motx}}{% endif %}{% if request.GET.search_year %}&search_year={{ request.GET.search_year}}{% endif %}">Previous</a>
+							  	{% else %}
+									<a class="btn btn-default disabled">Previous</a>
+							  	{% endif %}
+								{% for row in checklists.paginator.page_range %}
+									{% if checklists.number == row %}
+										<a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.motx %}&motx={{ request.GET.motx}}{% endif %}{% if request.GET.search_year %}&search_year={{ request.GET.search_year}}{% endif %}">{{ row }}</a>
+									{% elif row > checklists.number|add:-3 and row < checklists.number|add:3 %}
+										<a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.motx %}&motx={{ request.GET.motx}}{% endif %}{% if request.GET.search_year %}&search_year={{ request.GET.search_year}}{% endif %}">{{ row }}</a>
+									{% endif %}
+								{% endfor %}
+							  	{% if checklists.has_next %}
+									<a class="btn btn-default" href="?page={{ checklists.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.motx %}&motx={{ request.GET.motx}}{% endif %}{% if request.GET.search_year %}&search_year={{ request.GET.search_year}}{% endif %}">Next</a>
+							  	{% else %}
+									<a class="btn btn-default disabled">Next</a>
+							  	{% endif %}
+							{% endif %}
+						</div>
+						<div class="btn-group">
+							<a class="btn btn-default" href="{% url 'health_checklist' %}">Refresh</a>
+							<button type="button" data-toggle="dropdown" class="btn btn-info dropdown-toggle"><span class="loading open-circle" style="display:none;"></span> <i class="fas fa-file-export"></i> Export <span class="caret"></span></button>
+		                    <ul class="dropdown-menu">
+		                        <li><a id="dump">All</a></li>
+		                        <li class="divider"></li>
+		                        <li><a data-role="year" >Year</a></li>
+		                        <li class="divider"></li>
+		                        <li><a data-role="month" >Month</a></li>
+		                    </ul>
+						</div>
+					</div>
+					<br><br><br>
+					{% if request.GET.search and employee.paginator.count == 0 %}
+						<div style="padding:0px 15px !important; text-align:center;">
+							<div class="row" style="padding-bottom:15px">
+								<div class="" style="text-align:center;">
+									<img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="margin: 0 auto; object-fit:cover;">
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<form method="get">
+										<div class="input-group form-group">
+											<span class="input-group-addon"><i class="fas fa-search"></i></span>
+											<input type="text" class="form-control" placeholder="Search employee.." name="search" value="{{ request.GET.search }}">
+										</div>
+									</form>
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<p>
+										Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.status and request.GET.search %}{{ request.GET.search }}{% else %}{% if request.GET.status %}{{ request.GET.status }}{% endif %}{% if request.GET.search %}{{ request.GET.search }}{% endif %}{% endif %}'</i>. Please try another keyword.
+									</p>
+								</div>
+							</div>
+						</div>
+					{% else %}
+					<form method="get">
+						<div class="input-group form-group">
+							<span class="input-group-addon"><i class="fas fa-search"></i></span>
+							<input type="text" class="form-control" placeholder="Search employee.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+						</div>
+					</form>
+					{% if checklists %}
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th class="capslock">Date Time Added</th>
+									<th class="capslock">Temperature</th>
+									<th class="capslock">Last Name</th>
+									<th class="capslock">First Name</th>
+									<th class="capslock">Middle Name</th>
+									<th class="capslock">Ext</th>
+									<th class="text-center capslock">Age</th>
+									{% if checklists %}
+									<th class="text-center capslock">Gender</th>
+									<th>ID NO.</th>
+									<th class="text-center capslock">Employment Status</th>
+									<th class="text-center capslock">Position</th>
+									<th class="text-center capslock">Mobile Number</th>
+									<th class="text-center capslock">Email Address</th>
+									<th class="text-center capslock">Office/Division/Section</th>
+									<th class="text-center capslock">Complete Residential Address</th>
+									<th class="text-center capslock">Question 1</th>
+									<th class="text-center capslock">Question 2</th>
+									<th class="text-center capslock">Question 3</th>
+									<th class="text-center capslock">Question 4</th>
+									<th class="text-center capslock">Question 5</th>
+									<th class="text-center capslock">Question 6</th>
+									<th class="text-center capslock">Question 7</th>
+									<th class="text-center capslock">Question 8</th>
+									<th class="text-center capslock">Question 9</th>
+									<th class="text-center capslock">Question 10</th>
+									<th class="text-center capslock">Question 11</th>
+									<th class="text-center capslock">Question 12</th>
+									<th class="text-center capslock">Question 13</th>
+									<th class="text-center capslock">Question 14</th>
+									<th class="text-center capslock">Privacy Policy</th>
+									{% endif %}
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in checklists %}
+								<tr>
+									<td class="text-center">{{ row.datetime_added|date:"m/d/Y H:i A" }}</td>
+									<td class="text-left">{% if row.temperature >= '37.3' %} <label style="color: red;">{{ row.temperature }}</label> {% else %} <label style="color: green;"> {{ row.temperature }} </label> {% endif %}</td>
+									<td>{{ row.emp.pi.user.last_name|title }}</td>
+									<td>{{ row.emp.pi.user.first_name|title }}</td>
+									<td>{{ row.emp.pi.user.middle_name|title }}</td>
+									<td>{{ row.emp.pi.ext.name }}</td>
+									{% age row.emp.pi.dob as your_age %}
+									<td class="text-center">{{ your_age }}</td>
+									<td class="text-center">{% if row.emp.pi.gender == 1 %}Male{% else %}Female{% endif %}</td>
+									<td>{{ row.emp.id_number }}</td>
+									<td class="text-center">{{ row.emp.empstatus.acronym }}</td>
+									<td class="text-center">{{ row.emp.position.acronym }}</td>
+									<td class="text-center">{{ row.emp.pi.mobile_no }}</td>
+									<td class="text-center">{{ row.emp.pi.user.email }}</td>
+
+									{% get_section row.emp.section_id as section %}
+									{% get_division row.emp.section_id as division %}
+									<td>{{ division }}-{{ section }}</td>
+									{% get_residentialadd row.emp.pi_id as res_address %}
+									<td class="text-center">{{ res_address }}</td>
+									<td class="text-center">{{ row.q1 }}</td>
+									<td class="text-center">{{ row.q2 }}</td>
+									<td class="text-center">{{ row.q3 }}</td>
+									<td class="text-center">{{ row.q4 }}</td>
+									<td class="text-center">{{ row.q5 }}</td>
+									<td class="text-center">{{ row.q6 }}</td>
+									<td class="text-center">{{ row.q7 }}</td>
+									<td class="text-center">{{ row.q8 }}</td>
+									<td class="text-center">{{ row.q9 }}</td>
+									<td class="text-center">{{ row.q10 }}</td>
+									<td class="text-center">{{ row.q11 }}</td>
+									<td class="text-center">{{ row.q12 }}</td>
+									<td class="text-center">{{ row.q13 }}</td>
+									<td class="text-center">{{ row.q14 }}</td>
+									<td class="text-center">{% if row.choose == 1 %} Agree {% else %} Disagree {% endif %}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+					{% else %}
+						<img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" style="margin: 0 auto;">
+						<p class="text-center">There is no data to show you right now. </p>
+					{% endif %}
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="ibox">
+				<div class="ibox-title bg-primary">
+					<h5>FILTER</h5>
+				</div>
+				<div class="ibox-content">
+					<div class="list-group">
+						<form method="get" id="formsubmit" style="margin-bottom:10px">
+							<div class="form-group">
+								<h4>By Month</h4>
+								<div class="form-group">
+                                    <select class="form-control select" style="width:100%;" name="motx" id="motx" required>
+			                            <option></option>
+			                            {% for key, value in data %}
+				                            <option value="{{ key }}"}>{{ value }}</option>
+			                            {% endfor %}
+			                        </select>
+                                </div>
+							</div>
+							<div class="form-group">
+								<h4>By Year</h4>
+								<div class="form-group">
+                                    <input type='number' class="form-control" id='from_year' name='search_year' min='2015' max='4099' step='1' value='{{year}}' required/>
+                                </div>
+							</div>
+							<button class="btn-info btn pull-right" type="submit">Filter <i class="fa fa-filter"></i> </button>
+							<br>
+						</form>
+					</div>
+				</div>
+			</div>
+			<br>
+			<div class="ibox">
+				<div class="ibox-title bg-primary">
+					<h5>LEGEND</h5>
+				</div>
+				<div class="ibox-content">
+					<label>Questions</label>
+					<p>A. Are you experiencing/experienced for the last 24 hours Sore throat?</p>
+					<p>B. Are you experiencing/experienced for the last 24 hours Body pains?</p>
+					<p>C. Are you experiencing/experienced for the last 24 hours Headache?</p>
+					<p>D. Are you experiencing/experienced for the last 24 hours Cough?</p>
+					<p>E. Are you experiencing/experienced for the past 14 days Colds?</p>
+					<p>F. Are you experiencing/experienced for the past 14 days Fever?</p>
+					<p>G. Are you experiencing/experienced for the last 24 hours Loss of smell?</p>
+					<p>H. Are you experiencing/experienced for the last 24 hours Loss of taste?</p>
+					<p>I. Are you experiencing/experienced for the last 24 hours Diarrhea?</p>
+					<p>J. Have you worked together or stayed in the same close environment of a confirmed COVID-19 case in the last 24 hours and/or if you are identified as close contact?</p>
+					<p>K. Have you had any contact with anyone with fever, cough, colds, sore throat, body pains, headache, loss of smell and taste and diarrhea in the last 24 hours?</p>
+					<p>L. Have you travelled outside of the Philippines in the last 24 hours?</p>
+					<p>M. Have you travelled outside your household in the last 24 hours?</p>
+					<p>N. Have you visited any hospital or health facility in the last 24 hours?</p>
+					<label>Privacy Policy</label>
+					<p>I hereby voluntarily and freely give my consent to DSWD to collect, process and share the data indicated herein for the purpose of effecting control of the COVID-19 infection. I understand that any personal information is protected by RA 10173, Data Privacy Act of 2012, and that I am required by RA 11469, Bayanihan to Heal as One Act, to provide, true, correct, and complete information. I understand that failure to answer any question or giving flase answer can be penalized in accordance with the law. </p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="import-employees" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">Import Bulk Employees in Checklist</h3>
+	            <small>Hasten creation of new employees by uploading a CSV file.</small>
+	        </div>
+	        <form method="POST" action="{% url 'bulk-import-employees' %}" enctype="multipart/form-data">
+	        {% csrf_token %}
+        	<div class="modal-body">
+            	<div class="row">
+            		<div class="col-sm-12">
+            			<div class="form-group">
+            				<label>List of Employees in Health Checklist</label>
+            				<input type="file" style="outline:none; padding:5px;" class="form-control file-control" accept=".csv" name="bulk-import" onchange="triggerFileTypeValidation(this)" required>
+		              	</div>
+            		</div>
+            	</div>
+            </div>
+            <div class="modal-footer">
+				<div class="btn-group">
+					<a href="../../static/staticfiles/templates/backend/Bulk Import Employees.xlsx" class="btn btn-default" type="button">Download Template</a>
+	            	<button type="submit" class="btn btn-info"><span class="loading open-circle" style="display:none;"></span> Start Bulk Import</button>
+				</div>
+            </div>
+            </form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="modal-year" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">Export by Year</h3>
+	        </div>
+	        <form method="POST" action="{% url 'export-checklist' %}">
+	        	<div class="modal-body">
+	            	<div class="row">
+	            		<div class="col-sm-12">
+	            			<div class="form-group">
+								<h4>By Year</h4>
+								<div class="form-group">
+                                    <input type='number' class="form-control" id='year' name='year' min='2015' max='4099' step='1' required=""/>
+                                </div>
+							</div>
+	            		</div>
+	            	</div>
+	            </div>
+	            <div class="modal-footer">
+					<div class="btn-group">
+		            	<button type="submit" class="btn btn-info"><span class="loading open-circle" style="display:none;"></span> Export</button>
+					</div>
+	            </div>
+            </form>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal" id="modal-months" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">Export by Months</h3>
+	        </div>
+	        <form method="POST" action="{% url 'export-checklist' %}">
+	        	<div class="modal-body">
+	            	<div class="row">
+	            		<div class="col-sm-12">
+	            			<div class="form-group">
+								<h4>By Months</h4>
+								<div class="form-group">
+                                    <select class="select" style="width:100%;" name="months[]" id="months" required multiple="multiple">
+			                            <option></option>
+			                            {% for key, value in data %}
+				                            	<option value="{{ key }}">{{ value }}</option>
+			                            {% endfor %}
+			                        </select>
+                                </div>
+							</div>
+	            		</div>
+	            	</div>
+	            </div>
+	            <div class="modal-footer">
+					<div class="btn-group">
+		            	<button type="submit" class="btn btn-info"><span class="loading open-circle" style="display:none;"></span> Export</button>
+					</div>
+	            </div>
+            </form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+	$(document).ready(function(){
+        $('#motx').select2('val', '{{ request.GET.motx }}');
+    });
+
+	$(document).on('click', 'a[data-role=import]',function(){
+		$('#import-employees').modal('show');
+	});
+	$(".table-scroll").freezeTable({
+        'scrollable': true,
+        'columnNum' : 8,
+    });
+    var regex = new RegExp("(.*?)\.(csv)$");
+	function triggerFileTypeValidation(el) {
+		if (!(regex.test(el.value.toLowerCase()))) {
+			el.value = '';
+			alert('Only allowed file type for bulk import is CSV.');
+		}
+	}
+
+	var beforeSend = function(){
+        $('.loading').css('display', '');
+        $('button').prop("disabled", true);
+    }
+    var afterSend = function(){
+        $('.loading').css('display', 'none');
+        $('button').prop("disabled", false);
+    }
+
+	{% if user|check_permission:'superadmin' or user|check_permission:'welfare' %}
+    $('#dump').on('click', function(e){
+	    var form = document.getElementById('dump');
+	    form.addEventListener('click', function(event) {
+	        Swal.fire({
+	            title: "Are you sure",
+	            text: "You want to export all data in Health Checklist",
+	            icon: "info",
+	            showCancelButton: true,
+	            confirmButtonColor: "#3498DB",
+	            confirmButtonText: "Yes",
+	            allowOutsideClick: false,
+	        }).then((result) => {
+	            if (result.isConfirmed) {
+	                beforeSend();
+	                event.preventDefault();
+	                var xhr = new XMLHttpRequest();
+	                var url = "{% url 'export-checklist' %}";
+	                xhr.open("GET", url, true);
+	                xhr.setRequestHeader("Content-Type", "application/json");
+	                xhr.onreadystatechange = function () {
+	                if (xhr.readyState === 4 && xhr.status === 200) {
+	                    a = document.createElement('a');
+	                    a.href = window.URL.createObjectURL(xhr.response);
+	                    today = new Date();
+	                    a.download = "Health Checklist Records " + today.toDateString().split(" ").join("_") + ".xlsx";
+	                    Swal.fire('Good job!', 'You successfully exported all data in Health Checklist', 'success');
+	                    a.style.display = 'none';
+	                    document.body.appendChild(a);
+	                    afterSend();
+	                    return a.click();
+	                }
+	            }
+
+	        // and here it is sent as POST body, not part of URL
+	        xhr.responseType = 'blob';
+	        xhr.send();
+	        }
+	      });
+	  });      
+	      
+	});
+	{% endif %}
+
+	$(document).on('click', 'a[data-role=year]',function(){
+		$('#modal-year').modal('show');
+	});
+
+	$(document).on('click', 'a[data-role=month]',function(){
+		$('#modal-months').modal('show');
+	});
+
+</script>
+{% endblock %}

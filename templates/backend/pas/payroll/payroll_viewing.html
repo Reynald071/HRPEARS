@@ -1,0 +1,184 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load humanize %}
+{% load payroll_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Payroll List</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'payroll_list' %}">List</a>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="pull-right" style="padding-right:5px">
+                        Showing {{ payroll.start_index }} - {{ payroll.end_index }} of {{ payroll.paginator.count }} entries&emsp;
+                        <div class="btn-group">
+                            {% if payroll.has_other_pages %}
+                                {% if payroll.has_previous %}
+                                    <a class="btn btn-default" href="?page={{ payroll.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Previous</a>
+                                {% endif %}
+                                {% for row in payroll.paginator.page_range %}
+                                    {% if payroll.number == row %}
+                                        <a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% elif row > payroll.number|add:-3 and row < payroll.number|add:3 %}
+                                        <a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if payroll.has_next %}
+                                    <a class="btn btn-default" href="?page={{ payroll.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Next</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <a class="btn btn-default" href="{% url 'payroll_list_all' %}">Refresh</a>
+                    </div>
+                    <br><br><br>
+                    <form method="get" id="table_search">
+                        <div class="input-group form-group">
+                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search by keyword.." name="search" id="search" value="{{ request.GET.search }}" autocomplete="off">
+                        </div>
+                    </form>
+                    {% if request.GET.search or request.GET.value or request.GET.dv_number or request.GET.period_from or request.GET.period_to %}
+                    <div class="table-freeze">
+                        <table class="table table-bordered table-hover text-nowrap" style="font-size: 11px; margin-bottom: 0px;">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Purpose</th>
+                                    <th>Period From</th>
+                                    <th>Period To</th>
+                                    <th>ID Number</th>
+                                    {% for row in columns %}
+                                    {% get_column_name row.id as column %}
+                                    <th>{{ column.attribute }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody id="table">
+                            {% for row in payroll %}
+                            <tr>
+                                {% get_user_payroll_order row.payroll_id as list%}
+                                <td class="text-left">
+                                    <a href="javascript:;" data-role="details" data-id="{{ row.payroll_id }}" data-filter="{{ row.emp_id }}">Details</a>
+                                </td>
+                                <td>{{ list.purpose.name }}</td>
+                                <td>{{ list.period_from|date:"m/d/Y" }}</td>
+                                <td>{{ list.period_to|date:"m/d/Y" }}</td>
+                                <td>{% get_employee_details row.emp_id as id_number %}{{ id_number.id_number }}</td>
+                                {% for c in columns %}
+                                {% get_payroll_value row.payroll_id c.id row.emp_id as payroll %}
+                                {% get_column_name c.id as column %}
+                                    {% if column.order <= 8 %}
+                                        {% if c.id == 85 %}
+                                            <td class="col{{ payroll.column.order }}">
+                                                {{ payroll.value|upper|slice:":1" }}
+                                            </td>
+                                        {% else %}
+                                            <td class="col{{ payroll.column.order }}">
+                                                {{ payroll.value|upper }}
+                                            </td>
+                                        {% endif %}
+                                    {% else %}
+                                        <td class="col{{ payroll.column.order }}">
+                                            {{ payroll.value|floatformat:2|intcomma }}
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                            <tfoot style="background-color:#FDF2E9 !important;">
+                                <tr>
+                                    <th colspan="13" class="text-right">TOTAL</th>
+                                    <th id="totalAccrude"></th>
+                                    <th id="totalDeductions"></th>
+                                    <th id="totalDue"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                        <img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="margin: 0 auto;">
+                        <p class="text-center">To display the data available. Kindly use the search input by typing keyword.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="detail_view" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">PAYROLL DETAILS</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body payroll-detail-view">
+                <div id="payroll_content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(".table-freeze").freezeTable({
+        'freezeHead': true,
+        'scrollable': true,
+        'columnNum' : 10,
+    });
+
+    $(document).on('click', 'a[data-role=details]', function(){
+        $('#detail_view').modal('show').find('.modal-body #payroll_content').empty();
+        $('#detail_view').modal('show').find('.modal-body #payroll_content').load("/backend/payroll/detail/view/" + $(this).data('id') + "/" + $(this).data('filter') + "/False");
+    });
+
+    $(document).ready(function(){
+        var table = document.getElementById('table'), totalAccrude = 0, totalDeductions = 0, totalDue = 0;
+        for(var i = 0; i < table.rows.length; i++){
+            totalAccrude = totalAccrude + parseFloat(table.rows[i].cells[13].innerHTML.replace(/,/g, ''));
+            totalDeductions = totalDeductions + parseFloat(table.rows[i].cells[14].innerHTML.replace(/,/g, ''));
+            totalDue = totalDue + parseFloat(table.rows[i].cells[15].innerHTML.replace(/,/g, ''));
+        }
+
+        $('#totalAccrude').text(addCommas(totalAccrude.toFixed(2)));
+        $('#totalDeductions').text(isNaN(totalDeductions.toFixed(2)) ? "0.00" : addCommas(totalDeductions.toFixed(2)));
+        $('#totalDue').text(addCommas(totalDue.toFixed(2)));
+    });
+
+    function addCommas(nStr) {
+        nStr += '';
+        var x = nStr.split('.');
+        var x1 = x[0];
+        var x2 = x.length > 1 ? '.' + x[1] : '';
+        var rgx = /(\d+)(\d{3})/;
+        while (rgx.test(x1)) {
+                x1 = x1.replace(rgx, '$1' + ',' + '$2');
+        }
+        return x1 + x2;
+    }
+
+</script>
+{% endblock %}

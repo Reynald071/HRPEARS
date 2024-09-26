@@ -1,0 +1,630 @@
+{% load tags %}
+{% load frontend_tags %}
+{% if data.status %}
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="tabs-container">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item"><a class="nav-link active text-dark" data-toggle="tab" href="#tab-1"> Event Details</a></li>
+                        {% if data.type.scope == 0 %}
+                            <li class="nav-item"><a class="nav-link text-dark" data-toggle="tab" href="#tab-2">Transaction</a></li>
+                            {% if is_approver %}
+                                <li class="nav-item"><a class="nav-link text-dark" data-toggle="tab" href="#tab-3">Update</a></li>
+                            {% endif %}
+                        {% else %}
+                            {% if is_approver %}
+                                <li class="nav-item"><a class="nav-link text-dark" data-toggle="tab" href="#tab-3">Update</a></li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                    <div class="tab-content">
+                        <div id="tab-1" class="tab-pane active">
+                            <div class="border p-3">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-handshake" title="Title of Activity"></i>&emsp;Title of Activity:&emsp;
+                                        <strong>{{ data.title }}</strong>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="fas fa-info-circle" title="Event Description"></i>&emsp;Event Description:&emsp;
+                                        <strong>{{ data.description }}</strong>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-sticky-note" title="Remarks"></i>&emsp;Remarks:&emsp;
+                                        <strong>{{ data.remarks|safe }}</strong>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-calendar-alt" title="Calendar"></i>&emsp;Calendar:&emsp;
+                                        <strong><i class="fa fa-square" style="color:{{ data.type.color }};"></i>&nbsp;&nbsp;{{ data.type.name }}</strong>
+                                    </div>
+                                </div>
+                                {% is_calendar_shared_to_me data.type.id user_id as calendar_shared_to_me %}
+                                {% if calendar_shared_to_me %}
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="fas fa-users-cog" title="Shared by"></i>&emsp;Shared by:&emsp;
+                                        <strong>{{ calendar_shared_to_me.type.upload_by.get_fullname }}</strong>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="fas fa-calendar-day" title="Duration of Activity"></i>&emsp;Duration of Activity:&emsp;
+                                        <strong>{% transform_to_duration_date data.start_datetime data.end_datetime "true" %}</strong>
+                                    </div>
+                                </div>
+                                {% transform_to_duration_date data.start_datetime data.end_datetime "true" "true" as duration %}
+                                {% if duration == 1 %}
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-clock" title="Time"></i>&emsp;Time:&emsp;
+                                        <strong>{{ data.start_datetime|date:"h:i a"}} to {{ data.end_datetime|date:"h:i a"}}</strong>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="tab-2" class="tab-pane">
+                            <div class="border p-3">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-user" title="Requested by"></i>&emsp;Requested by:&emsp;
+                                        <strong>{{ data.upload_by.get_fullname }}</strong>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-calendar-alt" title="Requested on"></i>&emsp;Requested on:&emsp;
+                                        <strong>{% transform_to_duration_date data.datetime data.datetime "false" %}</strong>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-check-square" title="Approval"></i>&emsp;Status:&emsp;
+                                        {% if data.status == 1 %}Approved{% elif data.status == 2 %}Cancelled{% endif %} by <strong>{% if data.get_approved %}{{ data.get_approved.emp.get_fullname }}{% else %}a PORTAL Administrator{% endif %}</strong> on <strong>{% if data.get_approved %}{% transform_to_duration_date data.get_approved.datetime data.get_approved.datetime "false" %}{% else %}{% transform_to_duration_date data.datetime data.datetime "false" %}{% endif %}</strong>
+                                    </div>
+                                </div>
+                                {% if data.get_approved %}
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-sm-12">
+                                        <i class="far fa-sticky-note" title="Remarks"></i>&emsp;Remarks:&emsp;
+                                        <strong>{{ data.get_approved.remarks|safe }}</strong>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if is_approver %}
+                                <form id="revertApprovalFormIfApprover">
+                                    {% csrf_token %}
+                                    <input type="hidden" class="form-control" name="id" value="{{ data.id }}">
+                                </form>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-danger pull-right" onclick="$('#revertApprovalFormIfApprover').submit();">Revert Approval</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="tab-3" class="tab-pane">
+                            <div class="border p-3">
+                                <form id="deleteEventFormIfEventOwner">
+                                    {% csrf_token %}
+                                    <input type="hidden" class="form-control" name="id" value="{{ data.id }}">
+                                </form>
+                                <form id="updateEventFormIfEventOwner">
+                                    <div class="modal-body" style="padding:0px; margin-bottom:0px;">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label>Title<span class="asteriskField">*</span></label>
+                                                <input type="hidden" class="form-control" name="id" value="{{ data.id }}">
+                                                <input type="text" class="form-control" name="title" value="{{ data.title }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6">
+                                                <label>Description</label>
+                                                <input type="text" class="form-control" name="description" value="{{ data.description }}">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>Calendar<span class="asteriskField">*</span></label>
+                                                <select class="select-modal form-control" name="type_id" required>
+                                                    <option></option>
+                                                    {% for row in public_private %}
+                                                        <option value="{{ row.id }}" {% if data.type_id == row.id %}selected{% endif %}>{{ row.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label>Date<span class="asteriskField">*</span></label>
+                                                <input type="date" class="form-control" name="date" id="date" value="{{ data.start_datetime|date:'Y-m-d'}}" required>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6">
+                                                <label>Start Time<span class="asteriskField">*</span></label>
+                                                <input type="time" class="form-control" name="start_time" id="start_time" value="{{ data.start_datetime|date:'H:i' }}" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>End Time<span class="asteriskField">*</span></label>
+                                                <input type="time" class="form-control" name="end_time" id="end_time" value="{{ data.end_datetime|date:'H:i' }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label>Remarks</label>
+                                                <textarea name="remarks" class="form-control summernote">{{ data.remarks }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button type="submit" class="btn btn-info pull-right">Save Changes</button>
+                                                {% if not data.type.scope == 0 or is_approver or user|check_permission:'superadmin' %}
+                                                <button type="button" class="btn btn-danger pull-left" onclick="$('#deleteEventFormIfEventOwner').submit();">Delete</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="tabs-container">
+                    <ul class="nav nav-tabs">
+                        {% if is_approver %}
+                        <li class="nav-item"><a class="nav-link active text-dark" data-toggle="tab" href="#tab-4"> Transaction</a></li>
+                        {% endif %}
+                        <li class="{% if not is_approver %}active{% endif %} nav-item text-dark"><a class="nav-link" data-toggle="tab" href="#tab-5">Update</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        {% if is_approver %}
+                        <div id="tab-4" class="tab-pane {% if is_approver %}active{% endif %}">
+                            <div class="border p-3">
+                                <form id="approveEventForm">
+                                    <div class="modal-body" style="padding:0px; margin-bottom:0px;">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="form-group col-md-7">
+                                                <label>Requested by</label>
+                                                <input class="form-control" value="{{ data.upload_by.get_fullname }}" type="text" readonly>
+                                            </div>
+                                            <div class="form-group col-md-5">
+                                                <label>Requested on</label>
+                                                <input class="form-control" value="{{ data.datetime|date:'Y-m-d' }}" type="date" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <input type="hidden" class="form-control" name="event-id-remarks" value="{{ data.id }}">
+                                                <label>Status<span class="asteriskField">*</span></label>
+                                                <select class="select-modal form-control" name="status-remarks" required>
+                                                    <option></option>
+                                                    <option value="0">Declined</option>
+                                                    <option value="1">Approved</option>
+                                                    <option value="2">Cancelled</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label>Approver Remarks</label>
+                                                <textarea name="approver-remarks" class="form-control summernote" style="resize:vertical; max-height:100px;"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button type="submit" class="btn btn-warning pull-right">Save Event Approval</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div id="tab-5" class="tab-pane {% if not is_approver %}active{% endif %}">
+                            <div class="border p-3">
+                                <form id="deleteEventForm">
+                                    {% csrf_token %}
+                                    <input type="hidden" class="form-control" name="id" value="{{ data.id }}">
+                                </form>
+                                <form id="updateEventForm">
+                                    <div class="modal-body" style="padding:0px; margin-bottom:0px;">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label>Title<span class="asteriskField">*</span></label>
+                                                <input type="hidden" class="form-control" name="id" id="id" value="{{ data.id }}">
+                                                <input type="text" class="form-control" name="title" value="{{ data.title }}" {% if is_owner %}required{% else %}disabled{% endif %}>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6">
+                                                <label>Description</label>
+                                                <input type="text" class="form-control" name="description" value="{{ data.description }}" {% if not is_owner %}disabled{% endif %}>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>Calendar<span class="asteriskField">*</span></label>
+                                                <select class="select-modal form-control" name="type_id" {% if is_owner %}required{% else %}disabled{% endif %}>
+                                                    <option></option>
+                                                    {% for row in public_private %}
+                                                        <option value="{{ row.id }}" {% if data.type_id == row.id %}selected{% endif %}>{{ row.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label>Date<span class="asteriskField">*</span></label>
+                                                <input type="date" class="form-control" name="date" value="{{ data.start_datetime|date:'Y-m-d'}}" {% if is_owner %}required{% else %}disabled{% endif %}>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6">
+                                                <label>Start Time<span class="asteriskField">*</span></label>
+                                                <input type="time" class="form-control" name="start_time" value="{{ data.start_datetime|date:'H:i' }}" {% if is_owner %}required{% else %}disabled{% endif %}>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label>End Time<span class="asteriskField">*</span></label>
+                                                <input type="time" class="form-control" name="end_time" value="{{ data.end_datetime|date:'H:i' }}" {% if is_owner %}required{% else %}disabled{% endif %}>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label>Remarks</label>
+                                                <textarea name="remarks" class="form-control summernote" {% if not is_owner %}disabled{% endif %}>{{ data.remarks }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button type="submit" class="btn btn-info pull-right">Save Changes</button>
+                                                {% if is_approver or user|check_permission:'superadmin' %}
+                                                <button type="button" class="btn btn-danger pull-left" onclick="$('#deleteEventForm').submit();">Delete</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% block script %}
+<script>
+    $('.select-modal').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#updateEventForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this event?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "update-events" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+        }).then(function (data){
+            if (data.value.data == "success"){
+                Swal.fire({
+                  title: "Good job!",
+                  text: "You have successfully updated this event.",
+                  icon: "success",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#view_event').modal('hide');
+                        $('#calendar').fullCalendar('refetchEvents');
+                    }
+                });
+            } else {
+                Swal.fire({
+                  title: "Unauthorized transaction",
+                  text: data.errors,
+                  icon: "error",
+                  confirmButtonColor: "#3498DB",
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('#updateEventFormIfEventOwner').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this event?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'update-events' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully updated this event.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#view_event').modal('hide');
+                                $('#calendar').fullCalendar('refetchEvents');
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Unauthorized transaction",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('#deleteEventForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to delete this event?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'delete-events' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully deleted this event.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#view_event').modal('hide');
+                                $('#calendar').fullCalendar('refetchEvents');
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Unauthorized transaction",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('#deleteEventFormIfEventOwner').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to delete this event?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'delete-events' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully deleted this event.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#view_event').modal('hide');
+                                $('#calendar').fullCalendar('refetchEvents');
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Unauthorized transaction",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('#revertApprovalFormIfApprover').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to revert approval of this event?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'revert-event-approval' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully reverted approval for this event.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#view_event').modal('hide');
+                                $('#calendar').fullCalendar('refetchEvents');
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Unauthorized transaction",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('#approveEventForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to change approval status of this event?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'save-event-approval' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully changed the approval status of this event.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#view_event').modal('hide');
+                                $('#calendar').fullCalendar('refetchEvents');
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Unauthorized transaction",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+  	$('.summernote').summernote({
+  		height: '150',
+        dialogsInBody: true,
+        fontSizeUnits: ['px', 'pt'],
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['table', ['table']],
+            ['para', ['ul', 'ol', 'paragraph']],
+        ]
+  	});
+  	$('.note-editor').css('border', '1px solid #e5e6e7');
+</script>
+{% endblock %}

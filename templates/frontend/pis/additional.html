@@ -1,0 +1,336 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style type="text/css">
+    .gray-bg{
+        background: #F5F5F5;
+    }
+    #file-signature, #file-bio{
+        visibility: hidden;
+    }
+    .magic{
+        border-top: 0px solid black !important; border-bottom: 0px solid black !important;
+    }
+    .magic-2{
+        border-bottom: 0px solid black !important;
+    }
+    input{
+        background: transparent !important;
+        border-radius: 0px !important;
+    }
+    
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">{{ tab_title }}</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					{{ tab_parent }}
+				</li>
+                {% if tab_child and tab_child != '' %}
+				<li class="breadcrumb-item">
+					{{ tab_child }}
+				</li>
+                {% endif %}
+				<li class="breadcrumb-item active">
+					<strong>{{ tab_title }}</strong>
+				</li>
+			</ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                <button class="btn btn-info" onclick="$('#click-submit').click();">Save changes</button>
+                <div class="btn-group">
+                    <a href="{% url 'other-information' %}" class="btn btn-default">Previous</a>
+                    <a href="{% url 'attachment' %}" class="btn btn-default">Next</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+<div class="card card-info card-outline">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form id="submitForm" class="table-responsive">
+                {% csrf_token %}
+                <table class="table table-bordered mb-0" style="white-space: normal !important; zoom: 95% !important;">
+                    <tbody style="font-size: 13px;">
+                        <tr>
+                            <td width="60%" class="gray-bg magic-2">
+                                <p>Are you related by consanguinity or affinity to the appointing or recommending authority, or to the chief of bureau or office or to the person who has immediate supervision over you in the Office, Bureau or Department where you will be appointed.</p>
+                            </td>
+                            <td class="magic-2"></td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic">
+                                &nbsp;&nbsp;a. within the third degree?
+                            </td>
+                            <td class="magic">
+                                <input type="radio" class="q icheck" name="q1" value="1" {% if additional.0.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q1" value="0" {% if additional.0.question == 0 %}checked{% endif %} required> No
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic">
+                                &nbsp;&nbsp;b. within the fourth degree (for Local Government Unit - Career Employees)?
+                            </td>
+                            <td class="magic">
+                                <input type="radio" class="q icheck" name="q2" value="1" {% if additional.1.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q2" value="0" {% if additional.1.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b>
+                                <input type="text" class="form-control" name="answer1" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.1.answers }}" id="answer1">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic-2">
+                                a. Have you ever been found guilty of any administrative offense?
+                            </td>
+                            <td>
+                                <input type="radio" class="q icheck" name="q3" value="1" {% if additional.2.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q3" value="0" {% if additional.2.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b>
+                                <input type="text" class="form-control" name="answer2" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.2.answers }}" id="answer2">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic">
+                                b. Have you been criminally charged before any court?
+                            </td>
+                            <td>
+                                <input type="radio" class="q icheck" name="q4" value="1" {% if additional.3.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q4" value="0" {% if additional.3.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b><br>
+                                <b>Date Filed:</b>  &emsp;&emsp;&emsp;<input type="text" name="answer3" class="form-control" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.3.answers }}" id="answer3"> <br>
+                                <b>Status of Case/s:</b>  &nbsp;<input type="text" class="form-control" name="answer4" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.4.answers }}" id="answer4">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg">
+                                Have you ever been convicted of any crime or violation of any law, decree, ordinance or regulation by any court or tribunal?
+                            </td>
+                            <td>
+                                <input type="radio" class="q icheck" name="q5" value="1" {% if additional.5.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q5" value="0" {% if additional.5.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b>
+                                <input type="text" class="form-control" name="answer5" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.5.answers }}" id="answer5">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg">
+                                Have you ever been separated from the service in any of the following modes: resignation, retirement, dropped from the rolls, dismissal, termination, end of term, finished contract or phased out (abolition) in the public or private sector?
+                            </td>
+                            <td>
+                                <input type="radio" class="q icheck" name="q6" value="1" {% if additional.6.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q6" value="0" {% if additional.6.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b>
+                                <input type="text" class="form-control" name="answer6" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.6.answers }}" id="answer6">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic-2">
+                                a. Have you ever been a candidate in a national or local election held within the last year (except Barangay election)?
+                            </td>
+                            <td>
+                                <input type="radio" class="q icheck" name="q7" value="1" {% if additional.7.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q7" value="0" {% if additional.7.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b>
+                                <input type="text" class="form-control" name="answer7" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.7.answers }}" id="answer7">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic">
+                                b. Have you resigned from the government service during the three (3)-month period before the last election to promote/actively campaign for a national or local candidate?
+                            </td>
+                            <td>
+                                <input type="radio" class="q icheck" name="q8" value="1" {% if additional.8.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q8" value="0" {% if additional.8.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b>
+                                <input type="text" class="form-control" name="answer8" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.8.answers }}" id="answer8">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg">
+                                Have you acquired the status of an immigrant or permanent resident of another country?
+                            </td>
+                            <td>
+                                <input type="radio" class="q icheck" name="q9" value="1" {% if additional.9.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q9" value="0" {% if additional.9.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details (country): </b>
+                                <input type="text" class="form-control" name="answer9" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.9.answers }}" id="answer9">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic">
+                                Pursuant to: (a) Indigenous People's Act (RA 8371); (b) Magna Carta for Disabled Persons (RA 7277); and (c) Solo Parents Welfare Act of 2000 (RA 8972), please answer the following items:
+                            </td>
+                            <td class="magic"></td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic">
+                                &nbsp; &nbsp; a. Are you a member of any indigenous group?
+                            </td>
+                            <td class="magic">
+                                <input type="radio" class="q icheck" name="q10" value="1" {% if additional.10.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q10" value="0" {% if additional.10.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details: </b>
+                                <input type="text" class="form-control" name="answer10" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.10.answers }}" id="answer10" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg magic">
+                                &nbsp; &nbsp; b. Are you a person with disability?
+                            </td>
+                            <td class="magic">
+                                <input type="radio" class="q icheck" name="q11" value="1" {% if additional.11.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q11" value="0" {% if additional.11.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details ID No: </b>
+                                <input type="text" class="form-control" name="answer11" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.11.answers }}" id="answer11" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="gray-bg border-top-0">
+                                &nbsp; &nbsp; c. Are you a solo parent?
+                            </td>
+                            <td class="border-top-0">
+                                <input type="radio" class="q icheck" name="q12" value="1" {% if additional.12.question == 1%}checked{% endif %} required> Yes &nbsp;
+                                <input type="radio" class="q icheck" name="q12" value="0" {% if additional.12.question == 0 %}checked{% endif %} required> No
+                                <br>
+                                <b>If YES, give details ID No: </b>
+                                <input type="text" class="form-control" name="answer12" style=" outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ additional.12.answers }}" id="answer12" required>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="submit" class="btn btn-info display-none" id="click-submit">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#submitForm').on('submit', function(e){
+            $.ajax({
+                data        : new FormData(this),
+                url         : '{% url "additional" %}',
+                type        : 'POST',
+                beforeSend: function() {
+                	$('.btn').prop('disabled', true);
+                	$('a').prop('disabled', true);
+                },
+                success: function(response) {
+                	if(response.data) {
+						Swal.fire({
+                            title: "Well done!",
+                            text: "Additional Information has been saved successfully.",
+                            icon: "success",
+                            confirmButtonColor: "#3498DB",
+                        });
+					}
+                },
+                complete: function() {
+                	$('.btn').prop('disabled', false);
+                	$('a').prop('disabled', false);
+                },
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            e.preventDefault();
+        });
+
+        checkForm();
+
+        function checkForm(){
+            for(var i = 1; i <= 12; i++){
+                if ($('input[name=q'+ i +']:checked').val() == 1){
+                    if (i == 2){
+                        $("#answer1").prop('disabled', false);
+                    }
+                    else if (i == 3){
+                        $("#answer2").prop('disabled', false);
+                    }
+                    else if (i == 4){
+                        $("#answer3").prop('disabled', false);
+                        $("#answer"+i).prop('disabled', false);
+                    } else if (i > 5){
+                        $("#answer"+i).prop('disabled', false);
+                    }
+                } else {
+                    if (i == 2){
+                        $('#answer1').val("")
+                        $("#answer1").prop('disabled', true);
+                    }
+                    else if (i == 3){
+                        $('#answer2').val("")
+                        $("#answer2").prop('disabled', true);
+                    }
+                    else if (i == 4){
+                        $('#answer3').val("");
+                        $('#answer'+i).val("");
+                        $("#answer3").prop('disabled', true);
+                        $("#answer"+i).prop('disabled', true);
+                    }
+                    else if (i > 5){
+                        $('#answer'+i).val("");
+                        $("#answer"+i).prop('disabled', true);
+                    }
+                }
+            }
+        }
+
+        $('.q').on('change', function(){
+            name = this.name.substr(1) - 1;
+            if (this.value == 1){
+                if (name == 3){
+                    $("#answer4").prop('disabled', false);
+                    $("#answer3").prop('disabled', false);
+                } else if (name >= 4){
+                    total = parseInt(name) + 1;
+                    $("#answer"+total).prop('disabled', false);
+                }
+                else {
+                    $("#answer"+name).prop('disabled', false);
+                }    
+            }
+            else {
+                if (name == 3){
+                    $('#answer4').val("");
+                    $('#answer3').val("");
+                    $("#answer4").prop('disabled', true);
+                    $("#answer3").prop('disabled', true);
+                } else if (name >= 4){
+                    total = parseInt(name) + 1;
+                    $('#answer'+total).val("");
+                    $("#answer"+total).prop('disabled', true);
+                } else {
+                    $('#answer'+name).val("");
+                    $("#answer"+name).prop('disabled', true);
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,346 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">My DRNs</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Document Tracking
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>My DRNs</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-xs-4">
+        <div class="title-action">
+			<button class="btn btn-info" data-toggle="modal" data-target="#show-summary"><i class="fas fa-chart-bar"></i> Show Summary</button>
+{#            {% if user|check_permission:'document_custodian' or user|check_permission:'superadmin' %}#}
+{#				<button class="btn btn-info" data-toggle="modal" data-target="#create-drn"><i class="fas fa-plus"></i> Create DRN</button>#}
+{#			{% endif %}#}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="table-responsive">
+						<table class="table table-hover table-bordered" id="table-drn" width="100%">
+							<thead>
+								<tr>
+									<th class="capslock text-left">Action</th>
+									<th class="capslock text-center">DRN</th>
+									<th class="capslock text-left" style="width:15%;">Subject</th>
+									<th class="capslock text-center">Generated on</th>
+									<th class="capslock text-right">Status</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="ibox">
+						<div class="ibox-title bg-primary">
+							<h5>FILTER</h5>
+						</div>
+						<div class="ibox-content">
+							<h4>By document class</h4>
+							<div class="list-group">
+								<a class="list-group-item active" href="javascript:;" data-role="status" data-filter="all" id="status-all">All</a>
+								{% for row in docclass %}
+								<a class="list-group-item" href="javascript:;" data-role="status" data-filter="{{ row.id }}" id="status-{{ row.id }}">{{ row.name }}</a>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal" id="view-modal-blank" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">UPDATE DOCUMENT</h3>
+				<small>Update specific document details and information for a blank document.</small>
+	        </div>
+	        <div class="modal-body-real">
+			</div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="create-drn" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">GENERATE DRN</h3>
+				<small>Generate a new document reference number and update the document later.</small>
+	        </div>
+	        <form id="createDRNForm" enctype="multipart/form-data">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+		        <div class="row">
+                    <div class="form-group col-md-8">
+						<label>Subject of Document<span class="text-danger required">*</span></label>
+	                    <input type="text" class="form-control" name="subject" required>
+					</div>
+					<div class="form-group col-md-4" style="margin-bottom:0px;">
+						<label>Category<span class="text-danger required">*</span></label>
+						<select class="form-control select-doc-drn" name="category_id" required>
+							<option></option>
+							{% for row in category %}
+							<option value="{{ row.id }}">{{ row.code }} - {{ row.name }} ({{ row.description }})</option>
+							{% endfor %}
+						</select>
+					</div>
+		        </div>
+				<div class="row">
+					<div class="form-group col-md-6" style="margin-bottom:0px;">
+						<label>Document Class<span class="text-danger required">*</span></label>
+						<select class="form-control select-doc-drn" id="drn_doc_class_id" required>
+							<option></option>
+							{% for row in docclass %}
+							<option value="{{ row.id }}">{{ row.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-group col-md-6" style="margin-bottom:0px;">
+						<label>Document Type<span class="text-danger required">*</span></label>
+						<select class="form-control select-doc-drn-disabled" name="doctype_id" id="drn_doctype_id" disabled required>
+						</select>
+					</div>
+				</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Create DRN</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="show-summary" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">SUMMARY OF ACTIVITIES</h3>
+				<small>Generate a report on your document tracking activities.</small>
+	        </div>
+	        <div class="modal-body">
+		        <form id="showSummaryForm">
+					{% csrf_token %}
+					<div class="row">
+						<div class="form-group col-md-12">
+							<label>Select Month<span class="text-danger required">*</span></label>
+							<div class="input-group form-group">
+								<input type="month" class="form-control" name="summary-month" required>
+								<span class="input-group-btn">
+									<input type="submit" class="btn btn-info" value="Generate">
+								</span>
+							</div>
+						</div>
+					</div>
+				</form>
+				<div class="modal-body-summary">
+
+				</div>
+			</div>
+	    </div>
+	</div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script for="addnewdoc">
+	$(document).ready(function(){
+		$('#table-drn').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 0, 'desc' ]],
+			'ajax': {
+				'url': '/api/document/tracking/transaction/my-drn/?format=datatables&employee_id={{ request.session.emp_id }}&drn=all',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'columns': [
+				{'data': 'document_id',
+					render: function(data, type, row, meta) {
+						return '<a data-toggle="modal" data-role="view" data-id="'+ data +'">View</a> | <a data-toggle="modal" data-role="delete" data-id="'+ data +'">Delete</a>'
+					},
+					searchable: false
+				},
+				{'data': 'drn', className: 'text-center', 'searchable': false, 'orderable': false },
+				{'data': 'subject', className: 'text-left', 'name': 'document.subject' },
+				{'data': 'date_saved', className: 'text-center', searchable: false },
+				{'data': 'action',
+					render: function(data, type, row, meta) {
+						if (data == 1) {
+							return '<span class="label label-primary">Forwarded</span>';
+						}else if (data == 2) {
+							return '<span class="label label-warning">Received</span>';
+						} else if (data == 3){
+							return '<span class="label label-success">Acted</span>';
+						} else {
+							return '<span class="label label-default">Created</span>';
+						}
+					},
+					className: 'text-right',
+					searchable: false
+				},
+			]
+		});
+
+		$(document).on('click', 'a[data-role=status]', function(){
+			$('.list-group-item').removeClass('active');
+			$('#status-'+$(this).data('filter')).addClass('active');
+			if($(this).data('filter') == 'all'){
+				var table = $('#table-drn').DataTable();
+				table.clear();
+				table.ajax.url('/api/document/tracking/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&drn=all').load();
+			}else{
+				var table = $('#table-drn').DataTable();
+				table.clear();
+				table.ajax.url('/api/document/tracking/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&drn='+$(this).data('filter')).load();
+			}
+		});
+
+		var select2optionsDRN = {
+			width: "100%",
+			allowClear: true,
+			placeholder: '',
+			disabled: true,
+			dropdownParent: $('#create-drn'),
+		};
+		var select2options2DRN = {
+			width: "100%",
+			allowClear: true,
+			placeholder: '',
+			dropdownParent: $('#create-drn'),
+		};
+		$('.select-doc-drn').select2(select2options2DRN);
+		$('.select-doc-drn-disabled').select2(select2optionsDRN);
+		var doctypeCascadeDRN = Select2Cascade($("#drn_doc_class_id"), $("#drn_doctype_id"), "/tracking/get/doctype/:parentId:", select2options2DRN);
+	});
+</script>
+<script type="text/javascript">
+    $.get('{% url "filter_employee_by_permission" "document_custodian" "true" %}', function(data){
+		$(".filter_employee_to").typeahead({
+			source: data,
+			highlight: true
+		});
+    },'json');
+
+    $(document).on('click', 'a[data-role=view]', function(){
+        $('#view-modal-blank').modal('show').find('.modal-body-real').empty();
+        $('#view-modal-blank').modal('show').find('.modal-body-real').load("/tracking/document/view/blank/" + $(this).data('id'));
+    });
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+    		id = $(this).data('id');
+			Swal.fire({
+				title: "Are you sure?",
+				text: "You want to delete this DRN?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function () {
+					return $.ajax({
+						data        : { id: id },
+						url         : '{% url "delete-drn" %}',
+						type        : 'POST',
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: "Deleted!",
+						html: "DRN has been deleted.",
+						icon: "error",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							var table = $('#table-drn').DataTable();
+							table.clear();
+							table.ajax.url('/api/document/tracking/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&drn=all').load();
+						}
+					});
+				}
+			});
+    });
+
+    $('#createDRNForm').on('submit', function(e){
+    	var form = new FormData(this);
+	    e.preventDefault();
+		Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to create a new DRN?",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "my-drn" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: data.value.drn,
+                    html: "New DRN has been created. Please copy the generated DRN to your designated document.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+	                    $('#createDRNForm').trigger('reset');
+	                    $('.select-doc-drn').val([]).trigger('change.select2');
+	                    $('.select-doc-drn-disabled').val([]).trigger('change.select2').prop('disabled', 'disabled');
+                        $('#create-drn').modal('hide');
+                        $('#table-drn').DataTable().ajax.reload();
+                    }
+                });
+            }
+		});
+    });
+</script>
+<script for="showsummary">
+    $('#showSummaryForm').on('submit', function(e){
+		$('#show-summary').find('.modal-body-summary').empty().load("{% url 'my-drn-summary' %}", $(this).serializeArray());
+	    e.preventDefault();
+    });
+</script>
+{% endblock %}

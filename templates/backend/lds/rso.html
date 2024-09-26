@@ -1,0 +1,104 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Training Requests</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+					Admin
+				</li>
+				<li class="breadcrumb-item">
+					Learning and Development Management
+				</li>
+                <li class="breadcrumb-item active">
+                    <strong>Training Requests</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-lg-12">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+		<div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="lds-rso-admin-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th width="7%">Action</th>
+                                <th width="25%">Training</th>
+                                <th width="15%" class="text-center">Venue</th>
+                                <th width="10%" class="text-center">Inclusive Dates</th>
+                                <th width="15%" class="text-center">Created by</th>
+                                <th class="15%" class="text-center">RRSO Status | RSO Status | Attachment</th>
+                                <th class="13%" class="text-right">Date Added</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+		</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="training_details" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">TRAINING DETAILS</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <div id="details-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+$(document).ready(function(){
+    $('#lds-rso-admin-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 6, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/learning-and-development/admin/?format=datatables',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta){
+                    var template = '';
+                    template += '<a href="javascript:;" data-role="details" data-id="'+ data +'">Details</a>'
+                    return template;
+                }
+            },
+            {'data': 'training_title', 'name': 'training.tt_name'},
+            {'data': 'venue', 'className': 'text-center'},
+            {'data': 'inclusive_dates', 'searchable': false, 'className': 'text-center'},
+            {'data': 'created_by', 'name': 'created_by.pi.user.last_name, created_by.pi.user.first_name', 'className': 'text-center'},
+            {'data': 'status', 'searchable': false, 'className': 'text-center'},
+            {'data': 'date_added', 'className': 'text-right'}
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=details]', function(){
+        var id = $(this).data('id');
+        $('#training_details').modal('show').find('#details-content').load('/learning-and-development/details/' + id);
+    });
+});
+</script>
+{% endblock %}

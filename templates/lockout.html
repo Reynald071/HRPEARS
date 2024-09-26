@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <title>DSWD My PORTAL | Lockout</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <style>
+        .login-bg{
+			background-image:url('{% static 'image/background2.jpg' %}');
+			background-repeat:no-repeat;
+			background-size:cover;
+			background-position:center;
+		}
+    </style>
+</head>
+<body class="login-bg" oncontextmenu="return false;">
+    <div class="loginColumns">
+		<div class="row">
+			<div class="col-md-6">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <center>
+                            <img loading="lazy"  src="{% static 'image/portal_logo.png' %}" width="300px;">
+                        </center>
+                        <br>
+                        <h2>Your Account Has Been Temporarily Locked</h2>
+                        <p>We've detected suspicious activity on your DSWD My PORTAL account and have temporarily locked it as a security precaution.</p>
+                        <p>You can try to login after <span id="counter-time">02 minutes 00 second</span>. If failed please contact system administrator and request for assistance. Thank you and God bless.</p>
+                        <br>
+                        <a href="{% url 'home' %}" class="btn btn-info btn-block btn-lg bold" id="button-landing" style="display:none;">Proceed to Landing Page</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script>
+        $(document).keydown(function (event) {
+			if (event.keyCode == 123) {
+				return false;
+			} else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+				return false;
+			}
+		});
+
+		if(localStorage.getItem("count_timer")){
+            var count_timer = localStorage.getItem("count_timer");
+        } else {
+            var count_timer = 60;
+        }
+        var minutes = parseInt(count_timer/60);
+        var seconds = parseInt(count_timer%60);
+        function countDownTimer(){
+            if(seconds < 10){
+                seconds= "0"+ seconds ;
+            }if(minutes < 10){
+                minutes= "0"+ minutes ;
+            }
+
+            document.getElementById("counter-time").innerHTML = minutes+" minutes "+seconds+" seconds";
+            if(count_timer <= 0){
+                 $('#button-landing').css('display', '');
+                 localStorage.clear("count_timer");
+            } else {
+                count_timer = count_timer -1 ;
+                minutes = parseInt(count_timer/60);
+                seconds = parseInt(count_timer%60);
+                localStorage.setItem("count_timer",count_timer);
+                setTimeout("countDownTimer()",1000);
+            }
+        }
+        setTimeout("countDownTimer()",1000);
+    </script>
+</body>
+</html>

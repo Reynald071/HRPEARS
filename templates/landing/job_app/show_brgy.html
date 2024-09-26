@@ -1,0 +1,16 @@
+<div class="form-group">
+    <label>Barangay<span class="asteriskField">*</span></label>
+    <select class="form-control select select-brgy b-r-sm" id="brgy" name="brgy" autocomplete="off" required>
+        <option></option>
+        {% for row in brgy %}
+        <option value="{{ row.id }}">{{ row.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<script>
+    $('.select-brgy').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+</script>

@@ -1,0 +1,23 @@
+{% extends "rest_framework/login_base.html" %}
+{% load static %}
+{% block meta %}
+    <title>Welcome to Caraga PORTAL API</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;900&display=swap');
+        body {
+            font-family: Inter !important;
+        }
+
+        .no-margin {
+            margin: 0 !important;
+        }
+    </style>
+{% endblock %}
+{% block branding %}
+    <center>
+        <img loading="lazy"  src="{% static 'image/api.png' %}" width="30%"><br><br>
+        <h3 style="margin: 0 0 20px;" class="no-margin"><strong>Caraga PORTAL API</strong></h3>
+        <small>We serve to help you boost your development!</small><br><br>
+    </center>
+{% endblock %}

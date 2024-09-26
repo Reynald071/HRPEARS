@@ -1,0 +1,111 @@
+.display-none{
+    display: none;
+}
+
+.table-bordered {
+  border: 1px solid #EBEBEB;
+}
+
+table.dataTable td.dataTables_empty{
+  text-align:center !important;
+}
+
+.table-bordered > thead > tr > th,
+.table-bordered > thead > tr > td {
+  background-color: #F5F5F6;
+  border-bottom-width: 1px;
+}
+.table-bordered > thead > tr > th,
+.table-bordered > tbody > tr > th,
+.table-bordered > tfoot > tr > th,
+.table-bordered > thead > tr > td,
+.table-bordered > tbody > tr > td,
+.table-bordered > tfoot > tr > td {
+  border: 1px solid #e7e7e7;
+}
+.table > thead > tr > th {
+  border-bottom: 1px solid #DDDDDD;
+  vertical-align: bottom;
+}
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+  border-top: 1px solid #e7eaec;
+  line-height: 1.42857;
+  white-space: normal;
+  padding: 8px;
+  vertical-align: top;
+}
+.modal-open .select2-container--open { z-index: 999999 !important; width:100% !important; }
+
+.select2-container .select2-selection--multiple {
+    height: auto!important;
+    margin: 0;
+    padding: 0;
+    line-height:inherit;
+    border-radius:4px;
+}
+.select2-container .select2-search--inline .select2-search__field {
+    box-sizing: border-box;
+    border: none;
+    font-size: 100%;
+    margin-top: 5px;
+    padding: 0 6px;
+}
+.select2-container .select2-search--inline {
+    line-height:inherit;
+}
+
+.nav-tabs {
+    border-bottom: 0;
+}
+
+.hr-text{
+  position: relative;
+  ouline: 0;
+  border: 0;
+  height: 1.5em;
+}
+.hr-text:before{
+  content: '';
+  position: absolute;
+  background: #818078;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+}
+.hr-text:after{
+  content: attr(data-content);
+  position: relative;
+  display: inline-block;
+  color: black;
+  padding: 0 2em;
+  line-height: 1.5em;
+  color: #818078;
+  background-color: #fcfcfa;
+}
+
+.modal.fade {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal { overflow: auto !important; }
+
+.no-margins {
+    margin: 0px !important;
+}
+
+.list-group-item.active {
+    color: white !important;
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}
+
+.page-item.active .page-link  {
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}

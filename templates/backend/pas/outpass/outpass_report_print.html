@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<title>DSWD My PORTAL | Generate Outpass Report</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+	<style type="text/css">
+		@page
+		{
+		    size: auto;
+		    margin: 0mm 0mm 0mm;
+		}
+
+		@media print {
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		  	.btn{display:none}
+		  	#line{display:none}
+		  	body {
+		  		font-size: 10px !important;
+		  	}
+			.ipataas {
+				margin-top: -20px !important;
+			}
+			#ipakilid {
+				margin-left: 0px !important;
+			}
+		}
+
+		body{
+			font-family: Arial;
+			font-size: 13px;
+			margin: 10mm 10mm 10mm 10mm;
+		}
+		.bold{
+			font-weight: bold;
+		}
+		.text-center{
+			text-align: center;
+		}
+		.text-left{
+			text-align: left;
+		}
+		td {
+			vertical-align: middle !important;
+			padding: 15px !important;
+		}
+		th {
+			background-color: #5e5e5e;
+			color: white;
+			border: 1px #9a9a9a solid !important;
+			vertical-align: middle;
+		}
+		.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+			border-top: none !important;
+			border-color: #9a9a9a;
+		}
+	</style>
+</head>
+<body>
+	{% getweek datestart as daterange %}
+	{% getdatesinweek datestart as alldates %}
+	<a id="print" class="btn btn-info btn-sm"><i class="fas fa-print"></i> PRINT</a>
+	<hr id="line">
+
+	<div class="row">
+		<div class="col-xs-12">
+			<img loading="lazy"  src="{% static 'image/dswd_logo.jpg' %}" style="height:70px">
+			<img loading="lazy"  src="{% static 'image/iso.png' %}" class="pull-right" style="height:65px">
+			<div id="ipakilid" style="position:absolute; text-align:center; width:100%; margin-top:-50px;">
+				<h3><strong>OUTPASS MONITORING</strong></h3>
+				<h4>{{ daterange.0 }} to {{ daterange.1 }}</h4>
+			</div>
+		</div>
+	</div>
+
+	<table class="table table-collapsed table-bordered" style="position:aboslute; margin-top: 40px;">
+		<thead>
+			<tr>
+				<th class="text-center" style="width:3%">#</th>
+				<th class="text-center" style="width:30%;">Employee Name</th>
+				<th class="text-center" style="width:8%">{{ alldates.0 }}</th>
+				<th class="text-center" style="width:8%">{{ alldates.1 }}</th>
+				<th class="text-center" style="width:8%">{{ alldates.2 }}</th>
+				<th class="text-center" style="width:8%">{{ alldates.3 }}</th>
+				<th class="text-center" style="width:8%">{{ alldates.4 }}</th>
+				<th class="text-center" style="width:13%">Total Time Consumed</th>
+				<th class="text-center" style="width:14%">Remarks</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in outpassdetails %}
+			<tr>
+				<td class="text-center" style="height:30px !important">
+					{{ forloop.counter0|add:outpassdetails.start_index }}
+				</td>
+				{% if row.outpass.in_behalf_of.pi.user.middle_name %}
+					<td>{{ row.outpass.in_behalf_of.pi.user.first_name }} {{ row.outpass.in_behalf_of.pi.user.middle_name|to_middleinitial }} {{ row.outpass.in_behalf_of.pi.user.last_name }}</td>
+				{% else %}
+					<td>{{ row.outpass.in_behalf_of.pi.user.first_name }} {{ row.outpass.in_behalf_of.pi.user.last_name }}</td>
+				{% endif %}
+
+				<td class="text-center">
+					{% getnumberofhoursfordate alldates.0 row.outpass.in_behalf_of 1 as monday %}
+					{% getnumberofhoursfordate alldates.0 row.outpass.in_behalf_of 0 as monday1 %}
+					{% if monday1.0 == 0 %}
+						-
+					{% else %}
+						{{ monday.0 }}
+					{% endif %}
+				</td>
+				<td class="text-center">
+					{% getnumberofhoursfordate alldates.1 row.outpass.in_behalf_of 1 as tuesday %}
+					{% getnumberofhoursfordate alldates.1 row.outpass.in_behalf_of 0 as tuesday1 %}
+					{% if tuesday1.0 == 0 %}
+						-
+					{% else %}
+						{{ tuesday.0 }}
+					{% endif %}
+				</td>
+				<td class="text-center">
+					{% getnumberofhoursfordate alldates.2 row.outpass.in_behalf_of 1 as wednesday %}
+					{% getnumberofhoursfordate alldates.2 row.outpass.in_behalf_of 0 as wednesday1 %}
+					{% if wednesday1.0 == 0 %}
+						-
+					{% else %}
+						{{ wednesday.0 }}
+					{% endif %}
+				</td>
+				<td class="text-center">
+					{% getnumberofhoursfordate alldates.3 row.outpass.in_behalf_of 1 as thursday %}
+					{% getnumberofhoursfordate alldates.3 row.outpass.in_behalf_of 0 as thursday1 %}
+					{% if thursday1.0 == 0 %}
+						-
+					{% else %}
+						{{ thursday.0 }}
+					{% endif %}
+				</td>
+				<td class="text-center">
+					{% getnumberofhoursfordate alldates.4 row.outpass.in_behalf_of 1 as friday %}
+					{% getnumberofhoursfordate alldates.4 row.outpass.in_behalf_of 0 as friday1 %}
+					{% if friday1.0 == 0 %}
+						-
+					{% else %}
+						{{ friday.0 }}
+					{% endif %}
+				</td>
+				<td class="text-center">
+					{% getnumberofhours datestart row.outpass.in_behalf_of 1 as totaltime %}
+					{{ totaltime.0 }}
+				</td>
+				<td class="text-center">
+					{% if row.remarks != None %}
+					{{ row.remarks }}
+					{% endif %}
+				</td>
+			</tr>
+			{% endfor %}
+			<tr style="height:15px !important;">
+				<td colspan="9" style="text-align:center;padding:5px !important;">*** Nothing follows ***</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table class="table table-bordered">
+		<tr>
+			<td><i>Prepared by:</i></td>
+			<td><i>Approved by:</i></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			{% getemployeebyempid request.session.emp_id as myuser %}
+			{% getemployeebyempid myuser.section.sec_head_id as approved %}
+			<td><b>{{ myuser.pi.user.first_name|upper }} {{ myuser.pi.user.middle_name|to_middleinitial|upper }} {{ myuser.pi.user.last_name|upper }}</b><br>{{ myuser.position.name }}</td>
+			<td><b>{{ approved.pi.user.first_name|upper }} {{ approved.pi.user.middle_name|to_middleinitial|upper }} {{ approved.pi.user.last_name|upper }}</b><br>{{ approved.position.name }}</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><b></b></td>
+		</tr>
+	</table>
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script type="text/javascript">
+		$('#print').on('click', function(){
+			javascript:window.print();
+		});
+	</script>
+</body>
+</html>

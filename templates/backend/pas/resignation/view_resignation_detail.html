@@ -1,0 +1,55 @@
+{% load tags %}
+{% load frontend_tags %}
+<div class="row resignation">
+	<div class="col-sm-5">
+		<h3>Main Information</h3>
+		<p>Name <br><strong>{{ emp.pi.user.first_name }} {{ emp.pi.user.middle_name|to_middleinitial }} {{ emp.pi.user.last_name }}</strong></p>
+		<p>Sex <br><strong>{% if emp.pi.gender == 1 %}Male{% else %}Female{% endif %}</strong></p>
+		<p>Position <br><strong>{{ emp.position.name }}</strong></p>
+		<p>Employment Status <br><strong>{{ emp.empstatus.name }}</strong></p>
+		<p>Program <br><strong>{{ emp.project.name }}</strong></p>
+		<p>Salary Rate <br><strong>{{ emp.salary_rate }} SG{{ emp.salary_grade }} - {{ emp.step_inc }}</strong></p>
+		<p>Type of employment separation <br><strong>{{ rfd.tfs.name }}</strong></p>
+		<p>Remarks <br><strong>{{ rfd.remarks }}</strong></p>
+		<p>Date Requested <br><strong>{{ rfd.date_requested }}</strong></p>
+		<p>Date of Effectivity <br><strong>{{ rfd.date_effectivity|date:'M d, Y' }}</strong></p>
+		{% if req.count == total_compliance %}
+			{% if not rfd.date_approved %}
+			<form action="{% url 'deactivate_user' %}" method="POST">
+				{% csrf_token %}
+				<input type="hidden" name="user_id" value="{{ emp.pi.user_id }}">
+				<input type="hidden" name="emp_id" value="{{ emp.id }}">
+				<button type="submit" class="btn btn-info">Deactivate</button>
+			</form>
+			{% endif %}
+		{% elif rfd.tfs.name == 'End of Contract' %}
+			<form action="{% url 'deactivate_user' %}" method="POST">
+				{% csrf_token %}
+				<input type="hidden" name="user_id" value="{{ emp.pi.user_id }}">
+				<input type="hidden" name="emp_id" value="{{ emp.id }}">
+				<button type="submit" class="btn btn-info">Deactivate</button>
+			</form>
+		{% endif %}
+	</div>
+	<div class="col-sm-7">
+		<h3>{{ emp.empstatus.name }} requirements</h3>
+		<ul class="list-group">
+			{% for row in req %}
+			<li class="list-group-item">
+				{{ row.name }}
+				{% getcompliance emp.id row.id as compliance %}
+				{% if compliance %}
+				<span class="pull-right">
+					{{ compliance.datetime }} <a data-role="delete" data-id="[{{ row.id }}, {{ emp.id }}]" class="text-danger"><i class="fa fa-times"></i></a>
+				</span> 
+				{% else %}
+				<span class="pull-right">
+					<a data-role="approve" data-id="[{{ row.id }}, {{ emp.id }}]">Approve</a>
+				</span>
+				{% endif %}
+			</li>
+			{% endfor %}
+		</ul>
+		<br>
+	</div>
+</div>

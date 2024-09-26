@@ -1,0 +1,98 @@
+{% load tags %}
+<div class="row resignation">
+	<div class="col-sm-12">
+			<div class="form-group">
+				<button class="btn btn-info" id="btn-add"><i class="fas fa-plus"></i> Add Travel</button>
+				{% if user|check_permission:'travel_order' or user|check_permission:'superadmin' %}
+				<button class="btn btn-info" id="btn-remark"><i class="far fa-sticky-note"></i> Travel Remarks</button>
+				{% endif %}
+			</div>
+			<table class="table table-bordered" style="font-size: 11px;">
+				<thead>
+					<tr>
+						<th class="capslock" style="width:10%;">Action</th>
+						<th class="capslock" width="20%">Place of Travel</th>
+						<th class="capslock text-center" width="25%">Purpose</th>
+						<th class="capslock text-center" width="15%">Inclusive Dates</th>
+						<th class="capslock text-center" width="25%">Expected Output</th>
+						<th class="capslock text-center">Claims</th>
+						<th class="capslock text-center">Means of Transportation</th>
+					</tr>
+				</thead>
+				<tbody class="border-gray">
+					{% for row in ritodetails %}
+					<tr id="{{ row.id }}">
+						<td class="border-gray">
+							<a href="javascript:;" data-role="edit" data-id="{{ row.id }}">Update</a> |
+							<a href="javascript:;" data-role="delete" data-id="{{ row.id }}">Delete</a>
+						</td>
+						<td class="border-gray">{{ row.place }}</td>
+						<td class="text-center border-gray">{{ row.purpose }}</td>
+						<td class="text-center border-gray">
+							{% if row.inclusive_from == row.inclusive_to %}
+							{{ row.inclusive_from }}
+							{% else %}
+							{{ row.inclusive_from }} - {{ row.inclusive_to }}
+							{% endif %}
+						</td>
+						<td class="text-center border-gray">
+							{{ row.expected_output }}
+						</td>
+						<td class="text-center border-gray">{{ row.claims.name }}</td>
+						<td class="text-center border-gray">{{ row.mot.name }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(document).on('click', 'a[data-role=edit]', function(){
+		var id = $(this).data('id');
+		$('#edit-modal').modal('show').find('.modal-body').empty();
+		$('#edit-modal').modal('show').find('.modal-body').load("/backend/edit-travel-details/" + id);
+	});
+
+	$('#btn-add').on('click', function(){
+		$('#edit-modal').modal('show').find('.modal-body').empty();
+		$('#edit-modal').modal('show').find('.modal-body').load("{% if rito.tracking_merge %}{% url 'add_rito_details' rito.tracking_merge %}{% else %}{% url 'add_rito_details' rito.tracking_no %}{% endif %}");
+	});
+
+	$('#btn-remark').on('click', function(){
+		$('#edit-modal').modal('show').find('.modal-body').empty();
+		$('#edit-modal').modal('show').find('.modal-body').load("{% if rito.tracking_merge %}{% url 'travel_remark' rito.tracking_merge %}{% else %}{% url 'travel_remark' rito.tracking_no %}{% endif %}");
+	});
+
+	$(document).on('click', 'a[data-role=delete]', function(){
+		var detail_id = $(this).data('id');
+		
+		Swal.fire({
+          title: "Are you sure you want to delete this travel request?",
+          text: "After you delete this record, this will be unrecoverable.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: "{% url 'delete_travel_request' %}",
+					data:{
+						detail_id: detail_id,
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					if (data.data == 'success'){
+						$('#edit-modal').modal('show').find('.modal-body').empty();
+						$('#edit-modal').modal('show').find('.modal-body').load("{% if rito.tracking_merge %}{% url 'view_rito_details' rito.tracking_merge %}{% else %}{% url 'view_rito_details' rito.tracking_no %}{% endif %}");
+						Swal.fire("Success!", "Travel request was successfully deleted. Farewell.", "success");
+					}
+				})
+			}
+        });
+	});
+</script>

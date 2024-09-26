@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Accomplishment Reports</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+        @media print {
+			.containerX {
+				padding: 0px;
+				margin: 5px;
+				zoom: 80% !important;
+				height: 0% !important;
+			}
+			page {
+				border: 0.5px solid transparent;
+			}
+
+			body{-webkit-print-color-adjust: exact;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+		  	}
+        }
+
+        .no-padding{
+			padding: 2px !important;
+		}
+
+		.containerX {
+			zoom: 80%;
+		}
+
+		body{
+			font-size: 12px;
+			color: black;
+		}
+
+		.table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td{
+			padding: 2px !important;
+		}
+
+		.no-margins{
+			margin: 0 !important;
+		}
+
+		.bold{
+			font-weight: bold;
+		}
+		#table2{
+			border-collapse: collapse;
+			width: 100%;
+		}
+		.text-center{
+			text-align: center;
+		}
+
+		.table-display.table-bordered{
+			border:1px solid black;
+			margin-top:20px;
+		}
+
+		.table-display.table-bordered > thead > tr > th{
+			background-color: white;
+			border:1px solid black;
+		}
+
+		.table-display.table-bordered > tbody > tr > td{
+			border:1px solid black;
+		}
+
+		hr{
+			border-top: 1px solid black;
+		}
+
+		.magic{
+			border:1px solid black !important;
+		}
+
+		.col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+			  float: left!important;
+			}
+			.col-sm-12 {
+			  width: 100%;
+			}
+			.col-sm-11 {
+			  width: 91.66666666666666%;
+			}
+			.col-sm-10 {
+			  width: 83.33333333333334%;
+			}
+			.col-sm-9 {
+			  width: 75%;
+			}
+			.col-sm-8 {
+			  width: 66.66666666666666%;
+			}
+			.col-sm-7 {
+			  width: 58.333333333333336%;
+			}
+			.col-sm-6 {
+			  width: 50%;
+			}
+			.col-sm-5 {
+			  width: 41.66666666666667%;
+			}
+			.col-sm-4 {
+			  width: 33.33333333333333%;
+			}
+			.col-sm-3 {
+			  width: 25%;
+			}
+			.col-sm-2 {
+			  width: 16.666666666666664%;
+			}
+			.col-sm-1 {
+			  width: 8.333333333333332%;
+			}
+	</style>
+</head>
+<body oncontextmenu="return false;">
+	<nav class="navbar navbar-default" style="font-family: 'Inter';">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<i class="fas fa-bars"></i>
+				</button>
+				<a class="navbar-brand" href="javascript:;">Accomplishment Report (Supervisee)</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="javascript:;" class="print-button" id="floatprint" title="Print" style="font-size: 14px;"><i class="fas fa-print"></i> Print</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	{% if error %}
+	<page size="A4flex" layout="landscape" class="page" style="padding: 30px; position: relative; font-family: 'Inter'; page-break-after: always;">
+		<h5>{{ error }}</h5>
+	</page>
+	{% else %}
+    {% for row in employees %}
+	<page size="longflex" layout="landscape" class="page" style="padding: 30px; position: relative; font-family: 'Inter'; page-break-after: always;">
+		<div class="containerX">
+			<div class="row">
+				<div class="col-sm-12">
+					<center>
+					<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="20%">&emsp;&emsp;&emsp;
+                    <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -50px;">
+					</center>
+					<div class="text-center">
+						<p>Field Office Caraga <br>Butuan City</p>
+						<h5 class="no-margins"><strong>ACCOMPLISHMENT REPORT</strong></h5>
+						<p>({{ start_date|date:"F d" }} {{ end_date|date:"- d, Y" }})</p>
+					</div>
+					<div class="row" style="font-size: 14px; margin-left: 10px; margin-top: 20px">
+						<table>
+							<thead>
+								<tr>
+									<td width="30%">Name</td>
+									<td class="bold"> &emsp;&emsp;:&emsp;{{ row.pi.user.first_name|upper }} {{ row.pi.user.middle_name|to_middleinitial }} {{ row.pi.user.last_name|upper }}</td>
+								</tr>
+								<tr>
+									<td>Position</td>
+									<td class="bold"> &emsp;&emsp;:&emsp;{{ row.position.name }}</td>
+								</tr>
+								<tr>
+									<td class="bold"></td>
+									<td class="bold"></td>
+								</tr>
+								<tr>
+									<td>Division / Unit / Project</td>
+									<td class="bold"> &emsp;&emsp;:&emsp;{{ row.section.div.div_name }}</td>
+								</tr>
+								<tr>
+									<td>Area of Assignment</td>
+									<td class="bold"> &emsp;&emsp;:&emsp;{{ row.aoa.name }}</td>
+								</tr>
+							</thead>
+						</table>
+					</div>
+					<hr>
+					<table class="table table-display table-bordered" style="font-size: 14px;">
+						<thead>
+							<tr>
+								<th class="text-center" style="padding:2px;">DATE / PERIOD</th>
+								<th class="text-center" style="padding:2px;">PLACE/S VISITED</th>
+								<th class="text-center" style="padding:2px;">ACCOMPLISHMENTS / OUTPUT</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% get_accomplishment_report row.id start_date end_date as accomplishment_report %}
+							{% if accomplishment_report %}
+							{% for ar in accomplishment_report %}
+								<tr>
+									<td class="text-center" style="padding:2px;">{{ ar.date_period|date:"F d" }}</td>
+									<td style="padding:2px;">{{ ar.place_visited }}</td>
+									<td style="padding:2px;">{{ ar.output }}</td>
+								</tr>
+							{% endfor %}
+							{% else %}
+							<tr>
+								<td colspan="3">No Accomplishment Report Yet.</td>
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+					<div class="row col-sm-12" style="font-size: 14px;">
+						<div class="pull-left">
+							<p class="bold">Prepared By:</p>
+							<br>
+							<input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" size="40" value="{{ row.pi.user.first_name|upper }} {{ row.pi.user.middle_name|to_middleinitial }} {{ row.pi.user.last_name|upper }}"><br>
+							<input type="text" style="border: 0px !important;" size="40" value="{{ row.position.name }}">
+						</div>
+						<div class="pull-right" style="margin-right:200px;">
+							<p class="bold">Noted by:</p>
+							<br>
+							<input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" size="40" value="{{div.pi.user.first_name|upper}} {{div.pi.user.middle_name|to_middleinitial}} {{div.pi.user.last_name|upper}}"><br>
+							<input type="text" style="border: 0px !important;" size="40" value="{{ div.position.name}}">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</page>
+    {% endfor %}
+	{% endif %}
+
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+	<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+	<script type="text/javascript">
+	$(document).ready(function(){
+		Swal.fire({
+		  icon: 'warning',
+		  title: 'Warning',
+		  html: 'Data alteration is strongly prohibited. Anyone caught editing/altering any information' +
+		  		' in the daily time record entries will be dealt with accordingly.',
+		  footer: 'The My PORTAL Team',
+		  confirmButtonText: 'Proceed',
+		});
+
+		var page = $('.page').height();
+		var container = $('.containerX').height();
+
+		if (container > page) {
+			$('.page').css('height', container + 45);
+		}
+
+		$('#floatprint_mod').on('click', function(){
+			window.setTimeout(function() { printObject(); }, 0);
+		});
+
+		$(document).keydown(function (event) {
+			if (event.keyCode == 123) {
+				return false;
+			} else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+				return false;
+			}
+		});
+	});
+	</script>
+</body>
+</html>

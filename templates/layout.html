@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'; img-src * 'self' data: https:;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/hrpearlogo_192.png' %}"/>
+    <title>DSWD CDO HR Pears {% if tab_title %}| {{ tab_title }}{% endif %}</title>
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'DataTables/datatables.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/plugins/toastr/toastr.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/summernote/summernote-bs4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/slick/slick.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/slick/slick-theme.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/iCheck/custom.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/daterangepicker/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/qtip/jquery.qtip.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/switchery/switchery.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/fullcalendar/fullcalendar.css' %}" rel="stylesheet">
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style_new.css' %}" rel="stylesheet">
+    <link href="{% static 'css/rating.css' %}" rel="stylesheet">
+    <script src="{% static 'ajax/jquery/1.9.1/jquery.min.js' %}"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WFZSP745LP"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-WFZSP745LP');
+        </script>
+    <style>
+        .invalid-feedback{
+            color:#fb4347;
+        }
+
+        .loading{
+            overflow: hidden;
+        }
+
+        th {
+            vertical-align: middle !important;
+        }
+    </style>
+    {% block style %}{% endblock %}
+</head>
+<body class="hold-transition layout-fixed">
+    <div id="wrapper" class="wrapper">
+        <div class="preloader justify-content-center align-items-center">
+            <p style="font-size: 15px;" id="loading-quotes-text" class="text-center">
+                {% comment %}
+                    <img loading="lazy"  src="{% static 'image/logo.png' %}" class="loader" height="60" width="60"><br><br>
+                {% endcomment %}
+                {% random_quotes 1 as rq %}<em>{{ rq|safe }}</em>
+            </p>
+        </div>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="{% url 'backend-dashboard' %}" class="brand-link">
+                <div class="d-flex justify-content-center">
+                    <img src="{% static 'image/hrpearlogo_ls.png' %}" width="120px">
+                </div>
+            </a>
+            <!-- Sidebar -->
+            <div class="sidebar" style="">
+                <!-- Sidebar Menu -->
+                {% include 'sidebar.html' %}
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="javascript:;" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+
+                <form class="form-inline ml-3">
+                    <div class="position-relative">
+                        <div class="input-group input-group-sm ">
+                            <input class="form-control form-control-navbar filter-search" type="search" placeholder="Search for something.." name="q" autocomplete="off" aria-label="Search">
+                            <div class="input-group-append">
+                                <button class="btn btn-navbar" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="results" class="list-group position-absolute" style="width: 500px; background-color: white;"></div>
+                    </div>
+                </form>
+            </ul>
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto mr-4">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="javascript:;">
+                        <img loading="lazy"  src="/media/{{ request.session.picture }}" id="profile-picture" class="rounded-circle shimmer" height="24" width="24" data-toggle="tooltip" data-placement="bottom" title="User Account">
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <div class="text-center" style="padding: 20px; margin-bottom: -20px;">
+                            <img loading="lazy"  src="/media/{{ request.session.picture }}" id="profile-picture" class="img-circle elevation-2" style="width: 90px; height: 90px; object-fit: cover;">
+                            <h3 style="margin-top: 10px; margin-bottom:5px;">{{ request.session.full_name }}</h3>
+                            <h5 style="font-weight:500; margin-bottom:0px;">{% get_position emp_id=request.session.emp_id %}</h5>
+                            <h6 style="font-weight:500; margin-top:5px; margin-bottom:0px;">@{{ request.session.username }}</h6>
+                        </div>
+                        <div class="dropdown-divider mt-2"></div>
+                        <div class="p-3 text-center">
+                            <a href="javascript:;" data-toggle="modal" data-target="#logout-modal" class="btn btn-danger">Sign out</a>
+                            <a href="{% url 'my-profile' %}#personal-information" class="btn btn-info">Manage account</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
+{#            <a class="btn btn-success position-fixed" href="javascript:" id="return-to-top" style="bottom: 50px; right: 20px; display: none;"><i class="fas fa-chevron-up"></i></a>#}
+        </div>
+    </div>
+
+    <div class="modal" id="logout-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content animated bounceInDown">
+                <div class="modal-header bg-danger">
+                    <h3>Logout</h3>
+                </div>
+                <div class="modal-body">
+                   <p style="font-size: 15px;">Are you sure you want to log out?</p>
+                </div>
+                <div class="modal-footer" style="border-top: 0px !important;">
+                    <a type="button" data-dismiss="modal" class="btn btn-secondary">Cancel</a>
+                    <a href="{% url 'backend-logout' %}" class="btn btn-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <script>
+      $.widget.bridge('uibutton', $.ui.button)
+    </script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/freeze-table.js' %}"></script>
+    <script src="{% static 'js/multimodal.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script src="{% static 'js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+    <script src="{% static 'js/plugins/summernote/summernote-bs4.min.js' %}"></script>
+    <script src="{% static 'js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+    <script src="{% static 'js/plugins/qtip/jquery.qtip.min.js' %}"></script>
+    <script src="{% static 'js/plugins/switchery/switchery.js' %}"></script>
+    <script src="{% static 'js/plugins/fullcalendar/moment.min.js' %}"></script>
+    <script src="{% static 'js/plugins/fullcalendar/fullcalendar.min.js' %}"></script>
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/plugins/toastr/toastr.min.js' %}"></script>
+    <script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+    <script src="{% static 'js/plugins/select2/select2-cascade.js' %}"></script>
+    <script src="{% static 'js/plugins/validate/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'js/plugins/iCheck/icheck.min.js' %}"></script>
+    <script src="{% static 'js/plugins/daterangepicker/daterangepicker.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+    <script src="{% static 'js/plugins/masonry/masonry.pkgd.min.js' %}"></script>
+    <script src="{% static 'DataTables/datatables.min.js' %}"></script>
+    <script src="{% static 'js/Chart.min.js' %}"></script>
+    <script src="{% static 'js/canvasjs.min.js' %}"></script>
+    <script src="{% static 'js/freeze-table.js' %}"></script>
+    <script src="{% static 'js/plugins/slick/slick.min.js' %}"></script>
+    <script src="{% static 'colorfield/jscolor/jscolor.min.js' %}"></script>
+    <script src="{% static 'colorfield/colorfield.js' %}"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+
+        $('.toggle-focus').on('focus', function(){
+            $(this).find('img').addClass('focus');
+        });
+
+        $('.toggle-focus').on('blur', function(){
+            $(this).find('img').removeClass('focus');
+        });
+
+        $(document).on('click', 'button[data-dismiss=modal]', function(){
+            $('body').removeClass('modal-open');
+        })
+
+        $('.modal').on('hidden.bs.modal', function() {
+            $('body').removeClass('modal-open');
+        })
+
+        $(document).ready(function() {
+            updateTime();
+            setInterval(updateTime, 500);
+
+            $('.contacts').slimScroll({
+                height: '100%',
+                railOpacity: 0.9
+            });
+
+            $('body').removeClass('loading');
+
+             $('.custom-file-input-single').on('change', function() {
+                let fileName = $(this).val().split('\\').pop();
+                if (fileName == ''){
+                    fileName = 'Choose a file..';
+                }
+                if (fileName.length > 24) {
+                    fileName = '..'+fileName.substring(fileName.length - 24,fileName.length)
+                }
+                $(this).next('.custom-file-label').addClass("selected").html(fileName);
+            });
+
+            $('.custom-file-input-multiple').on('change', function() {
+                let fileName = $(this).val().split('\\').pop();
+                let numFiles = $(this).get(0).files.length - 1
+                if (fileName == ''){
+                    fileName = 'Choose files..';
+                } else {
+                    if (numFiles > 1) {
+                        fileName = fileName + ' and ' + numFiles + ' other files';
+                    } else {
+                        if (numFiles > 0) {
+                            fileName = fileName + ' and ' + numFiles + ' other file';
+                        }
+                    }
+                }
+                if (fileName.length > 65) {
+                    fileName = '..'+fileName.substring(fileName.length - 65,fileName.length)
+                }
+                $(this).next('.custom-file-label').addClass("selected").html(fileName);
+            });
+
+            function shuffle_array(array) {
+                var currentIndex = array.length, temporaryValue, randomIndex;
+                while (0 !== currentIndex) {
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex -= 1;
+
+                    temporaryValue = array[currentIndex];
+                    array[currentIndex] = array[randomIndex];
+                    array[randomIndex] = temporaryValue;
+                }
+                return array;
+            }
+
+            $(".modal").on('hidden.bs.modal', function () {
+                $(this).data('bs.modal', null);
+                $(this).find('form').trigger('reset');
+                setTimeout(function(){$('body').removeClass('modal-open')}, 200);
+            });
+
+            {% for msg in messages %}
+                toastrOptions();
+                {% if msg.tags == 'error' %}
+                Swal.fire("Ooops!", "{{ msg }}", "error");
+                {% elif 'employee' in msg.extra_tags %}
+                Swal.fire("Success", "{{ msg }}", "success");
+                {% endif %}
+            {% endfor %}
+
+            select2Init();
+            function select2Init(){
+                $('.select').select2({
+                    width: "100%",
+                    allowClear: true,
+                    placeholder: 'Choose',
+                });
+            }
+
+            function updateTime(){
+                var timestamp = new Date(Date('{% get_server_time %}'));
+                var options = { year: 'numeric', month: 'short', day: '2-digit', hour:'2-digit', minute: '2-digit', hour12: true, second: '2-digit'};
+                $('#time').html(new Intl.DateTimeFormat('en-US', options).format(timestamp).replace(',',''));
+            }
+        });
+
+        function toastrOptions() {
+            toastr.options = {
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "showDuration": "1000",
+                "hideDuration": "2000",
+                "timeOut": "2000",
+                "extendedTimeOut": "0",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut",
+                "bodyOutputType": "trustedHtml",
+            }
+        }
+
+        function icheckInit(){
+            $('.icheck').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green',
+            });
+        }
+
+        $('#maximize-btn').on('click', function(){
+            $(this).find('i').toggleClass('fa-window-maximize fa-window-minimize');
+        });
+
+        function shuffle_array(array) {
+            var currentIndex = array.length, temporaryValue, randomIndex;
+            while (0 !== currentIndex) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+            return array;
+        }
+
+        var background_colors = ["#A3E1D4","#DEDEDE","#B5B8CF",
+                                 "#CAE5E5","#D8A7B1","#B6E2D3",
+                                 "#FAE8E0","#EF7C8E","#8FDDE7",
+                                 "#FBE5C8","#F2E6D6","#FCC0C5",
+                                 "#A0E0E4","#DCE7E0","#E2C9DD",
+                                 "#631616","#260b1e","#343b22",
+                                 "#7b6d32","#af4d4d","#631d84",
+                                 "#306843","#cbaf6b","#deac96",
+                                 "#8f6ab8","#77b391","#b1c276",
+                                 "#dec4dc","#9ea9cb","#5880b3",
+                                 "#38557b","#fafafa","#d4d4d4",
+                                 "#9d9d9d","#4b4b4b","#f9d381",
+                                 "#eaaf4d","#f9938a","#e75952",
+                                 "#9ad1f9","#58aeee","#8deda7",
+                                 "#44c55b","#c3a7e1","#9569c8",
+                                 "#bab5aa","#948e82"];
+
+        function copyToClipboard(div, text) {
+            var $temp = $("<input>");
+            $(div).append($temp);
+            $temp.val(text).select();
+            document.execCommand("copy");
+            $temp.remove();
+            toastrOptions();
+            toastr.success("Keyword '"+text+"' was copied to your clipboard.", "Copying to clipboard..");
+        }
+
+        (function($){
+            $.fn.textareaCounter = function(options) {
+                // setting the defaults
+                var defaults = {
+                    limit: 150
+                };
+                var options = $.extend(defaults, options);
+
+                // and the plugin begins
+                return this.each(function() {
+                    var obj, text, wordcount, limited;
+
+                    obj = $(this);
+                    text = this.innerHTML.trim();
+                    if (text === ""){
+                        wordcount = 0;
+                    } else {
+                        wordcount = $.trim(text).split(" ").length;
+                    }
+                    obj.after('<span style="font-size: 11px; clear: both; margin-top: 3px; display: block;" id="counter-text">You have written '+wordcount+' of minimum '+options.limit+' words.</span>');
+
+                    obj.keyup(function() {
+                        text = obj.val();
+            			this.setCustomValidity("");
+                        if (text === "") {
+                            wordcount = 0;
+                        } else {
+                            wordcount = $.trim(text).split(" ").length;
+                        }
+                        $("#counter-text").html('<span style="font-size: 11px; clear: both; margin-top: 3px; display: block;" id="counter-text">You have written '+wordcount+' of minimum '+options.limit+' words.</span>');
+                    });
+                });
+            };
+        })(jQuery);
+
+        $(window).scroll(function() {
+            if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
+                $('#return-to-top').fadeIn(200);    // Fade in the arrow
+            } else {
+                $('#return-to-top').fadeOut(200);   // Else fade out the arrow
+            }
+        });
+
+        $('#return-to-top').click(function() {      // When arrow is clicked
+            $('body,html').animate({
+                scrollTop : 0                       // Scroll to top of body
+            }, 500);
+        });
+
+        '{% if user|check_permission:'payroll' or user|check_permission:'superadmin'%}'
+            $(".filter_employee").typeahead({
+				source: function(query, process){
+					return $.get({
+						url: '{% url "filter_employee" %}',
+						data: { query: query },
+						datatype: 'json',
+						success: function (data) {
+							return process(data);
+						}
+					});
+				},
+				highlight: true,
+			});
+        '{% endif %}'
+
+        $(document).ready(function() {
+            $('.filter-search').on('input', function() {
+                var query = $(this).val();
+                if (query !== "") {
+                    $.ajax({
+                        url: '{% url "filter_shortcut_links" %}',
+                        data: {
+                            'q': query,
+                        },
+                        dataType: 'json',
+                        success: function(data) {
+                           if (data && data.length > 0) {
+                                $('#results').empty();
+
+                                data.forEach(function (item) {
+                                    var panelBody = $('<a href="'+ item.link +'" class="list-group-item list-group-item-action"></a>');
+                                    var heading = $('<h3>' + item.name + '</h3>');
+                                    var description = $('<p>' + item.description + '</p>');
+                                    panelBody.append(heading, description);
+
+                                    $('#results').append(panelBody);
+                                });
+                            } else {
+                                $('#results').empty();
+                            }
+                        }
+                    });
+                }
+                else {
+                    $('#results').empty();
+                }
+            });
+        });
+    </script>
+    <script type="text/javascript" for="contact-tracing">
+	    $('#contacts-search').on('submit', function(e){
+            e.preventDefault();
+
+            $("#contacts-search-results").empty();
+
+    		var form = new FormData(this);
+            $.ajax({
+                data        : form,
+                url         : '{% url "contacts-search" %}',
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            }).done(function(data){
+                for (var i = 0; i < data.data.length; i++) {
+                    thishtml = '<div class="sidebar-message">\
+                                    <div class="media-body">\
+                                        <h4>'+ data.data[i].fullname +'</h4>\
+                                        <small class="text-muted bold">'+ data.data[i].company +'</small><br>\
+                                        <small class="text-muted bold">'+ data.data[i].job_title +'</small><br>'
+                    if(data.data[i].notes != '') {
+                        thishtml += '<small class="text-muted">'+ data.data[i].notes +'</small><br>';
+                    }
+                    thishtml += '<br><small class="text-muted">Org type&emsp;:&emsp;'+ data.data[i].orgtype +'</small><br>\
+                                        <small class="text-muted">'+ data.data[i].details +'</small>\
+                                    </div>\
+                                </div>';
+                    $("#contacts-search-results").append(thishtml);
+                }
+                ;
+            });
+        });
+    </script>
+    {% block script %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,209 @@
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/summernote/summernote.css' %}" rel="stylesheet">
+{% endblock %}
+{% if transaction.drn %}
+    <p>DRN: <strong>{{ transaction.drn }}</strong></p>
+{% endif %}
+<form id="submitLCForm">
+    {% csrf_token %}
+    <div class="form-group">
+        <label>Document Title<span class="asteriskField">*</span></label>
+        <input type="text" class="form-control" name="title" required>
+    </div>
+    <textarea name="content" id="summernote-leave-certificate" style="border:1px solid #e5e6e7;">
+        {{ lc_type.template }}
+    </textarea>
+    <br>
+    <button type="button" class="btn btn-warning" id="btn-back">Back</button>
+    <button type="submit" class="btn btn-info">Create</button>
+</form>
+
+<div class="modal" id="forward_to_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">GENERATE DRN</h3>
+
+            </div>
+            <form id="generateDRNForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Employee Name<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control get-filter-employee-all" name="get-employee-name" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-info">Generate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(".get-filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#submitLCForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to create this leave certification?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "leave_certification_layout" lc_type.id employee.id_number %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                  title: "Good job!",
+                  text: response.value.msg,
+                  icon: "success",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        callCertificateLayoutPage('/backend/leave/certification/transaction/{{ employee.id_number }}');
+                    }
+                });
+            } else {
+                Swal.fire('Ooops!', response.value.msg, 'warning');
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('#summernote-leave-certificate').summernote({
+        height: 768,
+        dialogsInBody: true,
+        fontSizeUnits: ['px', 'pt'],
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['table', ['table']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+
+    $(document).ready(function(){
+        $('#dswd-logo').attr('src', '{% static 'image/dswd_logo_3.png' %}');
+        $('#dswd-caraga-logo').attr('src', '{% static 'image/fo_insignia.png' %}');
+
+        $('#name').text('{% if employee.pi.gender == 1 %}MR.{% else %}MS.{% endif %} {{ employee.pi.user.get_fullname|upper }}');
+        $('.name_last').text('{% if employee.pi.gender == 1 %}Mr.{% else %}Ms.{% endif %} {{ employee.pi.user.last_name }}');
+        $('#date').text('{{ today|date:"jS" }} day of {{ today|date:"F, Y" }}');
+        $('#date_formatted').text('{{ today|date:'F d, Y' }}');
+
+        $('#employee-length').text('{{ first_date.we__we_from|date:"F d, Y" }} to {{ last_date.we__we_to|date:"F d, Y" }}');
+
+        $('#submitForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                  title: "Are you sure",
+                  text: "You want to save this template?",
+                  icon: "info",
+                  showCancelButton: true,
+                  confirmButtonColor: "#DD6B55",
+                  confirmButtonText: "Yes",
+                  allowOutsideClick: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: function (){
+                        return $.ajax({
+                            data        : form,
+                            url         : '{% url "leave_certification_layout" lc_type.id employee.id_number %}',
+                            type        : 'POST',
+                            cache       : false,
+                            contentType : false,
+                            processData : false,
+                        });
+                    },
+                }).then(function (data){
+                    if(data.value.data == "success"){
+                        Swal.fire('Good job!', 'Successfully saved the template', 'success');
+                    }
+                });
+            e.preventDefault();
+        });
+
+        $('#generate-drn').on('click', function(){
+            $('#forward_to_modal').modal('show');
+        });
+
+        $('#generateDRNForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to generate drn to this leave certification?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "generate_drn_lc" transaction.id %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: response.value.drn,
+                      text: "New DRN has been created. Please copy the generated DRN to your designated document",
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#forward_to_modal').modal('hide');
+                            $('.modal').css('overflow-y', 'auto');
+                            callCertificateLayoutPage('/backend/leave/certification/template/{{ lc_type.id }}/{{ employee.id_number }}');
+                        }
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#btn-back').on('click', function(){
+            callCertificateLayoutPage('/backend/leave/certification/transaction/{{ employee.id_number }}');
+        });
+    });
+</script>
+{% endblock %}

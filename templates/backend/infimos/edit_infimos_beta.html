@@ -1,0 +1,103 @@
+<form id="editForm">
+{% csrf_token %}
+<div class="modal-body">
+    <div class="row">
+        <div class="col-sm-8">
+            <label>DV Number</label>
+            <p>{{ transactions.dv_no }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Project Source</label>
+                <select class="form-control select" name="projectsrc" id="projectsrc" required>
+                    <option value=""></option>
+                    {% for row in ps %}
+                    {% if row.projectsrc_id == transactions.projectsrc_id %}
+                    <option value="{{ row.projectsrc_id }}" selected="selected">{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.projectsrc_id }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Payee</label>
+                <input type="text" placeholder="Type Something.." value="{{ transactions.payee }}" name="payee" class="payee form-control" required/>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-control" name="description" id="description" required>{{ transactions.modepayment }}</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Amount Certified</label>
+                <input type="text" class="form-control" name="amt_certified" value="{{ transactions.amt_certified }}" required>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Accountable</label>
+                <input type="text" class="form-control" name="accountable" value="{{ transactions.accountable }}" required>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">
+        <span class="loading open-circle" style="display:none;"></span> Update
+    </button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+	$('#editForm').on('submit', function(e){
+        $.ajax({
+            data        : new FormData(this),
+            url         : "{% url 'infimos_beta_view' year transactions.dv_no %}",
+            type        : 'POST',
+            beforeSend: function(){
+                $('.loading').css('display', '');
+                $('.btn').prop("disabled", true);
+            },
+            success: function(response){
+                if (response.data){
+                    $('#edit-incoming-modal').modal('hide');
+                    Swal.fire("Success", response.msg, "success")
+                    $('#table-infimos').DataTable().ajax.reload();
+                }
+            },
+            complete: function(){
+                $('.loading').css('display', 'none');
+                $('.btn').prop("disabled", false);
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+        e.preventDefault();
+    });
+
+	$.get('{% url "filter_payee" %}', function(data){
+		$(".payee").typeahead({
+			source:data,
+		});
+    },'json');
+</script>
+{% endblock %}

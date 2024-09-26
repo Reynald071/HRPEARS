@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print IPCR</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 205mm !important;
+				width: 100%;
+				zoom: 130%;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		}
+		@page {
+			size: auto;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">IPCR Ranking Report</a>
+		<ul class="nav navbar-nav navbar-right">
+			<li><a href="javascript:;" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</a></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	<page size="A4flex" class="page" style="padding: 45px;">
+		<div class="containerX">
+			<center>
+				<p class="font-weight-bold">Department of Social Welfare and Development</p><br>
+				<p class="font-weight-bold mt-n2">SUMMARY OF INDIVIDUAL PERFORMANCE RATINGS</p>
+				<p class="font-weight-bold mt-n2">FY {{ year }}</p><br>
+				<p class="font-weight-bold mt-n2">FIELD OFFICE X</p>
+			</center>
+			<table border="1" width="100%">
+				<tr>
+					<th rowspan="2" width="30%">&nbsp;NAME OF EMPLOYEE</th>
+					<th rowspan="2" class="text-center" width="20%">EMPLOYMENT STATUS</th>
+					<th colspan="2" class="text-center">NUMERICAL RATING</th>
+					<th rowspan="2" class="text-center">AVERAGE</th>
+					<th rowspan="2" class="text-center">RANK</th>
+				</tr>
+				<tr>
+					<th class="text-center">FIRST SEMESTER</th>
+					<th class="text-center">SECOND SEMESTER</th>
+				</tr>
+				{% for row in data %}
+				<tr>
+					<td>&nbsp;{{ row.pi.user.get_fullname_formatted }}</td>
+					<td class="text-center">{{ row.empstatus.name }}</td>
+					<td class="text-center">
+						{% get_ipcr_rating row.id year 1 as first_semester %}
+						{% if first_semester %}{{ first_semester.ipcr|floatformat:5 }}{% endif %}
+					</td>
+					<td class="text-center">
+						{% get_ipcr_rating row.id year 2 as second_semester %}
+						{% if second_semester %}{{ second_semester.ipcr|floatformat:5 }}{% endif %}
+					</td>
+					<td class="text-center">{{ row.avg_ipcr|floatformat:5 }}</td>
+					<td class="text-center">{{ forloop.counter }}</td>
+				</tr>
+				{% endfor %}
+				{% for row in employee_without_rank %}
+				<tr>
+					<td>&nbsp;{{ row.pi.user.get_fullname_formatted }}</td>
+					<td class="text-center">{{ row.empstatus.name }}</td>
+					<td class="text-center">
+
+					</td>
+					<td class="text-center">
+					</td>
+					<td class="text-center"></td>
+					<td class="text-center"></td>
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</page>
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

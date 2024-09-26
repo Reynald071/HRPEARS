@@ -1,0 +1,423 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<style>
+   input[type=checkbox] {width:20px; height:20px;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+   <div class="col-lg-8">
+      <h1 class="bold">Incident Report</h1>
+      <ol class="breadcrumb">
+         <li class="breadcrumb-item">
+            <a href="{% url 'backend-dashboard' %}">Administrator</a>
+         </li>
+         <li class="breadcrumb-item active">
+            <strong>Incident Report Database</strong>
+         </li>
+      </ol>
+   </div>
+   <div class="col-lg-4">
+      <div class="title-action">
+         <div class="btn-group">
+            <a class="btn btn-info" data-toggle="modal" data-target="#assistance_modal"><i class="fa fa-plus"></i>Add Employee</a>
+            <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="loading open-circle" style="display:none;"></span><i class="fas fa-file-export"></i> Action <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+               <li><a class="btn btn-default" data-role="summary" href='#'>Print</a></li>
+            </ul>
+         </div>
+      </div>
+   </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+   <div class="row">
+      <div class="col-md-9">
+         <div class="ibox">
+            <div class="ibox-content">
+               <div class="table-responsive text-nowrap table-scroll">
+                  <table class="table table-hover" id="employee_assistance" width="100%">
+                     <thead>
+                        <tr>
+                           <th>Details</th>
+                           <th style="display:none;">ID</th>
+                           <th class="capslock">Emp ID</th>
+                           <th class="capslock">Last Name</th>
+                           <th class="capslock">First Name</th>
+                           <th class="capslock">Middle Name</th>
+                           <th class="capslock">Employment Status</th>
+                           <th class="capslock">Division</th>
+                           <th class="capslock">Sex</th>
+                           <th class="capslock">Category</th>
+                           <th class="capslock">Date Requested</th>
+                        </tr>
+                     </thead>
+                  </table>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="col-sm-3">
+         <div class="row">
+            <div class="col-md-12">
+               <div class="ibox">
+                  <div class="ibox-title bg-primary">
+                     <h5>FILTER</h5>
+                  </div>
+                  <div class="ibox-content">
+                     <h4>By Category</h4>
+                     <div class="list-group">
+                        <a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+                        {% for row in categories %}
+                        <a class="list-group-item"  id="status-{{row.id}}" href="javascript:;" data-role="status" data-filter="{{row.id}}">{{row.name}}</a>
+                        {% endfor %}
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+<div id="mySummary" class="modal fade" role="dialog" aria-labelledby="myExtraLargeModalLabel" data-backdrop="static"  aria-hidden="true">
+   <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+         <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+            <h3 class="modal-title">Print Report</h3>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+         <div class="modal-body" id="load_data">
+            <center>
+               <div class="table-responsive">
+                  <form method="GET" action="{% url 'print_irdb' %}" target="blank" style="margin-bottom:10px">
+                     <div class="form-group">
+                        <div class="form-group">
+                           <h3>Please choose directly</h3>
+                           <select class="form-control select" style="width:100%;" id="category" name="category" required="true">
+                              <option></option>
+                              {% for row in categories %}
+                              <option value="{{row.id}}">{{row.name}}</option>
+                              {% endfor %}
+                           </select>
+                        </div>
+                     </div>
+               </div>
+            </center>
+         </div>
+         <div class="modal-footer">
+         <button class="btn btn-light" data-dismiss="modal" onClick="window.location.reload();">Close</button>
+         <button class="btn-info btn pull-right" type="submit">Print</button>
+         </form>
+         </div>
+      </div>
+   </div>
+</div>
+<div aria-hidden="true" aria-labelledby="myExtraLargeModalLabel" class="modal fade" data-backdrop="static" id="ir_modal"
+   role="dialog">
+   <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+         <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+            <h3 class="modal-title">Employee Assistance Details</h3>
+            <button aria-label="Close" class="close text-white" data-dismiss="modal"
+               type="button">
+            <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+         <div class="modal-body" id="load_data">
+         </div>
+      </div>
+   </div>
+</div>
+<div class="modal" id="assistance_modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+        <h3 class="modal-title" id="exampleModalLabel">Insert Intervention</h3>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+            <form id="insertir">
+            {% csrf_token %}
+            <div class="form-group">
+               <label class="bmd-label-floating">Employee Info<span class="asteriskField">*</span> </label>
+               <input autocomplete="off" class="form-control typeahead2" name="idnumber" required="true"
+                     type="text">
+               <h4>Category<span class="asteriskField">*</span></h4>
+               <div class="form-group">
+                  <select class="form-control select" id="activity_db" name="category"
+                        style="width:100%;">
+                     <option></option>
+                     {% for row in categories %}
+                     <option value="{{row.id}}">{{row.name}}</option>
+                     {% endfor %}
+                  </select>
+                  <br>
+               </div>
+               <div class="form-group" id="stocks_inventory">
+                  <label class="bmd-label-floating">Date of Incident Report</label>
+                  <input autocomplete="off" class="form-control" id="inventoryid" name="date_of_ir" type="date">
+                  <br>
+                  <label class="bmd-label-floating">Remarks</label>
+                  <textarea class="form-control" name="remarks" id="" rows="3"></textarea>
+               </div>
+            </div>
+            <button class="btn-info btn pull-right" type="submit">Submit</button>
+            <br>
+         </form>
+      </div>
+    </div>
+    </div>
+</div>
+<div id="mySummary" class="modal fade" role="dialog" aria-labelledby="myExtraLargeModalLabel" data-backdrop="static"  aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+   <div class="modal-content">
+      <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+         <h3 class="modal-title">Print Report</h3>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+         <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+        <div class="modal-body" id="load_data">
+         <center>
+         <div class="table-responsive">
+         <form method="GET" action="{% url 'printsweapreport' %}" target="blank" style="margin-bottom:10px">
+            <div class="form-group">
+               <div class="form-group">
+                  <select class="form-control select" style="width:100%;" id="month" name="mth" required="true">
+                    <option></option>
+                    <option value="Mortuary">Mortuary</option>
+                    <option value="Medical">Medical</option>
+                    <option value="ALL">ALL</option>
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03">March</option>
+                    <option value="04">Arpil</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+               </div>
+            </div>
+         </div>
+         </center>
+        </div>
+      <div class="modal-footer">
+         <button class="btn btn-light" data-dismiss="modal">Close</button>
+         <button class="btn-info btn pull-right" type="submit">Print</button>
+         </form>
+      </div>
+   </div>
+  </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+   datatable_stocks();
+   function datatable_stocks(){
+   	$('#employee_assistance').DataTable({
+   		'serverSide': true,
+   		'processing': true,
+   		'deferRender': true,
+   		'order': [[ 0, 'desc' ]],
+   		'lengthMenu': [25,50,100],
+   		'ajax': {
+   			'url': '/api/hrws/incident_report_view?format=datatables',
+   			'type': 'GET',
+   			'beforeSend': function (request) {
+   				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+   			}
+   		},
+   		'fnCreatedRow': function (row, data, index) {
+   			$(row).attr('id', data['id']);
+   		},
+   		'columns': [
+   			{'data': 'id',
+   				'render': function(data, type, row, meta) {
+                             return " <a href='#' data-role='ir_modal' data-id="+ data + ">Details</a> | \
+                             <a href='#' data-role='Delete' data-id="+ data + ">Delete</a>"
+                         }
+   			},
+   			{'data': 'emp_id', 'className': 'text-center', 'name':'emp.id_number'},
+            {'data':'lname', 'className': 'text-center', 'name':'emp.pi.user.last_name'},
+            {'data':'fname', 'className': 'text-center', 'name':'emp.pi.user.first_name'},
+            {'data':'mname', 'className': 'text-center', 'name':'emp.pi.user.middle_name'},
+            {'data':'employment_status', 'className': 'text-center', 'name':'emp.empstatus.name'},
+            {'data':'division', 'className': 'text-center', 'name':'emp.section.div.div_name'},
+            {'data':'sex', 'className': 'text-center', 'name':'emp.pi.gender',                  
+               'render': function(data,type,row,meta){
+                  if(row['sex'] == 1){
+                     return '<td>Male</td>'
+                  }else{
+                     return '<td>Female</td>'
+                  }
+               }
+            },
+            {'data':'category','className':'text-center','name':'category.name'}, 
+            {'data':'date','className':'text-center'},
+   		],
+   	});
+   }
+    $('#insertir').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure.",
+        text: "You want to insert this data to database?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'employee_ir' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data == 'success'){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully inserted data",
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#employee_assistance').DataTable().ajax.reload();
+                        }
+                    });
+                }else if(data == 'fail'){
+                    Swal.fire({
+                      title: "Insert Failed!",
+                      text: "Data already exists, Kindly search and update instead",
+                      icon: "error",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{% url 'hrwactivity' %}";
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+   
+   $(document).on('click', 'a[data-role=status]', function(){
+      $('.list-group-item').removeClass('active');
+      $('#status-'+$(this).data('filter')).addClass('active');
+      if($(this).data('filter') == 'all'){
+         $('#employee_assistance').DataTable().ajax.url('/api/hrws/incident_report_view?format=datatables').load();
+      }else{
+         $('#employee_assistance').DataTable().ajax.url('/api/hrws/incident_report_view?format=datatables&status='+$(this).data('filter')).load();
+      }
+   });
+
+   $(document).on('click', 'a[data-role=Delete]', function(){
+     	var id = $(this).data('id');
+     	Swal.fire({
+     title: "Are you sure",
+           text: "The employee Received Provision?",
+     icon: "warning",
+     showCancelButton: true,
+     confirmButtonColor: "#3498DB",
+     confirmButtonText: "Yes",
+     allowOutsideClick: false,
+   }).then((result) => {
+       if (result.isConfirmed) {
+           Swal.showLoading()
+   		$.ajax({
+   			url: "{% url 'delete_info' %}",
+   			data: {
+   				id: id
+   			},
+   			type: "POST"
+   		})
+   		.done(function(data){
+   			if (data.data == 'success'){
+   				Swal.fire({
+   				  title: "Good job!",
+   				  text: "You successfully Deleted the data" ,
+   				  icon: "success",
+   				  confirmButtonColor: "#3498DB",
+   				  allowOutsideClick: false,
+   				}).then((result) => {
+       				if (result.isConfirmed) {
+   				  		$('#employee_assistance').DataTable().ajax.reload();
+   				  	}
+   				});
+   			}
+   		});
+   	}
+   });
+     });
+   $('#category_request').prop('disabled', true);
+   function clear(){
+   	$('#category_request').empty();
+   }
+   $(document).on('click','a[data-role=view]', function(){ // FOR MODAL PASS TO DIFFERENT MODAL
+    var id = $(this).data('id');
+    var ei = $('#'+id).children('td:eq(1)').text();
+    var fn = $('#'+id).children('td:eq(2)').text();
+    var ta = $('#'+id).children('td:eq(5)').text();
+    var Dte = $('#'+id).children('td:eq(11)').text();
+   
+    var formattedDate = moment(Dte).format('YYYY-MM-DD');
+   
+    $('#id').val(id);
+    $('#emp_id').val(ei);
+    $('#full_name').val(fn);
+    $('#type_assistance').val(ta);
+    $('#Date').val(formattedDate);
+   
+    $('#myModal').modal('show')
+   });
+   
+   $(document).on('click','a[data-role=summary]', function(){ // FOR MODAL SUMMARY
+    $('#mySummary').modal('show')
+   });
+   
+   $(document).on('click','a[data-role=ir_modal]', function(){ // FOR MODAL SUMMARY
+    var id = $(this).data('id');
+    $('#ir_modal').modal('show').find('#load_data').load('/welfare/IncidentReport/modal/' +id);
+   });
+   
+   $("#intervention, #add").keyup(function () { 
+    $("#total").val(+$("#intervention").val() + +$("#add").val());
+   });
+   $(".typeahead, .typeahead2, .typeahead3, .typeahead4").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/hrpearlogo_192.png' %}" />
+    <title>DSWD CDO HR Pears | Login</title>
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style_new.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+    <style>
+        .invalid-feedback{
+            color:#fb4347;
+        }
+
+        .loading{
+            overflow: hidden;
+        }
+
+        th {
+            vertical-align: middle !important;
+        }
+
+        li.nav-item.active {
+            border-bottom: 1px solid white;
+        }
+    </style>
+    {% block style %}{% endblock %}
+</head>
+<body class="login-page" style="min-height: 466px;">
+    <div class="login-box">
+        <div class="card card-outline card-info">
+            <div class="card-header text-center py-3">
+                <a href="{% url 'home' %}" class="h1 font-weight-bolder text-dark">
+                    <img loading="lazy" src="{% static 'image/dswd_logo_4.png' %}" style="width: 150px;">
+                    <br>
+                    <img src="{% static 'image/hrpearlogo_ls.png' %}" width="250px">
+                </a>
+            </div>
+            <div class="card-body">
+                <div id="alertDiv"></div>
+                <p class="login-box-msg">Sign in to start your session</p>
+                <form id="loginForm">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input type="text" id="username" name="username" class="form-control" autocomplete="off" required placeholder="Username">
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password" id="password" name="password" class="form-control" autocomplete="off" required placeholder="Password">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-5">
+                        <div class="col-8">
+                            <div class="icheck-primary mt-2">
+                                <input type="checkbox" id="remember_me">
+                                <label for="remember_me"> Remember Me </label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <button id="submitBtn" type="submit" class="btn btn-info btn-block">Sign In</button>
+                        </div>
+                    </div>
+                </form>
+                <p class="mb-1 mt-3">
+                    <a href="{% url 'forgot_password' %}">I forgot my password</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <script>$.widget.bridge('uibutton', $.ui.button)</script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $("#loginForm").on("submit", function (e) {
+                var form = new FormData(this);
+                $.ajax({
+                    data: form,
+                    url: '{% url "backend-login" %}',
+                    type: "POST",
+                    beforeSend: function () {
+                        $('#submitBtn').addClass('cursor-not-allowed');
+                        $("#submitBtn").html('<span class="loading open-circle" style="font-size: 25px;"></span>');
+                    },
+                    success: function (response) {
+                        if (response.data) {
+                            $('#submitBtn').addClass('cursor-not-allowed');
+                            $("#submitBtn").html('<span class="loading open-circle" style="font-size: 25px;"></span>');
+                            window.location.href = "{% if request.GET.next %}{{ request.GET.next }}{% else %}{% url 'home' %}{% endif %}";
+                        } else {
+                            $('#submitBtn').removeClass('cursor-not-allowed');
+                            $("#submitBtn").html("Sign In");
+                            $("#alertDiv").html(`
+                                <div class="alert alert-danger" role="alert">
+                                    <span class="font-weight-bold" style="font-size: 16px;"><i class="fas fa-info-circle"></i> ` + response.msg + `</span><hr class="my-2">
+                                    <p class="text-sm">
+                                        Please try again or would you like to reset your password?
+                                        <a href="{% url 'forgot_password' %}">click here</a>
+                                    </p>
+                                </div>
+                            `);
+                        }
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                });
+                e.preventDefault();
+            });
+        });
+    </script>
+    {% block script %}{% endblock %}
+</body>
+</html>

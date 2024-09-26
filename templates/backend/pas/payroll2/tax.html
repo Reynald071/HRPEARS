@@ -1,0 +1,552 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h1 class="bold">Tax</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                Tax
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+                    <h3 class="no-margins">TAX COMPUTATION</h3>
+
+                </div>
+                <div class="ibox-content">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#first-quarter">First Quarter</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#second-quarter">Second Quarter</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#third-quarter">Third Quarter</a></li>
+                        </ul>
+						<div class="tab-content" style="border: 0px !important;">
+							<div id="first-quarter" class="tab-pane active">
+                                <div class="panel-body">
+                                    <form id="firstQuarterForm">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quarter" value="1">
+                                    <div class="form-group">
+                                        <label>Employee Name</label>
+                                        <input type="text" class="form-control filter-employee-first-quarter" name="employee_name" autocomplete="off" required>
+                                    </div>
+                                    <label>Tax Details</label>
+                                    <hr style="margin-top: -5px !important;">
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 47: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="one_four_seven" id="one_four_seven" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 52: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="one_five_two" value="250000" id="one_five_two" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 53: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="one_five_three" id="one_five_three" value="0" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 54: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="one_five_four" id="one_five_four" value="0" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label">Percentage </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="one_percentage" id="one_percentage" value="8" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 63 (tax due): </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="one_six_three" id="one_six_three" value="0" autocomplete="off" required></div>
+                                    </div>
+                                    <br>
+                                    <button type="submit" class="btn btn-info">Save changes</button>
+                                    <button type="button" class="btn btn-success" id="open-first-qtr-notification-modal">Preview Message</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div id="second-quarter" class="tab-pane">
+                                <div class="panel-body">
+                                    <form id="secondQuarterForm">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quarter" value="2">
+                                    <div class="form-group">
+                                        <label>Employee Name</label>
+                                        <input type="text" class="form-control filter-employee-second-quarter" name="employee_name" autocomplete="off" required>
+                                    </div>
+                                    <label>Tax Details</label>
+                                    <hr style="margin-top: -5px !important;">
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 47: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_four_seven" id="two_four_seven" autocomplete="off" required></div>
+                                    </div>
+                                        <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 50: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_five_zero" id="two_five_zero" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 52: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_five_two" value="250000" id="two_five_two" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 53: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_five_three" id="two_five_three" value="0" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 54: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_five_four" id="two_five_four" value="0" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label">Percentage </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_percentage" id="two_percentage" value="8" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 56: (tax paid)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_five_six" id="two_five_six" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 57: (previous 2307)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_five_seven" id="two_five_seven" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 58: (current 2307)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_five_eight" id="two_five_eight" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 63: (tax due)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="two_six_three" id="two_six_three" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <br>
+                                    <button type="submit" class="btn btn-info">Save changes</button>
+                                    <button type="button" class="btn btn-success" id="open-second-qtr-notification-modal">Preview Message</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div id="third-quarter" class="tab-pane">
+                                <div class="panel-body">
+                                    <form id="thirdQuarterForm">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quarter" value="3">
+                                    <div class="form-group">
+                                        <label>Employee Name</label>
+                                        <input type="text" class="form-control filter-employee-third-quarter" name="employee_name" autocomplete="off" required>
+                                    </div>
+                                    <label>Tax Details</label>
+                                    <hr style="margin-top: -5px !important;">
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 47: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_four_seven" id="three_four_seven" autocomplete="off" required></div>
+                                    </div>
+                                        <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 50: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_five_zero" id="three_five_zero" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 52: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_five_two" value="250000" id="three_five_two" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 53: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_five_three" id="three_five_three" value="0" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 54: </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_five_four" id="three_five_four" value="0" autocomplete="off" required></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label">Percentage </label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_percentage" id="three_percentage" value="8" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 56: (tax paid)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_five_six" id="three_five_six" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 57: (previous 2307)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_five_seven" id="three_five_seven" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 58: (current 2307)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_five_eight" id="three_five_eight" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label"># 63: (tax due)</label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" name="three_six_three" id="three_six_three" value="0" autocomplete="off"></div>
+                                    </div>
+                                    <br>
+                                    <button type="submit" class="btn btn-info">Save changes</button>
+                                    <button type="button" class="btn btn-success" id="open-third-qtr-notification-modal">Preview Message</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+                    <h3 class="no-margins">FILTER</h3>
+                    <small>You can filter by year.</small>
+                </div>
+                <div class="ibox-content">
+                    <div class="form-group">
+                        <label>Year</label>
+                        <input type="text" class="form-control" value="{{ year }}" name="year" id="year">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="notification-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info" style="border-bottom: 0px !important;">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">NOTIFICATION</h3>
+                <small>Please review the message below before sending.</small>
+            </div>
+            <div class="modal-body">
+                <form id="sendMessageForm">
+                {% csrf_token %}
+                <input type="hidden" id="employee_name" name="employee_name">
+                <textarea class="form-control" name="message" id="message" rows="10"></textarea>
+                <br>
+                <button type="submit" class="btn btn-info">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+        String.prototype.toProperCase = function () {
+            return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+        };
+
+        $('#open-first-qtr-notification-modal').on('click', function(){
+            if($('.filter-employee-first-quarter').val() != '') {
+                $('#notification-modal').modal('show');
+                $('#employee_name').val($('.filter-employee-first-quarter').val());
+                $('#message').val(
+                    "Good day Mr./Ms. "+ $('.filter-employee-first-quarter').val().split(" ").splice(-1)[0].toProperCase() +"! Below are your BIR income details for first quarter: #47: " + $('#one_four_seven').val() +
+                    ", #52: "+ $('#one_five_two').val() +" #53: "+ $('#one_five_three').val() +", #54: "+ $('#one_five_four').val() +
+                    ", #63 (tax due): "+ $('#one_six_three').val() +".Please file your quarterly ITR on or before April 15, 2022 Thank you! Disclaimer: disregard this message if you have already filed your ITR. - The My PORTAL Team");
+            } else {
+                Swal.fire("Ooops!", "Please fill in the employee name field", "warning");
+            }
+        });
+
+        $('#open-second-qtr-notification-modal').on('click', function(){
+            if($('.filter-employee-second-quarter').val() != '') {
+                $('#notification-modal').modal('show');
+                $('#employee_name').val($('.filter-employee-second-quarter').val());
+                $('#message').val(
+                    "Good day Mr./Ms. "+ $('.filter-employee-second-quarter').val().split(" ").splice(-1)[0].toProperCase() +"! Below are your BIR income details for second quarter: #47: " + $('#two_four_seven').val() +
+                    ", #50: "+ $('#two_five_zero').val() +", #52: "+ $('#two_five_two').val() +" #53: "+ $('#two_five_three').val() +", #54: "+ $('#two_five_four').val() +
+                    ", #56 (tax paid): "+ $('#two_five_six').val() +", #57 (previous 2307): "+ $('#two_five_seven').val() +" #58 (current 2307): "+ $('#two_five_eight').val() +
+                    ", #63 (tax due): "+ $('#two_six_three').val() +".Please file your quarterly ITR on or before August 15, 2022 Thank you! Disclaimer: disregard this message if you have already filed your ITR. - The My PORTAL Team");
+            } else {
+                Swal.fire("Ooops!", "Please fill in the employee name field", "warning");
+            }
+        });
+
+        $('#open-third-qtr-notification-modal').on('click', function(){
+            if($('.filter-employee-third-quarter').val() != '') {
+                $('#notification-modal').modal('show');
+                $('#employee_name').val($('.filter-employee-third-quarter').val());
+                $('#message').val(
+                    "Good day Mr./Ms. "+ $('.filter-employee-third-quarter').val().split(" ").splice(-1)[0].toProperCase() +"! Below are your income details for third quarter: #47: " + $('#three_four_seven').val() +
+                    ", #50: "+ $('#three_five_zero').val() +", #52: "+ $('#three_five_two').val() +" #53: "+ $('#three_five_three').val() +", #54: "+ $('#three_five_four').val() +
+                    ", #56 (tax paid): "+ $('#three_five_six').val() +", #57 (previous 2307): "+ $('#three_five_seven').val() +" #58 (current 2307): "+ $('#three_five_eight').val() +
+                    ", #63 (tax due): "+ $('#three_six_three').val() +".Please file your quarterly ITR on or before October 15, 2022 Thank you! Disclaimer: disregard this message if you have already filed your ITR. - The My PORTAL Team");
+            } else {
+                Swal.fire("Ooops!", "Please fill in the employee name field", "warning");
+            }
+        });
+
+        $(".filter-employee-first-quarter, .filter-employee-second-quarter, .filter-employee-third-quarter").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+
+        $('.filter-employee-first-quarter').on('change', function(){
+            var employee_name = $(this).val();
+            var year = $('#year').val();
+            $.post({
+                url: '{% url "get_tax_data" %}',
+                data: {
+                    quarter: '1',
+                    employee_name: employee_name,
+                    year: year
+                },
+                success: function(response){
+                    var data = response.data;
+                    $('#one_four_seven').val(data[0]['four_seven']);
+                    $('#one_five_two').val(data[0]['five_two']);
+                    $('#one_five_three').val(data[0]['five_three']);
+                    $('#one_five_four').val(data[0]['five_four']);
+                    $('#one_six_three').val(data[0]['six_three']);
+                }
+            });
+        });
+
+        $('.filter-employee-second-quarter').on('change', function(){
+            var employee_name = $(this).val();
+            var year = $('#year').val();
+            $.post({
+                url: '{% url "get_tax_data" %}',
+                data: {
+                    quarter: '2',
+                    employee_name: employee_name,
+                    year: year
+                },
+                success: function(response){
+                    if(response.data_one){
+                        var data_one = response.data_one
+                        $('#two_five_zero').val(data_one[0]['four_seven']);
+                    } else {
+                        var data_two = response.data_two
+                        $('#two_four_seven').val(data_two[0]['four_seven']);
+                        $('#two_five_zero').val(data_two[0]['five_zero']);
+                        $('#two_five_two').val(data_two[0]['five_two']);
+                        $('#two_five_three').val(data_two[0]['five_three']);
+                        $('#two_five_four').val(data_two[0]['five_four']);
+                        $('#two_five_six').val(data_two[0]['five_six']);
+                        $('#two_five_seven').val(data_two[0]['five_seven']);
+                        $('#two_five_eight').val(data_two[0]['five_eight']);
+                        $('#two_six_three').val(data_two[0]['six_three']);
+                    }
+                }
+            });
+        });
+
+        $('.filter-employee-third-quarter').on('change', function(){
+            var employee_name = $(this).val();
+            var year = $('#year').val();
+            $.post({
+                url: '{% url "get_tax_data" %}',
+                data: {
+                    quarter: '3',
+                    employee_name: employee_name,
+                    year: year
+                },
+                success: function(response){
+                    if(response.data_one){
+                        var data_one = response.data_one
+                        var three_five_zero = parseFloat(data_one[0]['four_seven']) + parseFloat(data_one[0]['five_zero'])
+                        $('#three_five_zero').val(three_five_zero.toFixed(2));
+                    } else {
+                        var data_two = response.data_two
+                        $('#three_four_seven').val(data_two[0]['four_seven']);
+                        $('#three_five_zero').val(data_two[0]['five_zero']);
+                        $('#three_five_two').val(data_two[0]['five_two']);
+                        $('#three_five_three').val(data_two[0]['five_three']);
+                        $('#three_five_four').val(data_two[0]['five_four']);
+                        $('#three_five_six').val(data_two[0]['five_six']);
+                        $('#three_five_seven').val(data_two[0]['five_seven']);
+                        $('#three_five_eight').val(data_two[0]['five_eight']);
+                        $('#three_six_three').val(data_two[0]['six_three']);
+                    }
+                }
+            });
+        });
+
+        $('#one_four_seven').on('keyup', function(){
+            var four_seven = parseFloat($(this).val());
+            var five_two = parseFloat($('#one_five_two').val())
+            var five_three = four_seven - five_two;
+            if(five_three <= 0){
+                $('#one_five_three').val(0);
+            } else if($(this).val() == ''){
+                $('#one_five_three').val(0);
+                $('#one_five_four').val(0);
+                $('#one_six_three').val(0);
+            } else {
+                if(four_seven >= five_two){
+                    $('#one_five_three').val(five_three.toFixed(2));
+                    percentage = $('#one_percentage').val() / 100;
+                    total = five_three * percentage;
+                    $('#one_five_four').val(total.toFixed(2));
+                    $('#one_six_three').val(total.toFixed(2));
+                }
+            }
+        });
+
+        $('#two_four_seven').on('keyup', function(){
+            var two_four_seven = parseFloat($(this).val());
+            var two_five_zero = parseFloat($('#two_five_zero').val());
+            var two_five_two = parseFloat($('#two_five_two').val());
+
+            var two_five_three = (two_four_seven + two_five_zero) - two_five_two;
+            (two_five_three > 0) ? $('#two_five_three').val(two_five_three.toFixed(2)) : $('#two_five_three').val(0);
+
+            percentage = $('#two_percentage').val() / 100;
+            var two_five_four = two_five_three * percentage;
+            (two_five_four > 0) ? $('#two_five_four').val(two_five_four.toFixed(2)) : $('#two_five_four').val(0);
+
+            var two_five_six = parseFloat($('#two_five_six').val());
+            var two_five_seven = parseFloat($('#two_five_seven').val());
+            var two_five_eight = parseFloat($('#two_five_eight').val());
+            var two_six_three = two_five_four - (two_five_six + two_five_seven + two_five_eight);
+            $('#two_six_three').val(two_six_three.toFixed(2));
+            (two_six_three > 0) ? $('#two_six_three').val(two_six_three.toFixed(2)) : $('#two_six_three').val(0);
+        });
+
+        $('#two_five_six, #two_five_seven, #two_five_eight').on('keyup', function(){
+            var two_five_four = parseFloat($('#two_five_four').val())
+            var two_five_six = parseFloat($('#two_five_six').val());
+            var two_five_seven = parseFloat($('#two_five_seven').val());
+            var two_five_eight = parseFloat($('#two_five_eight').val());
+            var two_six_three = two_five_four - (two_five_six + two_five_seven + two_five_eight);
+            $('#two_six_three').val(two_six_three.toFixed(2));
+            (two_six_three > 0) ? $('#two_six_three').val(two_six_three.toFixed(2)) : $('#two_six_three').val(0);
+        });
+
+        $('#three_four_seven').on('keyup', function(){
+            var three_four_seven = parseFloat($(this).val());
+            var three_five_zero = parseFloat($('#three_five_zero').val());
+            var three_five_two = parseFloat($('#three_five_two').val());
+            var three_five_three = (three_four_seven + three_five_zero) - three_five_two;
+            (three_five_three > 0) ? $('#three_five_three').val(three_five_three.toFixed(2)) : $('#three_five_three').val(0);
+
+            percentage = $('#three_percentage').val() / 100;
+            var three_five_four = three_five_three * percentage;
+            (three_five_four > 0) ? $('#three_five_four').val(three_five_four.toFixed(2)) : $('#three_five_four').val(0);
+
+            var three_five_six = parseFloat($('#three_five_six').val());
+            var three_five_seven = parseFloat($('#three_five_seven').val());
+            var three_five_eight = parseFloat($('#three_five_eight').val());
+            var three_six_three = three_five_four - (three_five_six + three_five_seven + three_five_eight);
+            (three_six_three > 0) ? $('#three_six_three').val(three_six_three.toFixed(2)) : $('#three_six_three').val(0);
+        });
+
+        $('#three_five_six, #three_five_seven, #three_five_eight').on('keyup', function(){
+            var three_five_four = parseFloat($('#three_five_four').val())
+            var three_five_six = parseFloat($('#three_five_six').val());
+            var three_five_seven = parseFloat($('#three_five_seven').val());
+            var three_five_eight = parseFloat($('#three_five_eight').val());
+            var three_six_three = three_five_four - (three_five_six + three_five_seven + three_five_eight);
+            $('#three_six_three').val(three_six_three.toFixed(2));
+            (three_six_three > 0) ? $('#three_six_three').val(three_six_three.toFixed(2)) : $('#three_six_three').val(0);
+        });
+
+        $('#firstQuarterForm').on('submit', function(e){
+            var form = new FormData(this);
+            form.append('year', $('#year').val());
+            submitForm(form, 1);
+            $('#firstQuarterForm').trigger('reset');
+            e.preventDefault();
+        });
+
+        $('#secondQuarterForm').on('submit', function(e){
+            var form = new FormData(this);
+            form.append('year', $('#year').val());
+            submitForm(form, 2);
+            $('#secondQuarterForm').trigger('reset');
+            e.preventDefault();
+        });
+
+        $('#thirdQuarterForm').on('submit', function(e){
+            var form = new FormData(this);
+            form.append('year', $('#year').val());
+            submitForm(form, 3);
+            $('#thirdQuarterForm').trigger('reset');
+            e.preventDefault();
+        });
+
+        function submitForm(form, quarter){
+            list_quarter = ['', 'first', 'second', 'third']
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to save this "+ list_quarter[quarter] +" quarter tax computation",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "tax" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: 'Good job!',
+                        html: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    });
+                }
+            });
+        }
+
+        $('#sendMessageForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to send this notification",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "send_tax_computation" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: 'Good job!',
+                        html: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+    });
+</script>
+{% endblock %}

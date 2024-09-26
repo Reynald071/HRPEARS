@@ -1,0 +1,355 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<style>
+.bootstrap-tagsinput {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  display: inline-block;
+  padding: 4px 6px;
+  color: #2d4350;
+  vertical-align: middle;
+  border-radius: 4px;
+  max-width: 100%;
+  line-height: 22px;
+  cursor: text;
+}
+.bootstrap-tagsinput input {
+  border: none;
+  box-shadow: none;
+  outline: none;
+  background-color: transparent;
+  padding: 0 6px;
+  margin: 0;
+  width: auto;
+  max-width: inherit;
+  font-size: 15px;
+}
+.bootstrap-tagsinput.form-control input::-moz-placeholder {
+  color: #777;
+  opacity: 1;
+}
+.bootstrap-tagsinput.form-control input:-ms-input-placeholder {
+  color: #777;
+}
+.bootstrap-tagsinput.form-control input::-webkit-input-placeholder {
+  color: #777;
+}
+.bootstrap-tagsinput input:focus {
+  border: none;
+  box-shadow: none;
+}
+.bootstrap-tagsinput .tag {
+  margin-right: 2px;
+  color: white;
+}
+.bootstrap-tagsinput .tag [data-role="remove"] {
+  margin-left: 8px;
+  cursor: pointer;
+}
+.bootstrap-tagsinput .tag [data-role="remove"]:after {
+  content: "x";
+  padding: 0px 2px;
+}
+.bootstrap-tagsinput .tag [data-role="remove"]:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.bootstrap-tagsinput .tag [data-role="remove"]:hover:active {
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+</style>
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Welfare Dashboard</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Administrator</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Dashboard</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="ibox">
+				<div class="ibox-content">
+					<canvas id="myChart1" style="width:100%"></canvas>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="ibox">
+				<div class="ibox-content">
+					<canvas id="sweap" style="width:100%"></canvas>
+				</div>
+			</div>
+		</div>
+    <div class="col-md-7">
+      <div class="ibox">
+        <div class="ibox-content">
+          <canvas id="division" style="width:100%"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="ibox">
+        <div class="ibox-content">
+          <canvas id="availinintervention" style="width:100%"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="ibox">
+        <div class="ibox-content">
+          <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12">
+      <div class="ibox">
+        <div class="ibox-content">
+          <p><center>This is the summary of supply taken by the Employee of DSWD</center></p>
+          <table cellspacing="0" class="table table-bordered notboldandbig" id="input_fields_wrap"
+               width="100%">
+            <tr>
+              <td>
+                <label class="col-form-label" for="recipient-name">Face Shield</label>
+                <input autocomplete="off" class="form-control"
+                     name="fname"
+                     style="width:100%;" type="text" value="{% if calfs.total == None %} 0 {% else %} {{calfs.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Face Mask</label>
+                <input class="form-control" name="case"
+                     style="width:100%;"
+                     type="text" value="{% if countfm.total == None %} 0 {% else %}{{countfm.total}} {% endif %}" readonly>
+              </td>
+              <td style="width: 150px;">
+                <label class="col-form-label" for="recipient-name">Alcohol</label>
+                <input class="form-control" name="item"
+                     style="width:100%;"
+                     type="text" value="{% if countalc.total == None %} 0 {% else %} {{countalc.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Bunny Suit</label>
+                <input class="form-control" name="total"
+                     style="width:100%;"
+                     type="text" value="{% if calbunny.total == None %} 0 {% else %} {{calbunny.total}} {% endif %}" readonly>
+              </td>
+              <td style="width: 150px;">
+                <label class="col-form-label" for="recipient-name">Gloves</label>
+                <input class="form-control" name="total"
+                     style="width:100%;"
+                     type="text" value="{% if calgloves.total == None %} 0 {% else %} {{calgloves.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Multivitamins</label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if calmulti.total == None %} 0 {% else %} {{calmulti.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Sanitation kit</label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if calsani.total == None %} 0 {% else %} {{calsani.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Head Cover</label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if calculatehead.total == None %} 0 {% else %} {{calculatehead.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Foot Cover</label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if calculatefc.total == None %} 0 {% else %} {{calculatefc.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Staff who avail H&W</label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if counthw.total == None %} 0 {% else %} {{counthw.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">Rapid Antigen  </label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if calculateantgen.total == None %} 0 {% else %} {{calculateantgen.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">SWAB  </label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if calswab.total == None %} 0 {% else %} {{calswab.total}} {% endif %}" readonly>
+              </td>
+              <td>
+                <label class="col-form-label" for="recipient-name">RAPID TEST  </label>
+                <input class="form-control" name="activitytotal"
+                     style="width:100%;"
+                     type="text" value="{% if calculaterapid.total == None %} 0 {% else %} {{calculaterapid.total}} {% endif %}" readonly>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+var xValues = ["Male", "Female"];
+var yValues = [{{male}},{{female}}];
+var barColors = [
+  "#0000FF",
+  "#FFC0CB",
+];
+
+new Chart("myChart1", {
+  type: "doughnut",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    title: {
+      display: true,
+      text: "Welfare Intervention Sex-Disaggregated Data"
+    }
+  }
+});
+</script>
+<script>
+var xValues = ["PPE", "Health & Wellness","Employee Discipline","Rewards & Recognition","Secretariat Services","Tobacco Interference","Provision of Assistance"];
+var yValues = [{{countppes}},{{counthealthwellness}},{{countempd}},{{countrrs}},{{countsss}},{{counttiis}},{{countfaas}}];
+var barColors = [
+  "#D4AC0D",
+  "#7DCEA0",
+  "#A2D9CE",
+  "#5DADE2",
+  "#FAD7A0",
+  "#F5B7B1",
+  "#95A5A6",
+  "#85C1E9",
+  "#A93226",
+  "#FFC0CB",
+  "#0000FF"
+
+];
+
+new Chart("availinintervention", {
+  type: "doughnut",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    title: {
+      display: true,
+      text: "Employee who avail Welfare Intervention"
+    }
+  }
+});
+</script>
+<script>
+var xValues = ["HRMDD", "PSD(PROMOTIVE)", "PSD(PROTECTIVE)", "PPD", "DRMD", "FMD", "ADMIN", "ORD","PANTAWID"];
+
+var yValues = [{{hrmdd}}, {{promotive}}, {{protective}}, {{cppd}}, {{drmd}}, {{fmd}},{{admindiv}},{{ord}},{{pppp}}];
+
+var barColors = ["blue", "green","red","orange","brown","wheat","lime","pink","teal","maroon","orchid","chocolate"];
+
+new Chart("division", {
+  type: "bar",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    legend: {display: false},
+    title: {
+      display: true,
+      text: "Summary by Division"
+    }
+  }
+});
+</script>
+<script>
+var xValues = ["January", "February", "March", "April", "May", "June", "July", "August","September","October","November","December"];
+
+var yValues = [{{countjan}}, {{countfeb}}, {{countmar}}, {{countapr}}, {{countmy}}, {{countjn}},{{countjl}},{{countaug}},{{countsept}},{{countoct}},{{countnov}},{{countdec}}];
+
+var barColors = ["red", "green","blue","orange","brown","wheat","lime","pink","teal","maroon","orchid","chocolate"];
+
+new Chart("sweap", {
+  type: "bar",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    legend: {display: false},
+    title: {
+      display: true,
+      text: "Sweap Summary Report"
+    }
+  }
+});
+</script>
+<script>
+window.onload = function () {
+  
+var chart = new CanvasJS.Chart("chartContainer", {
+  animationEnabled: true,
+  
+  title:{
+    text:"Personnel Affected By COVID-19"
+  },
+  axisX:{
+    interval: 1
+  },
+  axisY2:{
+    interlacedColor: "rgba(1,77,101,.2)",
+    gridColor: "red",
+    title: "Total Case, [ MALE: {{covidmale}} & FEMALE: {{covidfemale}} ]"
+  },
+  data: [{
+    type: "bar",
+    name: "companies",
+    axisYType: "secondary",
+    color: "#014D65",
+    dataPoints: [
+      { y: {{covid2020}}, label: "2020" },
+      { y: {{covid2021}}, label: "2021" },
+    ]
+  }]
+});
+chart.render();
+
+}
+</script>
+
+{% endblock %}

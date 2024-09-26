@@ -1,0 +1,35 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'manage_payroll_employee' %}">Manage Employee</a></li>
+                <li class="breadcrumb-item active">Travel History</li>
+                <li class="breadcrumb-item active">{{ employee.pi.user.get_fullname }}</li>
+            </ol>
+        </nav>
+        <div class="row mt-3">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table id="leave-table" class="table table-bordered table-hover" width="100%">
+							<thead>
+								<tr>
+									<th width="15%">TRACKING NO.</th>
+									<th class="capslock" width="25%">Leave Type</th>
+									<th class="capslock text-center" width="25%">Inclusive Dates</th>
+									<th class="capslock text-center">Date of Filing</th>
+									<th class="capslock text-right">Status</th>
+								</tr>
+							</thead>
+						</table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

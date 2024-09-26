@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'tracker/img/tracker-logo.png' %}"/>
+    <title>My PORTAL | Convocation Link</title>
+    <link href="{% static 'tracker/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+    <link href="{% static 'tracker/css/tracker.css' %}" rel="stylesheet">
+</head>
+<body>
+    <div class="page-header">
+        <div class="col-lg-3 mx-auto" style="margin-top: 50px;">
+            <center>
+                <img src="{% static 'image/new_logo.png' %}" width="50%" alt="The My PORTAL Logo" class="img-fluid mb-3">
+            </center>
+            <div class="card border-0 shadow-sm mb-5 bg-body rounded">
+                <form id="submitAttendanceForm">
+                {% csrf_token %}
+                <div class="card-body">
+                    <h2 class="fw-bold text-center">Convocation Attendance</h2>
+                    <h3 class="text-center">{{ event.date }} - {{ event.time }} ({% if event.status == 0 %}Time In{% else %}Time Out{% endif %})</h3>
+                    <br>
+                    <div class="form-floating mb-3">
+                        <input class="form-control form-control-lg" type="text" name="id_number" placeholder="Enter your ID Number" autocomplete="off" required/>
+                        <label class="form-label">ID Number</label>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-info btn-lg" type="submit">Submit</button>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'tracker/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    <script>
+        $('#submitAttendanceForm').on('submit', function(e){
+            var form = this;
+
+            var url = '{% url "shareable_convocation_link" token %}';
+            var title = "Are you sure";
+            var text = "You want to {% if event.status == 0 %}Time In{% else %}Time Out{% endif %}";
+
+            submitFormWithConfirmation(form, url, title, text);
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

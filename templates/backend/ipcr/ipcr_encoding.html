@@ -1,0 +1,379 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">IPCR Monitoring</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    Admin
+                </li>
+                <li class="breadcrumb-item">
+                    Performance Management
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>IPCR Monitoring</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-4">
+            <div class="float-md-right">
+                <button type="button" class="btn btn-info" data-target="#add-rating-modal" data-toggle="modal"><i class="fas fa-plus"></i> Add Rating</button>
+                <button class="btn btn-default" data-toggle="modal" data-target="#ranking-modal"><i class="fas fa-print"></i> Print</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-wrapper p-4 ml-0">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+                    <table class="table table-bordered table-hover" id="ipcr-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Employee Name</th>
+                                <th class="text-center">Year</th>
+                                <th class="text-center">Semester</th>
+                                <th class="text-center">Rating</th>
+                                <th class="display-none">File</th>
+                                <th class="text-center">Attachment</th>
+                                <th class="text-right">Date Added</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header title bg-info">
+                    <h5 class="card-title font-weight-bold">FILTER IPCR</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filter-form">
+                        <h4>By year</h4>
+                        <input type="number" id="filter-year" class="form-control" placeholder="ex.2024" name="current_year" autocomplete="off">
+                        <br>
+                        <h4>By Semester</h4>
+                        <select id="filter-semester" class="form-control select" name="semester" required>
+                            <option value=""></option>
+                            <option value="1">1st</option>
+                            <option value="2">2nd</option>
+                        </select>
+                        <br>
+                        <br>
+                        <button type="button" id="filter-button" class="btn btn-primary">Filter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+<div class="modal" id="add-rating-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">ADD IPC RATING</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form id="submitForm" enctype="multipart/form-data">
+	        <div class="modal-body">
+                {% csrf_token %}
+	            <div class="form-group">
+                    <label>Employee<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control filter_employee" name="employee" autocomplete="off" required>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Year<span class="asteriskField">*</span></label>
+                            <input type="number" id="filter-year" class="form-control" name="current_year" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Semester<span class="asteriskField">*</span></label>
+                            <select id="filter-semester" class="form-control select" name="semester" required>
+                                <option value=""></option>
+                                <option value="1">1st</option>
+                                <option value="2">2nd</option>
+                            </select> 
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Rating<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="ipcr" onkeypress="return isNumberKey(event)" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label>Attachment</label>
+                    <input type="file" class="form-control file-control border-0" name="attachment">
+                </div>
+            </div>
+	        <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="upload-ipcr-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">UPLOAD IPC RATING</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div id="upload-content"></div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="ranking-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">PRINT IPCR</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form action="{% url 'generate_ipcr_ranking' %}" target="_blank" method="POST">
+            <div class="modal-body">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Employment Status<span class="asteriskField">*</span></label>
+                    <select class="form-control select" name="employment_status" required>
+                        <option></option>
+                        {% for row in employment_status %}
+                        <option value="{{ row.id }}">{{ row.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Year<span class="asteriskField">*</span></label>
+                    <input type="number" class="form-control" name="year" autocomplete="off" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info" id="generate">Generate</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="copr-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">GENERATE CERTIFICATE OF PERFORMANCE RATING</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form action="{% url 'generate_performance_rating' %}" target="_blank" method="POST">
+            <div class="modal-body">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Employee<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control filter_employee" name="employee" autocomplete="off" required>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label>Year to Start<span class="asteriskField">*</span></label>
+                        <input type="number" class="form-control" name="start_year" autocomplete="off" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Year to End<span class="asteriskField">*</span></label>
+                        <input type="number" class="form-control" name="end_year" autocomplete="off" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info" id="generate">Generate</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="details-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">UPDATE IPC RATING</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div id="update-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function isNumberKey(evt)
+    {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    $(".filter_employee").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $(document).ready(function() {
+    var table = $('#ipcr-table').DataTable({
+        'processing': true,
+        'deferRender': true,
+        'order': [[0, 'desc']],
+        'lengthMenu': [25, 50, 100],
+        'data': [], 
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return '<a href="javascript:;" data-role="details" data-id="'+ data +'">Details</a>';
+                   
+                }
+            },
+            {'data': 'full_name'},
+            {'data': 'year', 'className': 'text-center'},
+            {'data': 'semester',
+                'render': function(data, type, row, meta) {
+                    return data == 1 ? "1st Semester" : "2nd Semester";
+                },
+                'className': 'text-center'
+            },
+            {'data': 'ipcr',
+                'render': function(data, type, row, meta) {
+                    return parseFloat(data).toFixed(5);
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'file_id', 'className': 'display-none', 'searchable': false},
+            {'data': 'attachment',
+                'render': function(data, type, row, meta) {
+                    var template = "";
+                    if(row['file_id'] != null) {
+                        template += "<a href='javascript:;' data-role='upload' data-id="+ row['file_id'] +">" + data + "</a>";
+                    } else {
+                        template += "<a href='javascript:;' data-role='upload' data-id="+ row['id'] +">" + data + "</a>";
+                    }
+                    return template;
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'date_added', 'className': 'text-right', 'searchable': false}
+        ]
+    });
+
+    $.ajax({
+        url: '/api/employees/ipcr/?format=datatables',
+        type: 'GET',
+        success: function(response) {
+            table.clear().rows.add(response.data).draw();
+        }
+    });
+
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+            var year = $('#filter-year').val();
+            var semester = $('#filter-semester').val();
+            var dataYear = data[2]; 
+            var dataSemester = data[3]; 
+
+            if (
+                (year === '' || dataYear === year) &&
+                (semester === '' || dataSemester === (semester == 1 ? "1st Semester" : "2nd Semester"))
+            ) {
+                return true;
+            }
+            return false;
+        }
+    );
+
+
+    $('#filter-button').on('click', function() {
+        table.draw();
+    });
+
+
+
+    $(document).on('click', 'a[data-role=details]', function() {
+        var id = $(this).data('id');
+        $('#details-modal').modal('show').find('#update-content').load('/backend/performance/ipcr/details/' + id);
+    });
+
+    $(document).on('click', 'a[data-role=upload]', function() {
+        var id = $(this).data('id');
+        $('#upload-ipcr-modal').modal('show').find('#upload-content').load('/backend/performance/ipcr/file/' + id);
+    });
+});
+
+    $('#submitForm').on('submit', function(e){
+    	var form = new FormData(this);
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to add this IPC rating",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "ipcr_encoding" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "You have successfully added the ipc rating.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#add-rating-modal').modal('hide');
+                        $('#ipcr-table').DataTable().ajax.reload();
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: "Ooops!",
+                    html: data.value.msg,
+                    icon: "warning",
+                })
+            }
+		});
+		e.preventDefault();
+    });
+    
+</script>
+{% endblock %}

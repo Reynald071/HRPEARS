@@ -1,0 +1,110 @@
+{% extends 'landing/layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<style>
+    .text-underline {
+        text-decoration: underline;
+    }
+    @media only screen and (max-width: 600px) {
+        #vacancy {
+            margin-top: 300px;
+        }
+    }
+    @media only screen and (min-width: 600px) {
+        #vacancy {
+            margin-top: 450px;
+        }
+    }
+    @media only screen and (min-width: 992px) {
+        #content-wrapper {
+            width: 70%;
+        }
+        #hero-img {
+            /*margin-left: -200px;*/
+            /*width: 800px;*/
+        }
+        #vacancy {
+            margin-top: 50px;
+        }
+    }
+    .jumbotron {
+        background-color: #f4f6f9;
+    }
+    h1.display-2 {
+        letter-spacing: -5px;
+        line-height: 80px;
+    }
+    #hero-img {
+        height: auto;
+        max-width: 130%;
+        margin-left: -100px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div id="content-wrapper" class="p-4 ml-0 mx-auto">
+    <div class="row align-items-center" style="height: 600px;">
+        <div class="col-lg-7">
+            <div class="jumbotron jumbotron-fluid">
+                <div class="container">
+                    <img loading="lazy" src="{% static 'image/dswd_logo_4.png' %}" style="width: 120px;"><br>
+                    <img src="{% static 'image/hrpearlogo_ls.png' %}" style="margin-top: 10px;">
+                    <p class="lead text-muted">Human Resource Portal for Employees and All Related Services</p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'backend-login' %}" class="btn btn-info btn-lg">Get Started</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <img id="hero-img" loading="lazy" src="{% static 'image/landing_bg.png' %}" alt="hero image">
+        </div>
+    </div>
+    <div id="vacancy" class="row mb-5">
+        <div class="col-lg-12">
+            <h2 class="text-info font-weight-bold" style="font-size: 35px;">
+                Job Vacancies
+                <a href="{% url 'job_vacancies' %}" class="btn btn-info btn-lg float-right">See All</a>
+            </h2>
+            <div class="row mt-4">
+                {% if vacancy %}
+                    {% for row in vacancy %}
+                    <div class="col-lg-6">
+                        <div class="card card-info card-outline my-3 mx-2">
+                            <div class="card-body" style="font-size: 15px;">
+                                <h3 class="mb-3" style="font-size: 18px;">{{ row.position.name }} - {{ row.empstatus.name }}</h3>
+                                <p>Salary Rate: <span class="text-underline">{{ row.salary_rate }}</span></p>
+                                <p>Salary Grade: <span class="text-underline">{{ row.salary_grade.name }}</span></p>
+                                <p>Area of Assignment: <span class="text-underline">{{ row.aoa.name }}</span></p>
+                                <p>Quantity: <span class="text-underline">{{ row.quantity }}</span></p>
+                                <p>Deadline: <span class="text-underline">{{ row.deadline }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if vacancy_count > 0 %}
+                    <div class="col-lg-12">
+                        <h3 class="text-muted">&ensp;&ensp;&ensp;And {{ vacancy_count }} more...</h3>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="col-lg-12">
+                        <div class="card card-info card-outline">
+                            <div class="card-body text-center">
+                                <br><br>
+                                <img src="{% static 'image/no-results.png' %}" >
+                                <h3>There is no vacancy to show you right now.</h3>
+                                <br><br>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

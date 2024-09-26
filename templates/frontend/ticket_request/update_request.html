@@ -1,0 +1,108 @@
+<br>
+<form id="updateForm">
+{% csrf_token %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="form-group">
+                <label>Status<span class="asteriskField">*</span></label>
+                <select class="form-control update-select" id="status" name="status" required>
+                    <option></option>
+                    <option value="1" {% if transaction.status == 1 %}selected{% endif %}>Resolved</option>
+                    <option value="4" {% if transaction.status == 4 %}selected{% endif %}>For Referral</option>
+                    <option value="3" {% if transaction.status == 3 %}selected{% endif %}>Declined</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="form-group">
+                <label>Action Taken<span class="asteriskField">*</span></label>
+                <textarea class="update-summernote" name="action_taken">{{ transaction.remarks }}</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" name="do_not_delete" value="1"> Delete current attachment
+    </div>
+    <div class="form-group">
+        <label>Attachment</label>
+        <input type="file" class="form-control file-control" name="attachment" multiple>
+    </div>
+    <button type="submit" class="btn btn-info">Save changes</button>
+</form>
+{% block script %}
+<script>
+    $('.update-summernote').summernote({
+        height: $(window).height() * 0.2,
+        dialogsInBody: true,
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+
+    $('.update-select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#updateForm').on('submit', function(e){
+        if($('#status').val() == "") {
+            Swal.fire("Ooops!", "The following mandatory fields are not filled in:Refers To", "warning");
+        } else {
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to update this request?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "update_request" transaction.id %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#actionForm').trigger('reset');
+                            $('#view-request-modal').find('.view-content').empty();
+                            initializeTotals();
+                            $('#view-request-modal').find('.view-content').load("/help-desk/view/" + "{{ transaction.services_id }}");
+                            $('#help-desk-table').DataTable().ajax.reload();
+                            $('#help-desk-table-atm').DataTable().ajax.reload();
+                            $('#help-desk-table-all').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        }
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

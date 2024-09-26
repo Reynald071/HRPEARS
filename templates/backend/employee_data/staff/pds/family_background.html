@@ -1,0 +1,323 @@
+{% block style %}
+{% load frontend_tags %}
+<style type="text/css">
+	.notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+<form id="submitFbForm" role="form">
+<div class="row page-content">
+	<div class="col-sm-12">
+	<div class="pull-left">
+		<div class="form-group">
+			<label>Choose Shortcuts</label>
+			<select class="form-control shortcuts select">
+				{% for row in shortcuts %}
+				{% if row.name == "Family Background" %}
+				<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+				{% else %}
+				<option value="{{ row.backend_url }}">{{ row.name }}</option>
+				{% endif %}
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+	<div class="pull-right" style="margin-top:23px;">
+		<div class="form-group">
+		<button type="submit" class="btn btn-info"> Save changes</button>
+			<div class="btn-group">
+			<button type="button" id="btn-previous-pi" class="btn btn-default">Previous</button>
+			<button type="button" id="btn-next-eb" class="btn btn-default">Next</button>
+			</div>
+		</div>
+	</div>
+	</div>
+</div>
+<div class="row page-content">
+	<div class="col-sm-7">
+		<table class="table table-bordered notboldandbig tbl-family-background">
+			<thead>
+				<th colspan="7">
+					<h3>II. FAMILY BACKGROUND (A)</h3>
+				</th>
+			</thead>
+			<tbody style="font-size: 11px;">
+				<tr>
+					<th>SPOUSE'S SURNAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control input-sm bold uppercase borderless" id="sp_surname" name="sp_surname" value="{% if family.sp_surname %}{{ family.sp_surname|upper }}{% else %}N/A{% endif %}">
+					</td>
+				</tr>
+				<tr>
+					<th>FIRST NAME</th>
+					<td class="nopadding">
+						<input type="text" class="form-control bold uppercase input-sm borderless" id="sp_fname" name="sp_fname" value="{% if family.sp_fname %}{{ family.sp_fname|upper }}{% else %}N/A{% endif %}">
+					</td>
+					<th>NAME EXTENSION</th>
+					<td class="nopadding">
+						<select class="form-control input-sm select" name="sp_ext" id="sp_ext">
+							<option></option>
+							{% for row in ext %}
+							<option value="{{ row.id }}">{{ row.name }}</option>
+							{% endfor %}
+						</select>
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>MIDDLE NAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" id="sp_mname" name="sp_mname" value="{% if family.sp_mname %}{{ family.sp_mname|upper }}{% else %}N/A{% endif %}">
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>OCCUPATION</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" id="sp_occupation" name="sp_occupation" value="{% if family.sp_occupation %}{{ family.sp_occupation|upper }}{% else %}N/A{% endif %}">
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>EMPLOYER/BUSINESS NAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" id="sp_employer" name="sp_employer" value="{% if family.sp_employer %}{{ family.sp_employer }}{% else %}N/A{% endif %}">
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>BUSINESS ADDRESS</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" id="sp_business" name="sp_business" value="{% if family.sp_business %}{{ family.sp_business }}{% else %}N/A{% endif %}">
+					</td>
+
+				</tr>
+				<tr class="fieldWrapper">
+					<th>TELEPHONE NO.</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" id="sp_telephone" name="sp_telephone" value="{% if family.sp_telephone %}{{ family.sp_telephone }}{% else %}N/A{% endif %}">
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>FATHER'S SURNAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="f_surname" id="f_surname" value="{% if family.f_surname %}{{ family.f_surname }}{% else %}N/A{% endif %}" required>
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>FIRST NAME</th>
+					<td class="nopadding">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="f_fname" id="f_fname" value="{% if family.f_fname %}{{ family.f_fname }}{% else %}N/A{% endif %}" required>
+					</td>
+					<th>NAME EXTENSION</th>
+					<td class="nopadding" width="10%">
+						<select class="form-control input-sm select" name="f_ext" id="f_ext">
+							<option></option>
+							{% for row in ext %}
+							<option value="{{ row.id }}">{{ row.name }}</option>
+							{% endfor %}
+						</select>
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>MIDDLE NAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="f_mname" id="f_mname" value="{% if family.f_mname %}{{ family.f_mname }}{% else %}N/A{% endif %}" required>
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>MOTHER'S MAIDEN NAME</th>
+					<td colspan="3"></td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>SURNAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="m_surname" id="m_surname" value="{% if family.f_mname %}{{ family.m_surname }}{% else %}N/A{% endif %}" required>
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>FIRST NAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="m_fname" id="m_fname" value="{% if family.f_mname %}{{ family.m_fname }}{% else %}N/A{% endif %}" required>
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>MIDDLE NAME</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="m_mname" id="m_mname" value="{% if family.m_mname %}{{ family.m_mname }}{% else %}N/A{% endif %}" required>
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>CONTACT INCASE OF EMERGENCY (FULL NAME)</th>
+					<td class="nopadding" colspan="3">
+						<select class="form-control select" name="ioe" id="ioe">
+							<option></option>
+							<option value="{{ family.sp_fname }} {{ family.sp_mname|to_middleinitial }} {{ family.sp_surname }}">Spouse</option>
+							<option value="{{ family.f_fname }} {{ family.f_mname|to_middleinitial }} {{ family.f_surname }}">Father</option>
+							<option value="{{ family.m_fname }} {{ family.m_mname|to_middleinitial }} {{ family.m_surname }}">Mother</option>
+							<option value="Others">Others</option>
+						</select>
+					</td>
+				</tr>
+				<tr class="fieldWrapper indicate_others_fullname" {% if not incase_of_emergency.is_others %}style="display:none;"{% endif %}>
+					<th>INDICATE (FULL NAME)</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="ioe_others" id="ioe_others" value="{{ incase_of_emergency.contact_name }}">
+					</td>
+				</tr>
+				<tr class="fieldWrapper">
+					<th>CONTACT INCASE OF EMERGENCY (CONTACT NUMBER)</th>
+					<td class="nopadding" colspan="3">
+						<input type="text" class="form-control bold uppercase input-sm borderless" name="ioe_no" id="ioe_no" onkeypress="return isNumberKey(event)" value="{{ incase_of_emergency.contact_number }}">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-sm-5">
+		<table class="table table-bordered notboldandbig tbl-children">
+			<thead>
+				<th colspan="7">
+					<h3>II. FAMILY BACKGROUND (B)</h3>
+				</th>
+			</thead>
+			<tbody>
+				<tr>
+					<th>NAME of CHILDREN (Write full name)</th>
+					<th class="text-center">DATE OF BIRTH</th>
+					<th><center><button type="button" class="btn btn-info btn-xs add-children"><i class="fas fa-plus"></i></button></center></th>
+				</tr>
+				{% for row in children %}
+				<tr id="{{ row.id }}">
+					<td class="nopadding"><input type="text" name="children[]" class="form-control bold uppercase input-sm borderless children" value="{{ row.child_fullname }}"></td>
+					<td class="nopadding"><input type="date" name="birth[]" class="form-control bold uppercase input-sm borderless birth text-center" value="{{ row.child_dob|date:'Y-m-d' }}"></td>
+					<td><center><button type="button" class="btn btn-danger btn-xs" data-id="{{ row.id }}" data-role="delete-children"><i class="fa fa-minus"></i></button></center></td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+</form>
+<script>
+$('.select').select2({
+	width: "100%",
+	allowClear: true,
+	placeholder: 'Choose',
+});
+
+$('#ioe').select2('val', '{% if not incase_of_emergency.is_others %}{{ incase_of_emergency.contact_name }}{% else %}Others{% endif %}');
+
+
+$('#btn-previous-pi').on('click', function(){
+	callPage("{% url 'update_personal_information' pi_id %}");
+});
+
+$('#btn-next-eb').on('click', function(){
+	callPage("{% url 'update_educational_background' pi_id %}");
+});
+
+jQuery(document).ready(function(){
+    $('#f_ext').select2('val', '{{ family.f_ext }}');
+    $('#sp_ext').select2('val', '{{ family.sp_ext }}');
+
+	var fieldChildrenHTML = '<tr><td class="nopadding"><input type="text" name="children[]" class="form-control bold uppercase input-sm borderless children" value=""></td>\
+					<td class="nopadding"><input type="date" name="birth[]" class="form-control bold uppercase input-sm borderless birth text-center" value=""></td>\
+	    			<td><center><button type="button" class="btn btn-danger btn-xs" data-role="remove-children"><i class="fa fa-minus"></i></button></center></td></tr>';
+
+
+	$('.add-children').on('click', function(){
+		$('.tbl-children > tbody:last-child').append(fieldChildrenHTML);
+	});
+
+	$(document).on('click','button[data-role="remove-children"]', function(){
+        $(this).parent().parent().parent().remove();
+    });
+
+    $(document).on('click','button[data-role="delete-children"]', function(){
+         id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: "{% url 'admin-remove-children' pi_id %}",
+					data: {
+						id: id
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					$('.tbl-children tr#'+id).remove();
+					Swal.fire("Success!", "Your record was successfully deleted.", "success");
+				});
+			}
+        });
+    });
+
+    $('#submitFbForm').on('submit', function(e) {
+    	if (checkChildren() == 0){
+            $.ajax({
+                data        : new FormData(this),
+                url         : "{% url 'update_family_background' pi_id %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+            	if (data.data){
+                	Swal.fire("Well done!", "Family Background has been saved successfully.", "success");
+                }
+            });
+        }
+        e.preventDefault();
+    });
+
+
+    function checkChildren(){
+        invalid = 0;
+
+        $('.children').each(function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+		$('.birth').each(function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        return invalid;
+    }
+
+	$('.shortcuts').on('select2:select', function(){
+		callPage($(this).val() + {{ pi_id }});
+    });
+
+    $('#ioe').on('select2:select', function(){
+    	if ($(this).val() == "Others"){
+    		$('.indicate_others_fullname').css('display', '');
+    		$('#ioe_others').attr('required', 'required');
+    	} else {
+    		$('.indicate_others_fullname').css('display', 'none');
+    		$('#ioe_others').removeAttr('required');
+    	}
+    });
+});
+</script>

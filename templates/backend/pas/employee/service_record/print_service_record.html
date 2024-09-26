@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Regional Special Order</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+            }
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+
+		  	* {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+		  	.border-black{
+		  	    background-color: black; border: none ; height: 1px; margin: 7px;
+		  	}
+		}
+
+        footer {
+            margin-bottom: 0px !important;
+        }
+
+		.border-black{
+            background-color: black !important; border: none; height: 1px; margin: 7px;
+        }
+
+        .v-align-center {
+          height: 30px;
+          vertical-align: center;
+        }
+    </style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Service Record</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+                <li><button type="button" class="btn btn-success" data-toggle="modal" data-target="#update-drn-modal" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-file"></i> Update DRN</button>&emsp;</li>
+				<li><button type="button" class="btn btn-info print-button" id="floatprint" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+    <page size="A4" class="page" style="position: relative; padding: 30px 30px 0px 30px; color: black !important;">
+		<div class="containerX">
+            <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="20%">&emsp;&emsp;&emsp;
+            <br>
+            <span style="font-family: Times New Roman; font-size: 10.7px;">
+                {% get_doc_version 20 as doc_version %}
+                {{ doc_version|safe }}
+            </span>
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -50px;">
+            <hr style="border: 1px solid black;">
+            <span class="pull-right">
+                <span style="font-family: Arial; font-size: 10.7px" id="drn-text"><strong><u>DRN: {{ data.drn }}</u></strong></span>
+            </span>
+            <br><br>
+            <h4 class="text-center" style="letter-spacing: 10px;">SERVICE RECORD</h4>
+            <br><br>
+            <table width="100%" style="font-size: 12px !important;">
+                <tr>
+                    <td>NAME</td>
+                    <th class="text-center">{{ data.emp.pi.user.last_name|upper }}</th>
+                    <th class="text-center">{{ data.emp.pi.user.first_name|upper }}</th>
+                    <th class="text-center">{% if data.emp.pi.user.middle_name %}{{ data.emp.pi.user.middle_name|upper }}{% endif %}</th>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="3"><hr class="border-black"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="text-center">(Surname)</td>
+                    <td class="text-center">(Given Name)</td>
+                    <td class="text-center">(Middle Name)</td>
+                    <td>
+                        {% if data.maiden_name %}
+                        <div style="position: absolute; margin-top: -50px !important; margin-left: 20px;">
+                        (If Married, give also full maiden name)<br>
+                        <b><u>{{ data.maiden_name }}</u></b>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>BIRTH</td>
+                    <th class="text-center">{{ data.emp.pi.dob|date:'d F Y'|upper }}</th>
+                    <th class="text-center" colspan="2">{{ data.emp.pi.pob|upper }}</th>
+                    <td width="32%"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="3"><hr class="border-black"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="text-center">(Date of Birth)</td>
+                    <td class="text-center" colspan="2">(Place of Birth)</td>
+                    <td>
+                        <div style="position: absolute; margin-top: -40px; margin-left: 20px;">
+                        (Date herein should be checked<br>
+                        from birth or some other related<br> documents)
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <p style="font-size: 9.7px;">&emsp;&emsp;&emsp;This is to certify that the employee named herein above actually rendered services in this office and approved by the authorities concerned.</p>
+            <table width="100%" border="1" style="white-space: normal !important;">
+                <tbody style="border: 1px black !important;">
+                    <tr style="font-size: 10.67px !important">
+                        <th colspan="2" class="text-center" width="20%">SERVICE</th>
+                        <th colspan="3" class="text-center" width="27%">RECORD OF APPOINTMENT</th>
+                        <th colspan="2" class="text-center" width="20%">OFFICE ENTITY/DIV</th>
+                        <th rowspan="3" class="text-center" width="8%">L/V ABS <br> W/O <br> PAY</th>
+                        <th colspan="2" class="text-center" width="20%">SEPARATION <br>(4)</th>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td colspan="2" class="text-center">Inclusive Dates</td>
+                        <td rowspan="2" class="text-center">Designation</td>
+                        <td rowspan="2" class="text-center">Status <br>(1)</td>
+                        <td rowspan="2" class="text-center">Salary <br>(2)</td>
+                        <td rowspan="2" class="text-center">Place <br>of Assignment</td>
+                        <td rowspan="2" class="text-center">Branch <br>(3)</td>
+                        <td rowspan="2" class="text-center">Date</td>
+                        <td rowspan="2" class="text-center">Cause</td>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center" width="10%">From</td>
+                        <td class="text-center" width="10%">To</td>
+                    </tr>
+                    {% for row in first_page %}
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center v-align-center">
+                            {% if row.date != row.start_date %}{{ row.start_date|date:'m/d/Y' }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.end_date == "Present" %}Present{% else %}{{ row.end_date|date:'m/d/Y' }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.position %}{{ row.position|upper }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.empstatus %}{{ row.empstatus }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% widthratio row.salary 1 12 as annual_sr%}
+                            {{ annual_sr|floatformat:2|intcomma }}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.poa %}{{ row.poa }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.branch %}{{ row.branch }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.is_leave_wo_pay == 1 %}No L/V w/o pay
+                            {% elif row.is_leave_wo_pay == 0 %}
+                                {{ row.leave_w_pay_date }}
+                            {% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.date|date:'m/d/Y'}}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.cause }}{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if pagination == 1 %}
+        <div style="margin-top: -10px;">
+            <br>
+            <small>
+                &emsp;&emsp;Issued in compliance with Executive Order No. 54 dated August 10, 1954, and in accordance with Circular No. 58, dated
+                August 10, 1954 of the Government Service Insurance System.
+            </small>
+            <br><br>
+            <table width="100%" style="font-size: 12px !important">
+                <tr>
+                    <td width="30%" class="text-center">
+                        <div style="position: absolute; margin-top: 40px; font-size: 10.7px;">
+                        <strong>{{ data.document_date|date:'d F, Y' }}</strong><br>
+                        Date
+                        <br>
+                        <input type="text" class="form-control" value="{{ footnote.key_acronym }}" name="other_signatures" style="font-size: 10.7px; text-transform: uppercase; text-align: center; border: 0px;" required>
+                        </div>
+                    </td>
+                    <td class="text-center" width="60%">
+                        <p>CERTIFIED CORRECT</p>
+                        <br>
+                        {% getemployeebyempid 63 as hrmdd_dc_obj %}
+                        <strong><u>{{ hrmdd_dc_obj.pi.user.get_fullname|upper }}</u></strong><br>
+                        <span>{{ hrmdd_dc_obj.position.acronym|upper }}/HRMDD CHIEF</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        {% else %}
+        <br><br>
+        <center>
+            <small>
+                ----------------------------------------------- continuation on next page -----------------------------------------------
+            </small>
+        </center>
+        {% endif %}
+        <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+            <br><br>
+            <center>
+                <small style="position: absolute; margin-left: 270px;">Page 1 of {{ pagination }}</small>
+                <img loading="lazy"  src="{% static 'image/footer.png' %}" width="100%">
+            </center>
+        </div>
+    </page>
+    {% for page in actual_pagination|times %}
+    {% if forloop.first %}
+    <page size="A4" class="page" style="position: relative; padding: 30px 30px 0px 30px; color: black !important;">
+		<div class="containerX">
+            <br><br>
+            <table width="100%" border="1" style="white-space: normal !important;">
+                <tbody style="border: 1px black !important;">
+                    <tr style="font-size: 10.67px !important">
+                        <th colspan="2" class="text-center" width="20%">SERVICE</th>
+                        <th colspan="3" class="text-center" width="27%">RECORD OF APPOINTMENT</th>
+                        <th colspan="2" class="text-center" width="20%">OFFICE ENTITY/DIV</th>
+                        <th rowspan="3" class="text-center" width="8%">L/V ABS <br> W/O <br> PAY</th>
+                        <th colspan="2" class="text-center" width="20%">SEPARATION <br>(4)</th>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td colspan="2" class="text-center">Inclusive Dates</td>
+                        <td rowspan="2" class="text-center">Designation</td>
+                        <td rowspan="2" class="text-center">Status <br>(1)</td>
+                        <td rowspan="2" class="text-center">Salary <br>(2)</td>
+                        <td rowspan="2" class="text-center">Place <br>of Assignment</td>
+                        <td rowspan="2" class="text-center">Branch <br>(3)</td>
+                        <td rowspan="2" class="text-center">Date</td>
+                        <td rowspan="2" class="text-center">Cause</td>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center" width="10%">From</td>
+                        <td class="text-center" width="10%">To</td>
+                    </tr>
+                    {% for row in sr_data|slice:":24" %}
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center v-align-center">
+                            {% if row.date != row.start_date %}{{ row.start_date|date:'m/d/Y' }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.end_date == "Present" %}Present{% else %}{{ row.end_date|date:'m/d/Y' }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.position %}{{ row.position|upper }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.empstatus %}{{ row.empstatus }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% widthratio row.salary 1 12 as annual_sr%}
+                            {{ annual_sr|floatformat:2|intcomma }}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.poa %}{{ row.poa }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.branch %}{{ row.branch }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.is_leave_wo_pay == 1 %}No L/V w/o pay
+                            {% elif row.is_leave_wo_pay == 0 %}
+                                {{ row.leave_w_pay_date }}
+                            {% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.date|date:'m/d/Y'}}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.cause }}{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if actual_pagination == 1 %}
+        <div style="margin-top: -10px;">
+            <br>
+            <small>
+                &emsp;&emsp;Issued in compliance with Executive Order No. 54 dated August 10, 1954, and in accordance with Circular No. 58, dated
+                August 10, 1954 of the Government Service Insurance System.
+            </small>
+            <br><br>
+            <table width="100%" style="font-size: 12px !important">
+                <tr>
+                    <td width="30%" class="text-center">
+                        <div style="position: absolute; margin-top: 40px; font-size: 10.7px;">
+                        <strong>{{ data.document_date|date:'d F, Y' }}</strong><br>
+                        Date
+                        <br>
+                        <input type="text" class="form-control" value="MLM/RLP/113" name="other_signatures" style="font-size: 10.7px; text-transform: uppercase; text-align: center; border: 0px;" required>
+                        </div>
+                    </td>
+                    <td class="text-center" width="60%">
+                        <p>CERTIFIED CORRECT</p>
+                        <br><br>
+                        {% getemployeebyempid 63 as hrmdd_dc_obj %}
+                        <strong><u>{{ hrmdd_dc_obj.pi.user.get_fullname|upper }}</u></strong><br>
+                        <span>{{ hrmdd_dc_obj.position.acronym|upper }}/HRMDD CHIEF</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        {% endif %}
+        <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+            <br>
+            <center>
+                <small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+                <img loading="lazy"  src="{% static 'image/footer-2.png' %}" width="100%">
+            </center>
+        </div>
+    </page>
+    {% elif forloop.last %}
+    <page size="A4" class="page" style="position: relative; padding: 30px 30px 0px 30px; color: black !important;">
+		<div class="containerX">
+            <br><br>
+            <table width="100%" border="1" style="white-space: normal !important;">
+                <tbody style="border: 1px black !important;">
+                    <tr style="font-size: 10.67px !important">
+                        <th colspan="2" class="text-center" width="20%">SERVICE</th>
+                        <th colspan="3" class="text-center" width="27%">RECORD OF APPOINTMENT</th>
+                        <th colspan="2" class="text-center" width="20%">OFFICE ENTITY/DIV</th>
+                        <th rowspan="3" class="text-center" width="8%">L/V ABS <br> W/O <br> PAY</th>
+                        <th colspan="2" class="text-center" width="20%">SEPARATION <br>(4)</th>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td colspan="2" class="text-center">Inclusive Dates</td>
+                        <td rowspan="2" class="text-center">Designation</td>
+                        <td rowspan="2" class="text-center">Status <br>(1)</td>
+                        <td rowspan="2" class="text-center">Salary <br>(2)</td>
+                        <td rowspan="2" class="text-center">Place <br>of Assignment</td>
+                        <td rowspan="2" class="text-center">Branch <br>(3)</td>
+                        <td rowspan="2" class="text-center">Date</td>
+                        <td rowspan="2" class="text-center">Cause</td>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center" width="10%">From</td>
+                        <td class="text-center" width="10%">To</td>
+                    </tr>
+                    {% get_page_range page 24 as page_range %}
+					{% for row in sr_data|slice:page_range.0 %}
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center v-align-center">
+                            {{ row.start_date|date:'m/d/Y' }}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.end_date == "Present" %}Present{% else %}{{ row.end_date|date:'m/d/Y' }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.position %}{{ row.position|upper }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.empstatus %}{{ row.empstatus }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% widthratio row.salary 1 12 as annual_sr%}
+                            {{ annual_sr|floatformat:2|intcomma }}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.poa %}{{ row.poa }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.branch %}{{ row.branch }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.is_leave_wo_pay == 1 %}No L/V w/o pay
+                            {% elif row.is_leave_wo_pay == 0 %}
+                                {{ row.leave_w_pay_date }}
+                            {% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.date|date:'m/d/Y'}}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.cause }}{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: -10px;">
+            <br>
+            <small>
+                &emsp;&emsp;Issued in compliance with Executive Order No. 54 dated August 10, 1954, and in accordance with Circular No. 58, dated
+                August 10, 1954 of the Government Service Insurance System.
+            </small>
+            <br><br>
+            <table width="100%" style="font-size: 12px !important">
+                <tr>
+                    <td width="30%" class="text-center">
+                        <div style="position: absolute; margin-top: 40px; font-size: 10.7px;">
+                        <strong>{{ data.document_date|date:'d F, Y' }}</strong><br>
+                        Date
+                        <br>
+                        <input type="text" class="form-control" value="MLM/MRRS/113" name="other_signatures" style="font-size: 10.7px; text-transform: uppercase; text-align: center; border: 0px;" required>
+                        </div>
+                    </td>
+                    <td class="text-center" width="60%">
+                        <p>CERTIFIED CORRECT</p>
+                        <br><br>
+                        {% getemployeebyempid 63 as hrmdd_dc_obj %}
+                        <strong><u>{{ hrmdd_dc_obj.pi.user.get_fullname|upper }}</u></strong><br>
+                        <span>{{ hrmdd_dc_obj.position.acronym|upper }}/HRMDD CHIEF</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+            <br>
+            <center>
+                <small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+                <img loading="lazy"  src="{% static 'image/footer-2.png' %}" width="100%">
+            </center>
+        </div>
+    </page>
+    {% else %}
+    <page size="A4" class="page" style="position: relative; padding: 30px 30px 0px 30px; color: black !important;">
+		<div class="containerX">
+            <br><br>
+            <table width="100%" border="1" style="white-space: normal !important;">
+                <tbody style="border: 1px black !important;">
+                    <tr style="font-size: 10.67px !important">
+                        <th colspan="2" class="text-center" width="20%">SERVICE</th>
+                        <th colspan="3" class="text-center" width="27%">RECORD OF APPOINTMENT</th>
+                        <th colspan="2" class="text-center" width="20%">OFFICE ENTITY/DIV</th>
+                        <th rowspan="3" class="text-center" width="8%">L/V ABS <br> W/O <br> PAY</th>
+                        <th colspan="2" class="text-center" width="20%">SEPARATION <br>(4)</th>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td colspan="2" class="text-center">Inclusive Dates</td>
+                        <td rowspan="2" class="text-center">Designation</td>
+                        <td rowspan="2" class="text-center">Status <br>(1)</td>
+                        <td rowspan="2" class="text-center">Salary <br>(2)</td>
+                        <td rowspan="2" class="text-center">Place <br>of Assignment</td>
+                        <td rowspan="2" class="text-center">Branch <br>(3)</td>
+                        <td rowspan="2" class="text-center">Date</td>
+                        <td rowspan="2" class="text-center">Cause</td>
+                    </tr>
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center" width="10%">From</td>
+                        <td class="text-center" width="10%">To</td>
+                    </tr>
+                    {% get_page_range page 24 as page_range %}
+					{% for row in sr_data|slice:page_range.0 %}
+                    <tr style="font-size: 9.33px !important">
+                        <td class="text-center v-align-center">
+                            {{ row.start_date|date:'m/d/Y' }}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.end_date == "Present" %}Present{% else %}{{ row.end_date|date:'m/d/Y' }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.position %}{{ row.position|upper }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.empstatus %}{{ row.empstatus }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% widthratio row.salary 1 12 as annual_sr%}
+                            {{ annual_sr|floatformat:2|intcomma }}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.poa %}{{ row.poa }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.branch %}{{ row.branch }}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.is_leave_wo_pay == 1 %}No L/V w/o pay
+                            {% elif row.is_leave_wo_pay == 0 %}
+                                {{ row.leave_w_pay_date }}
+                            {% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.date|date:'m/d/Y'}}{% endif %}
+                        </td>
+                        <td class="text-center v-align-center">
+                            {% if row.cause %}{{ row.cause }}{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br><br>
+        <center>
+            <small>
+                ----------------------------------------------- continuation on next page -----------------------------------------------
+            </small>
+        </center>
+        <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+            <br>
+            <center>
+                <small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+                <img loading="lazy"  src="{% static 'image/footer-2.png' %}" width="100%">
+            </center>
+        </div>
+    </page>
+    {% endif %}
+    {% endfor %}
+    <div class="modal" id="update-drn-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<button type="button" class="close text-white" data-dismiss="modal" style="color: white !important; opacity: 1;"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h3 class="modal-title">UPDATE DRN</h3>
+				</div>
+				<form id="updateDRNForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">DRN<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control" name="drn" id="drn" value="{{ data.drn }}" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    <script>
+        $(document).ready(function(){
+            $('#updateDRNForm').on('submit', function(e){
+                var form = this;
+
+                var url = '{% url "print_service_record" data.id %}';
+                var title = "Are you sure";
+                var text = "You want to update this DRN";
+                var link_attr = '{% url "print_service_record" data.id %}';
+
+                submitFormWithConfirmation(form, url, title, text, {link_attr: link_attr});
+
+                e.preventDefault();
+            });
+
+            $('#drn-text').html('DRN: ' + '<span id="decorate_drn">{{ data.drn }}</span>');
+            $('#decorate_drn').css({
+                'text-decoration': 'underline',
+                'font-weight': 'bold'
+            });
+        });
+    </script>
+</body>
+</html>

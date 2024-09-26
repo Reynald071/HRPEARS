@@ -1,0 +1,196 @@
+{% load frontend_tags %}
+{% load tags %}
+{% load static %}
+<script type="text/javascript" src="{% static 'js/humanized_time_span.js' %}"></script>
+<style>
+.list-group.clear-list.x .list-group-item.x {
+    border: 0px solid #e7eaec;
+    padding: 7px;
+}
+</style>
+<div class="row">
+	<div class="col-sm-12">
+		<div class="table-responsive">
+			<table class="table table-bordered" style="margin-bottom:0px;">
+				<tr>
+					<td style="width:20%" class="bold capslock">Origin</td>
+					<td style="width:30%" colspan="2">{{ data.docorigin.name }}</td>
+					<td style="width:20%" class="bold capslock">DRN</td>
+					<td style="width:30%" class="text-right"><strong>{% if data.docorigin_id == 2 %}{% generateDRN data.id data.get_my_drn.id %}{% else %}{{ data.drn }}{% endif %}</strong></td>
+				</tr>
+				<tr>
+					<td style="width:20%" class="bold capslock">Class - Type</td>
+					<td colspan="2">{% if data.docorigin_id == 2 %}{{ data.doctype.doctype_class.name }} - {{ data.doctype.name }}{% endif %}</td>
+					<td style="width:20%" class="bold capslock">Doc Date</td>
+					<td class="text-right">{{ data.document_date|date:'M d, Y' }}</td>
+				</tr>
+				<tr>
+					<td style="width:20%" class="bold capslock">Division - Section</td>
+					<td colspan="2">{% if data.docorigin_id == 2 %}<span title="{{ data.get_my_drn.division.div_name }}">{{ data.get_my_drn.division.div_acronym }}</span>{% if data.get_my_drn.section %} - <span title="{{ data.get_my_drn.section.sec_name }}">{% if data.get_my_drn.section.sec_acronym %}{{ data.get_my_drn.section.sec_acronym }}{% else %}{{ data.get_my_drn.section.sec_name }}{% endif %}</span>{% endif %}{% endif %}</td>
+					<td style="width:20%" class="bold capslock">EODB Category</td>
+					<td class="text-right">{{ data.get_my_drn.category.name }}</td>
+				</tr>
+				<tr>
+					<td style="width:20%" class="bold capslock">Sender</td>
+					<td colspan="2">{{ data.sender }}</td>
+					<td style="width:20%" class="bold capslock">Deadline</td>
+					<td class="text-right">{{ data.document_deadline|date:'M d, Y' }}</td>
+				</tr>
+				<tr>
+					<td style="width:20%" class="bold capslock">Subject</td>
+					<td colspan="4" style="white-space:normal; text-align:justify;">{{ data.subject }}</td>
+				</tr>
+				<tr>
+					<td style="width:20%" class="bold capslock">Purpose</td>
+					<td colspan="4" style="white-space:normal; text-align:justify;">{{ data.purpose }}</td>
+				</tr>
+				{% if data.other_info %}
+				<tr>
+					<td style="width:20%; vertical-align:top !important;" class="bold capslock">Other Information</td>
+					<td colspan="4" style="white-space:normal; text-align:justify;">{{ data.other_info }}</td>
+				</tr>
+				{% endif %}
+				<tr>
+					<td style="width:20%" class="bold capslock">Created By</td>
+					<td colspan="4" style="white-space:normal; text-align:justify;"><a href="javascript:;" style="color:#1b2a33;">{{ data.created_by.trans_from.pi.user.get_fullname }}</a> on {{ data.date_saved|date:'M d, Y' }}</td>
+				</tr>
+				{% get_dt_attachment data.id as attachments %}
+				{% if attachments %}
+				<tr>
+					<td style="width:20%; vertical-align:top !important;" class="bold capslock">Attachments</td>
+					<td colspan="4" style="white-space:normal; text-align:justify;">
+						<table class="table table-bordered">
+							{% for attachment in attachments %}
+								{% if attachment.transaction.action != 1 %}
+								<tr>
+									<td>
+										<a href="{{ attachment.attachment.url }}" target="_blank"><i class="fas fa-paperclip"></i> {{ attachment.attachment|filename }}</a>
+									</td>
+									<td>
+										Created by <a href="javascript:;" style="color:#1b2a33;">{{ attachment.uploaded_by.pi.user.get_fullname }}</a>
+									</td>
+								</tr>
+								{% else %}
+								<tr>
+									<td>
+										<a href="{{ attachment.attachment.url }}" target="_blank"><i class="fas fa-paperclip"></i> {{ attachment.attachment|filename }}</a>
+									</td>
+									<td>
+										Created by <a href="javascript:;" style="color:#1b2a33;">{{ attachment.uploaded_by.pi.user.get_fullname }}</a>
+									</td>
+								</tr>
+								{% endif %}
+							{% endfor %}
+						</table>
+					</td>
+				</tr>
+				{% if still_hidden %}
+				<tr>
+					<td style="width:20%; vertical-align:top !important;" class="bold capslock">
+						Extracted Texts
+					</td>
+					<td colspan="4" style="white-space:normal; text-align:justify; height:70px;">
+						<textarea class="form-control " style="font-size: 10px;" rows="10" readonly>{{ data.extracted_text }}</textarea>
+					</td>
+				</tr>
+				{% endif %}
+				{% endif %}
+				<tr>
+					<td colspan="5" style="white-space:normal;">
+						<p class="bold capslock" style="margin-bottom:5px;">Tracking Slip</p>
+						{% get_tracking_trail data.id as trail %}
+						<div class="table-responsive">
+							<table class="table table-bordered">
+								<tr>
+									<th class="bold capslock text-center">Step</th>
+									<th class="bold capslock text-center">Action / Process</th>
+									<th class="bold capslock text-center">Time In</th>
+									<th class="bold capslock text-center">Time Out</th>
+									<th class="bold capslock text-center">Responsible Staff</th>
+								</tr>
+								{% for t in trail %}
+									<tr>
+										<td class="text-center">{{ forloop.revcounter }}</td>
+										<td class="text-center">
+											{% if t.action == 0 %}
+												Document created
+											{% else %}
+												{% if t.trans_datestarted %}
+													{% if t.action_taken == '' or not t.action_taken %}
+														<em>No action taken yet</em>
+													{% else %}
+														{{ t.action_taken|safe }}
+													{% endif %}
+												{% else %}
+													<em>Not yet opened</em>
+												{% endif %}
+											{% endif %}
+										</td>
+										{% if t.action == 0 %}
+											<td class="text-center" colspan="2">
+												{{ t.date_saved|date:'M d, Y h:i A' }}
+											</td>
+										{% else %}
+											<td class="text-center">
+												{{ t.trans_datestarted|date:'M d, Y h:i A' }}
+											</td>
+											<td class="text-center">
+												{{ t.trans_datecompleted|date:'M d, Y h:i A' }}
+											</td>
+										{% endif %}
+										<td class="text-center">
+											<a href="javascript:;" style="color:#1b2a33;">
+											{% if t.action == 0 %}
+												{{ t.trans_from.pi.user.first_name|title }} {{ t.trans_from.pi.user.last_name|title }}
+											{% else %}
+												{{ t.trans_to.pi.user.first_name|title }} {{ t.trans_to.pi.user.last_name|title }}
+												{% if t.in_behalf_of %}
+												<br> (In behalf of {{ t.in_behalf_of.pi.user.first_name|title }} {{ t.in_behalf_of.pi.user.last_name|title }})
+												{% endif %}
+											{% endif %}
+											</a>
+										</td>
+									</tr>
+								{% endfor %}
+								{% get_cc data.id as cc %}
+								{% get_cc_divs data.id as cc_divs %}
+								{% if cc %}
+								<tr>
+									<th class="bold capslock text-center">CC</th>
+									<td colspan="4">
+									{% for c in cc %}
+										<a href="javascript:;" style="color:#1b2a33;">{{ c.trans_to.pi.user.get_fullname }}</a>{% if not forloop.last %}, {% endif %}
+									{% endfor %}
+									</td>
+								</tr>
+								{% endif %}
+								{% if cc_divs %}
+								<tr>
+									<th class="bold capslock text-center">DIV</th>
+									<td colspan="4">
+									{% for cd in cc_divs %}
+										<a href="javascript:;" style="color:#1b2a33;">{{ cd.division.div_name }}</a>{% if not forloop.last %}, {% endif %}
+									{% endfor %}
+									</td>
+								</tr>
+								{% endif %}
+							</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>
+{% if data.get_latest_status.trans_to_id == request.session.emp_id and data.get_latest_status.action == 2 and data.get_latest_status.action_taken == None %}
+	<script>
+		$('#transaction_id').val('{{ data.get_latest_status.id }}');
+		$('#table-inbox').DataTable().ajax.reload();
+		$('.forward').show();
+	</script>
+{% else %}
+	<script>
+		$('.forward').hide();
+		$('#table-inbox').DataTable().ajax.reload();
+	</script>
+{% endif %}

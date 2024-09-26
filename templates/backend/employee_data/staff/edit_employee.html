@@ -1,0 +1,124 @@
+<form id="editEmployeeForm">
+{% csrf_token %}
+<div class="modal-body">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>ID Number</label>
+                <input type="text" class="form-control" name="id_number" value="{{ employee.id_number }}" autocomplete="off">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" class="form-control" name="last_name" value="{{ employee.pi.user.last_name|title }}" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" class="form-control" name="first_name" value="{{ employee.pi.user.first_name|title }}" autocomplete="off">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="form-group">
+                <label>Middle Name</label>
+                <input type="text" class="form-control" name="middle_name" value="{{ employee.pi.user.middle_name|title }}" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" name="username" value="{{ employee.pi.user.username|lower }}" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Name Extension</label>
+                <select class="form-control select" name="ext_id">
+                    <option></option>
+                    {% for row in extension_name %}
+                    {% if row.id == employee.pi.ext_id %}
+                    <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.id }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" name="email" value="{{ employee.pi.user.email }}" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" class="form-control" name="contact_number" value="{{ employee.pi.mobile_no }}" autocomplete="off">
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" name="is_active" value="{{ employee.pi.user.is_active }}" {% if employee.pi.user.is_active %}checked{% endif %}> Active
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Save changes</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#editEmployeeForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to update this employee information",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "edit_employee" employee.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (response){
+		    if (response.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#employee_table').DataTable().ajax.reload();
+                    }
+                });
+            }
+		});
+    });
+</script>
+{% endblock %}

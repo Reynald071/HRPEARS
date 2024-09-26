@@ -1,0 +1,77 @@
+{% load static %}
+{% load tags %}
+<form id="addTrackingForm">
+{% csrf_token %}
+<div class="modal-body">
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th>Tracking Number</th>
+                <td>{{ tracking.tracking_no }}</td>
+            </tr>
+            <tr>
+                <th>Date Request</th>
+                <td>{{ tracking.date }}</td>
+            </tr>
+            <tr>
+                <th>Date Received</th>
+                <td>{% if tracking.date_received %}{{ tracking.date_received }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Days Interval</th>
+                <td>
+                    {% if tracking.date_received %}
+                        {% get_date_interval_in_days tracking.date_received tracking.date as days_interval %}
+                        {% if days_interval >= 0 %}{{ days_interval }} day{{ days_interval|pluralize }} delayed{% else %}No delay{% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Remarks</th>
+                <td>{% if tracking.remarks %}{{ tracking.remarks }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Date Administered</th>
+                <td>{% if tracking.date_administered %}{{ tracking.date_administered }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Date Forwarded</th>
+                <td>{% if tracking.date_forwarded %}{{ tracking.date_forwarded }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Date Returned</th>
+                <td>{% if tracking.date_returned %}{{ tracking.date_returned }}{% endif %}</td>
+            </tr>
+            <tr>
+                <th>Date Approved / Uploaded Date</th>
+                <td>
+                    {% get_to_approved_and_uploaded_date tracking.tracking_no as travel_order %}
+                    {% if travel_order.0 %}
+                        {{ travel_order.0 }} / {{ travel_order.1 }}
+                    {% else %}
+                        Travel order is not generated yet.
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(document).on('click', 'button[data-role=date_received]', function(){
+        var list = {
+            'tracking_no': '{{ tracking.tracking_no }}',
+        }
+
+        var url = '{% url "mark_as_received_tr" %}';
+        var title = "Are you sure";
+        var text = "You want to marked as received this travel request";
+        var loadContent = '#tracking-content';
+        var loadUrl = '/backend/tracking/travel-request/{{ tracking.tracking_no }}';
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+    });
+</script>
+{% endblock %}

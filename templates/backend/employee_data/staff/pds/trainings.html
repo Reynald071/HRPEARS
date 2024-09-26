@@ -1,0 +1,416 @@
+{% load crispy_forms_tags %}
+{% load static %}
+{% block style %}
+<style type="text/css">
+    .notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row" id="page-content">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+        <form id="submitTrainingForm">
+        {% csrf_token %}
+        <div class="pull-left">
+				<div class="form-group">
+					<label>Choose Shortcuts</label>
+					<select class="form-control shortcuts select">
+						{% for row in shortcuts %}
+						{% if row.name == "Trainings" %}
+						<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+						{% else %}
+						<option value="{{ row.backend_url }}">{{ row.name }}</option>
+						{% endif %}
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+			<div class="pull-right" style="margin-top:23px;">
+				<div class="form-group">
+					<button type="submit" class="btn btn-info">Save changes</button>
+					<div class="btn-group">
+					<button type="button" id="btn-previous-vw" class="btn btn-default">Previous</button>
+                    <button type="button" id="btn-next-others" class="btn btn-default">Next</button>
+					</div>
+				</div>
+			</div>
+        <table class="table table-bordered notboldandbig tbl-trainings">
+            <thead>
+                <th colspan="9">
+                    <h3>VII. LEARNING AND DEVELOPMENT (L&D) INTERVENTIONS/TRAINING PROGRAMS ATTENDED</h3>
+                </th>
+            </thead>
+            <tbody style="font-size: 11px;">
+                <tr>
+                    <th rowspan="3" class="text-center nopadding" width="30%">
+                        TITLE OF LEARNING AND DEVELOPMENT INTERVENTIONS / TRAINING PROGRAMS
+{#                        &emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-training'><i class="fas fa-plus"></i></button><br>#}
+                        <br><small>(write in full)</small>
+                    </th>
+                    <th colspan="2" class="text-center nopadding" width="20%">
+                        INCLUSIVE DATES OF ATTENDANCE
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="10%">
+                        NUMBER OF HOURS
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="15%">
+                        TYPE OF LD <br><small>(managerial / supervisory / technical / etc)</small>
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="26%">
+                        CONDUCTED / SPONSORED BY<br>
+                        <small>(write in full)</small>
+                    </th>
+                    <th rowspan="3">
+                        <center><button type="button" class="btn btn-info btn-xs add" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+                    </th>
+                </tr>
+                <tr>
+                    <th width="10%" class="text-center">FROM</th>
+                    <th class="text-center">TO</th>
+                </tr>
+                <tr></tr>
+               {% if data %}
+               {% for e in data %}
+               <tr id="{{ e.id }}">
+{#                    <td class="nopadding">#}
+{#                        <select class="form-control input-sm select training" name="training[]">#}
+{#                            <option></option>#}
+{#                            {% for row in training %}#}
+{#                            {% if row.id == e.tt_id %}#}
+{#                            <option value="{{ row.id }}" selected="selected">{{ row.tt_name }}</option>#}
+{#                            {% else %}#}
+{#                            <option value="{{ row.id }}">{{ row.tt_name }}</option>#}
+{#                            {% endif %}#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    </td>#}
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless training" name="training[]" value="{{ e.training }}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]" value="{{ e.tr_from|date:'Y-m-d'}}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]" value="{{ e.tr_to|date:'Y-m-d'}}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless num_hours text-center" name="num_hours[]" value="{{ e.tr_hours }}">
+                    </td>
+{#                    <td class="nopadding">#}
+{#                        <select class="form-control input-sm select type" name="type[]">#}
+{#                            <option></option>#}
+{#                            {% for row in trainingtype %}#}
+{#                            {% if row.id == e.type_id %}#}
+{#                            <option value="{{ row.id }}" selected="selected">{{ row.type_name }}</option>#}
+{#                            {% else %}#}
+{#                            <option value="{{ row.id }}">{{ row.type_name }}</option>#}
+{#                            {% endif %}#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    </td>#}
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless type" name="type[]" value="{{ e.training_type }}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless conducted" name="conducted[]" value="{{ e.conducted }}">
+                    </td>
+                    <td class="nopadding">
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="delete-tr" data-id="{{ e.id }}"><i class="fa fa-minus"></i></button></center>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+{#                    <td class="nopadding">#}
+{#                        <select class="form-control input-sm select training" name="training[]">#}
+{#                            <option></option>#}
+{#                            {% for row in training %}#}
+{#                            <option value="{{ row.id }}">{{ row.tt_name }}</option>#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    </td>#}
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless training" name="training[]" value="{{ e.training }}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_from" name="inc_from[]" value="{{ e.tr_from|date:'Y-m-d'}}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_to" name="inc_to[]" value="{{ e.tr_to|date:'Y-m-d'}}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="number" class="form-control input-sm borderless num_hours" name="num_hours[]" value="{{ e.tr_hours }}">
+                    </td>
+{#                    <td class="nopadding">#}
+{#                        <select class="form-control input-sm select type" name="type[]">#}
+{#                            <option></option>#}
+{#                            {% for row in trainingtype %}#}
+{#                            {% if row.id == e.type_id %}#}
+{#                            <option value="{{ row.id }}" selected="selected">{{ row.type_name }}</option>#}
+{#                            {% else %}#}
+{#                            <option value="{{ row.id }}">{{ row.type_name }}</option>#}
+{#                            {% endif %}#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    </td>#}
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless type" name="type[]" value="{{ e.training_type }}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless conducted" name="conducted[]" value="{{ e.conducted }}">
+                    </td>
+                    <td class="nopadding">
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="remove-tr"><i class="fa fa-minus"></i></button></center>
+                    </td>
+                </tr>
+               {% endif %}
+            </tbody>
+        </table>
+        </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-training" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Training Title</h3>
+                <button type="button" class="close text-white" id="close-add-training-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addTrainingTitle">
+            {% csrf_token %}
+            <div class="modal-body">
+               	{{ form.tt_name|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+	$('#close-add-training-modal').on('click', function(){
+        $('#add-training').modal('toggle');
+    });
+
+	$('#btn-previous-vw').on('click', function(){
+	    callPage("{% url 'update_voluntary_work' pi_id %}");
+    });
+
+    $('#btn-next-others').on('click', function(){
+        callPage("{% url 'update_others' pi_id %}");
+    });
+
+	var fieldTRHTML = '<tr>\
+	                	<td class="nopadding">\
+	                		<input type="text" class="form-control input-sm borderless training" name="training[]">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="text" class="form-control input-sm borderless num_hours text-center" name="num_hours[]">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="text" class="form-control input-sm borderless type" name="type[]">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="text" class="form-control input-sm borderless conducted" name="conducted[]">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<center><button type="button" class="btn btn-danger btn-xs" data-role="remove-tr"><i class="fa fa-minus"></i></button></center>\
+	                	</td>\
+	                </tr>'
+
+	$('.add').on('click', function(){
+        $('.tbl-trainings > tbody:last-child').append(fieldTRHTML);
+
+		// fetch_trainings();
+        $('.select').select2({
+            width: "100%",
+            allowClear: true,
+            placeholder: "Choose",
+        });
+    });
+
+
+
+	$('#submitTrainingForm').on('submit', function(e){
+		if (checkForm() == 0){
+	        $.ajax({
+	            data        : new FormData(this),
+	            url         : '{% url "update_trainings" pi_id %}',
+	            type        : 'POST',
+	            cache       : false,
+	            contentType : false,
+	            processData : false
+	        })
+	        .done(function(data){
+	            var data = data.data;
+	            Swal.fire("Well done!", "Learning and Development has been saved successfully.", "success");
+	        });
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+    	invalid = 0;
+        $('.training').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.inc_from').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.inc_to').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.num_hours').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.type').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.conducted').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+        return invalid;
+    }
+
+    $(document).on('click','button[data-role="remove-tr"]', function(e){
+        e.preventDefault();
+        $(this).parent().parent().parent().remove();
+    });
+
+    $(document).on('click', 'button[data-role=delete-tr]', function(){
+        var id = $(this).data('id');
+		Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          closeOnConfirm: false,
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+                $.ajax({
+                    url: "/delete-training/",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('.tbl-trainings tr#'+id).remove();
+                    Swal.fire("Success!", "Your record was successfully deleted. Farewell.", "success");
+                });
+            }
+	    });
+    });
+
+    $('#addTrainingTitle').on('submit', function(e){
+    	e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "admin_add_trainingtitle" pi_id %}',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=tt_name]').after(error);
+                }
+                else {
+                    $('#add-training').modal('hide');
+                    toastrOptions();
+                    toastr.success("The training \'" + response.tt_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_trainings();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+	function fetch_trainings(){
+        $.getJSON('{% url "api-trainings" pi_id %}', function(response) {
+            data_trainings = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_trainings.push({id: response.data[d].id, text: response.data[d].tt_name});
+            }
+
+            $('.training').select2({
+                data: data_trainings,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    $('.shortcuts').on('select2:select', function(){
+        callPage($(this).val() + {{ pi_id }});
+    });
+</script>
+{% endblock %}

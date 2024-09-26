@@ -1,0 +1,449 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style type="text/css">
+    th{
+        background: #F5F5F5;
+    }
+    td{
+        background: white;
+    }
+    .select2-container--default .select2-selection--single {
+        border: none;
+        text-align: left !important;
+    }
+    .select2-selection__rendered {
+        font-size: 12px !important;
+        font-weight: bold;
+        color: inherit !important;
+        text-transform: uppercase;
+    }
+    .select2-results__option{
+    	text-transform: uppercase;
+    }
+
+    .form-control-sm{
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .notboldandbig th {
+    	font-size: 12px !important;
+		font-weight: normal;
+		font-size: 95%;
+    }
+
+    td.p-0 {
+		text-align: center;
+		vertical-align: middle !important;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">{{ tab_title }}</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					{{ tab_parent }}
+				</li>
+                {% if tab_child and tab_child != '' %}
+				<li class="breadcrumb-item">
+					{{ tab_child }}
+				</li>
+                {% endif %}
+				<li class="breadcrumb-item active">
+					<strong>{{ tab_title }}</strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+				<button class="btn btn-info" onclick="$('#click-submit').click();">Save changes</button>
+				<div class="btn-group">
+					<a href="{% url 'voluntary' %}" class="btn btn-default">Previous</a>
+					<a href="{% url 'other-information' %}" class="btn btn-default">Next</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+<div class="card card-info card-outline">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-sm-12">
+				<form id="submitTrainingForm" class="table-responsive">
+				{% csrf_token %}
+				<table class="table table-bordered notboldandbig mb-0" style="zoom: 95% !important;">
+					<thead>
+						<tr>
+							<th rowspan="3" class="text-center p-0" width="30%">
+								TITLE OF LEARNING AND DEVELOPMENT INTERVENTIONS / TRAINING PROGRAMS
+{#                                &emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-training'><i class="fas fa-plus"></i></button><br>#}
+                                <br><small>(write in full)</small>
+							</th>
+							<th colspan="2" class="text-center p-0" width="20%">
+								INCLUSIVE DATES OF ATTENDANCE
+							</th>
+							<th rowspan="3" class="text-center p-0" width="10%">
+								NUMBER OF HOURS
+							</th>
+							<th rowspan="3" class="text-center p-0" width="15%">
+								TYPE OF LD <br><small>(managerial / supervisory / technical / etc)</small>
+							</th>
+							<th rowspan="3" class="text-center p-0" width="26%">
+								CONDUCTED / SPONSORED BY<br>
+								<small>(write in full)</small>
+							</th>
+							<th rowspan="3">
+								<center><button type="button" class="btn btn-info btn-xs add" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+							</th>
+						</tr>
+						<tr>
+							<th width="10%" class="text-center">FROM</th>
+							<th class="text-center">TO</th>
+						</tr>
+						<tr></tr>
+					</thead>
+					<tbody style="font-size: 11px;">
+					   {% if data %}
+					   {% for e in data %}
+					   <tr id="{{ e.id }}">
+{#							<td class="p-0">#}
+{#								<select class="form-control form-control-sm  select training" name="training[]">#}
+{#									<option></option>#}
+{#									{% for row in training %}#}
+{#									{% if row.id == e.tt_id %}#}
+{#									<option value="{{ row.id }}" selected="selected">{{ row.tt_name }}</option>#}
+{#									{% else %}#}
+{#									<option value="{{ row.id }}">{{ row.tt_name }}</option>#}
+{#									{% endif %}#}
+{#									{% endfor %}#}
+{#								</select>#}
+{#							</td>#}
+                            <td class="p-0">
+								<input type="text" class="form-control form-control-sm  border-0 training" name="training[]" value="{{ e.training }}">
+							</td>
+							<td class="p-0">
+								<input type="date" class="form-control form-control-sm  border-0 inc_from text-center" name="inc_from[]" value="{{ e.tr_from|date:'Y-m-d'}}">
+							</td>
+							<td class="p-0">
+								<input type="date" class="form-control form-control-sm  border-0 inc_to text-center" name="inc_to[]" value="{{ e.tr_to|date:'Y-m-d'}}">
+							</td>
+							<td class="p-0">
+								<input type="number" class="form-control form-control-sm  border-0 num_hours text-center" name="num_hours[]" value="{{ e.tr_hours }}">
+							</td>
+{#							<td class="p-0">#}
+{#								<select class="form-control form-control-sm  select type" name="type[]">#}
+{#									<option></option>#}
+{#									{% for row in trainingtype %}#}
+{#									{% if row.id == e.type_id %}#}
+{#									<option value="{{ row.id }}" selected="selected">{{ row.type_name }}</option>#}
+{#									{% else %}#}
+{#									<option value="{{ row.id }}">{{ row.type_name }}</option>#}
+{#									{% endif %}#}
+{#									{% endfor %}#}
+{#								</select>#}
+{#							</td>#}
+                            <td class="p-0">
+								<input type="text" class="form-control form-control-sm  border-0 type" name="type[]" value="{{ e.training_type }}">
+							</td>
+							<td class="p-0">
+								<input type="text" class="form-control form-control-sm  border-0 conducted" name="conducted[]" value="{{ e.conducted }}">
+							</td>
+							<td class="p-0">
+								<center><button type="button" class="btn btn-danger btn-xs" data-role="delete" data-id="{{ e.id }}"><i class="fa fa-minus"></i></button></center>
+							</td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+{#							<td class="p-0">#}
+{#								<select class="form-control form-control-sm  select training" name="training[]">#}
+{#									<option></option>#}
+{#									{% for row in training %}#}
+{#									<option value="{{ row.id }}">{{ row.tt_name }}</option>#}
+{#									{% endfor %}#}
+{#								</select>#}
+{#							</td>#}
+                            <td class="p-0">
+								<input type="text" class="form-control form-control-sm  border-0 training" name="training[]" value="{{ e.training }}">
+							</td>
+							<td class="p-0">
+								<input type="date" class="form-control form-control-sm  border-0 inc_from" name="inc_from[]" value="{{ e.tr_from|date:'Y-m-d'}}">
+							</td>
+							<td class="p-0">
+								<input type="date" class="form-control form-control-sm  border-0 inc_to" name="inc_to[]" value="{{ e.tr_to|date:'Y-m-d'}}">
+							</td>
+							<td class="p-0">
+								<input type="number" class="form-control form-control-sm  border-0 num_hours" name="num_hours[]" value="{{ e.tr_hours }}">
+							</td>
+{#							<td class="p-0">#}
+{#								<select class="form-control form-control-sm  select type" name="type[]">#}
+{#									<option></option>#}
+{#									{% for row in trainingtype %}#}
+{#									{% if row.id == e.type_id %}#}
+{#									<option value="{{ row.id }}" selected="selected">{{ row.type_name }}</option>#}
+{#									{% else %}#}
+{#									<option value="{{ row.id }}">{{ row.type_name }}</option>#}
+{#									{% endif %}#}
+{#									{% endfor %}#}
+{#								</select>#}
+{#							</td>#}
+                            <td class="p-0">
+								<input type="text" class="form-control form-control-sm  border-0 type" name="type[]" value="{{ e.training_type }}">
+							</td>
+							<td class="p-0">
+								<input type="text" class="form-control form-control-sm  border-0 conducted" name="conducted[]" value="{{ e.conducted }}">
+							</td>
+							<td class="p-0">
+								<center><button type="button" class="btn btn-danger btn-xs" data-role="remove"><i class="fa fa-minus"></i></button></center>
+							</td>
+						</tr>
+					   {% endif %}
+					</tbody>
+				</table>
+				<button type="submit" class="btn btn-info display-none" id="click-submit">Save changes</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+
+<div class="modal" id="add-training" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Training Title</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addTrainingTitle">
+            {% csrf_token %}
+            <div class="modal-body">
+               	{{ form.tt_name|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+
+	var fieldHTML = '<tr>\
+	                	<td class="p-0">\
+	                		<input type="text" class="form-control form-control-sm  border-0 training" name="training[]">\
+	                	</td>\
+	                	<td class="p-0">\
+	                		<input type="date" class="form-control form-control-sm  border-0 inc_from text-center" name="inc_from[]">\
+	                	</td>\
+	                	<td class="p-0">\
+	                		<input type="date" class="form-control form-control-sm  border-0 inc_to text-center" name="inc_to[]">\
+	                	</td>\
+	                	<td class="p-0">\
+	                		<input type="number" class="form-control form-control-sm  border-0 num_hours text-center" name="num_hours[]">\
+	                	</td>\
+	                	<td class="p-0">\
+	                		<input type="text" class="form-control form-control-sm  border-0 type" name="type[]">\
+	                	</td>\
+	                	<td class="p-0">\
+	                		<input type="text" class="form-control form-control-sm  border-0 conducted" name="conducted[]">\
+	                	</td>\
+	                	<td class="p-0">\
+	                		<center><button type="button" class="btn btn-danger btn-xs" data-role="remove"><i class="fa fa-minus"></i></button></center>\
+	                	</td>\
+	                </tr>'
+
+	$('.add').on('click', function(){
+        $('table').prepend(fieldHTML);
+
+		// fetch_trainings();
+        $('.select').select2({
+            allowClear: true,
+            width: '100%',
+            placeholder: "Choose",
+        });
+    });
+
+	$('#submitTrainingForm').on('submit', function(e){
+		if (checkForm() == 0){
+	        $.ajax({
+	            data        : new FormData(this),
+	            url         : '{% url "training" %}',
+	            type        : 'POST',
+	            beforeSend: function() {
+                	$('.btn').prop('disabled', true);
+                	$('a').prop('disabled', true);
+                },
+                success: function(response) {
+                	if(response.data) {
+						Swal.fire({
+                            title: "Well done!",
+                            text: "Learning and Development has been saved successfully.",
+                            icon: "success",
+                            confirmButtonColor: "#3498DB",
+                        });
+					}
+                },
+                complete: function() {
+                	$('.btn').prop('disabled', false);
+                	$('a').prop('disabled', false);
+                },
+	            cache       : false,
+	            contentType : false,
+	            processData : false
+	        })
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+    	invalid = 0;
+        $('.training').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.inc_from').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.inc_to').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.num_hours').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.type').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.conducted').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+        return invalid;
+    }
+
+    $(document).on('click','button[data-role="remove"]', function(){
+    	$(this).closest('tr').remove();
+    });
+
+    $(document).on('click', 'button[data-role=delete]', function(){
+        var id = $(this).data('id');
+		Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: "/delete-training/",
+					data: {
+						id: id
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					$('tr#'+id).remove();
+					Swal.fire("Success!", "Your record was successfully deleted. Farewell.", "success");
+				});
+			}
+	    });
+    });
+
+    $('#addTrainingTitle').on('submit', function(e){
+    	e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '/add-trainingtitle/',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=tt_name]').after(error);
+                }
+                else {
+                    $('#add-training').modal('hide');
+                    toastrOptions();
+                    toastr.success("The training \'" + response.tt_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_trainings();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+	function fetch_trainings(){
+        $.getJSON('{% url "api-trainings" request.session.pi_id %}', function(response) {
+            data_trainings = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_trainings.push({id: response.data[d].id, text: response.data[d].tt_name});
+            }
+
+            $('.training').select2({
+                data: data_trainings,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+</script>
+{% endblock %}

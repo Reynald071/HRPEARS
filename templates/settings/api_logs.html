@@ -1,0 +1,58 @@
+<div id="api_logs_content">
+    <div class="pull-left">
+        <h3>API Logs</h3>
+    </div>
+    <br><br>
+    <div class="table-responsive">
+        <table id="api-table" class="table table-bordered table-hover" width="100%">
+            <thead>
+                <tr>
+                    <th>Requested At</th>
+                    <th class="text-center">User</th>
+                    <th class="text-center">Path</th>
+                    <th class="text-center">Remote Address</th>
+                    <th class="text-center">Method</th>
+                    <th class="text-center">Status Code</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function(){
+        APITable();
+
+        function APITable(){
+            $('#api-table').DataTable({
+                'serverSide': true,
+                'processing': true,
+                'deferRender': true,
+                'lengthMenu': [ 25, 50, 100 ],
+                'order': [[ 0, 'desc' ]],
+                'ajax': {
+                    'url': '/api/requests/logs/?format=datatables',
+                    'type': 'GET',
+                    'beforeSend': function (request) {
+                        request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+                    }
+                },
+                'columns': [
+                    {'data': 'requested_at'},
+                    {'data': 'full_name', 'className': 'text-center',
+                        'name': 'user.first_name, user.middle_name, user.last_name',
+                        'searchable': true,
+                        'render': function(data, type, row, meta) {
+                            return data;
+                        }
+                    },
+                    {'data': 'path', 'className': 'text-center'},
+                    {'data': 'remote_addr', 'className': 'text-center'},
+                    {'data': 'method', 'className': 'text-center'},
+                    {'data': 'status_code', 'className': 'text-center'},
+                ]
+            });
+        }
+    });
+</script>
+{% endblock %}

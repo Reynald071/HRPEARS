@@ -1,0 +1,337 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/adjustments.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+	<div class="col-lg-8">
+		<h1 class="bold">Welfare Database</h1>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="{% url 'backend-dashboard' %}">Administrator</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>Welfare Activity</strong>
+			</li>
+		</ol>
+	</div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            {% if user|check_permission:'superadmin' or user|check_permission:'staffing' %}
+				<div class="btn-group">
+					<button type="button" class="btn btn-default" data-toggle="modal" data-target="#exampleModal">Add</button>
+					<button type="button" data-toggle="dropdown" class="btn btn-info dropdown-toggle"><span class="loading open-circle" style="display:none;"></span><i class="fas fa-file-export"></i> Action <span class="caret"></span></button>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'printinterventionreport' %}" target="blank">Print</a></li>
+                    </ul>
+				</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-left">
+					</div>
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-hover" id="intervention_db" width="100%">
+							<thead>
+							<tr>
+								<th class="capslock">Action</th>
+								<th class="capslock">Emp ID</th>
+								<th class="capslock">Full Name</th>
+								<th class="capslock">Last Name</th>
+								<th class="capslock">First Name</th>
+								<th class="capslock">Division</th>
+								<th class="capslock">Sex</th>
+								<th class="capslock">Welfare Intervention</th>
+								<th class="capslock">Activity</th>
+								<th class="capslock">Intervention Total</th>
+								<th class="capslock">Total Stocks</th>
+							</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div aria-hidden="true" aria-labelledby="myExtraLargeModalLabel" class="modal fade" data-backdrop="static" id="myModal"
+	 role="dialog">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+				<h3 class="modal-title">Welfare Intervention</h3>
+				<button aria-label="Close" class="close text-white" data-dismiss="modal"
+						type="button">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" id="load_data">
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+        <h3 class="modal-title" id="exampleModalLabel">Insert Intervention</h3>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      		<form id="insertactivity">
+				<div class="form-group">
+					<label class="bmd-label-floating">Employee Info<span class="asteriskField">*</span> </label>
+					<input autocomplete="off" class="form-control typeahead2" name="idnumber" required="true"
+						   type="text">
+					<h4>By Activity<span class="asteriskField">*</span></h4>
+					<div class="form-group">
+						<select class="form-control select" id="activity_db" name="activity_db"
+								style="width:100%;" required>
+							<option></option>
+							{% for row in act %}
+							<option value="{{row.id}}">{{row.activity}}</option>
+							{% endfor %}
+						</select>
+						<br>
+					</div>
+					<div class="form-group">
+						<select class="form-control select" id="activity_item" name="item_db"
+								style="width:100%;" required>
+							<option></option>
+						</select>
+						<br>
+					</div>
+					<div class="form-group" id="stocks_inventory">
+						<label class="bmd-label-floating">STOCKS</label>
+						<input autocomplete="off" class="form-control" id="inventoryid" name="inventoryid" type="text">
+						<br>
+						<label class="bmd-label-floating">TOTAL STOCKS</label>
+						<input type="text" class="form-control" name="total_stocks" id="total_stocks" readonly>
+					</div>
+					<label class="bmd-label-floating">Number<span class="asteriskField">*</span> </label>
+					<input autocomplete="off" class="form-control" name="total" id="total_id" required="true" type="text">
+				</div>
+				<button class="btn-info btn pull-right" type="submit">Submit</button>
+				<br>
+			</form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+
+<script>
+		datatable_intervention();
+		function datatable_intervention(){
+			$('#intervention_db').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'order': [[ 0, 'desc' ]],
+				'lengthMenu': [25,50,100],
+				'ajax': {
+					'url': '/api/hrws/intervention?format=datatables',
+					'type': 'GET',
+					'beforeSend': function (request) {
+						request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+					}
+				},
+				'fnCreatedRow': function (row, data, index) {
+					$(row).attr('id', data['id']);
+				},
+				'columns': [
+					{'data': 'id',
+						'render': function(data, type, row, meta) {
+                            return "<a href='#' data-role='view' data-id='["+ data + "]'>Details</a>"
+                        }
+					},
+					{'data': 'emp_id', 'className': 'text-center', 'name':'emp.id_number'},
+					{'data': 'full_name','class':'text-center','name':'emp.pi.user.first_name','name':'emp.pi.user.last_name'},
+					{'data':'lname', 'className': 'text-center', 'name':'emp.pi.user.first_name'},
+					{'data':'fname', 'className': 'text-center', 'name':'emp.pi.user.last_name'},
+					{'data':'division', 'className': 'text-center', 'name':'emp.section.div.div_name'},
+					{'data':'sex', 'className': 'text-center', 'name':'emp.pi.gender',						
+						'render': function(data,type,row,meta){
+							if(row['sex'] == 1){
+								return '<td>Male</td>'
+							}else{
+								return '<td>Female</td>'
+							}
+						}
+					},
+					{'data':'intervention','className': 'text-center','name':'activity.activity'},
+					{'data':'item','className': 'text-center','name':'item.item'},
+					{'data':'total','className': 'text-center'},
+					{'data': 'stocks', 'className': 'text-center', 'name':'item.inventory',
+						'render': function(data,type,row,meta){
+							if(row['stocks'] == null){
+								return '<td>N/A</td>'
+							}else{
+								return row['item']  + ":" +row['stocks']
+							}
+						}
+					},
+				],
+			});
+		}
+
+	$(".typeahead, .typeahead2, .typeahead3, .typeahead4").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+	$(document).on('click','a[data-role=view]', function(){ // FOR MODAL PASS TO DIFFERENT MODAL
+      var id = $(this).data('id');
+      $('#myModal').modal('show').find('#load_data').load('/welfare/intervention/modalforintervention/' +id);
+    });
+    $('#activity_item').prop('disabled', true);
+    function clear(){
+    	$('#activity_item').empty();
+    }
+
+	$('#activity_db').on('change', function(e){
+	    var src =$(this).val();
+	     if($(this).val() ==""){
+	      $('#activity_item').prop('disabled', true);
+	    }else{
+	    $.ajax({
+	      url:"{% url 'showitem' %}",
+	      data:{
+	        src: src
+	      },
+	      type: "POST"
+	    })
+	    .done(function(data){
+		    $('#activity_item').prop('disabled', false);
+		    clear();
+		    if(data.data){
+		        var data = data.data;
+		        if(data ==""){
+		          	$('#activity_item').prop('disabled', true);
+		        }else{
+			        for(var i=0; i< data.length; i++){
+			        var newOption = new Option(data[i]['item'],data[i]['id']);
+			        $('#activity_item').append(newOption);
+			        }
+		        }
+		        $('#activity_item').select2('val','');
+		    }else{
+	          $('#activity_item').val(null).trigger('change');
+	          $('#vac').prop('disabled',true);
+		    }
+	    });
+	    e.preventDefault();
+	  	}
+	});
+	$("#stocks_inventory").hide()
+    $('#activity_item').on('change', function(e){
+        var activity_id = $(this).val();
+        $.ajax({
+            url: "{% url 'show_inventory' %}",
+            data: {
+                activity_id  : activity_id
+            },
+            type: "POST"
+        })
+        .done(function(data){
+            if(data.data){
+                var data = data.data;
+                for(var i=0; i< data.length; i++){
+		          var value = data[i]['inventory'];
+		          if(value == null){
+		          	$("#stocks_inventory").hide()
+		          }else{
+		          	$("#stocks_inventory").show()
+		          	$('#inventoryid').val(value);
+					$("#total_id, #inventoryid").keyup(function () {
+						var total = $("#total_id").val();
+						var inventory = $('#inventoryid').val();
+						var final_total = inventory - total
+						$('#total_stocks').val(final_total);
+						});
+		          }
+                }
+            }
+            e.preventDefault();
+        });
+    });
+    $('#insertactivity').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "Did you review the welfare activity?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'insertactivity' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data == 'success'){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully added data",
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#intervention_db').DataTable().ajax.reload();
+                        }
+                    });
+                }else if(data == 'fail'){
+                    Swal.fire({
+                      title: "Insert Failed!",
+                      text: "Data already exists, Kindly search and update instead",
+                      icon: "error",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{% url 'hrwactivity' %}";
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

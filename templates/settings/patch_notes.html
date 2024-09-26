@@ -1,0 +1,152 @@
+<div id="patches_content">
+    <div class="pull-left">
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#add_patch_modal"><i class="fas fa-plus"></i> Add Patch</button>
+    </div>
+    <br><br><br>
+    <div class="table-responsive">
+        <table id="patches-table" class="table table-bordered table-hover" width="100%">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Patches</th>
+                    <th class="text-right">Release</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<div class="modal" id="add_patch_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">ADD PATCH</h3>
+
+            </div>
+            <form id="patchForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Title<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control" name="title" id="title" placeholder="Title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description<span class="asteriskField">*</span></label>
+                        <textarea id="patch-description" name="description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Release Date<span class="asteriskField">*</span></label>
+                        <input type="date" class="form-control" name="release_date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-info">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="edit_patch_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">EDIT PATCH</h3>
+
+            </div>
+            <div id="patch-edit-content"></div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+$(document).ready(function(){
+     $('#patch-description').summernote({
+        height: $(window).height() * 0.2,
+        dialogsInBody: true,
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+
+    $('#patches-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 0, 'desc' ]],
+        'ajax': {
+            'url': '/api/patch-notes/?format=datatables',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return '<a href="javascript:void(0)" data-role="edit" data-id="'+ data +'">Details</a>'
+                }
+            },
+            {'data': 'title' },
+            {'data': 'release_date', 'className': 'text-right' },
+        ]
+    });
+
+    $(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        $('#edit_patch_modal').modal('show').find('#patch-edit-content').load('/system/patch-notes/update/' + id);
+    });
+
+    $('#patchForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to add this patch",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "patch_notes" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        }).then(function (data){
+            if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "You have successfully added name '" + $('#title').val() +"' in patch.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#patchForm').trigger('reset');
+                        $('#add_patch_modal').modal('hide');
+                        $('#patches-table').DataTable().ajax.reload();
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

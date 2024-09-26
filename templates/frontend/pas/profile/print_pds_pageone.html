@@ -1,0 +1,824 @@
+{% load tags %}
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+<title>DSWD My PORTAL PDS | Print Page 1</title>
+<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style type="text/css">
+	@media print{
+		.containerX {
+			padding: 0px !important;
+			margin: 0px !important;
+			zoom: 90% !important;
+			height: 0% !important;
+		}
+		page {
+			margin: 0px !important;
+			border: 0.1px solid transparent;
+			height: 329mm !important;
+			width: 100% !important;
+		}
+		thead tr td {
+			padding: 0px !important;
+		}
+		body{
+			-webkit-print-color-adjust: exact;
+		}
+		.table thead th {
+	    	background-color: #999999 !important;
+	    	color: white !important;
+	    	font-size: 14px;
+	    	border: 1px solid black !important;
+	    	font-style: italic;
+	    	-webkit-print-color-adjust: exact;
+	    }
+	    .table .familybackground .gray-bg{
+	    	background-color: #E8E8E8 !important;
+		}
+		.table .familybackground .text-danger i{
+	    	color: red !important;
+		}
+		.table tbody .gray-bg{
+			background-color: #E8E8E8 !important;
+		}
+		.table thead td.dark-gray-bg{
+			background-color: #999 !important;
+		}
+		.table tbody .text-danger i{
+			color: red !important;
+		}
+		td{
+			padding-top: 2px !important;
+			padding-bottom: 2px !important;
+		}
+		.table {
+			page-break-inside: avoid;
+			page-break-after: avoid;
+		}
+	}
+
+	@page {
+		size: auto;
+	}
+
+	.containerX {
+		zoom: 80%;
+	}
+	.gray-bg{
+		background-color: #E8E8E8 !important;
+	}
+	.table .familybackground .gray-bg{
+    	background-color: #E8E8E8 !important;		
+	}
+	.dark-gray-bg{
+		background-color: #999;
+	}
+	.table .familybackground .text-danger i{
+    	color: red !important;		
+	}
+	.table tbody .gray-bg{
+		background-color: #E8E8E8 !important;
+	}
+	.table tbody .text-danger i{
+		color: red !important;
+	}
+	th{
+		font-family: Arial Narrow;
+		text-transform: uppercase;
+	}
+	td{
+		border: 1px solid black !important;
+		font-family: Arial Narrow;
+		padding-top: 8px !important;
+		padding-bottom: 8px !important;
+	}
+	.text-capital{
+		text-transform: uppercase;
+	}
+	.padding-zero{
+		padding: 0px !important;
+	}
+	.padding-one{
+		padding: 1px !important;
+	}
+	.padding-5-l {
+		padding-left: 10px !important;
+	}
+	.padding-10-t {
+		padding-top: 7px !important;
+	}
+	.font-small{
+		font-size: 14.67px;
+	}
+	.font-xsmall{
+		font-size: 13.33px;
+	}
+	.font-xxsmall{
+		font-size: 12px;
+	}
+	.magic{
+        border-top: 0px solid black !important; border-bottom: 0px solid black !important;
+    }
+    .magic-2{
+    	border-right:0px solid black !important;
+    }
+    .magic-3{
+    	border-left:0px solid black !important;
+    }
+    thead th {
+    	background-color: #999;
+    	color: white;
+    	font-size: 14.67px;
+    	border: 1px solid black !important;
+    	font-style: italic;
+    }
+    .table{
+		border-collapse: collapse;
+		width: 100%;
+		margin-bottom:0;
+	}
+    .title-pds{
+    	font-family: Arial Black;
+    	font-size: 30.67px;
+    }
+
+	.same-height {
+		display:flex;
+		justify-content:center;
+		align-items:center;
+		height:30px !important;
+		padding:2px !important;
+		overflow: hidden;
+	}
+
+	.align-middle {
+		vertical-align: center !important;
+	}
+</style>
+<body>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">
+            <strong>Page 1&emsp;
+			<em><small class="font-xsmall">Notes: Paper size is Folio, scale to 90%, margin to 0.19, 0.33, 0.08, 0.36</small></em>
+            </strong>
+        </a>
+		<ul class="navbar-nav ml-auto">
+			<li><a href="javascript:;" class="btn btn-info print-button" id="floatprint" title="Print" style="cursor:pointer;"><i class="fas fa-print"></i> <span id="print">Print</span></a></li>
+		</ul>
+	</div>
+</nav>
+<page size="long" style="padding: 30px; position: relative; page-break-after: avoid; page-break-inside: avoid;">
+	<div class="containerX">
+		<table class="table pds" border="1" style="page-break-after: avoid; page-break-inside: avoid;">
+			<thead>
+				<tr>
+					<td colspan="9" class="padding-10-t padding-5-l padding-zero font-xsmall magic"><strong><i>CS Form No. 212</i></strong></td>
+				</tr>
+				<tr>
+					<td colspan="9" class="padding-5-l padding-zero font-xxsmall magic">
+						<strong><i>Revised 2017</i></strong>
+						<center><p class="title-pds" style="margin-top: -20px;"><strong>PERSONAL DATA SHEET</strong></p></center>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="9" class="padding-5-l font-xxsmall magic padding-zero"><b><i>WARNING: Any misrepresentation made in the Personal Data Sheet and the Work Experience Sheet shall cause the filing of administrative/criminal case/s against the person concerned.</i></b>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="9" class="padding-5-l font-xxsmall magic padding-zero">
+						<b><i>READ THE ATTACHED GUIDE TO FILLING OUT THE PERSONAL DATA SHEET (PDS) BEFORE ACCOMPLISHING THE PDS FORM.</i></b>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" class="padding-5-l padding-zero magic font-xxsmall">
+						Print legibly. Tick appropriate boxes <input class="icheck" type="checkbox"> and use separate sheet if necessary. Indicate N/A if not applicable. <b>DO NOT ABBREVIATE</b>
+					</td>
+					<td colspan="2" class="padding-5-l padding-zero font-xxsmall dark-gray-bg">
+						1. CS ID No.
+					</td>
+					<td colspan="3" class="font-xxsmall padding-zero text-right">
+						&emsp;(Do not fill up, For CSC use only)
+					</td>
+				</tr>
+			</thead>
+			<thead>
+				<th colspan="9">&emsp;I. PERSONAL INFORMATION</th>
+			</thead>
+			<tbody>
+				<tr>
+					<td width="20%" class="magic font-xxsmall gray-bg">2. &nbsp;SURNAME</td>
+					<td colspan="8" class="font-xsmall"><strong>{{ pds.user.last_name|upper }}</strong></td>
+				</tr>
+				<tr>
+					<td class="magic font-xxsmall gray-bg">&emsp;FIRST NAME</td>
+					<td colspan="5" class="font-xsmall"><strong>{{ pds.user.first_name|upper }}</strong></td>
+					<td colspan="3" class="gray-bg">
+						<p style="font-size: 9px; margin: -5px 0px;">NAME EXTENSION (JR., SR)</p>
+						<span class="font-xxsmall">
+							<strong>
+								{% if pds.ext.name %}
+									{{ pds.ext.name|upper }}
+								{% else %}
+									N/A
+								{% endif %}
+							</strong>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td class="magic font-xxsmall gray-bg">&emsp;MIDDLE NAME</td>
+					<td colspan="8" class="font-xsmall"><strong>{{ pds.user.middle_name|upper }}</strong></td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">3. &nbsp;DATE OF BIRTH <br>&emsp;(mm/dd/yyyy)</td>
+					<td class="font-xsmall" width="15%"><strong>{{ pds.dob|date:"m/d/Y" }}</strong></td>
+					<td class="magic font-xxsmall gray-bg" colspan="2">16. &nbsp;CITIZENSHIP<br>
+					</td>
+					<td colspan="1" style="margin: 0px !important;" class="magic-2 magic font-small padding-zero">
+						&emsp;<input class="icheck" type="checkbox" {% if pds.isfilipino == 1%}checked{% endif %}> Filipino
+					</td>
+					<td colspan="4" class="magic-3 magic font-small padding-zero">
+						&emsp;<input class="icheck" type="checkbox" {% if pds.isdualcitizenship == 1%}checked{% endif %}> Dual Citizenship <br style="line-height: 0px;">
+						&emsp;&emsp;<input class="icheck" type="checkbox" {% if pds.dc_bybirth == 1%}checked{% endif %}> by birth
+						&emsp;<input class="icheck" type="checkbox" {% if pds.dc_bynaturalization == 1%}checked{% endif %}> by naturalization<br style="line-height: 0px;">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">4. &nbsp;PLACE OF BIRTH</td>
+					<td class="font-xsmall" width="20%"><strong>{{ pds.pob|upper }}</strong></td>
+					<td class="magic text-center font-xxsmall gray-bg" colspan="2">If holder of  dual citizenship,</td>
+					<td class="magic-2 magic-3" style="border-top:0px !important;"></td>
+					<td class="magic-2 magic-3" style="border-top:0px !important;"></td>
+					<td colspan="3" class="magic-3 font-xxsmall" style="border-top:0px !important;">&emsp;&emsp;Pls. indicate country:</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">5. &nbsp;SEX</td>
+					<td class="font-xsmall">
+						<input class="icheck" type="checkbox" {% if pds.gender == 1 %}checked{% endif %}> Male &emsp;&emsp;&emsp;<input type="checkbox" {% if pds.gender == 2 %}checked{% endif %}> Female <br>
+					</td>
+					<td colspan="2" style="border-bottom: 1px solid black !important;" class="magic text-center font-xxsmall gray-bg">please indicate the details.</td>
+					<td colspan="5"></td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" rowspan="2">6. &nbsp;CIVIL STATUS</td>
+					<td class="font-xsmall magic padding-zero">
+						<br style="line-height: 5px;">
+						&nbsp;&nbsp;&nbsp;<input class="icheck" type="checkbox" {% if pds.cs_id == 1%}checked{% endif %}> Single &emsp;&emsp;&nbsp;<input type="checkbox" {% if pds.cs_id == 2%}checked{% endif %}> Married
+					</td>
+					<td class="font-xxsmall gray-bg" style="border-bottom: 0px !important;" width="15%">17. &nbsp;RESIDENTIAL ADDRESS</td>
+					<td colspan="3" class="magic text-center font-xsmall padding-zero">
+						<strong>
+						{% if address.ra_house_no %}
+						<i>{{ address.ra_house_no|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}
+						</strong>
+						<br><i class="font-xxsmall">House/Block/Lot No.</i>
+					</td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.ra_street %}
+						<i>{{ address.ra_street|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Street</i>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small magic padding-zero">
+						<div style="margin-top: -8px !important;">&nbsp;&nbsp;&nbsp;<input type="checkbox" {% if pds.cs_id == 3%}checked{% endif %}> Widowed &emsp;<input type="checkbox" {% if pds.cs_id == 4%}checked{% endif %}> Separated<br>
+						&nbsp;&nbsp;&nbsp;<input class="icheck" class="icheck" type="checkbox"> Others:</div>
+					</td>
+					<td class="magic gray-bg"></td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.ra_village %}
+						<i>{{ address.ra_village|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Subdivision/Village</i>
+					</td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.ra_brgy %}
+						{% getbrgy address.ra_brgy as ra_brgy %}
+						<i>{{ ra_brgy.name|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Barangay</i>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">7. &nbsp;HEIGHT (m)</td>
+					<td class="font-xsmall">
+						{% if pds.height %}
+						<strong>{{ pds.height }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="magic gray-bg"></td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.ra_city %}
+						{% getcity address.ra_city as ra_city %}
+						<i>{{ ra_city.name|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">City / Municipality</i>
+					</td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.ra_prov_code %}
+						{% getprovince address.ra_prov_code as ra_prov_code %}
+						<i>{{ ra_prov_code.name|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Province</i>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">8. &nbsp;WEIGHT (kg)</td>
+					<td class="font-xsmall">
+						{% if pds.weight %}
+						<strong>{{ pds.weight }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td style="border-top: 0px !important;" class="text-center font-xxsmall gray-bg">ZIP CODE</td>
+					<td colspan="7" class="font-xsmall">
+						<b>{% if address.ra_zipcode %}
+						<i>{{ address.ra_zipcode }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">9. &nbsp;BLOOD TYPE</td>
+					<td class="font-xsmall">
+						{% if pds.bt_id %}
+						{% getbloodtype pds.bt_id as bloodtype %}
+						<strong>{{ bloodtype.name }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td style="border-bottom: 0px !important;" class="magic font-xxsmall gray-bg">18. &nbsp;PERMANENT ADDRESS</td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.pa_house_no %}
+						<i>{{ address.pa_house_no|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">House/Block/Lot No.</i>
+					</td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.pa_street %}
+						<i>{{ address.pa_street|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Street</i>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">10. &nbsp;GSIS ID NO.</td>
+					<td class="font-xsmall">
+						{% if numbers.gsis_no %}
+						<strong>{{ numbers.gsis_no }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="magic gray-bg"></td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.pa_village %}
+						<i>{{ address.pa_village|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Subdivision/Village</i>
+					</td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.pa_brgy %}
+						{% getbrgy address.pa_brgy as pa_brgy %}
+						<i>{{ pa_brgy.name|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Barangay</i>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">11. &nbsp;PAG-IBIG ID NO.</td>
+					<td class="font-xsmall">
+						{% if numbers.pagibig_no %}
+						<strong>{{ numbers.pagibig_no }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="magic gray-bg"></td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.pa_city %}
+						{% getcity address.pa_city as pa_city %}
+						<i>{{ pa_city.name|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">City / Municipality</i>
+					</td>
+					<td colspan="3" class="text-center font-xsmall padding-zero">
+						<b>{% if address.pa_prov_code %}
+						{% getprovince address.pa_prov_code as pa_prov_code %}
+						<i>{{ pa_prov_code.name|upper }}</i>
+						{% else %}
+						<i>N/A</i>
+						{% endif %}</b>
+						<br><i class="font-xxsmall">Province</i>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">12. &nbsp;PHILHEALTH NO.</td>
+					<td class="font-xsmall">
+						{% if numbers.philhealth_no %}
+						<strong>{{ numbers.philhealth_no }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td style="border-top: 0px !important;" class="text-center font-xxsmall gray-bg">ZIP CODE</td>
+					<td colspan="7" class="font-xsmall">
+						<b>{% if address.pa_zipcode %}
+						<i>{{ address.pa_zipcode }}</i>
+						{% else %}
+						<i>N/A</i></b>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">13. &nbsp;SSS NO.</td>
+					<td class="font-xsmall">
+						{% if numbers.sss_no %}
+						<strong>{{ numbers.sss_no }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="font-xxsmall gray-bg">19. &nbsp;TELEPHONE NO.</td>
+					<td colspan="7" class="font-xsmall">
+						<b>{% if pds.telephone_no %}
+						{{ pds.telephone_no }}
+						{% else %}</b>
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">14. &nbsp;TIN NO.</td>
+					<td class="font-xsmall">
+						{% if numbers.tin_no %}
+						<strong>{{ numbers.tin_no }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="font-xxsmall gray-bg">20. &nbsp;MOBILE NO.</td>
+					<td colspan="7" class="font-xsmall">
+						<b>{% if pds.mobile_no %}
+						{{ pds.mobile_no }}
+						{% else %}
+						N/A
+						{% endif %}</b>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">15. &nbsp;AGENCY EMPLOYEE NO.</td>
+					<td class="font-xsmall">
+						{% if employee.id_number %}
+						<strong>{{ employee.id_number }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="font-xxsmall gray-bg">21. &nbsp;EMAIL ADDRESS (if any)</td>
+					<td colspan="7" class="font-xsmall">
+						<b>
+						{% if pds.user.email %}
+						<u>{{ pds.user.email }}</u>
+						{% else %}
+						N/A
+						{% endif %}</b>
+					</td>
+				</tr>
+			</tbody>
+			<thead>
+				<tr>
+					<th colspan="9">&emsp;II. FAMILY BACKGROUND</th>
+				</tr>
+			</thead>
+			<tbody class="familybackground">
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-bottom: 0px solid black !important;">22. SPOUSE'S SURNAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.sp_surname %}
+						<strong>{{ family.sp_surname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td colspan="4" class="font-xxsmall padding-zero gray-bg" style="vertical-align:middle;">&nbsp;&nbsp;23. NAME of CHILDREN (Write full name and list all)</td>
+					<td colspan="4" class="font-xxsmall padding-zero gray-bg text-center">DATE OF BIRTH<br style="line-height: 9px;">(mm/dd/yyyy)</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-top: 0px solid black !important; border-bottom: 0px solid black !important;">&emsp;&nbsp;FIRST NAME</td>
+					<td class="font-xsmall">
+						{% if family.sp_fname %}
+						<strong>{{ family.sp_fname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="gray-bg">
+						<p style="font-size: 9px; margin: -5px 0px;">NAME EXTENSION (JR., SR)</p>
+						<span class="font-xsmall">
+							<strong>
+								{% if family.sp_ext %}
+									{{ family.sp_ext.name|upper }}
+								{% else %}
+									N/A
+								{% endif %}
+							</strong>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-top: 0px solid black !important;">&emsp;&nbsp;MIDDLE NAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.sp_mname %}
+						<strong>{{ family.sp_mname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">&emsp;&nbsp;OCCUPATION</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.sp_occupation %}
+						<strong>{{ family.sp_occupation|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">&emsp;&nbsp;EMPLOYER/BUSINESS NAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.sp_employer %}
+						<strong>{{ family.sp_employer|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">&emsp;&nbsp;BUSINESS ADDRESS</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.sp_business %}
+						<strong>{{ family.sp_business|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg">&emsp;&nbsp;TELEPHONE NO.</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.sp_telephone %}
+						<strong>{{ family.sp_telephone }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-bottom: 0px !important;">24. FATHER'S SURNAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.f_surname %}
+						<strong>{{ family.f_surname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-top: 0px !important; border-bottom: 0px !important;">&emsp;&nbsp;FIRST NAME</td>
+					<td class="font-xsmall">
+						{% if family.f_fname %}
+						<strong>{{ family.f_fname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+					<td class="gray-bg">
+						<p style="font-size: 9px; margin: -5px 0px;">NAME EXTENSION (JR., SR)</p>
+						<span class="font-xsmall">
+							<strong>
+								{% if family.f_ext %}
+									{{ family.f_ext.name|upper }}
+								{% else %}
+									N/A
+								{% endif %}
+							</strong>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-top: 0px !important;">&emsp;&nbsp;MIDDLE NAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.f_mname %}
+						<strong>{{ family.f_mname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-bottom: 0px !important;">25. MOTHER'S MAIDEN NAME</td>
+					<td colspan="2" class="font-xsmall">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-top: 0px !important; border-bottom: 0px !important;">&emsp;&nbsp;SURNAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.m_surname %}
+						<strong>{{ family.m_surname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-top: 0px !important; border-bottom: 0px !important;">&emsp;&nbsp;FIRST NAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.m_fname %}
+						<strong>{{ family.m_fname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="font-xxsmall gray-bg" style="border-top: 0px !important;">&emsp;&nbsp;MIDDLE NAME</td>
+					<td colspan="2" class="font-xsmall">
+						{% if family.m_mname %}
+						<strong>{{ family.m_mname|upper }}</strong>
+						{% else %}
+						<strong>N/A</strong>
+						{% endif %}
+					</td>
+				</tr>
+			</tbody>
+			<thead>
+				<tr>
+					<th colspan="9">&emsp;III. EDUCATIONAL BACKGROUND</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="font-xxsmall gray-bg" rowspan="2">26. LEVEL</td>
+					<td class="font-xxsmall gray-bg text-center" rowspan="2" width="30%" style="vertical-align:middle;">NAME OF SCHOOL<br>(Write in full)</td>
+					<td colspan="2" rowspan="2" class="font-xxsmall gray-bg text-center" width="35%" style="vertical-align:middle;">BASIC EDUCATION/DEGREE/COURSE<br>(Write in full)</td>
+					<td colspan="2" class="font-xxsmall padding-zero text-center gray-bg" width="15%" style="vertical-align:middle;">PERIOD OF ATTENDANCE</td>
+					<td rowspan="2" class="font-xxsmall padding-zero text-center gray-bg" style="vertical-align:middle;">HIGHEST LEVEL/UNITS EARNED</td>
+					<td rowspan="2" class="font-xxsmall padding-zero text-center gray-bg" style="vertical-align:middle;">YEAR GRADUATED</td>
+					<td rowspan="2" class="font-xxsmall padding-zero text-center gray-bg" width="5%" style="vertical-align:middle;">SCHOLARSHIP / ACADEMIC HONORS RECEIVED</td>
+				</tr>
+				<tr>
+					<td class="text-center padding-zero font-xxsmall gray-bg" style="vertical-align:middle;">From</td>
+					<td class="text-center padding-zero font-xxsmall gray-bg" style="vertical-align:middle;">To</td>
+				</tr>
+				{% if education_background %}
+					{% for row in education_background %}
+					<tr>
+						<td class="font-xxsmall gray-bg">&emsp;&emsp;{{ row.level.lev_name|upper }}</td>
+						<td class="font-xxsmall text-center" style="padding:8px;"><div class="same-height"><strong>{{ row.school.school_name|upper }}</strong></div></td>
+						<td colspan="2" class="font-xxsmall text-center" style="padding:8px;"><div class="same-height"><strong>{{ row.degree.degree_name|upper }}</strong></div></td>
+						<td class="font-xxsmall text-center"><div class="same-height"><strong>{{ row.period_from }}</strong></div></td>
+						<td class="font-xxsmall text-center"><div class="same-height"><strong>{{ row.period_to }}</strong></div></td>
+						<td class="font-xxsmall text-center">
+							<div class="same-height">
+							<strong>
+							{% if row.units_earned %}{{ row.units_earned|upper }}{% else %}N/A{% endif %}
+							</strong>
+							</div>
+						</td>
+						<td class="font-xxsmall text-center"><div class="same-height"><strong>{{ row.year_graduated|upper }}</strong></div></td>
+						<td class="text-center font-xxsmall"><div class="same-height"><strong>{{ row.hon.hon_name|upper }}</strong></div></td>
+					</tr>
+					{% endfor %}
+				{% else %}
+				<tr>
+					<td class="font-xxsmall text-center"><strong>N/A</strong></td>
+					<td class="font-xxsmall text-center"><strong>N/A</strong></td>
+					<td colspan="2" class="font-xxsmall text-center"><strong>N/A</strong></td>
+					<td class="font-xxsmall text-center"><strong>N/A</strong></td>
+					<td class="font-xxsmall text-center"><strong>N/A</strong></td>
+					<td class="font-xxsmall text-center"><strong>N/A</strong></td>
+					<td class="font-xxsmall text-center"><strong>N/A</strong></td>
+					<td class="font-xxsmall text-center"><strong>N/A</strong></td>
+				</tr>
+				{% endif %}
+				<tr>
+					<td colspan="9" class="text-center text-danger font-xsmall padding-zero gray-bg" style="color:red !important;"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+				</tr>
+				<tr>
+					<td class="text-center gray-bg font-xsmall"><strong><i>SIGNATURE</i></strong></td>
+					<td colspan="3"></td>
+					<td colspan="2" class="text-center gray-bg font-small"><strong><i>DATE</i></strong></td>
+					{% get_latest_workexperience request.session.pi_id as latest_work_experience %}
+					<td colspan="3" class="text-center font-xxsmall"><strong>{{ latest_work_experience|date:"m/d/Y" }}</strong></td>
+				</tr>
+			</tbody>
+		</table>
+		<p class="font-xsmall float-right" style="font-family: Arial Narrow; margin-bottom:0;"><i>CS FORM 212 (Revised 2017), Page 1 of 4</i></p>
+	</div>
+</page>
+</body>
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/adminlte.min.js' %}"></script>
+<script src="{% static 'js/plugins/sweetalert/sweetalert.min.js' %}"></script>
+<script src="{% static 'js/functions.js' %}"></script>
+<script type="text/javascript">
+	function showChildren(){
+		$.ajax({
+			url: '/backend/show-children/' + '{{ pds.id }}',
+			type: 'GET'
+		})
+		.done(function(data){
+			var data = data.data;
+			var max = 13;
+			var count = 1;
+			if (data.length > 0){
+				for(var i = 0; i < data.length; i++){
+		    		var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"><strong>'+ data[i]['child_fullname']+'</strong></td>\
+		    			<td colspan="2" class="font-small text-center"><strong>'+ formatDate(data[i]['child_dob']) +'</strong></td>';
+		    		count++;
+		    		$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+		    	}
+		    	
+		    	for(var i = data.length; i < max; i++){
+		    		if (count == 13){
+		    			var fieldHTML = '<td colspan="6" class="font-xxsmall text-center text-danger gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>';
+		    			count++;
+		    			$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+		    		} else {
+		    			var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"></td>\
+		    			<td colspan="2" class="font-small text-center"></td>';
+			    		count++;
+			    		$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+			    	}
+		    	}
+	    	} else {
+	    		for(var i = data.length; i < max; i++){
+	    			if (count == 1){
+	    				var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"><strong>N/A</strong></td>\
+		    			<td colspan="2" class="font-small text-center"><strong>N/A</strong></td>';
+			    		count++;
+			    		$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+	    			} else if (count == 13){
+		    			var fieldHTML = '<td colspan="6" class="font-xxsmall text-center text-danger gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>';
+		    			count++;
+		    			$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+		    		} else {
+		    			var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"></td>\
+		    			<td colspan="2" class="font-small text-center"></td>';
+			    		count++;
+			    		$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+			    	}
+		    	}
+	    	}
+	    });
+	}
+
+	function formatDate(date){
+		var date = new Date(date);
+		var newdate= ("0" + (date.getMonth() + 1)).slice(-2) + '/' + ("0" + date.getDate()).slice(-2) + '/' +  date.getFullYear();
+		return newdate;
+	}
+
+	$(document).ready(function(){
+		showChildren();
+	});
+</script>
+

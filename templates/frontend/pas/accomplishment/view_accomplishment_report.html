@@ -1,0 +1,299 @@
+{% load frontend_tags %}
+<form id="submitForm">
+{% csrf_token %}
+<div class="row">
+    <div class="col-lg-4">
+        <div>
+            <p>
+                {% if start_date|date:"F" == end_date|date:"F" %}
+                    For the period of: <strong>{{ start_date|date:"F d" }} - {{ end_date|date:"d, Y" }}</strong>
+                {% else %}
+                    For the period of: <strong>{{ start_date|date:"F d" }} - {{ end_date|date:"F d, Y" }}</strong>
+                {% endif %}
+            </p>
+
+            <table class="small table table-display table-bordered" id="dtr-table" style="font-size: 13px !important;">
+                <tr>
+                    <th rowspan="3" class="text-center p-0 magic">
+                        DAY
+                    </th>
+                    <th colspan="2" class="text-center p-0 magic">
+                        AM
+                    </th>
+                    <th colspan="2" class="text-center p-0 magic">
+                        PM
+                    </th>
+                    <th colspan="2" class="text-center p-0 magic">
+                        UnderTime
+                    </th>
+                </tr>
+                <tr>
+                    <td class="text-center p-0">Time In</td>
+                    <td class="text-center p-0">Time Out</td>
+                    <td class="text-center p-0">Time In</td>
+                    <td class="text-center p-0">Time Out</td>
+                    <td class="text-center p-0">Hours</td>
+                    <td class="text-center p-0">Minutes</td>
+                </tr>
+                <tr></tr>
+                {% for one_day in date %}
+                <tr id="tr-{{ one_day|date:'d' }}"></tr>
+                {% endfor %}
+            </table>
+            <div class="row" style="font-size:15px; height:19px;">
+                <div class="col-sm-2" style="padding:0px;">[T]-Travel</div>
+                <div class="col-sm-3" style="padding:0px;">&emsp;&emsp;&emsp;[L]-Leave</div>
+                <div class="col-sm-3" style="padding:0px;">&emsp;[H]-Holiday</div>
+                <div class="col-sm-4" style="padding:0px;">[OB]-Official Business</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <table class="table table-bordered">
+            <thead>
+                <th class="text-center" width="5%"></th>
+                <th class="text-center" width="10%">Date</th>
+                <th class="text-center" width="20%">Place/s Visited</th>
+                <th class="text-center">Accomplishments / Outputs</th>
+                <th width="5%"></th>
+            </thead>
+            <tbody>
+                {% if date %}
+                {% for row in date %}
+                <tr id="ar-{{ row|date:'d' }}"></tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        <br>
+        <span class="bold">Legend:</span> &emsp;
+        <span class="text-danger"><i class="fas fa-circle"></i></span> Weekend &emsp;
+        <span><i class="fas fa-circle"></i></span> Weekday
+
+        <br><br>
+        <button type="submit" class="btn btn-info" id="btn-save">
+            Save changes
+        </button>
+        <a href="{% url 'print_accomplishment' start_date end_date %}" target="_blank" class="btn btn-default" type="button">Print</a>
+    </div>
+</div>
+</form>
+<div class="modal" id="zoom-accomplishment-report" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    ACCOMPLISHMENTS / OUTPUTS ON <span id="date-output"></span>
+                </h3>
+                <button type="button" class="close text-white" id="close-zoom" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Once you close this popup, this accomplishment will be automatically added on the fields.
+                </div>
+                <br>
+                <input type="hidden" id="accomplishment_id">
+                <div class="form-group">
+                    <label>Place/s Visited</label>
+                    <input type="text" class="form-control" id="place_visited">
+                </div>
+                <div class="form-group">
+                    <label>Accomplishment Output</label>
+                    <textarea rows="10" class="form-control" id="accomplishment_outputs"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).on('click', 'a[data-role=clear]', function(){
+        var date = $(this).data('content');
+        var id = $(this).data('id');
+
+        $('#place-' + id).val('');
+        $('#output-' + id).val('');
+
+        $.post({
+            url: '{% url "clear_accomplishment_report" %}',
+            data: {
+                emp_id: '{{ request.session.emp_id }}',
+                date: date
+            },
+        })
+    });
+
+    $(document).on('click', 'a[data-role=zoom]', function(){
+        var id = $(this).data('id');
+
+        $('#accomplishment_id').val(id);
+        $('#date-output').text($(this).data('content'));
+        $('#place_visited').val($('#place-' +id).val());
+        $('#accomplishment_outputs').val($('#output-' +id).val());
+
+        $('#zoom-accomplishment-report').modal('show');
+    });
+
+    $('#close-zoom').on('click', function(){
+        var id = $('#accomplishment_id').val();
+        $('#place-' +id).val($('#place_visited').val());
+        $('#output-' +id).val($('#accomplishment_outputs').val())
+    });
+
+    function fetchData(url, data, callback) {
+        $.post({
+            url: url,
+            data: data,
+            success: function(response) {
+                callback(response);
+            }
+        });
+    }
+
+    function handleOneDay(one_day, day) {
+        var date_time = one_day;
+        var emp_id = '{{ request.session.emp_id }}';
+        return new Promise(function(resolve, reject) {
+            fetchData('{% url "get_employee_time_async" %}', {emp_id: emp_id, date: date_time}, function(response) {
+                var time_entries = response.data;
+                if(time_entries['check_in'].includes('OB') || time_entries['check_in'].includes('L')) {
+                    $('#tr-' + day).append(`
+                        <td class="p-0 text-center">`+ day +`</td>
+                        <td class="p-0-left" colspan="4">&emsp;`+
+                            time_entries['check_in']
+                        +`</td>
+                        <td></td>
+                        <td></td>
+                    `);
+                } else if(time_entries['check_in'] == 'Saturday') {
+                    $('#tr-' + day).append(`
+                        <td class="p-0 text-center">`+ day +`</td>
+                        <td class="p-0 text-center" colspan="4" style="letter-spacing:4px; font-size:90%;">SATURDAY</td>
+                        <td></td>
+                        <td></td>
+                    `);
+                } else if (time_entries['check_in'] == 'Sunday'){
+                    $('#tr-' + day).append(`
+                        <td class="p-0 text-center">`+ day +`</td>
+                        <td class="p-0 text-center" colspan="4" style="letter-spacing:4px; font-size:90%;">SUNDAY</td>
+                        <td></td>
+                        <td></td>
+                    `);
+                } else {
+                    if (time_entries['check_in'] || time_entries['break_out'] || time_entries['break_in'] || time_entries['check_out']) {
+                        $('#tr-' + day).append(`
+                            <td class="p-0 text-center">`+ day +`</td>
+                            <td class="p-0 text-center">` + time_entries['check_in'] + `</td>
+                            <td class="p-0 text-center">` + time_entries['break_out'] + `</td>
+                            <td class="p-0 text-center">` + time_entries['break_in'] + `</td>
+                            <td class="p-0 text-center">` + time_entries['check_out'] + `</td>
+                            <td></td>
+                            <td></td>
+                        `);
+                    } else {
+                        $('#tr-' + day).append(`
+                            <td class="p-0 text-center">`+ day +`</td>
+                            <td class="p-0 text-center"></td>
+                            <td class="p-0 text-center"></td>
+                            <td class="p-0 text-center"></td>
+                            <td class="p-0 text-center"></td>
+                            <td></td>
+                            <td></td>
+                        `);
+                    }
+                }
+                resolve();
+            });
+        });
+    }
+
+    // Function for handling single day's accomplishments
+    function handleOneDayAccomplishments(one_day, day) {
+        var date_accomplishment = one_day;
+        var emp_id = '{{ request.session.emp_id }}';
+        return new Promise(function(resolve, reject) {
+            fetchData('{% url "async_get_accomplishment_outputs" %}', {emp_id: emp_id, date: date_accomplishment}, function(response) {
+                if(response.weekend) {
+                    $('#ar-' + response.day).append(`
+                        <td class="px-0 text-center">
+                            <a href="javascript:;" data-role="clear" data-id="`+ response.day + `" data-content="`+ response.date + `" class="btn btn-default btn-sm"><i class="fas fa-trash"></i></a>
+                        </td>
+                        <td class="display-none">
+                            <input type="hidden" name="dates[]" value="`+ response.date_formatted + `">
+                        </td>
+                        <td class="text-center text-danger">` + response.date_formatted_two + `</td>
+                        <td class="p-0">
+                            <input type="text" class="form-control border-0" id="place-`+ response.day + `" name="places[]" value="`+ response.place_visited + `" autocomplete="off">
+                        </td>
+                        <td class="p-0">
+                            <input type="text" class="form-control border-0" id="output-`+ response.day + `" name="outputs[]" value="`+ response.output + `" autocomplete="off">
+                        </td>
+                        <td class="px-0 text-center">
+                            <a href="javascript:;" data-role="zoom" data-id="`+ response.day + `" data-content="`+ response.date + `" class="btn btn-default btn-sm"><i class="fas fa-expand"></i></a>
+                        </td>
+                    `);
+                } else {
+                    $('#ar-' + response.day).append(`
+                        <td class="px-0 text-center">
+                            <a href="javascript:;" data-role="clear" data-id="`+ response.day + `" data-content="`+ response.date + `" class="btn btn-default btn-sm"><i class="fas fa-trash"></i></a>
+                        </td>
+                        <td class="display-none">
+                            <input type="hidden" name="dates[]" value="`+ response.date_formatted + `">
+                        </td>
+                        <td class="text-center">` + response.date_formatted_two + `</td>
+                        <td class="p-0">
+                            <input type="text" class="form-control border-0" id="place-`+ response.day + `" name="places[]" value="`+ response.place_visited + `" autocomplete="off">
+                        </td>
+                        <td class="p-0">
+                            <input type="text" class="form-control border-0" id="output-`+ response.day + `" name="outputs[]" value="`+ response.output + `" autocomplete="off">
+                        </td>
+                        <td class="px-0 text-center">
+                            <a href="javascript:;" data-role="zoom" data-id="`+ response.day + `" data-content="`+ response.date + `" class="btn btn-default btn-sm"><i class="fas fa-expand"></i></a>
+                        </td>
+                    `);
+                }
+                resolve();
+            });
+        });
+    }
+
+    var allPromises = [];
+    {% for one_day in date %}
+        allPromises.push(handleOneDay('{{ one_day|date:"Y-m-d" }}', '{{ one_day|date:"d" }}'));
+        allPromises.push(handleOneDayAccomplishments('{{ one_day|date:"Y-m-d" }}', '{{ one_day|date:"d" }}'));
+    {% endfor %}
+
+
+    $('#submitForm').on('submit', function(e){
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : '{% url "accomplishment_report" %}',
+            type        : 'POST',
+            beforeSend: function(){
+                $('.btn').prop("disabled", true);
+                $('#btn-save').text("Saving changes");
+            },
+            success: function(response){
+                toastr.success('Saved successfully.', 'Accomplishment Report', {timeOut: 5000})
+            },
+            complete: function(){
+                $('.btn').prop("disabled", false);
+                $('#btn-save').text("Save changes");
+            },
+            cache       : false,
+            contentType : false,
+            processData : false,
+        });
+        e.preventDefault();
+    });
+
+    $('.checkBox').each(function(){
+        if ($(this).prop('checked') == true) {
+            $(this).val('checked');
+        } else {
+            $(this).val('skip');
+        }
+    });
+</script>
+{% endblock %}

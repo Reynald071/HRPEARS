@@ -1,0 +1,224 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div>
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-8">
+            <h1 class="bold">Attendance</h1>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Attendance</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="wrapper wrapper-content">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <h3 class="text-center">{{ date|date:"l" }} {{ date|date:"F d, Y"|linebreaks }}</h3>
+                        <h1 class="text-center bold" id="tt"></h1>
+                        <br>
+                        <form id="submitTimeForm">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <select class="form-control select" id="type" name="type" required>
+                                <option></option>
+                                {% for row in type %}
+                                    <option value="{{ row.id }}" id="type-{{ row.id }}">{{ row.type_desc }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-lg btn-block">
+                            Submit
+                        </button>
+                        </form>
+                        <br>
+                        {% if has_attendance == 1 %}
+                        <button class="btn btn-warning btn-lg btn-block" data-toggle="modal" data-target="#write-accomplishment">Write Accomplishment</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="dtr-table" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th>TYPE</th>
+                                        <th>DATE</th>
+                                        <th>TIME</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="write-accomplishment" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+                <div class="modal-header bg-info">
+                    <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h3 class="modal-title">WRITE ACCOMPLISHMENT</h3>
+                    <small>State in here your accomplishment for today.</small>
+                </div>
+                <form action="{% url 'wfh_accomplishment' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Type of Work</label>
+                        <select class="form-control select" name="type" required>
+                            <option></option>
+                            {% if accomplishment.place_visited == "Work from Home" %}
+                            <option value="0">Office Works</option>
+                            <option value="1" selected>Work from Home</option>
+                            {% else %}
+                            <option value="0" selected>Office Works</option>
+                            <option value="1">Work from Home</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Accomplishment / Outputs</label>
+                        <textarea class="form-control" name="output" rows="10" required>{{ accomplishment.output }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-info">Save changes</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+$(document).ready(function(){
+    updateClock();
+    setInterval(updateClock, 500);
+
+    DTRTable();
+    getStatusForToday();
+
+    function updateClock(){
+        var timestamp = new Date(Date('{% get_server_time %}'));
+        var options = { hour:'2-digit', minute: '2-digit', hour12: true, second: '2-digit'};
+        $('#tt').html(new Intl.DateTimeFormat('en-US', options).format(timestamp).replace(',',''));
+    }
+
+    function select2Initialization(){
+        $('.select').select2({
+            width: "100%",
+            allowClear: true,
+            placeholder: 'Choose',
+        });
+    }
+
+    function getStatusForToday(){
+        $.get({
+            url: '/work-from-home/attendance/check/?employee_id='+'{% getHash request.session.emp_id as employee_id %}{{ employee_id }}',
+            success: function(response) {
+                var data = response.data;
+                for(var i=0; i < data.length; i++){
+                    $('#type-'+data[i]['type_id']).attr('disabled', true);
+                    $("#type").select2("val", "");
+                    select2Initialization();
+                }
+            }
+        });
+    }
+
+    $('#submitTimeForm').on('submit', function(e){
+    	var form = new FormData(this);
+	    e.preventDefault();
+		Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to " + $('#type :selected').text(),
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "wfh_attendance" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "Action completed: <b>" + $('#type :selected').text().toUpperCase() + "</b>",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        getStatusForToday();
+                        $('#dtr-table').DataTable().ajax.reload();
+                    }
+                });
+            }
+		});
+    });
+
+    function DTRTable(){
+        $('#dtr-table').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'order': [[ 1, 'desc' ]],
+            'ajax': {
+                'url': '/api/dtr/time/logs/?format=datatables&employee_id='+'{% getHash request.session.emp_id as employee_id %}{{ employee_id }}',
+                'type': 'GET',
+            },
+            'fnCreatedRow': function (row, data, index) {
+                $(row).attr('id', data['id']);
+            },
+            'columns': [
+                {'data': 'type',
+                    'name': 'type.type_desc',
+                    'searchable': true,
+                    'render': function (data, type, row, meta) {
+                        if(row["type"] == "Check In") {
+                            return '<span class="label label-primary">'+ row["type"] +'</span>'
+                        }else if(row["type"] == "Break Out") {
+                            return '<span class="label label-warning">'+ row["type"] +'</span>'
+                        }else if(row["type"] == "Break In") {
+                            return '<span class="label label-info">'+ row["type"] +'</span>'
+                        }else if(row["type"] == "Check Out") {
+                            return '<span class="label label-success">'+ row["type"] +'</span>'
+                        }
+                    }
+                },
+                {'data': 'date', 'className': 'text-center', 'name': 'datetime' },
+                {'data': 'time', 'className': 'text-center', 'name': 'datetime' },
+            ],
+        });
+    }
+});
+</script>
+{% endblock %}

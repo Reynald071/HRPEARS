@@ -1,0 +1,433 @@
+{% load frontend_tags %}
+{% load static %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="ibox">
+            <div class="ibox-title">
+                <p class="bold">201 DOCUMENT TYPE</p>
+            </div>
+            <div class="ibox-content" style="padding: 0px !important;">
+                <div class="list-group">
+                    {% for row in type %}
+                    <a class="list-group-item type-{% getHash row.id as type_id %}{{ type_id }} type" data-role="open-documents" data-filter="{{ row.id }}" data-id="{% getHash row.id as type_id %}{{ type_id }}" data-title="{{ row.name }}"><i class="far fa-folder"></i>&emsp;{{ row.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="ibox">
+            <div class="ibox-content">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        201 Documents
+                    </li>
+                    <li class="breadcrumb-item active">
+                        <strong><span id="document-type"></span></strong>
+                    </li>
+                </ol>
+                <hr>
+                <div class="tabs-container">
+                    <ul class="nav nav-tabs" id="tabUL">
+                        <li class="active"><a class="nav-link" data-toggle="tab" data-role="file-tab" href="#single-upload"> Single Upload</a></li>
+                        <li><a class="nav-link" data-toggle="tab" data-role="file-tab" href="#multiple-upload">Multiple Upload</a></li>
+                        <li><a class="nav-link" data-toggle="tab" data-role="file-tab" href="#settings-upload" id="settings-upload-tab">Settings</a></li>
+                    </ul>
+                    <div class="tab-content" style="border: 0px !important;">
+                        <div id="single-upload" class="tab-pane active">
+                            <div class="panel-body">
+                                <form id="uploadDocumentForm" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <input type="hidden" name="document-type-id" class="document-type-id">
+                                    <div class="form-group col-md-3">
+                                        <label>Filename<span class="asteriskField">*</span></label>
+                                        <input type="text" class="form-control" name="name" autocomplete="off" required>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label>Year<span class="asteriskField">*</span></label>
+                                        <input type="number" class="form-control" step="1" max="{% now 'Y' %}" name="year" autocomplete="off" value="{% now 'Y' %}" required>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Attachment<span class="asteriskField">*</span></label>
+                                        <input type="hidden" name="emp_id" value="{{ employee.id }}">
+                                        <div class="custom-file">
+                                            <input type="file" name="file" id="file" class="form-control custom-file-input" required>
+                                            <label for="file" class="custom-file-label">Choose file..</label>
+                                        </div>
+                                        <small id="alertDiv" class="asteriskField"></small>
+                                    </div>
+                                    <div class="form-group col-md-2" style="margin-top: 22px;">
+                                        <button type="submit" class="btn btn-info btn-block"><span class="loading open-circle" style="display:none;"></span> Upload</button>
+                                    </div>
+                                </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="multiple-upload" class="tab-pane">
+                            <form id="multipleUploadDocumentForm" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="panel-body">
+                                <div class="row">
+                                    <input type="hidden" name="multiple-document-type-id" class="document-type-id">
+                                    <input type="hidden" name="multiple_emp_id" value="{{ employee.id }}">
+                                    <div class="form-group col-md-10">
+                                        <label>Upload multiple files</label>
+                                        <input type="file" name="multiple_file[]" id="multiple_file" class="form-control file-control" multiple required>
+                                    </div>
+                                    <div class="form-group col-md-2" style="margin-top: 22px;">
+                                        <button type="submit" class="btn btn-info btn-block"><span class="loading open-circle" style="display:none;"></span> Upload</button>
+                                    </div>
+                                </div>
+                            </div>
+                            </form>
+                        </div>
+                        <div id="settings-upload" class="tab-pane">
+                            <div class="panel-body">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-info-circle"></i>
+                                    Please be aware that once you delete all files of this document type, they cannot be recovered.
+                                </div>
+                                <div class="form-group" style="margin-top: 22px;">
+                                    <form id="deleteAllDocumentForm" style="display: inline-block; margin-right: 7px;">
+                                    {% csrf_token %}
+                                        <input type="hidden" name="multiple-document-type-id" class="document-type-id">
+                                        <input type="hidden" name="multiple_emp_id" value="{{ employee.id }}">
+                                        <button type="submit" class="btn btn-danger"><span class="loading open-circle" style="display:none;"></span> Delete All</button>
+                                    </form>
+                                    <form id="deleteMultipleDocumentForm" style="display: inline-block;">
+                                    {% csrf_token %}
+                                        <button type="submit" class="btn btn-warning"><span class="loading open-circle" style="display:none;"></span> Delete Marked</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="table-201-admin" width="100%">
+                        <thead>
+                            <tr>
+                                <th width="1%" class="text-center" style=""></th>
+                                <th>Action</th>
+                                <th>Name</th>
+                                <th class="text-center">Year</th>
+                                <th class="display-none">File</th>
+                                <th>Uploaded By</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="preview_modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info" style="border-bottom: 0px !important;">
+                <h3 class="modal-title"></h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="preview-pdf" width="100%" height="700px" frameBorder="0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="edit_modal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info" style="border-bottom: 0px !important;">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">EDIT 201 FILES</h3>
+                <small>Please fill in the form below</small>
+            </div>
+            <form id="editForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="edit-id" id="edit-id">
+                    <div class="form-group">
+                        <label>File Name<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control" name="edit-filename" id="edit-filename" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Year<span class="asteriskField">*</span></label>
+                        <input type="number" class="form-control" name="edit-year" id="edit-year" autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-info">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(document).ready(function(){
+        $('#file').on('change', function() {
+            let fileName = $(this).val().split('\\').pop();
+            if (fileName == ''){
+                fileName = 'Choose file..';
+            }
+            if (fileName.length > 24) {
+                fileName = '..'+fileName.substring(fileName.length - 24,fileName.length)
+            }
+            $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        });
+
+        /* Initialize DataTable */
+        $('.type-356a192b7913b04c54574d18c28d46e6395428ab').addClass('active');
+        $('#document-type').text('Appointment');
+        $('.document-type-id').val(1);
+
+        $('#table-201-admin').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'order': [[ 3, 'desc' ]],
+            'ajax': {
+                'url': '/api/documents/201-files/?format=datatables&employee_id={% getHash employee.id as employee_id %}{{ employee_id }}&type_id=356a192b7913b04c54574d18c28d46e6395428ab',
+                'type': 'GET',
+            },
+            'fnCreatedRow': function (row, data, index) {
+                $(row).attr('id', data['id']);
+            },
+            'columns': [
+                { 'data': null,
+                    'render': function(data, type, row, meta) {
+                        return "<input type='checkbox' data-role='mark-file' data-id='" + row['id'] + "'>"
+                    }
+                },
+                { 'data': 'id' ,
+                    'render': function(data, type, row, meta) {
+                        template = "<a href='"+ row['file'] +"' target='_blank'>Preview</a>";
+                        template += " | <a href='javascript:void(0)' data-role='edit' data-id='"+ data + "' data-filter='" + row['year']+ "' data-title='" + row['name'] +"'>Edit</a>";
+                        template += " | <a href='javascript:;' data-role='delete-file' data-id='" + row['id'] + "'>Delete</a>";
+                        return template;
+                    }
+                },
+                { 'data': 'name',
+                    'render': function(data, type, row, meta) {
+                        return "<a href='" + row['file'] + "' download>"+ data + "</a>"
+                    }
+                },
+                { 'data': 'year', 'className': 'text-center' },
+                { 'data': 'file', 'className': 'display-none' },
+                { 'data': 'upload_by', 'name': 'upload_by.pi.user.first_name, upload_by.pi.user.last_name' }
+            ],
+        });
+
+        $(document).on('click', 'a[data-role=open-documents]', function(){
+            var id = $(this).data('id');
+            $('.type').each(function(){
+                $(this).removeClass('active');
+            });
+            $('.type-'+id).addClass('active');
+
+            $('#document-type').text($(this).data('title'));
+            $('.document-type-id').val($(this).data('filter'));
+            $('#table-201-admin').DataTable().ajax.url('/api/documents/201-files/?format=datatables&employee_id={% getHash employee.id as employee_id %}{{ employee_id }}&type_id=' + id).load();
+        });
+
+        $('#deleteAllDocumentForm').on('submit', function(e){
+            var form = this;
+
+            var url = '{% url "delete_all_201_documents" %}';
+            var title = 'Are you sure'
+            var text = "You want to delete all this file in this document type";
+            var table_id = '#table-201-admin';
+
+            submitFormWithConfirmation(form, url, title, text, {table_id: table_id});
+
+            e.preventDefault();
+        });
+
+        $('#multipleUploadDocumentForm').on('submit', function(e){
+            e.preventDefault();
+            var form = new FormData(this);
+            $.ajax({
+                data: form,
+                url: "{% url 'upload_multiple_201_documents' %}",
+                type: "POST",
+                beforeSend: function (){
+                    $('.loading').css('display', '');
+                    $('button').prop("disabled", true);
+                },
+                success: function(response){
+                    if (response.data == "success"){
+                        $('#multipleUploadDocumentForm').trigger('reset');
+                        $('#table-201-admin').DataTable().ajax.reload();
+                    }
+                },
+                complete: function(response){
+                    $('.loading').css('display', 'none');
+                    $('button').prop("disabled", false);
+                },
+                cache: false,
+                contentType: false,
+                processData: false,
+            });
+        });
+
+        $('#uploadDocumentForm').on('submit', function(e){
+            e.preventDefault();
+            var form = new FormData(this);
+            $.ajax({
+                data: form,
+                url: "{% url 'upload_201_documents' %}",
+                type: "POST",
+                beforeSend: function (){
+                    $('.loading').css('display', '');
+                    $('button').prop("disabled", true);
+                },
+                success: function(response){
+                    if (response.data == "success"){
+                        $('#uploadDocumentForm').trigger('reset');
+                        $('#table-201-admin').DataTable().ajax.reload();
+                    }
+                },
+                complete: function(response){
+                    $('.loading').css('display', 'none');
+                    $('button').prop("disabled", false);
+                },
+                cache: false,
+                contentType: false,
+                processData: false,
+            });
+        });
+
+        $(document).on('click', 'a[data-role=delete-file]', function(){
+		    var id = $(this).data('id');
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to delete this file?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            id: id,
+                        },
+                        url: '{% url "delete_201_file_upload" %}',
+                        type: "POST"
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Success!",
+                        text: "The file was successfully deleted.",
+                        icon: "success",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#table-201-admin').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#deleteMultipleDocumentForm').on('submit', function(e){
+            e.preventDefault();
+            var markedFiles = [];
+            $('input[data-role=mark-file]').each(function() {
+                if ($(this).is(':checked')) {
+                    var id = $(this).data('id');
+                    markedFiles.push(id);
+                }
+            });
+            console.log(markedFiles);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to delete all marked files?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            markedFiles: markedFiles,
+                        },
+                        url: '{% url "delete_multiple_201_documents" %}',
+                        type: "POST"
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Success!",
+                        text: "All marked files were successfully deleted.",
+                        icon: "success",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#table-201-admin').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        $(document).on('click', 'a[data-role=edit]', function(){
+		    var id = $(this).data('id');
+		    var filename = $(this).data('title');
+            var year = $(this).data('filter');
+
+		    $('#edit-id').val(id);
+		    $('#edit-filename').val(filename);
+		    $('#edit-year').val(year);
+            $('#edit_modal').modal('show');
+		});
+
+        $('#editForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to edit this 201 File?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "update_201_files" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: response.value.msg,
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#editForm').trigger('reset');
+                            $('#edit_modal').modal('hide');
+                            $('#table-201-admin').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+    });
+</script>

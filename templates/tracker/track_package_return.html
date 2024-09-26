@@ -1,0 +1,152 @@
+{% extends 'tracker/layout.html' %}
+{% load static %}
+{% load tags %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'tracker' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'track_package' %}">Package</a></li>
+                <li class="breadcrumb-item active">For Return</li>
+            </ol>
+        </nav>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>TRACKING NO.</strong></td>
+                        <td>{{ package.tracking_no }}</td>
+                        <td><strong>TRANSACTION DATE</strong></td>
+                        <td>{{ package.date_created }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CREATED BY</strong></td>
+                        <td>{{ package.createdby.pi.user.get_fullname }}</td>
+                    </tr>
+                </table>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>
+                                <center>
+                                    <input type="checkbox" class="form-check-input" data-role="selectAll">
+                                </center>
+                            </th>
+                            <th>DOCUMENT TYPE</th>
+                            <th class="text-center">DOCUMENT DATE</th>
+                            <th class="text-center">OTHER INFORMATION</th>
+                            <th class="text-center">DOCUMENT OWNER</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in package_item %}
+                        <tr>
+                            <td>
+                                <center>
+                                    <input type="checkbox" class="form-check-input check-item" value="{{ row.id }}">
+                                </center>
+                            </td>
+                            <td>{{ row.package.doctype.name }}</td>
+                            <td class="text-center">{{ row.document_date }}</td>
+                            <td class="text-center">{{ row.other_info }}</td>
+                            <td class="text-center">{{ row.emp.pi.user.get_fullname }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-danger btn-sm" id="btn-return-documents">Return Documents</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="return-document-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>RETURN DOCUMENT</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="returnForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <input type="hidden" name="doctype_id" value="{{ package.doctype_id }}">
+                <div class="form-group mb-3">
+                    <label>Return to <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm filter-employee-all" name="return_to" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <textarea class="form-control form-control-sm" rows="5" name="remarks" autocomplete="off"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger btn-sm">Return</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(".filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $(document).on('click', 'input[data-role=selectAll]', function(){
+        $('.check-item').prop('checked', this.checked);
+    });
+
+    var input_checkbox = false;
+
+    $('#btn-return-documents').on('click', function(){
+        $('.check-item').each(function(){
+            if ($(this).prop('checked')) {
+                input_checkbox = true
+            }
+        })
+
+        if(input_checkbox) {
+            $('#return-document-modal').modal('show');
+        } else {
+            Swal.fire('Ooops!', 'The return button cannot be opened because there are no selected fields.', 'warning');
+        }
+    });
+
+    $('#returnForm').on('submit', function(e){
+        e.preventDefault();
+
+        var data = [];
+    	$('.check-item').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+            }
+        });
+
+        var form = this;
+
+        var url = '{% url "return_document_package" %}';
+        var title = "Are you sure";
+        var text = "You want to return this leave documents";
+        var modal_id = "#return-document-modal";
+        var data_value = 'item_no[]';
+        var link_attr = '{% url "track_package" %}';
+
+        submitFormWithConfirmation(form, url, title, text, {data: data, data_value: data_value, link_attr: link_attr, modal_id: modal_id});
+
+        e.preventDefault();
+    })
+</script>
+{% endblock %}

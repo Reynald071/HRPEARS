@@ -1,0 +1,78 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'manage_payroll_employee' %}">Manage Employee</a></li>
+                <li class="breadcrumb-item active">Leave Application</li>
+                <li class="breadcrumb-item active">{{ employee.pi.user.get_fullname }}</li>
+            </ol>
+        </nav>
+        <div class="row mt-3">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table id="leave-table" class="table table-bordered table-hover" width="100%">
+							<thead>
+								<tr>
+									<th width="15%">TRACKING NO.</th>
+									<th class="capslock" width="25%">Leave Type</th>
+									<th class="capslock text-center" width="25%">Inclusive Dates</th>
+									<th class="capslock text-center">Date of Filing</th>
+									<th class="capslock text-right">Status</th>
+								</tr>
+							</thead>
+						</table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#leave-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 3, 'desc' ]],
+        'ajax': {
+            'url': '/api/leave/application/?format=datatables&employee_id={% getHash employee.id %}',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'tracking_no'},
+            {'data': 'leavesubtype_name', 'className': 'text-center', 'name': 'leavesubtype.name'},
+            {'data': 'inclusive_dates', 'className': 'text-center', 'name': 'remarks, start_date, end_date' },
+            {'data': 'date_of_filing', 'className': 'text-center' },
+            {'data': 'status',
+                'searchable': false,
+                'render': function(data, type, row, meta) {
+                    if(row['status'] == 0){
+                        return '<span class="badge bg-primary">Pending</span>';
+                    }else if (row['status'] == 1){
+                        return '<span class="badge bg-success">Approved</span>';
+                    } else if (row['status'] == 2){
+                        return '<span class="badge bg-warning">Cancelled</span>';
+                    } else {
+                        return '<span class="badge bg-danger">Disapproved</span>'
+                    }
+                },
+                'className': 'text-right'
+            },
+        ]
+    });
+</script>
+{% endblock %}

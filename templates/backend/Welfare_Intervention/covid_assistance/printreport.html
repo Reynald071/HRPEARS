@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+
+{% load welfare_tags %}
+{% load static %}
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>DSWD My PORTAL | Print Covid-19 Report</title>
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<link href="{% static 'image/hrpearlogo_192.png' %}" rel="shortcut icon" type="image/png"/>
+	<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/summernote/summernote.css' %}" rel="stylesheet">
+	<link href="{% static 'css/adjustments.css' %}" rel="stylesheet" type="text/css">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet" type="text/css">
+
+	<style type="text/css">
+        @media print {
+      .containerX {
+        padding: 0px;
+        margin: 0px;
+        zoom: 100% !important;
+        height: 0% !important;
+      }
+      page {
+        margin: 0px;
+        border: 0.5px solid transparent;
+        height: 204mm !important;
+      }
+      .vertical-right, .vertical-left {
+        margin: 0px !important;
+      }
+      body{-webkit-print-color-adjust: exact;}
+        ::-webkit-input-placeholder { /* WebKit browsers */
+          color: transparent;
+        }
+        :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+          color: transparent;
+        }
+        ::-moz-placeholder { /* Mozilla Firefox 19+ */
+          color: transparent;
+        }
+        :-ms-input-placeholder { /* Internet Explorer 10+ */
+          color: transparent;
+        }
+        }
+
+    .containerX {
+      zoom: 95%;
+    }
+
+    body{
+      font-size: 12px;
+      font-family: 'Inter';
+      color: black;
+    }
+    .bold{
+      font-weight: bold;
+    }
+    th{
+      font-size: 10px;
+    }
+    #table2{
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .text-center{
+      text-align: center;
+    }
+    page[size="long"][layout="landscape"] {
+        width: 400.2mm;
+        height: 230.9mm;
+    }
+
+	</style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar"
+					data-toggle="collapse" type="button">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">REPORT ON COVID-19</a>
+		</div>
+		<div class="navbar-collapse collapse" id="navbar">
+			{% if name.status == 0 %}
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="javascript:;" id="btn-edit-modal" style="font-size: 14px;" title="Edit"><i
+						class="fas fa-pen"></i> Edit</a></li>
+			</ul>
+			{% endif %}
+			<ul class="nav navbar-nav navbar-right">
+				<li><a class="print-button" id="floatprint" style="font-size: 14px;" title="Print"><i
+						class="fas fa-print"></i> Print</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+<page class="page" layout="landscape" size="long" style="padding: 45px; position: relative;">
+	<div class="containerX">
+		<img loading="lazy"  align="left" height="100" src="{% static 'image/hrwdswd.png' %}" width="200"> <img loading="lazy"
+			align="right" height="100" src="{% static 'image/hrwiso.png' %}" width="80">
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<br>
+		<div class="text-center">
+			<h5>DEPARTMENT OF SOCIAL WELFARE & DEVELOPMENT <br>
+				Field Office Caraga, Butuan City
+			</h5>
+			<br>
+			<h5 class="bold">ASSISTANCE TO COVID-19 PERSONNEL AND BEREAVED FAMILIES <br> AS OF DATE: {{month}} </h5>
+		</div>
+		<br>
+		<div class="card-body">
+			<div>
+				<br>
+				<br>
+				<p>
+				</p>
+			</div>
+			<div>
+				<table class="table table-bordered">
+					<thead class="thead-dark">
+					<tr>
+						<th style="width: 20px;">#</th>
+						<th style="width: 120px;">ID Number</th>
+						<th style="width: 180px;">Full Name</th>
+						<th style="width: 180px;">Sex</th>
+						<th style="width: 180px;">Division</th>
+						<th style="width: 180px;">Email</th>
+						<th style="width: 180px;">Contact Number</th>
+						<th style="width: 150px;">Employee Case</th>
+						<th style="width: 150px;">Quarantine Start</th>
+						<th style="width: 150px;">Quarantine End</th>
+						<th style="width: 200px;">Provision</th>
+					</tr>
+					</thead>
+
+					<tbody>
+					{% for row in data %}
+					<tr>
+						<td>{{ forloop.counter0|add:data.start_index }}</td>
+						<td>{{row.emp.id_number}}</td>
+						<td>{{row.emp.pi.user.first_name}} {{row.emp.pi.user.last_name}}</td>
+						<td>{% if row.emp.pi.gender == 1 %} Male {% else %} Female {% endif %}</td>
+						<td>{{row.emp.section.div.div_acronym}}</td>
+						<td>{{row.emp.pi.user.email}}</td>
+						<td>{{row.emp.pi.mobile_no}}</td>
+						<td>{{row.caseofemp}}</td>
+						<td>{{ row.start }}</td>
+						<td>{{ row.end }}</td>
+						<td>{% if row.provision == "2" %} 5000 Financial Assistance with Sanitationkit {% endif %}</td>
+					</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<div class="content-block">
+				<div class="prepared">
+					<table style="width:100%">
+						<thead>
+						<th align="left" colspan="2">Prepared By:</th>
+						<th align="center" colspan="2"><p>
+							<center>Noted By:</center>
+							</p></th>
+						<th colspan="2"><p align="right">Approved By:</p></th>
+						</thead>
+						<tbody>
+						<td align="left" colspan="2"><br>Allen Efren O. Hilado<br>AA II</td>
+						<td align="center" colspan="2"><br>Mary Chill L. Momo<br>AO V</td>
+						<td align="right" colspan="2"><br>Ramel F. Jamen<br>OFFICER-IN-CHARGE</td>
+						</tbody>
+						<p style="color:red">NOTE: This is a system generated report.</p>
+					</table>
+
+					<script>
+$(document).ready(function(){
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        url: '/view/',
+        data: data,
+        success: function(response) {
+             $('#test').append(response.data);
+       }
+    });
+});
+
+					</script>
+				</div>
+			</div>
+		</div>
+		<br>
+		<br><br>
+	</div>
+</page>
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+<script src="{% static 'js/functions.js' %}"></script>
+<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'js/plugins/summernote/summernote.min.js' %}"></script>
+<script type="text/javascript">
+     $('.summernote').summernote({
+          height: $(window).height() * 0.2,
+          dialogsInBody: true,
+          fontSizeUnits: ['px', 'pt'],
+          dialogsFade: true,
+          codeviewFilterRegex: 'custom-regex',
+          disableDragAndDrop: true,
+          toolbar: [
+              ['style', ['bold', 'italic', 'underline', 'clear']],
+              ['font', ['strikethrough']],
+              ['fontsize', ['fontsize']],
+              ['color', ['color']],
+              ['table', ['table']],
+              ['para', ['ul', 'ol', 'paragraph']],
+              ['height', ['height']],
+              ['view', ['fullscreen', 'codeview']]
+          ]
+     });
+    var page = $('.page').height();
+    var container = $('.containerX').height();
+
+    if (container > page) {
+      $('.page').css('height', container + 45);
+    }
+
+    $('#floatprint_mod').on('click', function(){
+      if ($('#name1').val() == "" | $('#name2').val() == "" | $('#designate1').val() == "" | $('#designate2').val() == ""){
+        Swal.fire("Print Warning",
+        "Please fill in the 'Requested by' field and 'Recommending approval' field before printing. Thank you.",
+        "warning");
+      } else {
+          window.setTimeout(function() { printObject(); }, 0);
+      }
+    });
+
+
+
+</script>
+</body>
+</html>

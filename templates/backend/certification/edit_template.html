@@ -1,0 +1,74 @@
+<p>CERTIFICATE TYPE: <strong>{{ transaction.certtemp.name|upper }}</strong></p>
+<form id="submitCForm">
+    {% csrf_token %}
+    <textarea name="content" id="summernote-certificate" style="border:1px solid #e5e6e7;">
+        {{ transaction.content|safe }}
+    </textarea>
+    <br>
+    <button type="button" class="btn btn-warning" id="btn-back">Back</button>
+    <button type="submit" class="btn btn-info">Update</button>
+</form>
+{% block script %}
+<script>
+    $('#btn-back').on('click', function(){
+        callCertificateLayoutPage('/certification/transaction/{{ transaction.emp.id_number }}');
+    });
+
+    $('#summernote-certificate').summernote({
+        height: 768,
+        dialogsInBody: true,
+        fontSizeUnits: ['px', 'pt'],
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['table', ['table']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+
+    $(document).ready(function(){
+        $('.employee_name').text('{{ employee.pi.user.get_fullname|upper }}');
+        $('.address').text('{{ employee.get_address|upper }}');
+        $('.position').text('{{ employee.position.name|upper }}');
+        $('.obs').text('{{ employee.section.sec_name|upper }}');
+        $('.day').text("{{ today|date:'dS' }}");
+        $('.month').text("{{ today|date:'F, Y' }}");
+
+        $('#submitCForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+              title: "Are you sure",
+              text: "You want to update this certification?",
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonColor: "#3498DB",
+              confirmButtonText: "Yes",
+              allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "edit_certificate" transaction.id %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (data){
+                if(data.value.data == "success"){
+                    Swal.fire('Good job!', 'Successfully updated the template', 'success')
+                }
+            });
+            e.preventDefault();
+        });
+    });
+</script>
+{% endblock %}

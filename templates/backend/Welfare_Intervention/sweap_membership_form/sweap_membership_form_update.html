@@ -1,0 +1,163 @@
+<form id="updateForm">
+	{% csrf_token %}
+	<div class="modal-body">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Employee Info</label>
+                    <p class="font-weight-normal">{{sweap.emp.pi.user.get_fullname}}</p>
+                </div>		
+            </div>
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label>List of committee/s:</label>
+                    <ul class="list-group">
+                        {% for row in sweap_com %}
+                        <li class="list-group-item">{{row.committee.name}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>		
+            </div>
+        </div>
+        <hr>
+        <div class="row mt-3">
+            <div class="col-sm-12">
+                <h5 class="bold">Designated Beneficiaries<span class="asteriskField">*</span></h5>
+                <table class="table table-bordered notboldandbig tbl-bene">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="text-center">Relationship</th>
+                            <th class="text-center">Age</th>
+                            <th><center><button type="button" class="btn btn-info btn-xs addchildren"><i class="fas fa-plus"></i></button></center></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if sweap_bene %}
+                        {% for row in sweap_bene %}
+                        <tr class="fieldwrapper" id="{{ row.id }}">
+                            <td class="nopadding"><input type="text" name="upb_name[]" value="{{row.full_name}}" class="form-control bold uppercase input-sm borderless children" required></td>
+                            <td class="nopadding"><input type="text" name="upb_relationship[]" value="{{row.relationship}}" class="form-control bold uppercase input-sm borderless birth text-center" required></td>
+                            <td class="nopadding"><input type="number" name="upage[]" value="{{row.age}}" class="form-control bold uppercase input-sm borderless birth text-center" required></td>
+                            <td><center><button type="button" class="btn btn-danger btn-xs" data-id="{{ row.id }}" data-role="delete"><i class="fa fa-minus"></i></button></center></td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr class="fieldwrapper">
+                            <td class="nopadding"><input type="text" name="upb_name[]" class="form-control bold uppercase input-sm borderless children" required></td>
+                            <td class="nopadding"><input type="text" name="upb_relationship[]" class="form-control bold uppercase input-sm borderless birth text-center" required></td>
+                            <td class="nopadding"><input type="number" name="upage[]" class="form-control bold uppercase input-sm borderless birth text-center" required></td>
+                            <td><center><button type="button" class="btn btn-danger btn-xs" data-role="remove-bene"><i class="fa fa-minus"></i></button></center></td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+	</div>
+	<div class="modal-footer">
+		<button type="submit" class="btn btn-info">Save Changes</button>
+	</div>
+</form>
+<script type="text/javascript">
+    $(".typeahead, .typeahead2, .typeahead3, .typeahead4").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+    
+	$('#updateForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Confirmation",
+	      	text: "Are you sure you want to update the sweap Beneficiaries?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url         : "{% url 'update_sweap_form' pk %}",
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+								html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#sweap_table').DataTable().ajax.reload();
+	                    			$('#edit-sweap').modal('show').find('.sweap-modal').empty();
+									$('#edit-sweap').modal('show').find('.sweap-modal').load("{% url 'update_sweap_form' pk %}");
+                                }
+                            });
+                        }else{
+							Swal.fire("Warning", response.error, "warning");
+						}
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+	});
+
+    var fieldChildrenHTML = '<tr><td class="nopadding"><input type="text" name="upb_name[]" class="form-control bold uppercase input-sm borderless children" value="" required></td>\
+					<td class="nopadding"><input type="text" name="upb_relationship[]" class="form-control bold uppercase input-sm borderless birth text-center" value="" required></td>\
+                    <td class="nopadding"><input type="number" name="upage[]" class="form-control bold uppercase input-sm borderless birth text-center" value="" required></td>\
+	    			<td><center><button type="button" class="btn btn-danger btn-xs" data-role="remove-bene"><i class="fa fa-minus"></i></button></center></td></tr>';
+
+
+	$('.addchildren').on('click', function(){
+		$('.tbl-bene').prepend(fieldChildrenHTML);
+	});
+
+	$(document).on('click','button[data-role="remove-bene"]', function(){
+        $(this).closest('tr').remove();
+    });
+
+    $(document).on('click', 'button[data-role=delete]', function(){
+        id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+        }).then((result) => {
+		    if (result.isConfirmed) {
+		        $.ajax({
+                    url: "{% url 'delete_sweap_benes' %}",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('tr#'+id).remove();
+                    Swal.fire({
+						title: "Success!",
+						text: "Your record was successfully deleted. Farewell.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+					});
+                });
+            }
+        });
+    });
+</script>

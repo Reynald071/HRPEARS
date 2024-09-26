@@ -1,0 +1,334 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Sweap Gratuity Pay</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Administrator</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Sweap Assistance</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-3">
+			<div class="ibox">
+				<form id="insertsweap">
+					<div class="ibox-content">
+						<div class="list-group">
+							<div class="form-group">
+								<label class="bmd-label-floating">Employee Info<span class="asteriskField">*</span></label>
+								<input type="text" class="form-control typeahead2"  name="idnumber" required="true" autocomplete="off">
+							</div>
+							<div class="form-group">
+								<label>Type Of Assistance<span class="asteriskField">*</span></label>
+								<select class="form-control select" style="width:100%;" id="type_assst" name="typeofassistant" required="true" autocomplete="off">
+									<option></option>
+									<option value="Retirement">Retirement</option>
+									<option value="Separation">Separation</option>
+								</select>
+								<br>
+							</div>
+							<div class="form-group" id="med">
+								<label class="bmd-label-floating">Date Start<span class="asteriskField">*</span> </label>
+								<input type="Date" class="form-control" id="start" name="dt_start" autocomplete="off">
+							</div>
+							<div class="form-group">
+								<label class="bmd-label-floating">Date End<span class="asteriskField">*</span> </label>
+								<input type="date" class="form-control" id="end" name="dt_end" autocomplete="off">
+							</div>
+							<div class="form-group">
+								<label class="bmd-label-floating">Years of service<span class="asteriskField">*</span> </label>
+								<input type="text" class="form-control" id="year" name="yr_serve" required="true" autocomplete="off" readonly>
+							</div>
+							<div class="form-group">
+								<label class="bmd-label-floating">Share Contribution<span class="asteriskField">*</span> </label>
+								<input type="text" class="form-control" id="share" name="share" required="true" autocomplete="off">
+							</div>
+							<div class="form-group">
+								<label class="bmd-label-floating">Amount Recieved<span class="asteriskField">*</span> </label>
+								<input type="text" class="form-control" id="total" name="am_recieved" required="true" autocomplete="off">
+							</div>
+							<button class="btn-info btn pull-right" type="submit">Submit</button><br><br>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="list-group">
+						<div class="form-group">
+							<h4>Filter by Type of Assistance<span class="asteriskField">*</span></h4>
+							<div class="list-group">
+								<a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+								<a class="list-group-item"  id="status-Retirement" href="javascript:;" data-role="status" data-filter="Retirement">Retirement</a>
+								<a class="list-group-item"  id="status-Separation" href="javascript:;" data-role="status" data-filter="Separation">Separation</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-left">
+						<div class="btn-group">
+							<a class="btn btn-default" href="{% url 'printgratuity' %}" target="blank">Print</a>
+						</div>
+					</div>
+					<br><br>
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-hover" id="sweap_gratuity" width="100%">
+							<thead>
+								<tr>
+									<th style="display:none;">ID</th>
+									<th class="capslock">Details</th>
+									<th class="capslock">Emp ID</th>
+									<th class="capslock">Last Name</th>
+									<th class="capslock">First Name</th>
+									<th class="capslock">Middle Name</th>
+									<th class="capslock">Division</th>
+									<th class="capslock">Type of Assistance</th>
+									<th class="capslock">Year in Service</th>
+									<th class="capslock">Share Contribution</th>
+									<th class="capslock">Amount Recieved</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+
+<script>
+	datatable_stocks();
+	function datatable_stocks(){
+		$('#sweap_gratuity').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 0, 'desc' ]],
+			'lengthMenu': [25,50,100],
+			'ajax': {
+				'url': '/api/hrws/sweap_gratuity_view?format=datatables',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+	   			{'data': 'id',
+	   				'render': function(data, type, row, meta) {
+	                             return "<a href='#' data-role='Delete' data-id="+ data + ">Delete</a>"
+	                         }
+	   			},
+				{'data': 'emp_id', 'className': 'text-center', 'name':'emp.id_number'},
+				{'data': 'lname', 'className': 'text-center', 'name':'emp.pi.user.last_name'},
+				{'data': 'fname', 'className': 'text-center', 'name':'emp.pi.user.first_name'},
+				{'data': 'mname', 'className': 'text-center', 'name':'emp.pi.user.middle_name'},
+				{'data': 'division', 'className': 'text-center', 'name':'emp.section.div.div_name'},
+				{'data': 'type_of_assistance', 'className': 'text-center'},
+				{'data': 'emp_yearinservice', 'className': 'text-center'},
+				{'data': 'share_contrib', 'className': 'text-center'},
+				{'data': 'amount_recieved', 'className': 'text-center'},
+			],
+		});
+	}
+   $(document).on('click', 'a[data-role=status]', function(){
+		$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+		if($(this).data('filter') == 'all'){
+			$('#sweap_gratuity').DataTable().ajax.url('/api/hrws/sweap_gratuity_view?format=datatables').load();
+		}else{
+			$('#sweap_gratuity').DataTable().ajax.url('/api/hrws/sweap_gratuity_view?format=datatables&status='+$(this).data('filter')).load();
+		}
+	});
+	$('#start').prop('disabled',true);
+    $('#end').prop('disabled',true);
+    $(function(){
+    	$("#type_assst").on("keyup change", function(e){
+    		if($("#type_asst").val() != ""){
+    			$('#start').prop('disabled',false);
+    			$('#end').prop('disabled',false);
+    			if($("#type_assst").val() == "Retirement"){
+    			
+    			$("#start, #end, #year").on("keyup change", function(e) {
+			    var date = new Date($('#start').val());
+			    yearstart = date.getFullYear();
+				var date = new Date($('#end').val());
+			    yearend = date.getFullYear();
+				total = yearend - yearstart
+			    $('#year').val(total);
+			    var year = ($('#year').val());
+			    if ($("#year").val() == 10){
+			    	$('#total').val("");
+					$('#total').val("50000");
+				}else if($("#year").val() >= 11 && $("#year").val() <= 15){
+					$('#total').val("");
+					$('#total').val("60000");
+				}else if($("#year").val() >= 16 && $("#year").val() <= 20){
+					$('#total').val("");
+					$('#total').val("80000");
+				}else if($("#year").val() >= 21){
+					$('#total').val("");
+					$('#total').val("100000");
+				}else{
+					$('#total').val("");
+				}
+			    });
+    		}else{
+    			$("#start, #end, #year").on("keyup change", function(e) {
+			    var date = new Date($('#start').val());
+			    yearstart = date.getFullYear();
+				var date = new Date($('#end').val());
+			    yearend = date.getFullYear();
+				total = yearend - yearstart
+			    $('#year').val(total);
+			    var year = ($('#year').val());
+			    if ($("#year").val() >= 10){
+			    	$('#total').val("");
+					$('#total').val("40000");
+				}else if($("#year").val() >= 5 && $("#year").val() <= 9){
+					$('#total').val("");
+					$('#total').val("20000");
+				}else{
+					$('#total').val("");
+				}
+			    });
+    		}
+    		}
+    	});
+    });
+
+   $(document).on('click', 'a[data-role=Delete]', function(){
+     	var id = $(this).data('id');
+     	Swal.fire({
+	         title: "Are you sure",
+	         text: "These data is incorrect?",
+	         icon: "warning",
+	         showCancelButton: true,
+	         confirmButtonColor: "#3498DB",
+	         confirmButtonText: "Yes",
+	         allowOutsideClick: false,
+	         }).then((result) => {
+	             if (result.isConfirmed) {
+	                 Swal.showLoading()
+	         		$.ajax({
+	         			url: "{% url 'delete_gratuity' %}",
+	         			data: {
+	         				id: id
+	         			},
+	         			type: "POST"
+	         		})
+	         		.done(function(data){
+	         			if (data.data == 'success'){
+	         				Swal.fire({
+	         				  title: "Good job!",
+	         				  text: "You successfully Deleted the data" ,
+	         				  icon: "success",
+	         				  confirmButtonColor: "#3498DB",
+	         				  allowOutsideClick: false,
+	         				}).then((result) => {
+	             				if (result.isConfirmed) {
+	         				  		$('#sweap_gratuity').DataTable().ajax.reload();
+	         				  	}
+	         				});
+	         			}
+	         		});
+	         	}
+	         });
+	     });
+	$("#intervention, #add").keyup(function () { 
+	  $("#total").val(+$("#intervention").val() + +$("#add").val());
+	});
+	$(".typeahead, .typeahead2, .typeahead3, .typeahead4").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee_inactive" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $('#insertsweap').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "Did you review it before inserting?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'gratuity_pay' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data == 'success'){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully Inserted Sweap Gratuity Pay",
+                      icon: "info",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+							$('#sweap_gratuity').DataTable().ajax.reload();
+							$("input:text").val("");
+                        }
+                    });
+                }else{
+                    Swal.fire({
+                      title: "Insert Failed!",
+                      text: "Something Went Wrong",
+                      icon: "error",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{% url 'gratuity_pay' %}";
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+
+
+</script>
+{% endblock %}

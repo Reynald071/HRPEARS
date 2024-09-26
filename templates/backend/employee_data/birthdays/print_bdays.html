@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Birthdays for {{ month }}</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			.containerX {
+				margin: 0px;
+				height: 0% !important;
+
+			}
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+				width: 100%;
+				zoom: 130%;
+			}
+			.vertical-right, .vertical-left {
+				margin: 0px !important;
+			}
+            .alert {
+                display: none !important;
+            }
+
+
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+
+		  	.pagebreak {
+				clear: both;
+				page-break-after: always;
+			}
+		}
+
+		@page {
+			size: auto;
+		}
+
+		.containerX {
+			zoom: 100%;
+		}
+
+		body{
+			font-size: 12px;
+			font-family: 'Inter';
+			color: black;
+		}
+		.bold{
+			font-weight: bold;
+		}
+		#table2{
+			border-collapse: collapse;
+			width: 100%;
+			margin-left: auto;
+  			margin-right: auto;
+		}
+		.text-center{
+			text-align: center;
+		}
+		.text-justify{
+			text-align: justify;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;"><strong>Birthday Celebrants of {{ month }}</strong></a>
+		<ul class="navbar-nav ml-auto">
+			<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	{% for page in pagination|times %}
+	<page size="A4" layout="portrait" class="page" style="padding: 45px; position: relative;">
+		<div class="containerX">
+            <div class="pull-left" style="font-size: 13px;">
+                <img loading="lazy"  src="{% static 'image/dswd_logo.png' %}" width="130px;" style="mix-blend-mode: multiply;">&emsp;
+                <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="60px;" style="mix-blend-mode: multiply; margin-top: -10px;">
+            </div>
+            <br><br><br>
+            <hr>
+			<br><br>
+            <p class="text-center" style="font-size: 17px;">
+                <strong>BIRTHDAY CELEBRANTS OF {{ month|upper }}</strong>
+            </p>
+			<br>
+			<table id="table2" border=1>
+				<tr>
+                    <td style="padding:5px; width: 10%;" class="text-center"><small><strong>Day</strong></small></td>
+                    <td style="padding:5px;" class="text-center"><small><strong>ID Number</strong></small></td>
+                    <td style="padding:5px;" class="text-center"><small><strong>Name</strong></small></td>
+				</tr>
+                {% get_page_range page 30 as page_range %}
+				{% for row in employees|slice:page_range.0 %}
+				<tr>
+                    <td class="text-center">
+                        <small>{{ row.pi.dob.day }}</small>
+                    </td>
+                    <td class="text-center">
+                        <small>{{ row.id_number }}</small>
+                    </td>
+                    <td class="text-center">
+                        <small>{{ row.pi.user.get_fullname|upper }}</small>
+                    </td>
+				</tr>
+				{% endfor %}
+			</table>
+            <br><br><br><br><br>
+            <div class="text-center">
+                <small>Page {{ page|add:1 }} of {{ pagination }}</small>
+            </div>
+            <div class="text-center">
+                <img src="{% static 'image/footer-2.png' %}" style="zoom: 30%">
+            </div>
+		</div>
+	</page>
+    <div class="pagebreak"></div>
+    {% endfor %}
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

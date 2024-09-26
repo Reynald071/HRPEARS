@@ -1,0 +1,143 @@
+{% load tags %}
+{% load frontend_tags %}
+{% getHash employee.id as pk %}
+<a href="{% url 'print_employee_dtr' pk start_date|date:'Y-m-d' end_date|date:'Y-m-d' %}" target="_blank" class="btn btn-info pull-right">Print</a>
+<br>
+<div>
+    <p>CIVIL SERVICE FORM NO. 48</p>
+    <br>
+    <h2 class="text-center" style="font-size: 16px;"><strong>Daily Time Record</strong></h2>
+    <br>
+    <h4 class="text-center no-margins" style="font-size: 15px;"><strong>{{ employee.pi.user.get_fullname_formatted }}</strong></h4>
+    <p class="text-center">(Name)</p>
+
+    <p>
+        {% if start_date|date:"F" == end_date|date:"F" %}
+            For the period of: <strong>{{ start_date|date:"F d" }} - {{ end_date|date:"d, Y" }}</strong>
+        {% else %}
+            For the period of: <strong>{{ start_date|date:"F d" }} - {{ end_date|date:"F d, Y" }}</strong>
+        {% endif %}
+    </p>
+
+    <table class="small table table-display table-bordered" id="dtr-table" style="font-size: 13px !important;">
+        <tr>
+            <th rowspan="3" class="text-center nopadding magic">
+                DAY
+            </th>
+            <th colspan="2" class="text-center nopadding magic">
+                AM
+            </th>
+            <th colspan="2" class="text-center nopadding magic">
+                PM
+            </th>
+            <th colspan="2" class="text-center nopadding magic">
+                UnderTime
+            </th>
+        </tr>
+        <tr>
+            <td class="text-center nopadding">Time In</td>
+            <td class="text-center nopadding">Time Out</td>
+            <td class="text-center nopadding">Time In</td>
+            <td class="text-center nopadding">Time Out</td>
+            <td class="text-center nopadding">Hours</td>
+            <td class="text-center nopadding">Minutes</td>
+        </tr>
+        <tr></tr>
+        {% for one_day in all_days %}
+        <tr id="tr-{{ one_day|date:'d' }}"></tr>
+        {% endfor %}
+    </table>
+    <div class="row" style="font-size:15px; height:19px;">
+        <div class="col-xs-12">
+            <div class="col-xs-2" style="padding:0px;">[T]-Travel</div>
+            <div class="col-xs-3" style="padding:0px;">&emsp;&emsp;&emsp;[L]-Leave</div>
+            <div class="col-xs-3" style="padding:0px;">&emsp;[H]-Holiday</div>
+            <div class="col-xs-4" style="padding:0px;">[OB]-Official Business</div>
+        </div>
+    </div>
+    <hr>
+    <hr style="margin-top: -18px;">
+    <p style="text-align:justify; margin-top: -18px;">&emsp;&emsp;&emsp;&emsp;&emsp; I CERTIFY on my honor that above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival and departure from office.</p>
+    <br><br>
+    <p class="text-center" style="font-size: 16px;">{{ employee.pi.user.get_fullname_formatted|upper }}</p>
+    <hr style="border: 1px solid black; margin-top: -7px;">
+    <hr style="margin-top: -12px;">
+    <hr style="margin-top: -18px;">
+    <p style="margin-top: -12px;">Verified as to the prescribed office hours.</p>
+    <br>
+    <center>
+        {% get_signatory employee.id as signatory %}
+        <p style="font-size: 17px;">{{ signatory.signatory }}</p>
+        <p class="text-center bold">
+            <span class="input text-center inputtext1" role="textbox" contenteditable style="font-size: 15px; border: 0px !important; font-weight: bold;">{{ signatory.signatory_pos }}</span>
+        </p>
+    </center>
+    {% get_color_coding employee.id as color_coding %}
+    {% if color_coding %}
+    <br><br>
+    <p><i class="fas fa-square" style="color: {{ color_coding }} !important;"></i> {{ color_coding|upper }}</p>
+    <small>Note: Utilizing color coding can significantly enhance document management and tracking, making it easier to identify, categorize, and retrieve documents quickly and efficiently.</small>
+    {% endif %}
+</div>
+{% block script %}
+<script>
+    {% for one_day in all_days %}
+        $.post({
+                url: '{% url "get_employee_time_async" %}',
+            data: {
+                emp_id: '{{ employee.id }}',
+                date: '{{ one_day|date:"Y-m-d" }}'
+            },
+            success: function(response){
+                var time_entries = response.data;
+                if(time_entries['check_in'].includes('OB') || time_entries['check_in'].includes('L')) {
+                    $('#tr-' + "{{ one_day|date:'d' }}").append(`
+                        <td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+                        <td class="nopadding-left" colspan="4">&emsp;`+
+                            time_entries['check_in']
+                        +`</td>
+                        <td></td>
+                        <td></td>
+                    `);
+                } else if(time_entries['check_in'] == 'Saturday') {
+                    $('#tr-' + "{{ one_day|date:'d' }}").append(`
+                        <td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+                        <td class="nopadding text-center" colspan="4" style="letter-spacing:4px; font-size:90%;">SATURDAY</td>
+                        <td></td>
+                        <td></td>
+                    `);
+                } else if (time_entries['check_in'] == 'Sunday'){
+                    $('#tr-' + "{{ one_day|date:'d' }}").append(`
+                        <td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+                        <td class="nopadding text-center" colspan="4" style="letter-spacing:4px; font-size:90%;">SUNDAY</td>
+                        <td></td>
+                        <td></td>
+                    `);
+                } else {
+                    if (time_entries['check_in'] || time_entries['break_out'] || time_entries['break_in'] || time_entries['check_out']) {
+                        $('#tr-' + "{{ one_day|date:'d' }}").append(`
+                            <td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+                            <td class="nopadding text-center">` + time_entries['check_in'] + `</td>
+                            <td class="nopadding text-center">` + time_entries['break_out'] + `</td>
+                            <td class="nopadding text-center">` + time_entries['break_in'] + `</td>
+                            <td class="nopadding text-center">` + time_entries['check_out'] + `</td>
+                            <td></td>
+                            <td></td>
+                        `);
+                    } else {
+                        $('#tr-' + "{{ one_day|date:'d' }}").append(`
+                            <td class="nopadding text-center">{{ one_day|date:"d" }}</td>
+                            <td class="nopadding text-center"></td>
+                            <td class="nopadding text-center"></td>
+                            <td class="nopadding text-center"></td>
+                            <td class="nopadding text-center"></td>
+                            <td></td>
+                            <td></td>
+                        `);
+                    }
+                }
+            }
+        });
+    {% endfor %}
+</script>
+{% endblock %}

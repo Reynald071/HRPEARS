@@ -1,0 +1,652 @@
+{% load crispy_forms_tags %}
+{% block style %}
+<style type="text/css">
+    .notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+<div class="row" id="page-content">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+        <form id="submitEducationForm">
+        {% csrf_token %}
+        <div class="pull-left">
+			<div class="form-group">
+				<label>Choose Shortcuts</label>
+				<select class="form-control shortcuts select">
+					{% for row in shortcuts %}
+					{% if row.name == "Educational Background" %}
+					<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.backend_url }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+        <div class="pull-right" style="margin-top:23px;">
+            <div class="form-group">
+                <button type="submit" class="btn btn-info">Save changes</button>
+                <div class="btn-group">
+                <button type="button" id="btn-previous-fb" class="btn btn-default">Previous</button>
+                <button type="button" id="btn-next-cs" class="btn btn-default">Next</button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-bordered notboldandbig tbl-eb">
+            <thead>
+                <th colspan="9">
+                    <h3>III. EDUCATIONAL BACKGROUND</h3>
+                </th>
+            </thead>
+            <tbody style="font-size: 11px;">
+                <tr>
+                    <th rowspan="3" class="text-center nopadding" width="12%">
+                        LEVEL
+                    </th>
+                    <th class="text-center nopadding" rowspan="3" width="20%">
+                        NAME OF SCHOOL&emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-school'><i class="fas fa-plus"></i></button><br>
+                        <small>(write in full)</small>
+                    </th>
+                    <th class="text-center nopadding" rowspan="3" width="20%">
+                        BASIC EDUCATION/DEGREE/COURSE&emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-degree'><i class="fas fa-plus"></i></button> <br>
+                        <small>(write in full)</small>
+                    </th>
+                    <th colspan="2" class="text-center nopadding" width="18%">
+                        PERIOD OF ATTENDANCE
+                    </th>
+                    <th class="text-center nopadding" rowspan="3" width="10%">
+                        HIGHEST LEVEL/UNITS EARNED<br>
+                        <small>(if not graduated)</small>
+                    </th>
+                    <th class="text-center nopadding" rowspan="3" width="7%">
+                        YEAR GRADUATED
+                    </th>
+                    <th class="text-center nopadding" rowspan="3" width="10%">
+                        SCHOLARSHIP/<br>
+                        ACADEMIC HONORS RECEIVED&emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-honors'><i class="fas fa-plus"></i></button>
+                    </th>
+                    <th rowspan="3">
+                        <center><button type="button" class="btn btn-info btn-xs add-eb" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+                    </th>
+                </tr>
+                <tr>
+                    <th class="text-center nopadding">
+                        FROM
+                    </th>
+                    <th class="text-center nopadding">
+                        TO
+                    </th>
+                </tr>
+                <tr></tr>
+                {% if educ %}
+                {% for e in educ %}
+                <tr id="{{ e.id }}">
+                    <td class="nopadding">
+                        <select class="form-control input-sm select level" name="level[]">
+                            <option></option>
+                            {% for row in level %}
+                                {% if row.id == e.level_id %}
+                                <option value="{{ row.id }}" selected="selected">{{ row.lev_name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.lev_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <span class="error-level text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select school" name="school[]">
+                            <option></option>
+                            {% for row in school %}
+                                {% if row.id == e.school_id %}
+                                <option value="{{ row.id }}" selected="selected">{{ row.school_name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.school_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <span class="error-school text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select degree" name="degree[]">
+                            <option></option>
+                            {% for row in course %}
+                                {% if row.id == e.degree_id %}
+                                <option value="{{ row.id }}" selected="selected">{{ row.degree_name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.degree_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <span class="error-degree text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless from text-center" name="from[]" value="{{ e.period_from }}">
+                        <span class="error-from text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless to text-center" name="to[]" value="{{ e.period_to }}">
+                        <span class="error-to text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless unit text-center" name="unit[]" value="{{ e.units_earned }}">
+                        <span class="error-unit text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless year text-center" name="year[]" value="{{ e.year_graduated }}">
+                        <span class="error-year text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select hon" name="hon[]">
+                            <option></option>
+                            {% for row in hon %}
+                                {% if row.id == e.hon_id %}
+                                <option value="{{ row.id }}" selected="selected">{{ row.hon_name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.hon_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <span class="error-hon text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <center><button type="button" class="btn btn-danger btn-xs" data-id="{{ e.id }}" data-role="delete-eb"><i class="fa fa-minus"></i></button></center>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select level" name="level[]">
+                            <option></option>
+                            {% for row in level %}
+                                <option value="{{ row.id }}">{{ row.lev_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="error-level text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select school" name="school[]">
+                            <option></option>
+                            {% for row in school %}
+                                <option value="{{ row.id }}">{{ row.school_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="error-school text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select degree" name="degree[]">
+                            <option></option>
+                            {% for row in course %}
+                                <option value="{{ row.id }}">{{ row.degree_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="error-degree text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless from text-center" name="from[]">
+                        <span class="error-from text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless to text-center" name="to[]">
+                        <span class="error-to text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless unit text-center" name="unit[]">
+                        <span class="error-unit text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless year text-center" name="year[]">
+                        <span class="error-year text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select hon" name="hon[]">
+                            <option></option>
+                            {% for row in hon %}
+                                <option value="{{ row.id }}">{{ row.hon_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="error-hon text-danger"></span>
+                    </td>
+                    <td class="nopadding">
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="remove-eb"><i class="fa fa-minus"></i></button></center>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-school" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New School</h3>
+                <button type="button" class="close text-white" id="close-add-school-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addSchool">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_school.school_name|as_crispy_field }}
+                {{ form_school.school_acronym|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-degree" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Degree</h3>
+                <button type="button" class="close text-white" id="close-add-degree-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addDegree">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_degree.degree_name|as_crispy_field }}
+                {{ form_degree.degree_acronym|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-honors" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Scholarship / Academic Honor Name</h3>
+                <button type="button" class="close text-white" id="close-add-honors-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addHonor">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_honor.hon_name|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+    $('#close-add-school-modal').on('click', function(){
+        $('#add-school').modal('toggle');
+    });
+
+    $('#close-add-degree-modal').on('click', function(){
+        $('#add-degree').modal('toggle');
+    });
+
+    $('#close-add-honors-modal').on('click', function(){
+        $('#add-honors').modal('toggle');
+    });
+
+    $('#btn-previous-fb').on('click', function(){
+        callPage("{% url 'update_family_background' pi_id %}");
+    });
+
+    $('#btn-next-cs').on('click', function(){
+        callPage("{% url 'update_civil_service' pi_id %}");
+    });
+
+	$(document).ready(function(){
+    var fieldEBHTML = '<tr>\
+                    <td class="nopadding">\
+                        <select class="form-control input-sm level select" name="level[]">\
+                            <option></option>\
+                            {% for row in level %}\
+                            <option value="{{ row.id }}">{{ row.lev_name }}</option>\
+                            {% endfor %}\
+                        </select>\
+                    </td>\
+                    <td class="nopadding">\
+                        <select class="form-control input-sm select school" name="school[]">\
+                            <option></option>\
+                        </select>\
+                    </td>\
+                    <td class="nopadding">\
+                        <select class="form-control input-sm select degree" name="degree[]">\
+                            <option></option>\
+                        </select>\
+                    </td>\
+                    <td class="nopadding">\
+                        <input type="text" class="form-control input-sm borderless from text-center" name="from[]">\
+                    </td>\
+                    <td class="nopadding">\
+                        <input type="text" class="form-control input-sm borderless to text-center" name="to[]">\
+                    </td>\
+                    <td class="nopadding">\
+                        <input type="text" class="form-control input-sm borderless unit text-center" name="unit[]">\
+                    </td>\
+                    <td class="nopadding">\
+                        <input type="text" class="form-control input-sm borderless year text-center" name="year[]">\
+                    </td>\
+                    <td class="nopadding">\
+                        <select class="form-control input-sm select hon" name="hon[]">\
+                            <option></option>\
+                        </select>\
+                    </td>\
+                    <td class="nopadding">\
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="remove-eb"><i class="fa fa-minus"></i></button></center>\
+                    </td>\
+                </tr>';
+
+    $('.add-eb').on('click', function(e){
+         $('.tbl-eb > tbody:last-child').append(fieldEBHTML);
+
+        $('.level').select2({
+            allowClear: true,
+            placeholder: 'Choose'
+        });
+
+        fetch_schools();
+        fetch_degrees();
+        fetch_honors();
+        e.preventDefault();
+    });
+
+    $(document).on('click','button[data-role="remove-eb"]', function(e){
+        e.preventDefault();
+        $(this).parent().parent().parent().remove();
+    });
+
+    $('#submitEducationForm').on('submit', function(e){
+        if (checkForm() == 0){
+              $.ajax({
+                data        : new FormData(this),
+                url         : "{% url 'update_educational_background' pi_id %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                Swal.fire("Well done!", "Educational background has been saved successfully.", "success");
+            });
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+        invalid = 0;
+        $('.level').each(function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.school').each(function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.degree').each(function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.from').each(function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.to').each(function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.unit').each(function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.year').each(function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.hon').each(function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+        return invalid;
+    }
+
+    $(document).on('click', 'button[data-role=delete-eb]', function(){
+        id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+                $.ajax({
+                    url: "{% url 'delete-education' %}",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('.tbl-eb tr#'+id).remove();
+                    Swal.fire("Success!", "Your record was successfully deleted.", "success");
+                });
+            }
+        });
+    });
+
+    $('#addSchool').on('submit', function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : "{% url 'admin_add_school' pi_id %}",
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=school_name]').after(error);
+                }
+                else {
+                    $('#add-school').modal('hide');
+                    toastrOptions();
+                    toastr.success("The school \'" + response.school_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_schools();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+    $('#addDegree').on('submit', function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : "{% url 'admin_add_degree' pi_id %}",
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=degree_name]').after(error);
+                }
+                else {
+                    $('#add-degree').modal('hide');
+                    toastrOptions();
+                    toastr.success("The degree \'" + response.degree_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_degrees();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+     $('#addHonor').on('submit', function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : "{% url 'admin_add_honor' pi_id %}",
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=hon_name]').after(error);
+                }
+                else {
+                    $('#add-honors').modal('hide');
+                    toastrOptions();
+                    toastr.success("The scholarship / academic honor \'" + response.hon_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_honors();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+    function fetch_schools(){
+        $.getJSON('{% url 'api-schools' pi_id %}', function(response) {
+            data_schools = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_schools.push({id: response.data[d].id, text: response.data[d].school_name});
+            }
+
+            $('.school').select2({
+                data: data_schools,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    function fetch_degrees(){
+        $.getJSON('{% url 'api-degrees' pi_id %}', function(response) {
+            data_degrees = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_degrees.push({id: response.data[d].id, text: response.data[d].degree_name});
+            }
+
+            $('.degree').select2({
+                data: data_degrees,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    function fetch_honors(){
+        $.getJSON('{% url 'api-honors' pi_id %}', function(response) {
+            data_honors = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_honors.push({id: response.data[d].id, text: response.data[d].hon_name});
+            }
+
+            $('.hon').select2({
+                data: data_honors,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    $('.shortcuts').on('select2:select', function(){
+        callPage($(this).val() + {{ pi_id }});
+    });
+});
+</script>

@@ -1,0 +1,202 @@
+{% load frontend_tags %}
+{% load static %}
+<div class="spinner-example" id="preloader">
+	<div class="sk-spinner sk-spinner-double-bounce">
+		<div class="sk-double-bounce1"></div>
+		<div class="sk-double-bounce2"></div>
+	</div> <br>
+	<p class="text-center">Loading..</p>
+</div>
+<div id="document-201-content" style="display: none;">
+    <ol class="breadcrumb bg-white p-0">
+        <li class="breadcrumb-item">
+            {{ tab_title }}
+        </li>
+        <li class="breadcrumb-item active">
+            <strong>{{ document_type.name }}</strong>
+        </li>
+    </ol>
+    <hr>
+    {% if document_type.id == 18 %}
+    <form id="uploadDocumentForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row">
+        <input type="hidden" name="document-type-id" id="document-type-id">
+        <div class="form-group col-md-3">
+            <label>Filename<span class="asteriskField">*</span></label>
+            <input type="text" class="form-control" name="name" autocomplete="off" required>
+        </div>
+        <div class="form-group col-md-3">
+            <label>Year<span class="asteriskField">*</span></label>
+            <input type="number" class="form-control" step="1" max="{% now 'Y' %}" name="year" autocomplete="off" value="{% now 'Y' %}" required>
+        </div>
+        <div class="form-group col-md-4">
+            <label>Attachment<span class="asteriskField">*</span></label>
+            <input type="file" name="file" class="form-control file-control" accept="application/pdf" required>
+        </div>
+        <div class="form-group col-md-2" style="margin-top: 22px;">
+            <button type="submit" class="btn btn-info btn-block"><span class="loading open-circle" style="display:none;"></span> Upload</button>
+        </div>
+    </div>
+    </form>
+    {% endif %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" style="zoom:95% !important;" id="table-201" width="100%">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Filename</th>
+                    <th class="text-center">Year</th>
+                    <th class="display-none">File</th>
+                    <th class="display-none">Upload ID</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="modal" id="preview_modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content animated bounceInDown">
+                <div class="modal-header bg-info" style="border-bottom: 0px !important;">
+                    <h3 class="modal-title"></h3>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                </div>
+                <div class="modal-body" id="preview-content">
+                    <iframe id="preview-pdf" width="100%" height="768px" frameBorder="0"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function(){
+    	$('#preloader').fadeOut(500, function(){
+            $('#document-201-content').css('display', '');
+            Table201();
+        });
+
+    	function Table201(){
+            if ( $.fn.DataTable.isDataTable('#table-201') ) {
+                $('#table-201').DataTable().destroy();
+            }
+			$('#table-201').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'lengthMenu': [ 25, 50, 100 ],
+				'order': [[ 2, 'desc' ]],
+				'ajax': {
+					'url': '/api/documents/201-files/?format=datatables&employee_id='+'{% getHash request.session.emp_id as employee_id %}{{ employee_id }}&type_id='+'{% getHash document_type.id as type_id %}{{ type_id }}',
+					'type': 'GET',
+					'beforeSend': function (request) {
+						request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+					}
+				},
+				'fnCreatedRow': function (row, data, index) {
+                    $(row).attr('id', data['id']);
+                },
+                "columnDefs": [
+                    { "orderable": false, "targets": [0] },
+                    { "orderable": true, "targets": [1, 2] }
+                ],
+				'columns': [
+					{ 'data': 'id' ,
+					    'searchable': false,
+					    'render': function(data, type, row, meta) {
+                            template = "<a href='javascript:;' data-role='preview' data-id='"+ row['id'] +"' data-filter='"+ row['file'] +"' data-content='"+ row['name'] +"'>Preview</a>";
+                            template += " | <a href='"+ row['file'] +"' download>Download</a>";
+                            if(row['upload_by_id'] == "{{ request.session.emp_id }}") {
+                                template += " | <a href='javascript:;' data-role='delete-file' data-id='" + row['id'] + "'>Delete</a>";
+                            }
+					        return template;
+                        }
+					},
+					{ 'data': 'name' },
+					{ 'data': 'year', 'className': 'text-center' },
+					{ 'data': 'file', 'className': 'display-none', 'searchable': false },
+                    { 'data': 'upload_by_id', 'className': 'display-none', 'searchable': false },
+				],
+			});
+		}
+
+		$(document).on('click', 'a[data-role=preview]', function(){
+		    var id = $(this).data('id');
+            var filename = $('#'+id).find('td:eq(1)').text();
+
+            $('#filename').val(filename);
+            $("#preview-content").css("padding",'0px');
+            $("#preview-content").css("margin",'0px');
+            $('.modal-title').text($(this).data('content'));
+            $('#preview-pdf').attr('src', $(this).data('filter') + '#toolbar=1');
+            $('#preview_modal').modal('show');
+        });
+
+        $(document).on('click', 'a[data-role=delete-file]', function(){
+		    var id = $(this).data('id');
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to delete this file?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            id: id,
+                        },
+                        url: '{% url "delete_user_file_upload" %}',
+                        type: "POST"
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Success!",
+                        text: "The file was successfully deleted.",
+                        icon: "success",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#table-201').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#preview_modal').on('hidden.bs.modal', function () {
+            $(body).removeClass('modal-open');
+        });
+
+        $('#uploadDocumentForm').on('submit', function(e){
+            e.preventDefault();
+            var form = new FormData(this);
+            $.ajax({
+                data: form,
+                url: "{% url 'upload_user_document' %}",
+                type: "POST",
+                beforeSend: function (){
+                    $('.loading').css('display', '');
+                    $('button').prop("disabled", true);
+                },
+                success: function(response){
+                    if (response.data == "success"){
+                        $('#uploadDocumentForm').trigger('reset');
+                        $('#table-201').DataTable().ajax.reload();
+                    }
+                },
+                complete: function(response){
+                    $('.loading').css('display', 'none');
+                    $('button').prop("disabled", false);
+                },
+                cache: false,
+                contentType: false,
+                processData: false,
+            });
+        });
+	});
+</script>
+{% endblock %}

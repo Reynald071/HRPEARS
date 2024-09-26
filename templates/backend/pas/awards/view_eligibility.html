@@ -1,0 +1,111 @@
+<form id="eligibilityForm">
+{% csrf_token %}
+{% if eligibility %}
+	<label>Criteria<span class="asteriskField">*</span></label>
+	{% for row in eligibility %}
+		{% if forloop.first %}
+			<div class="input-group">
+				<input type="text" class="form-control" name="eligibility[]" value="{{ row.eligibility }}" autocomplete="off">
+				<span class="input-group-append">
+					<button type="button" id="btn-add-eligibility" class="btn btn-info"><i class="fas fa-plus"></i></button>
+				</span>
+			</div>
+		{% endif %}
+	{% endfor %}
+	<div id="wrapper-eligibility">
+	{% for row in eligibility %}
+		{% if not forloop.first %}
+			<div class="row">
+				<div class="col-lg-12">
+					<br>
+					<div class="input-group">
+						<input type="text" class="form-control" name="eligibility[]" value="{{ row.eligibility }}" autocomplete="off">
+						<span class="input-group-append">
+							<button type="button" class="btn btn-danger" data-role="remove"><i class="fas fa-minus"></i></button>
+						</span>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+	{% endfor %}
+	</div>
+{% else %}
+	<label>Criteria<span class="asteriskField">*</span></label>
+	<div id="wrapper-eligibility">
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="input-group">
+					<input type="text" class="form-control" name="eligibility[]" autocomplete="off">
+					<span class="input-group-append">
+						<button type="button" id="btn-add-eligibility" class="btn btn-info"><i class="fas fa-plus"></i></button>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endif %}
+<br>
+<button type="submit" class="btn btn-info">Save changes</button>
+</form>
+{% block script %}
+<script>
+	$('#btn-add-eligibility').on('click', function(){
+		$('#wrapper-eligibility').append(`
+			<div class="row">
+			<div class="col-lg-12">
+				<br>
+				<div class="input-group">
+					<input type="text" class="form-control" name="eligibility[]" autocomplete="off">
+					<span class="input-group-append">
+						<button type="button" class="btn btn-danger" data-role="remove"><i class="fas fa-minus"></i></button>
+					</span>
+				</div>
+			</div>
+			</div>
+		`);
+	});
+
+	$(document).on('click', 'button[data-role=remove]', function(){
+		$(this).closest('.row').remove();
+	});
+
+	$('#eligibilityForm').on('submit', function(e){
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure?",
+			text: "You want to save this awards eligibility criteria",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			confirmButtonColor: "#3498DB",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.ajax({
+					data        : form,
+					url         : '{% url "awards_eligibility_criteria" pk %}',
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		}).then(function (response){
+			if (response.value.data == "success"){
+				Swal.fire({
+					title: 'Good job!',
+					html: response.value.msg,
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				}).then((result) => {
+                    if (result.isConfirmed){
+                        $('#eligibility-content').load('{% url "awards_eligibility_criteria" pk %}');
+                    }
+                });
+			}
+		});
+		e.preventDefault();
+	});
+</script>
+{% endblock %}

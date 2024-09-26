@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DSWD My PORTAL | Generate Travel Report</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style type="text/css">
+        @media screen{
+            .picture{
+                 visibility: visible;
+            }
+        }
+		@media print {
+			.containerX {
+				padding: 0px;
+				margin: 0px;
+				zoom: 100% !important;
+				height: 0% !important;
+			}
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 205mm !important;
+			}
+			page[size="longflex"][layout="landscape"] {
+				min-height: 205mm !important;
+			}
+			#countersign {
+				bottom: 0px !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		  	.btn{ display: none; }
+		  	#indicator{ display: none; }
+		  	.picture{
+		    	visibility: visible;
+		  	}
+		  	#line{display: none;}
+		  	.remove-text{display: none;}
+		  	.subject-checked{display: none;}
+		}
+
+		.containerX {
+			zoom: 95%;
+		}
+
+		body{
+			font-size: 12px;
+			font-family: 'Inter';
+			color: black;
+		}
+
+		.bold{
+			font-weight: bold;
+		}
+		#table2{
+			border-collapse: collapse;
+			width: 100%;
+		}
+		.text-center{
+			text-align: center;
+		}
+
+		.center{
+			text-align: center;
+		}
+
+		td.padding-5{
+			padding: 5px;
+		}
+	</style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Travel Report</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="javascript:;" class="print-button" id="floatprint" style="font-size: 14px;"><i class="fas fa-print"></i> Print</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+    <page size="longflex" layout="landscape" class="page" style="padding: 45px; position: relative;">
+		<div class="containerX">
+        <h3 class="text-center bold">TRAVEL REPORT</h3>
+        <p class="text-center no-margins">{{ keyword|upper }}</p>
+        <p class="text-center no-margins">{{ inclusive_from }} - {{ inclusive_to }}</p>
+        <br>
+        <table class="table2" border="1" width="100%">
+        <tr>
+            <td class="text-center bold"><small>Tracking No.</small></td>
+            <th class="text-center"><small>Names - Position/Area of Assignment</small><br><small style="margin-top:-5px; font-weight:lighter;">R(SN, FN M. II)</small></th>
+            <th class="text-center"><small>Place/s of Visit</small></th>
+            <th class="text-center"><small>Duration of Travel</small><br><small style="margin-top:-5px; font-weight:lighter;">(Inclusive of Travel Time)</small></th>
+            <th class="text-center"><small>Purpose</small></th>
+            <th class="text-center"><small>Expected Output</small></th>
+            <th class="text-center"><small>Means of <br>Transportation</small><br><small style="margin-top:-5px; font-weight:lighter; font-size: 9px;"><b>1</b> PUV Vice-Versa <br> <b>2</b> RP Vice-Versa <br> <b>3</b> RP-one-way PUV one-way <br> <b>4</b> Hired Van</small></th>
+            <th class="text-center"><small>Claims</small><br><small style="margin-top:-5px; font-weight:lighter; font-size: 9px;"><b>1</b> without per diem <br> <b>2</b> with per diem <br><b>3</b> Official Time Only <br><b>4</b> Compensatory Day off</small></th>
+        </tr>
+        {% for row in rito %}
+        {% check_to_exist row.rito_id as check_to_exist%}
+        {% if check_to_exist %}
+        <tr id="{{ row.id }}">
+            <td class="text-center">{{ row.rito.tracking_no }}</td>
+            <td width="30%" class="padding-5">
+                <ol>
+                {% ritopeople row.id as people %}
+                    {% for emp in people %}
+                        <li>{{ emp.name.pi.user.first_name }}
+                        {{ emp.name.pi.user.middle_name|to_middleinitial }}
+                        {{ emp.name.pi.user.last_name }} - {{ emp.name.position.acronym }} / {{ emp.name.aoa.name }}</li>
+                    {% endfor %}
+                </ol>
+            </td>
+            <td class="text-center padding-5" width="15%">{{ row.place }}</td>
+            <td class="text-center padding-5" width="10%">
+                {% if row.inclusive_from == row.inclusive_to %}
+                {{ row.inclusive_from }}
+                {% else %}
+                {{ row.inclusive_from }} - {{ row.inclusive_to }}
+                {% endif %}
+            </td>
+            <td class="text-center padding-5">{{ row.purpose }}</td>
+            <td class="text-center padding-5">{{ row.expected_output }}</td>
+            <td class="text-center padding-5" data-target="mot">
+                {{ row.mot.name }}
+            </td>
+            <td class="text-center padding-5" data-target="claims" width="10%">
+                {{ row.claims.name}}
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        </table>
+        <div class="row">
+            <br>
+            <div class="col-sm-12">
+                <div class="pull-left">
+                    <p class="bold">Prepared By:</p>
+                    <br>
+                    <input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" size="40" value="{{ user.pi.user.first_name|upper }} {{ user.pi.user.middle_name|to_middleinitial }} {{ user.pi.user.last_name|upper }}"><br>
+                    <input type="text" style="border: 0px !important;" size="40" value="{{ user.position.name }}">
+                </div>
+            </div>
+        </div>
+        </div>
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script>
+        $('#floatprint').on('click', function(){
+            if ($('#designation_name').val() == "" | $('#designation').val() == ""){
+                swal("Print Warning",
+                "Please fill in the 'Approved by' field before printing. Thank you.",
+                "warning");
+            } else {
+                window.setTimeout(function() { printObject(); }, 0);
+            }
+        });
+    </script>
+</body>
+</html>

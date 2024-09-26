@@ -1,0 +1,144 @@
+<br>
+<center>
+    <img loading="lazy"  src="{{ employee.picture.url }}" id="picture" class="img-circle" style="width: 200px; height: 200px; object-fit: cover; margin-bottom: 10px;">
+    <h2><strong>{{ employee.pi.user.get_fullname }}</strong></h2>
+    <h3 class="no-margins">{{ employee.position.name }} &emsp;{% if employee.pi.user.is_active == 1 %}<span class="label label-primary">Active</span>{% else %}<span class="label label-danger">Inactive</span>{% endif %}</h3>
+    <p class="text-muted">@{{ employee.pi.user.username }}</p>
+</center>
+<div class="tabs-container">
+    <ul class="nav nav-tabs" id="tabUL">
+        <li class="active"><a class="nav-link" data-toggle="tab" href="#new-workflow">New</a></li>
+        <li><a class="nav-link" data-toggle="tab" href="#old-workflow">Old (Personnel Payroll System)</a></li>
+    </ul>
+    <div class="tab-content" style="border: 0px !important;">
+        <div id="new-workflow" class="tab-pane active">
+            <div class="panel-body">
+                <div id="table-employee-transmittal-content" class="table-responsive">
+                    <table class="table table-bordered table-hover" id="employee-new-transmittal-table" width="100%">
+                        <thead>
+                            <th class="display-none">Tracking No</th>
+                            <th>Action</th>
+                            <th>Status</th>
+                            <th>Document Name</th>
+                            <th>Details</th>
+                            <th>Document Date</th>
+                            <th>Date Received / Forwarded</th>
+                            <th>Date Approved / Disapproved</th>
+                            <th>Registered by</th>
+                        </thead>
+                    </table>
+                </div>
+                <div id="new-content"></div>
+            </div>
+        </div>
+        <div id="old-workflow" class="tab-pane">
+            <div class="panel-body table-responsive">
+                <table class="table table-bordered table-hover" id="employee-old-transmittal-table" width="100%">
+                    <thead>
+                        <th class="display-none">ID</th>
+                        <th class="text-center" width="12%">Status</th>
+                        <th width="15%">Document Name</th>
+                        <th width="15%" class="text-center">Document Date</th>
+                        <th width="20%" class="text-center">Date Received / Forwarded</th>
+                        <th width="12%" class="text-center">Forwarded To</th>
+                        <th class="text-center">Other Document Information</th>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block script %}
+<script>
+    $('#employee-new-transmittal-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/transmittal/?format=datatables&pk={{ employee.id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'tracking_no', 'className': 'display-none' },
+            {'data': 'id',
+                'render': function(data, type, row, meta){
+                    template = '<a href="javascript:;" data-role="view-incoming" data-id="'+ data +'">Details</a> |'
+                    template += ' <a href="javascript:;" data-role="delete" data-id="'+ data +'">Delete</a>'
+                    return template
+                }
+            },
+            {'data': 'status',
+                'render': function(data, type, row, meta){
+                    if(data == 0) {
+                        return '<span class="label label-default">Incoming</span>';
+                    }else if(data == 1) {
+                        return '<span class="label label-primary">Outgoing</span>';
+                    }else if(data == 2) {
+                        return '<span class="label label-success">Approved</span>';
+                    }else if(data == 3) {
+                        return '<span class="label label-danger">Disapproved</span>';
+                    }else if(data == 4) {
+                        return '<span class="label label-warning">For Return</span>';
+                    }
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'document_name', 'name': 'document_name.name' },
+            {'data': 'details' },
+            {'data': 'document_date', 'className': 'text-center', 'searchable': false },
+            {'data': 'date', 'className': 'text-center', 'searchable': false },
+            {'data': 'date_approved', 'className': 'text-center', 'searchable': false },
+            {'data': 'registered_by', 'className': 'text-center', 'searchable': false},
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=view-incoming]', function(){
+        $('#table-employee-transmittal-content').css('display', 'none');
+        $('#new-content').load('/backend/transmittal/view/details/' + $(this).data('id'));
+    });
+
+
+    $('#employee-old-transmittal-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/transmittal/old/?format=datatables&id_number={{ employee.id_number }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'tracking_id', 'className': 'display-none'},
+            {'data': 'transaction_type',
+                'render': function(data, type, row, meta){
+                    if(data == "Incoming") {
+                        return '<span class="label label-default">Incoming</span>';
+                    }else if(data == "Outgoing") {
+                        return '<span class="label label-primary">Outgoing</span>';
+                    }else if(data == "Approved") {
+                        return '<span class="label label-success">Approved</span>';
+                    }
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'document_name', 'name': 'document_name.name' },
+            {'data': 'date_document', 'className': 'text-center', 'searchable': false },
+            {'data': 'date_received', 'className': 'text-center', 'searchable': false },
+            {'data': 'forwarded_to' },
+            {'data': 'details', 'className': 'text-center' },
+        ],
+    });
+</script>
+{% endblock %}

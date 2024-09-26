@@ -1,0 +1,192 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">{{ data.name }}</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'employee_group' %}">Column Group</a>
+            </li>
+            <li class="breadcrumb-item">
+                {{ data.name }}
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <form id="submitForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <input type="hidden" name="update_id" id="update_id" value="0">
+                        <div class="form-group col-md-10">
+                            <label>Column Name</label>
+                            <select class="form-control select" name="columns[]" id="columns" multiple>
+                                <option></option>
+                                {% for row in columns %}
+                                <option value="{{ row.id }}">{{ row.attribute }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>&nbsp;</label>
+                            <div class="btn-group btn-group-justified">
+                                <div class="btn-group">
+                                    <button type="submit" class="btn btn-info" id="submit">Add</button>
+                                </div>
+                                <div class="btn-group">
+                                    <a type="button" class="btn btn-white" href="{% url 'group' data.id %}">Reset</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                    {% if request.GET.search and employee.paginator.count == 0 %}
+                        <div class="col-xs-12">
+                            <a href="{% url 'payroll_employee' %}" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+                        </div>
+                        <br>
+                        <hr>
+                    {% else %}
+                        <div class="pull-left">
+                            Showing {{ group.start_index }} - {{ group.end_index }} of {{ group.paginator.count }} entries&emsp;
+                        </div>
+                        <div class="pull-right" style="padding-right:5px">
+                            <div class="btn-group">
+                            {% if group.has_other_pages %}
+                                {% if group.has_previous %}
+                                    <a class="btn btn-default" href="?page={{ group.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Previous</a>
+                                {% endif %}
+                                {% for row in group.paginator.page_range %}
+                                    {% if group.number == row %}
+                                        <a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% elif row > group.number|add:-3 and row < group.number|add:3 %}
+                                        <a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if group.has_next %}
+                                    <a class="btn btn-default" href="?page={{ group.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Next</a>
+                                {% endif %}
+                            {% endif %}
+                            </div>
+                            <a class="btn btn-default" href="{% url 'group' data.id %}">Refresh</a>
+                        </div>
+                        <br><br><br>
+                    {% endif %}
+                    {% if request.GET.search and group.paginator.count == 0 %}
+                        <div style="padding:0px 15px !important; text-align:center;">
+                            <div class="row" style="padding-bottom:15px">
+                                <div class="" style="text-align:center;">
+                                    <img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="height:250px; width:auto; margin: 0 auto; object-fit:cover;">
+                                </div>
+                                <div class="row col-md-6 col-md-offset-3">
+                                    <form method="get">
+                                        <div class="input-group form-group">
+                                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" placeholder="Search employee.." name="search" value="{{ request.GET.search }}">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="row col-md-6 col-md-offset-3">
+                                    <p>
+                                        Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.search %}{{ request.GET.search }}{% endif %}'</i>. Please try another keyword.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                    <form method="get">
+                        <div class="input-group form-group">
+                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search Employee.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="capslock" style="width:4%;">#</th>
+                                    <th>COLUMN</th>
+                                    <th>TYPE</th>
+                                    <th class="text-right">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in group %}
+                                <tr id="{{ row.id }}">
+                                    <td data-target="order">{{ row.column.order }}</td>
+                                    <td>{{ row.column.attribute }}</td>
+                                    <td style="display:none;" data-target="column_id">{{ row.column_id }}</td>
+                                    <td>{{ row.column.column_type.name }}</td>
+                                    <td class="text-right">
+                                        <a href="javascript:;" data-role="delete" data-id="{{ row.id }}">Delete</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    icheckInit();
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+        var id = $(this).data('id');
+        $.ajax({
+            data        : {
+                id: id,
+            },
+            url         : "{% url 'delete_group' %}",
+            type        : 'POST',
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                window.location.href = "{% url 'group' data.id %}";
+            }
+        });
+    });
+
+    $('#submitForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : "{% url 'group' data.id %}",
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                window.location.href = "{% url 'group' data.id %}";
+            }
+        });
+    });
+</script>
+{% endblock %}

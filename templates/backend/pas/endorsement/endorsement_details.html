@@ -1,0 +1,225 @@
+<div class="modal-body">
+    <form id="addEmployeeForm">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Employee Name<span class="asteriskField">*</span></label>
+                <input type="text" class="form-control filter-employee-all" id="employee_name" name="employee_name" autocomplete="off" required/>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Position<span class="asteriskField">*</span></label>
+                <select class="form-control select" name="position" id="position" required>
+                    <option></option>
+                    {% for row in position %}
+                        <option value="{{ row.id }}">{{ row.name|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-2">
+            <div class="form-group">
+                <label>Basic Monthly Salary<span class="asteriskField">*</span></label>
+                <input type="text" class="form-control" name="basic_salary" id="basic_salary" autocomplete="off" required/>
+            </div>
+        </div>
+        <div class="col-lg-2">
+            <div class="form-group">
+                <label>Premium Rate<span class="asteriskField">*</span></label>
+                <input type="text" class="form-control" name="premium_rate" autocomplete="off" required/>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Effectivity of Contract<span class="asteriskField">*</span></label>
+                <input type="date" class="form-control" name="effectivity_contract" autocomplete="off" required/>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>End of Contract</label>
+                <input type="date" class="form-control" name="end_of_contract" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Employment Status<span class="asteriskField">*</span></label>
+                <select class="form-control select" name="empstatus" id="empstatus" required>
+                    <option></option>
+                    {% for row in empstatus %}
+                        <option value="{{ row.id }}">{{ row.name|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Fund Charge<span class="asteriskField">*</span></label>
+                <select class="form-control select" name="fundcharge" id="fundcharge" required>
+                    <option></option>
+                    {% for row in fundcharge %}
+                        <option value="{{ row.id }}">{{ row.name|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Account Number (LBP)</label>
+                <input type="text" class="form-control" name="account_number" id="account_number" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Remarks</label>
+                <input type="text" class="form-control" name="remarks" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Vice</label> <span>(Leave blank if no entry)</span>
+                <input type="text" class="form-control filter-employee-all" name="vice" autocomplete="off"/>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-info pull-right">Endorse Employee</button>
+    <br><br>
+    </form>
+    <hr>
+    <a href="{%  url 'print_endorsement_details' pk %}" target="_blank" class="btn btn-info"><i class="fas fa-print"></i> Print Endorsement</a>
+    <br><br>
+    <div class="table-responsive">
+        <table class="table table-bordered" id="table-endorsement-people" width="100%">
+            <thead>
+                <th>No.</th>
+                <th class="text-center">Last Name</th>
+                <th class="text-center">First Name</th>
+                <th class="text-center">M.I.</th>
+                <th class="text-center">Suffix</th>
+                <th class="text-center">Position</th>
+                <th class="text-center">Basic Monthly Salary</th>
+                <th class="text-center">Premium Rate</th>
+                <th class="text-center">Effectivity of Contract</th>
+                <th class="text-center">End of Contract</th>
+                <th class="text-center">Status of Employment</th>
+                <th class="text-center">Remarks</th>
+                <th class="text-center">Fund Charge / Prog / Proj</th>
+                <th class="text-center">Vice</th>
+                <th class="text-center">Account Number</th>
+            </thead>
+        </table>
+    </div>
+</div>
+{% block script %}
+<script>
+    $('#employee_name').on('change', function(){
+        var employee_name = $(this).val();
+        $.ajax({
+            'url': '{% url "get_employee_details_on_endorsement" %}',
+            'data': {
+                'employee_name': employee_name
+            },
+            type: 'POST',
+            success: function(response) {
+                $('#position').select2('val', response.position);
+                $('#basic_salary').val(response.salary);
+                $('#empstatus').select2('val', response.empstatus);
+                $('#fundcharge').select2('val', response.fundcharge);
+                $('#account_number').val(response.account_number);
+            }
+        })
+    });
+
+    $('#addEmployeeForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var url = '{% url "endorsement_details" pk %}';
+        var title = "Are you sure";
+        var text = "You want to add this employee on the endorsement";
+        var modal_id = "#create-endorsement-modal";
+        var table_id = "#table-endorsement-people"
+        var select2_class = '.select'
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, select_class: select2_class, modal_id: modal_id});
+    });
+
+    $('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $(".filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#table-endorsement-people').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 1, 'asc' ]],
+        'ajax': {
+            'url': '/api/endorsement/employee/?format=datatables&pk={{ pk }}',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return '<a href="javascript:;" data-toggle="modal" data-target="#edit-details-endorsement-modal" data-role="edit" data-id="'+ data +'">Edit</a>'
+                },
+                'className': 'text-center'
+            },
+            {'data': 'last_name', 'className': 'text-center', 'name': 'emp.pi.user.last_name' },
+            {'data': 'first_name', 'className': 'text-center', 'name': 'emp.pi.user.last_name' },
+            {'data': 'middle_name',
+                'render': function(data, type, row, meta) {
+                    return (data) ? data[0] : 'N/A'
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'suffix',
+                'render': function(data, type, row, meta) {
+                    return (data) ? data : 'N/A'
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'position', 'className': 'text-center', 'searchable': false },
+            {'data': 'basic_salary', 'className': 'text-center'},
+            {'data': 'premium_rate', 'className': 'text-center' },
+            {'data': 'effectivity_contract', 'className': 'text-center' },
+            {'data': 'end_of_contract', 'className': 'text-center' },
+            {'data': 'empstatus', 'className': 'text-center', 'searchable': false },
+            {'data': 'remarks', 'className': 'text-center' },
+            {'data': 'fundcharge', 'className': 'text-center', 'searchable': false },
+            {'data': 'vice', 'className': 'text-center' },
+            {'data': 'account_number', 'className': 'text-center', 'searchable': false },
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        $('#edit-details-endorsement-content').load('/endorsement/details/edit/' + id);
+    });
+</script>
+{% endblock %}

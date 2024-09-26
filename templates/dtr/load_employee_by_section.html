@@ -1,0 +1,53 @@
+<form id="generateDTRForm" target="_blank" method="post">
+{% csrf_token %}
+<button type="button" id="btn-generate" class="btn btn-info pull-right">Generate</button>
+<br><br><br>
+<input type="hidden" value="{{ start_date }}" name="start_date_hidden" id="generate_start_date">
+<input type="hidden" value="{{ end_date }}" name="end_date_hidden" id="generate_end_date">
+<table class="table table-bordered">
+    <tbody>
+        <tr>
+            <td class="text-center" width="5%">
+                <input type="checkbox" name="to_include_all" checked>
+            </td>
+            <td class="text-center" width="35%"><strong>EMPLOYEE NAME</strong></td>
+            <td class="text-center" width="30%"><strong>POSITION</strong></td>
+            <td class="text-center" width="30%"><strong>EMPLOYMENT STATUS</strong></td>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td class="text-center">
+                <input type="checkbox" class="to_include" name="to_include[]" value="{{ row.id }}" checked>
+            </td>
+            <td>{{ row.pi.user.get_fullname_formatted|upper }}</td>
+            <td class="text-center">{{ row.position.acronym|upper }}</td>
+            <td class="text-center">{{ row.empstatus.name|upper }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<br>
+</form>
+{% block script %}
+<script>
+    $(':checkbox[name=to_include_all]').click (function () {
+        $('.to_include').prop('checked', this.checked);
+    });
+
+    $('#btn-generate').on('click', function(){
+        Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to generate the selected employees' daily time records from "+$('#generate_start_date').val()+" to "+$('#generate_end_date').val()+"?",
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		    	$('#generateDTRForm').submit();
+		    }
+		});
+    });
+</script>
+{% endblock %}

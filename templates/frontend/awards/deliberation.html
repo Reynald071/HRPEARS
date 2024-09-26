@@ -1,0 +1,330 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Deliberation</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    Awards
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Deliberation</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-5 ml-0">
+	<div class="row">
+        <div class="col-md-12">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+                    <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="filter">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Year</label>
+                                <input type="number" class="form-control" step="1" min="1900" max="{% now 'Y' %}" name="year" id="year" autocomplete="off" value="{% if request.POST.year %}{{ request.POST.year}}{% else %}{% now 'Y' %}{% endif %}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select class="form-control select" name="category" id="category" required>
+                                    <option></option>
+                                    {% for row in category %}
+                                        <option value="{{ row.id }}">{{ row.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Awards</label>
+                                <select class="form-control select" name="awards" id="awards" required></select>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>&nbsp;</label>
+                            <div class="btn-group form-control p-0 border-0" role="group" aria-label="..">
+                                <button type="submit" class="btn btn-info">
+                                    <span class="loading open-circle" style="display:none;"></span> Generate
+                                </button>
+                                <a href="{% url 'deliberation' %}" type="button" class="btn btn-default">Reset</a>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                    {% if toggle %}
+                        {% if data %}
+                            {% if criteria %}
+                                <form id="saveDeliberationForm">
+                                {% csrf_token %}
+                                    <input type="hidden" name="year" value="{{ year }}">
+                                    <input type="hidden" name="category" value="{{ ctgy }}">
+                                    <input type="hidden" name="awards" value="{{ awrd }}">
+                                    <div class="table-responsive">
+                                    <table class="table table-bordered" id="generatedtable">
+                                        <tr>
+                                            <th class="text-center" style="width:5% !important; overflow:hidden; text-overflow:ellipsis; vertical-align:middle;" rowspan="2">#</th>
+                                            <th class="text-left capslock" style="vertical-align:middle;" colspan="{% if awards.category.needs_title %}2{% else %}1{% endif %}">Nominees for {{ awards.name }}</th>
+
+                                            <th class="text-center capslock" style="vertical-align:middle;" colspan="{{ criteria|length }}">CRITERIA</th>
+                                            <th class="text-center" rowspan="2" style="vertical-align:middle;">REMARKS</th>
+                                        </tr>
+                                        <tr>
+                                            {% if awards.category.needs_title %}
+                                            <th class="text-left" style="width:20%; vertical-align:middle;">NAME OF {{ awards.category.name|upper }}</th>
+                                            <th class="text-center" style="width:20%; vertical-align:middle;">TEAM LEADER</th>
+                                            {% else %}
+                                            <th class="text-left" style="width:20%; vertical-align:middle;">NOMINEE</th>
+                                            {% endif %}
+
+                                            {% for c in criteria %}
+                                            <th class="text-center capslock" style="vertical-align:middle;">{{ c.name }}<br>({{ c.percentage }}%)</th>
+                                            {% endfor %}
+                                        </tr>
+                                    {% for row in data %}
+                                        <tr>
+                                            <td class="text-center">{{ forloop.counter }}</td>
+                                            {% if awards.category.needs_title %}
+                                            <td class="text-left">{{ row.title }}</td>
+                                            <td class="text-center">{{ row.nominee.pi.user.first_name|title }} {{ row.nominee.pi.user.middle_name|to_middleinitial|title }} {{ row.nominee.pi.user.last_name|title }}</td>
+                                            {% else %}
+                                            <td class="text-left">{{ row.nominee.pi.user.first_name|title }} {{ row.nominee.pi.user.middle_name|to_middleinitial|title }} {{ row.nominee.pi.user.last_name|title }}</td>
+                                            {% endif %}
+
+                                            {% for c in criteria %}
+                                                <td class="text-center" style="padding:0px; vertical-align:middle;">
+                                                    <input type="hidden" name="criteria_id[]" class="form-control" style="border:none;" value="{{ c.id }}">
+                                                    <input type="hidden" name="nominee_id[]" class="form-control" style="border:none;" value="{{ row.id }}">
+
+                                                    {% get_grade_of_nominee row.id c.id request.session.emp_id as grd %}
+                                                    <input type="number" step="1" min="0" max="{{ c.percentage }}" name="grade[]" class="form-control text-center" style="border:none; background-color:transparent;" value="{{ grd }}" {% if not awards.status %}readonly title="Award is now inactive. Please contact the Awards Administrator."{% endif %}>
+                                                </td>
+                                            {% endfor %}
+
+                                            <td class="text-center">
+                                                <input type="hidden" name="remarks_nominee_id[]" class="form-control" style="border:none;" value="{{ row.id }}">
+                                                {% get_remarks_of_nominee row.id request.session.emp_id as rmrk %}
+                                                <textarea name="remarks[]" class="form-control" style="border:none; resize: vertical; min-height:50; height:50;">{{ rmrk }}</textarea>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </table>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-info">Save</button>
+                                    </div>
+                                </form>
+                            {% else%}
+                                <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Deliberation is not possible because there were no criteria set for this award.</span>
+                            {% endif %}
+                        {% else%}
+                            {% if not notpost %}
+                            <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Deliberation is not possible because there were no nominees for this award.</span>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        {% if data %}
+                            {% if graders %}
+                                <form action="{% url 'print_deliberation_results' %}" method="POST" target="_blank">
+                                {% csrf_token %}
+                                    <input type="hidden" name="year" value="{{ year }}">
+                                    <input type="hidden" name="category" value="{{ ctgy }}">
+                                    <input type="hidden" name="awards" value="{{ awrd }}">
+                                    <div class="table-responsive">
+                                    <table class="table table-bordered" id="table-top-three">
+                                        <tr>
+                                            <th class="text-center" style="width:5% !important; overflow:hidden; text-overflow:ellipsis; vertical-align:middle;" rowspan="2">#</th>
+                                            <th class="text-left capslock" style="vertical-align:middle;" colspan="{% if awards.category.needs_title %}2{% else %}1{% endif %}">Nominees for {{ awards.name }}</th>
+                                            <th class="text-center" style="width:5% !important; overflow:hidden; text-overflow:ellipsis; vertical-align:middle;" rowspan="2">AVERAGE SCORE</th>
+                                        </tr>
+                                        <tr>
+                                            {% if awards.category.needs_title %}
+                                                <th class="text-left" style="width:20%; vertical-align:middle;">NAME OF {{ awards.category.name|upper }}</th>
+                                                <th class="text-center" style="width:20%; vertical-align:middle;">TEAM LEADER</th>
+                                            {% else %}
+                                                <th class="text-left" style="width:20%; vertical-align:middle;">NOMINEE</th>
+                                            {% endif %}
+                                        </tr>
+                                    {% get_top_three_for_consolidation data as top_three %}
+                                    {% for row in data %}
+                                        {% get_average_grade_for_consolidation row.id as avescore %}
+                                        {% if avescore in top_three %}
+                                            <tr>
+                                                <td class="text-center">{{ forloop.counter }}</td>
+                                                {% if awards.category.needs_title %}
+                                                    <td class="text-left">{{ row.title }}</td>
+                                                    <td class="text-center">{{ row.nominee.pi.user.first_name|title }} {{ row.nominee.pi.user.middle_name|to_middleinitial|title }} {{ row.nominee.pi.user.last_name|title }}</td>
+                                                {% else %}
+                                                    <td class="text-left">{{ row.nominee.pi.user.first_name|title }} {{ row.nominee.pi.user.middle_name|to_middleinitial|title }} {{ row.nominee.pi.user.last_name|title }}</td>
+                                                {% endif %}
+
+                                                <td class="text-center bold" style="vertical-align:middle;">
+                                                    {{ avescore }}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                    </table>
+                                    </div>
+                                </form>
+                            {% else%}
+                                <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Deliberation is not possible because there were no criteria set for this award.</span>
+                            {% endif %}
+                        {% else%}
+                            {% if not notpost %}
+                            <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Deliberation is not possible because there were no nominees for this award.</span>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function sortTable() {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("table-top-three");
+        switching = true;
+        /*Make a loop that will continue until no switching has been done:*/
+        while (switching) {
+            //start by saying: no switching is done:
+            switching = false;
+            rows = table.rows;
+            /*Loop through all table rows (except the first, which contains table headers):*/
+            for (i = 2; i < rows.length - 1; i++) {
+                //start by saying there should be no switching:
+                shouldSwitch = false;
+                /*Get the two elements you want to compare, one from current row and one from the next:*/
+                x = rows[i].getElementsByTagName("TD")[{% if awards.category.needs_title %}3{% else %}2{% endif %}];
+                y = rows[i + 1].getElementsByTagName("TD")[{% if awards.category.needs_title %}3{% else %}2{% endif %}];
+                //check if the two rows should switch place:
+                if (Number(x.innerHTML) < Number(y.innerHTML)) {
+                    //if so, mark as a switch and break the loop:
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+            if (shouldSwitch) {
+                /*If a switch has been marked, make the switch and mark that a switch has been done:*/
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    }
+
+    $(document).ready(function(){
+        {% if not notpost %}
+            sortTable();
+        {% endif %}
+    });
+
+    $('#category').on('select2:select', function(e){
+        $.ajax({
+            url: "{% url 'check_awards' %}",
+            data: {
+                category: $(this).val(),
+                year: $('#year').val()
+            },
+            type: "POST",
+            success: function(response){
+                if (response.data){
+                    var data = response.data;
+                    $('#awards').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['awards_name'],data[i]['id']);
+                        $('#awards').append(newOption);
+                    }
+                    {% if request.POST.awards %}
+                        $('#awards').select2('val','{{ request.POST.awards }}');
+                    {% else %}
+                        $('#awards').select2('val','');
+                    {% endif %}
+                }
+            }
+        });
+    });
+
+    $('#year').on('input', function(e){
+        $.ajax({
+            url: "{% url 'check_awards' %}",
+            data: {
+                category: $('#category').val(),
+                year: $(this).val()
+            },
+            type: "POST",
+            success: function(response){
+                if (response.data){
+                    var data = response.data;
+                    $('#awards').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['awards_name'],data[i]['id']);
+                        $('#awards').append(newOption);
+                    }
+                    {% if request.POST.awards %}
+                        $('#awards').select2('val','{{ request.POST.awards }}');
+                    {% else %}
+                        $('#awards').select2('val','');
+                    {% endif %}
+                }
+            }
+        });
+    });
+
+    $('#saveDeliberationForm').on('submit', function(e){
+    	var form = new FormData(this);
+	    e.preventDefault();
+		Swal.fire({
+		    title: "Are you sure",
+		    text: "You want to save this changes?",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "save_deliberation" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "You have successfully saved your changes.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                });
+            }
+		});
+    });
+
+    {% if request.POST.category %}
+        $('#category').val('{{ request.POST.category }}').trigger('change').trigger('select2:select');
+    {% else %}
+        $('#category').val('').trigger('change');
+    {% endif %}
+</script>
+{% endblock %}

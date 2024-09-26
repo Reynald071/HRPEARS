@@ -1,0 +1,72 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Update Organization</h1>
+        <ol class="breadcrumb">
+			<li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Libraries
+            </li>
+            <li class="breadcrumb-item">
+                Others
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'organization' %}">Organization</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Update</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content">
+	<div class="ibox">
+		<div class="ibox-title">
+			<h5>Organization Details</h5>
+
+		</div>
+		<div class="ibox-content">
+			<form id="submitForm" novalidate="">
+				{% csrf_token %}
+				{{ form.org_name|as_crispy_field }}
+				{{ form.org_status|as_crispy_field }}
+				<button type="submit" class="btn btn-info">Submit</button>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$('#submitForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		$.ajax({
+			url: window.location.pathname,
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				$('.error').remove();
+
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else {
+                    window.location = "/backend/organization/";
+                }
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+</script>
+{% endblock %}

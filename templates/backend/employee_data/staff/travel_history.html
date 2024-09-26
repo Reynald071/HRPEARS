@@ -1,0 +1,128 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">View Travel History</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-employees' %}">Employees</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Travel History</strong>
+            </li>
+        </ol>
+    </div>
+</div>  
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h3 class="bold">Profile Information</h3>
+                </div>
+                <div class="ibox-content">
+                    <center>
+                        <img loading="lazy"  src="{{ employee.picture.url }}" id="picture" class="img-circle" style="width: 150px; height: 150px; object-fit: cover; margin-bottom: 10px;">
+                        <br><br>
+                        <h3 class="no-margins"><strong>{{ employee.pi.user.first_name|upper }} {{ employee.pi.user.middle_name|to_middleinitial }} {{ employee.pi.user.last_name|upper }}</strong></h3>
+                        <p>Name</p>
+                        <h3 class="no-margins">{{ employee.position.name|upper }}</h3>
+                        <p>Position</p>
+                        <h3 class="no-margins">{{ employee.empstatus.name|upper }}</h3>
+                        <p>Employment Status</p>
+                    </center>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-9">
+        <div class="ibox">
+            <div class="ibox-title">
+                <div class="row">
+                    <div class="col-md-12">
+                    <div class="pull-left"></div>
+                    <div class="pull-right">
+                        Showing {{ travel_history.start_index }} - {{ travel_history.end_index }} of {{ travel_history.paginator.count }} entries&emsp;
+                        <div class="btn-group">
+                            {% if travel_history.has_other_pages %}
+                              {% if travel_history.has_previous %}
+                                <a class="btn btn-white" href="?page={{ travel_history.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                              {% else %}
+                                <a class="btn btn-white disabled">Previous</a>
+                              {% endif %}
+                            {% for row in travel_history.paginator.page_range %}
+                                {% if travel_history.number == row %}
+                                    <a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                {% elif row > travel_history.number|add:-3 and row < travel_history.number|add:3 %}
+                                    <a class="btn btn-white" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                {% endif %}
+                            {% endfor %}
+                              {% if travel_history.has_next %}
+                                <a class="btn btn-white" href="?page={{ travel_history.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                              {% else %}
+                                <a class="btn btn-white disabled">Next</a>
+                              {% endif %}
+                            {% endif %}
+                        </div>
+                        <a class="btn btn-white" href="{% url 'travel-history' %}">Refresh</a>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <div class="table-responsive">
+                <table class="table table-bordered" style="white-space: normal !important;">
+                    <thead>
+                        <tr>
+                            <th class="text-left">ACTION</th>
+                            <th width="10%">TRACKING NO.</th>
+                            <th width="10%">MERGE IN</th>
+                            <th class="text-left" width="20%">PLACE</th>
+                            <th class="text-left" width="15%">DATE</th>
+                            <th class="text-left" width="20%">PURPOSE</th>
+                            <th class="text-left" width="20%">EXPECTED OUTPUT</th>
+                            <th class="text-left">MEANS OF TRANSPORTATION</th>
+                            <th class="text-center">CLAIMS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in travel_history %}
+                        <tr>
+                            {% check_to_attachment row.detail.rito_id as check_to_attachment %}
+                            <td class="text-left">
+                                {% if check_to_attachment.0 == True %}
+                                <a target="_blank" href="{{ check_to_attachment.1.url }}">Download</a>
+                                {% endif %}
+                            </td>
+                            <td><a href="{% if row.detail.rito.tracking_merge %}{% url 'generate-to' row.detail.rito.tracking_merge %}{% else %}{% url 'generate-to' row.detail.rito.tracking_no %}{% endif %}" target="_blank">{{ row.detail.rito.tracking_no }}</a></td>
+                            <td><a href="{% if row.detail.rito.tracking_merge %}{% url 'generate-to' row.detail.rito.tracking_merge %}{% else %}{% url 'generate-to' row.detail.rito.tracking_no %}{% endif %}" target="_blank">{{ row.detail.rito.tracking_merge }}</a></td>
+                            <td class="text-left">{{ row.detail.place }}</td>
+                            <td class="text-left">
+                                {% if row.detail.inclusive_from == row.detail.inclusive_to %}
+                                {{ row.detail.inclusive_from }}
+                                {% else %}
+                                {{ row.detail.inclusive_from }} - {{ row.detail.inclusive_to }}
+                                {% endif %}
+                            </td>
+                            <td class="text-left">{{ row.detail.purpose }}</td>
+                            <td class="text-left">{{ row.detail.expected_output }}</td>
+                            <td class="text-left">{{ row.detail.mot.name }}</td>
+                            <td class="text-center">{{ row.detail.claims.name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

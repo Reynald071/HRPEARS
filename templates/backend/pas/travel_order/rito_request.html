@@ -1,0 +1,647 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<style>
+	.flex-grow { flex: 1; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">Travel Requests</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					Admin
+				</li>
+				<li class="breadcrumb-item">
+					Travel Management
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>Travel Requests</strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+				<button class="btn btn-info" data-toggle="modal" data-target="#merge"><i class="fas fa-object-group"></i> Merge</button>
+				<button class="btn btn-default" data-toggle="modal" data-target="#undo_merge"><i class="fas fa-undo"></i> Undo Merge</button>
+				<button type="button" class="btn btn-success" data-toggle="modal" data-target="#generate-summary-modal"><i class="fas fa-chart-area"></i> Generate Summary</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+	<div class="row" style="margin-top:20px;">
+		<div class="col-md-12">
+			<div style="display: flex; flex-wrap: wrap; gap: 30px;">
+				<div class="small-box bg-success flex-grow">
+					<div class="inner pl-3">
+                        <p class="mb-2" style="font-size: 12px;">Travel requests approved</p>
+                        <h1><strong id="total_tr_approved"></strong></h1>
+                    </div>
+				</div>
+				<div class="small-box bg-info flex-grow">
+					<div class="inner pl-3">
+                        <p class="mb-2" style="font-size: 12px;">Travel requests pending</p>
+                        <h1><strong id="total_tr_pending"></strong></h1>
+                    </div>
+				</div>
+				<div class="small-box bg-info flex-grow">
+					<div class="inner pl-3">
+                        <p class="mb-2" style="font-size: 12px;">TRs pending for TO generation</p>
+                        <h1><strong id="total_tr_pending_for_generation"></strong></h1>
+                    </div>
+				</div>
+				<div class="small-box bg-warning flex-grow">
+					<div class="inner pl-3">
+                        <p class="mb-2" style="font-size: 12px;">Travel requests cancelled</p>
+                        <h1><strong id="total_tr_cancelled"></strong></h1>
+                    </div>
+				</div>
+				<div class="small-box bg-info flex-grow">
+					<div class="inner pl-3">
+                        <p class="mb-2" style="font-size: 12px;">Travel orders ongoing</p>
+                        <h1><strong id="total_tos_ongoing"></strong></h1>
+                    </div>
+				</div>
+				<div class="small-box bg-success flex-grow">
+					<div class="inner pl-3">
+                        <p class="mb-2" style="font-size: 12px;">Travel orders approved</p>
+                        <h1><strong id="total_tos_approved"></strong></h1>
+                    </div>
+				</div>
+				<div class="small-box bg-warning flex-grow">
+					<div class="inner pl-3">
+                        <p class="mb-2" style="font-size: 12px;">Travel orders cancelled</p>
+                        <h1><strong id="total_tos_cancelled"></strong></h1>
+                    </div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<br>
+	<div class="row">
+	<div class="col-md-9">
+		<div class="card card-info card-outline">
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered table-hover" id="table-workflow" width="100%">
+						<thead>
+							<tr>
+								<th class="text-left" width="10%">ACTION</th>
+								<th width="10%">TRACKING NO.</th>
+								<th width="10%">MERGE IN</th>
+								<th width="25%">REQUESTED BY / APPROVED BY (TR)</th>
+								<th style="width:35%;" width="30%">STAFF</th>
+								<th class="text-center" width="15%">DATE FILED</th>
+								<th class="text-right" width="25%">TR STATUS | TO STATUS | FILE</th>
+                                <th>REMARKS</th>
+								<th class="display-none">STATUS</th>
+                                <th class="display-none">ID</th>
+                                <th class="display-none">JUSTIFICATION</th>
+								<th class="display-none">TR APPROVER</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-3">
+		<div class="card" style="margin-bottom:30px !important;">
+			<div class="card-header title bg-info">
+				<h5 class="card-title font-weight-bold">FILTER TRAVEL</h5>
+			</div>
+			<div class="card-body">
+				<h4>By keyword</h4>
+				<div class="form-group">
+					<div class="input-group">
+						<input type="text" class="form-control b-r-sm" id="keyword" autocomplete="off"> <span class="input-group-append">
+						<button type="button" class="btn btn-info" id="filter-keyword">Filter</button> </span>
+					</div>
+				</div>
+				<h4>By year</h4>
+				<div class="form-group">
+					<div class="input-group">
+						<input type="text" class="form-control b-r-sm" id="year" value="{{ current_year }}" autocomplete="off"> <span class="input-group-append">
+						<button type="button" class="btn btn-info" id="filter-year">Filter</button> </span>
+					</div>
+				</div>
+				<h4>By status</h4>
+				<div class="list-group">
+					<a class="list-group-item list-group-item-action active" id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+					<a class="list-group-item list-group-item-action" id="status-2" href="javascript:;" data-role="status" data-filter="2">Pending</a>
+					<a class="list-group-item list-group-item-action" id="status-to-generation" href="javascript:;" data-role="status" data-filter="to-generation">Pending for TO generation</a>
+					<a class="list-group-item list-group-item-action" id="status-3" href="javascript:;" data-role="status" data-filter="3">Approved</a>
+					<a class="list-group-item list-group-item-action" id="status-5" href="javascript:;" data-role="status" data-filter="5">Canceled</a>
+				</div>
+			</div>
+		</div>
+		<div class="card">
+			<div class="card-header title bg-info">
+				<h5 class="card-title font-weight-bold">TODAY'S ACTIVITIES</h5>
+			</div>
+			<div class="card-body">
+				<table class="table">
+					<tr>
+						<td style="border:0px;">Travel requests pending for TO generation</td>
+						<th class="text-right" style="border:0px;"><span id="total_tr_requests_today"></span></th>
+					</tr>
+					<tr>
+						<td>Travel orders approved</td>
+						<th class="text-right"><span id="total_tos_approved_today"></span></th>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+	</div>
+</div>
+<div class="modal" id="merge" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">MERGE TRAVEL ORDER</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+			<form id="mergeTracking">
+			{% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Merge In<span class="text-danger">*</span></label>
+                    <input type="text" class="form-control tracking_no" name="merge_in" id="tracking_no" autocomplete="off">
+					<small class="text-danger">Tracking Number to retain.</small>
+				</div>
+					<label>Tracking Number(s) <span class="text-danger">*</span></label>
+					<div id="items">
+						<div class="form-group">
+							<div class="input-group">
+								<input type="text" class="form-control typeahead_2 tracking_no b-r-sm" name="tracking_no[]" required autocomplete="off"> <span class="input-group-append"> <button type="button" class="btn btn-info add"><i class="fas fa-plus"></i></button> </span>
+							</div>
+						</div>
+					</div>
+				<div class="form-group pull-right">
+                    <button type="submit" class="btn btn-info">
+						<span class="loading open-circle" style="display:none;"></span> Save changes
+					</button>
+                </div>
+                <br><br>
+			</div>
+			</form>
+			<div class="modal-footer" style="text-align: left;">
+				<small class="label label-default" style="font-size: 12px;"><strong>Note: </strong> Once saved, travel requests will be automatically approved.</small>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="undo_merge" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">UNDO MERGE TRAVEL ORDER</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+			<form id="undomergeTracking">
+			{% csrf_token %}
+            <div class="modal-body">
+				<div class="form-group">
+					<label>Tracking Number(s)<span class="text-danger">*</span></label>
+					<input type="text" class="form-control typeahead_2 tracking_no" name="undo_tracking_no" id="undo_tracking_no" required autocomplete="off">
+				</div>
+				<div class="form-group pull-right">
+                    <button type="submit" class="btn btn-danger">Unmerge All</button>
+                    <button type="button" id="view-merge-btn" class="btn btn-info">Search</button>
+                </div>
+                <br><br>
+				<div id="view-merge-content"></div>
+			</div>
+			</form>
+			<div class="modal-footer" style="text-align: left;">
+				<small class="label label-default" style="font-size: 12px;"><strong>Note: </strong> Once unmerged, travel requests will be automatically turn to previous status.</small>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="to_attachment_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">TRAVEL ORDER ATTACHMENT</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+			<div id="to_attachment_content"></div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="tracking_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">TRAVEL TRACKING FOR <span id="tracking_no_text"></span></h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+			<div id="tracking-content"></div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="generate-summary-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">GENERATE TRAVEL ORDER SUMMARY</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="generateSummaryForm" action="{% url 'travel_order_summary' %}" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Start Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="start_date" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="end_date" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Generate</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="to_requirements_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+					REQUIREMENTS
+					<p><small>Upload requirements for Travel Order.</small></p>
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+			<div id="to_requirements_content"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $.get('{% url "filter_tracking_no" %}', function(data){
+		$(".tracking_no").typeahead({
+			source:data,
+		});
+	},'json');
+
+
+	$('.add').on('click', function(){
+		$('#items').append('<div class="form-group"><div class="input-group minus-remove"><input type="text" class="form-control typeahead_2 tracking_no b-r-sm" name="tracking_no[]" required autocomplete="off"> <span class="input-group-append"> <button type="button" class="btn btn-danger remove_field"><i class="fa fa-minus"></i></button> </span></div></div></div>');
+
+		$.get('{% url "filter_tracking_no" %}', function(data){
+			$(".tracking_no").typeahead({
+				source:data,
+			});
+	    },'json');
+	});
+
+	$('#items').on("click", ".remove_field", function(e){
+		e.preventDefault();
+		$(this).parent().parent().remove();
+	});
+
+    $('#mergeTracking').on('submit', function(e){
+    	e.preventDefault();
+    	var form = new FormData(this);
+    	form.append('tracking_no[]', $('#tracking_no').val());
+		$.ajax({
+			url: '{% url "merge_travel" %}',
+			data: form,
+			type: 'POST',
+			beforeSend: function() {
+				$('.loading').css('display', '');
+                $('.btn').prop("disabled", true);
+			},
+			success: function(response){
+				if(response.data == "success"){
+					$('#mergeTracking').trigger('reset');
+					Swal.fire("Good job!", "You have successfully merge the travel request.", "success");
+                	$('#table-workflow').DataTable().ajax.reload();
+					$('#merge').modal('hide');
+				}
+			},
+			complete: function () {
+				$('.loading').css('display', 'none');
+                $('.btn').prop("disabled", false);
+			},
+			cache       : false,
+            contentType : false,
+            processData : false,
+		});
+    });
+
+    $('#undomergeTracking').on('submit', function(e){
+    	e.preventDefault();
+    	var form = new FormData(this);
+    	var id = $('#undo_tracking_no').val();
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "You want to undo all merges under travel order no. " + id + "?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+				url: '{% url "undo_merge_travel_all" %}',
+				data: form,
+				type: 'POST',
+				cache       : false,
+				contentType : false,
+				processData : false,
+			});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  text: "All merges under Travel Order No. " + response.value.tracking_no + " were successfully unmerged.",
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#undomergeTracking').trigger('reset');
+						$('#table-workflow').DataTable().ajax.reload();
+						$('#undo_merge').modal('hide');
+					}
+				});
+			}
+		});
+    });
+
+	$(document).on('click', 'a[data-role=cancel]', function(){
+    	var id = $(this).data('filter');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "You want to cancel this travel order no. " + id + "?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "{% url 'cancel_travel_order' %}",
+				data: {
+					id: id
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  text: "Travel Order No. " + response.value.tracking_no + " was successfully cancelled.",
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#table-workflow').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+
+    $(document).on('click', 'a[data-role=uncancel]', function(){
+    	var id = $(this).data('filter');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "You want to uncancel this travel order no. " + id + "?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		data: {id: id},
+		  		url: "{% url 'uncancel_travel_order' %}",
+		  		type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+		    if (response.value.data == 'success'){
+		    	Swal.fire({
+				  title: "Good job!",
+				  text: "Travel Order No. " + response.value.tracking_no + " was successfully cancelled.",
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#table-workflow').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+
+    $(document).ready(function(){
+    	function globalInitialization(year){
+    		$.get({
+    			url: '/backend/travel-total/' + year,
+    			success: function(response){
+    				$('#total_tr_requests_today').text(response.total_tr_requests_today)
+    				$('#total_tr_pending').text(response.total_tr_pending)
+    				$('#total_tr_approved').text(response.total_tr_approved)
+    				$('#total_tr_cancelled').text(response.total_tr_cancelled)
+    				$('#total_tr_pending_for_generation').text(response.total_tr_pending_for_generation)
+    				$('#total_tos_approved_today').text(response.total_tos_approved_today)
+    				$('#total_tos_ongoing').text(response.total_tos_ongoing)
+    				$('#total_tos_approved').text(response.total_tos_approved)
+    				$('#total_tos_cancelled').text(response.total_tos_cancelled)
+    			}
+    		});
+    	}
+
+    	globalInitialization("{{ current_year }}")
+
+    	$('#table-workflow').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 5, 'desc' ]],
+			'lengthMenu': [ 25, 50, 100 ],
+			'ajax': {
+				'url': '/api/travel/admin/?format=datatables&status=workflow&year='+ $('#year').val(),
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{'data': 'admin_action', 'searchable': false },
+				{'data': 'tracking_no',
+                    render: function(data, type, row, meta) {
+                        return "<a href='javascript:;' data-role='tracking-details' data-content='" + data + "' data-id='"+ row['id'] +"'>"+ data +"</a>";
+                    }
+                },
+				{'data': 'tracking_merge' },
+				{'data': 'requesting_office',
+                    render: function(data, type, row, meta) {
+					    return data
+					},
+                    'searchable': false
+                },
+				{'data': 'passengers', 'searchable': false },
+				{'data': 'date', 'className': 'text-center' },
+				{'data': 'travel_status', 'className': 'text-right', 'searchable': false },
+                {'data': 'travel_confirmation',
+                    render: function(data, type, row, meta) {
+                    	if(row['travel_justification']) {
+							return data + row['travel_justification'];
+                        } else if(data) {
+							return data;
+                        } else {
+							return '';
+                        }
+                    },
+                    'className': 'text-center',
+                    'searchable': false
+                },
+				{'data': 'status', 'className': 'display-none' },
+                {'data': 'id', 'className': 'display-none' },
+                {'data': 'travel_justification', 'className': 'display-none', 'searchable': false },
+				{'data': 'rito_approver', 'className': 'display-none', 'searchable': false },
+			],
+		});
+
+        $(document).on('click', 'a[data-role=tracking-details]', function(){
+            var pk = $(this).data('id');
+            var tracking_no = $(this).data('content');
+            $('#tracking-content').load('/backend/tracking/travel-request/' + pk, function(){
+                $('#tracking_no_text').text(tracking_no);
+                $('#tracking_modal').modal('show');
+            });
+        });
+
+		$('#filter-year').on('click', function(){
+			if($('#year').val() == "") {
+				Swal.fire("Ooops!", "Fields on filter by year cannot be blank.", "warning");
+			} else {
+				$('#table-workflow').DataTable().ajax.url('/api/travel/admin/?format=datatables&status=workflow&year=' + $('#year').val()).load();
+				$('#status-all').click();
+				$('#keyword').val('');
+				globalInitialization($('#year').val());
+			}
+		});
+
+		$(document).on('click', 'a[data-role=to_attachment]', function(){
+			$('#to_attachment_content').load('/backend/attachment/travel/' + $(this).data('filter'));
+			$('#to_attachment_modal').modal('show');
+		});
+
+		$(document).on('click', 'a[data-role=to_requirements]', function(){
+			$('#to_requirements_content').load('/attachment/travel/' + $(this).data('filter'));
+			$('#to_requirements_modal').modal('show');
+		});
+
+		$(document).on('click', 'a[data-role=status]', function(){
+			$('.list-group-item').removeClass('active');
+			$('#status-'+$(this).data('filter')).addClass('active');
+			if($(this).data('filter') == 'all'){
+				var table = $('#table-workflow').DataTable();
+				table.clear();
+				table.ajax.url('/api/travel/admin/?format=datatables&status=workflow&year=' + $('#year').val()).load(function() {
+					globalInitialization($('#year').val());
+				});
+			}else if($(this).data('filter') == 'to-generation'){
+				var table = $('#table-workflow').DataTable();
+				table.clear();
+				table.ajax.url('/api/travel/admin/?format=datatables&status=to-generation&year=' + $('#year').val()).load(function() {
+					globalInitialization($('#year').val());
+				});
+			}else{
+				var table = $('#table-workflow').DataTable();
+				table.clear();
+				table.ajax.url('/api/travel/admin/?format=datatables&status=' + $(this).data('filter') + '&year=' + $('#year').val()).load(function() {
+					globalInitialization($('#year').val());
+				});
+			}
+		});
+
+		$('#filter-keyword').on('click', function(){
+			if($('#keyword').val() == "") {
+				Swal.fire("Ooops!", "Fields on filter by keyword cannot be blank.", "warning");
+			} else {
+				var table = $('#table-workflow').DataTable();
+				table.clear();
+				table.ajax.url('/api/travel/admin/?format=datatables&keyword='+$('#keyword').val() + '&year=' + $('#year').val()).load(function() {
+					$('#total-requests').text(table.rows().count());
+				});
+			}
+		});
+
+        document.getElementById('generateSummaryForm').addEventListener('submit', function(event){
+            event.preventDefault();
+            var win = window.open('', '_blank');
+            this.target = '_blank';
+            win.location.href = this.action + "?" + new URLSearchParams(new FormData(this)).toString();
+        });
+
+        $('#view-merge-btn').on('click', function(){
+        	var tracking_no = $('#undo_tracking_no').val();
+			$('#view-merge-content').load('/backend/undo/merge/travel/' + tracking_no);
+			$('#undo_merge > .modal-dialog').addClass('modal-xl');
+		});
+
+		$('#undo_merge').on('hidden.bs.modal', function(){
+			$('#undo_merge > .modal-dialog').removeClass('modal-xl');
+			$('#view-merge-content').html('');
+			$('#table-workflow').DataTable().ajax.reload();
+		});
+
+		$(document).on('click', 'a[data-role=unmerge]', function(){
+			var tracking_no = $(this).data('content');
+			$.ajax({
+				url: '/backend/undo/merge/travel/'+ tracking_no +'?unmerge=yes',
+				beforeSend: function() {
+					$('.loading').css('display', '');
+					$('a[data-role=unmerge]').attr('hidden', '');
+				},
+				success: function(response){
+					if(response.data == "success"){
+						$('#table-merge').DataTable().ajax.url('/api/travel/admin/?format=datatables&status=merge&year='+ $('#year').val() +'&tracking-no='+ response.tracking_no).load();
+					}
+				},
+				complete: function () {
+					$('.loading').css('display', 'none');
+					$('a[data-role=unmerge]').removeAttr('hidden');
+				},
+				cache       : false,
+				contentType : false,
+				processData : false,
+			});
+		});
+    });
+</script>
+{% endblock %}

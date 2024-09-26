@@ -1,0 +1,342 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<style>
+.bootstrap-tagsinput {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  display: inline-block;
+  padding: 4px 6px;
+  color: #2d4350;
+  vertical-align: middle;
+  border-radius: 4px;
+  max-width: 100%;
+  line-height: 22px;
+  cursor: text;
+}
+.bootstrap-tagsinput input {
+  border: none;
+  box-shadow: none;
+  outline: none;
+  background-color: transparent;
+  padding: 0 6px;
+  margin: 0;
+  width: auto;
+  max-width: inherit;
+  font-size: 15px;
+}
+.bootstrap-tagsinput.form-control input::-moz-placeholder {
+  color: #777;
+  opacity: 1;
+}
+.bootstrap-tagsinput.form-control input:-ms-input-placeholder {
+  color: #777;
+}
+.bootstrap-tagsinput.form-control input::-webkit-input-placeholder {
+  color: #777;
+}
+.bootstrap-tagsinput input:focus {
+  border: none;
+  box-shadow: none;
+}
+.bootstrap-tagsinput .tag {
+  margin-right: 2px;
+  color: white;
+}
+.bootstrap-tagsinput .tag [data-role="remove"] {
+  margin-left: 8px;
+  cursor: pointer;
+}
+.bootstrap-tagsinput .tag [data-role="remove"]:after {
+  content: "x";
+  padding: 0px 2px;
+}
+.bootstrap-tagsinput .tag [data-role="remove"]:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.bootstrap-tagsinput .tag [data-role="remove"]:hover:active {
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+</style>
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Covid Database</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Administrator</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Covid Assistance</strong>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Sweap</a>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            {% if user|check_permission:'superadmin' or user|check_permission:'staffing' %}
+			<div class="btn-group">
+				<a class="btn btn-default" href='#' data-role="view">Add Staff</a>
+				<button type="button" data-toggle="dropdown" class="btn btn-info dropdown-toggle"><span class="loading open-circle" style="display:none;"></span><i class="fas fa-file-export"></i> Action <span class="caret"></span></button>
+	            <ul class="dropdown-menu">
+	                <li><a href="{% url 'printreport' %}" target="blank">Print</a></li>
+	            </ul>
+			</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-right">
+              			<a class="btn btn-default" href='{% url "covidassistance" %}'>Refresh</a>
+					</div>
+					<br>
+					<br>
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-hover" width="100%" id="covass">
+							<thead>
+								<tr>
+									<th class="capslock">Action</th>
+									<th class="capslock">Emp ID</th>
+									<th class="capslock">Full Name</th>
+									<th class="capslock">Sex</th>
+									<th class="capslock">Division</th>
+									<th class="capslock">Email</th>
+									<th class="capslock">Phone Number</th>
+									<th class="capslock">Case Of Employee</th>
+									<th class="capslock">Start Quarantine</th>
+									<th class="capslock">End Quarantine</th>
+									<th class="capslock">Provision</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="myModal" class="modal fade" role="dialog" aria-labelledby="myExtraLargeModalLabel" data-backdrop="static"  aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+        	<h3 class="modal-title">Confirmed Case</h3>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+          <div class="modal-body" id="load_data">
+			<form id="covsubmit">
+				<div class="table-responsive">
+			    <table width="100%" cellspacing="0" class="table table-bordered notboldandbig" id="input_fields_wrap">
+			        <tr>
+			            <td style="display: none;">
+			                <input type="text" id="empid" name="id">
+			            </td>
+			            <td>
+			                <label class="col-form-label">Full Name<span class="asteriskField">*</span> </label>
+			                <input type="text" class="form-control typeahead" name="fname" style="width:100%;" autocomplete="off">
+			            </td>
+			            <td>
+			                <label class="col-form-label">Case Category<span class="asteriskField">*</span> </label>
+			                <input type="text" class="form-control" name="case" value="CONFIRMED" style="width:100%;" readonly>
+			            </td>
+			            <td>
+			                <label class="col-form-label">Date Quarantine<span class="asteriskField">*</span> </label>
+			                <input type="date" class="form-control" name="start" style="width:100%;" required>
+			            </td>
+			            <td>
+			                <label class="col-form-label">Date Ended<span class="asteriskField">*</span></label>
+			                <input type="date" class="form-control" name="end" style="width:100%;" required>
+			            </td>
+			        </tr>
+			    </table>
+				</div>
+			    <div class="modal-footer">
+			        <button type="submit" class="btn btn-info">Save</button>
+			        <button class="btn btn-light" data-dismiss="modal">Close</button>
+			    </div>
+			</form>
+          </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script src="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.4.2/bootstrap-tagsinput.min.js"></script>
+<script>
+		datatable_coviass();
+		function datatable_coviass(){
+			$('#covass').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'order': [[ 0, 'desc' ]],
+				'lengthMenu': [25,50,100],
+				'ajax': {
+					'url': '/api/hrws/covid_view?format=datatables',
+					'type': 'GET',
+					'beforeSend': function (request) {
+						request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+					}
+				},
+				'fnCreatedRow': function (row, data, index) {
+					$(row).attr('id', data['id']);
+				},
+				'columns': [
+					{'data': 'id',
+						'render': function(data,type,row,meta){
+							if(row['provision'] == 0){
+								return "<a href='#' data-role='insertassistance' data-id="+ data + ">Sanitationkit</a>"
+							}else if(row['provision'] ==1){
+								return "<a href='#' data-role='insertassistance' data-id="+ data + ">Financial Assistance</a>"
+							}else{
+								return '<td></td>'
+							}
+						}
+					},
+					{'data':'emp_id','className': 'text-center', 'name':'emp.id_number'},
+					{'data': 'full_name','class':'text-center','name':'emp.pi.user.first_name','name':'emp.pi.user.last_name'},
+					{'data':'sex', 'className': 'text-center', 'name':'emp.pi.gender',						
+						'render': function(data,type,row,meta){
+							if(row['sex'] == 1){
+								return '<td>Male</td>'
+							}else{
+								return '<td>Female</td>'
+							}
+						}
+					},
+					{'data':'division', 'className': 'text-center', 'name':'emp.section.div.div_name'},
+					{'data':'email','className':'text-center', 'name':'emp.pi.user.email'},
+					{'data':'phone','searchable':false},
+					{'data':'caseofemp'},
+					{'data':'start'},
+					{'data':'end'},
+					{'data':'provision', 'className': 'text-center', 'name':'provision',						
+						'render': function(data,type,row,meta){
+							if(row['provision'] == 1){
+								return "<span class='label label-primary'>Sanitationkit</span>"
+							}else if(row['provision'] ==2){
+								return "<span class='label label-primary'>Financial Assistance</span>"
+							}else{
+								return "<span class='label label-Default'>No provision</span>"
+							}
+						}
+					},
+				],
+			});
+		}
+    $(document).on('click','a[data-role=view]', function(){ // FOR MODAL PASS TO DIFFERENT MODAL
+      $('#myModal').modal('show')
+    });
+
+	$(".typeahead, .typeahead2, .typeahead3").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+	$(document).on('click', 'a[data-role=insertassistance]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "The employee Received Provision?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: "{% url 'updatecovid' %}",
+					data: {
+						id: id
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					if (data.data == 'success'){
+						Swal.fire({
+						  title: "Good job!",
+						  text: data.Message ,
+						  icon: "success",
+						  confirmButtonColor: "#3498DB",
+						  allowOutsideClick: false,
+						}).then((result) => {
+		    				if (result.isConfirmed) {
+						  		$('#covass').DataTable().ajax.reload();
+						  	}
+						});
+					}
+				});
+			}
+		});
+    });
+    $('#covsubmit').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "You want to submit this Covid Assistance?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'insertassistance' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully added data",
+                      icon: "info",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#covass').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

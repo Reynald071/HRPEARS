@@ -1,0 +1,488 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Payroll List</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                <strong>List</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button class="btn btn-info" data-role="draft"><i class="fas fa-drafting-compass"></i> Draft Column Group</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    {% if request.GET.search and data.paginator.count == 0 %}
+                        <div class="col-xs-12">
+                            <a href="{% url 'payroll_list' %}" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+                        </div>
+                        <br>
+                        <hr>
+                    {% else %}
+                        <div class="pull-left">
+                            <a class="btn btn-info" data-toggle="modal" data-target="#add"><i class="fas fa-calendar-alt"></i> Applicable Period</a>
+                            <a class="btn btn-warning" data-toggle="modal" data-target="#print-obs-dv"><i class="fas fa-print"></i> Print OBS/DV Form</a>
+                        </div>
+                        <div class="pull-right" style="padding-right:5px">
+                        Showing {{ data.start_index }} - {{ data.end_index }} of {{ data.paginator.count }} entries&emsp;
+                            <div class="btn-group">
+                            {% if data.has_other_pages %}
+                                {% if data.has_previous %}
+                                    <a class="btn btn-default" href="?page={{ data.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Previous</a>
+                                {% endif %}
+                                {% for row in data.paginator.page_range %}
+                                    {% if data.number == row %}
+                                        <a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% elif row > data.number|add:-3 and row < data.number|add:3 %}
+                                        <a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if data.has_next %}
+                                    <a class="btn btn-default" href="?page={{ data.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Next</a>
+                                {% endif %}
+                            {% endif %}
+                            </div>
+                            <a class="btn btn-default" href="{% url 'payroll_list' %}">Refresh</a>
+                        </div>
+                        <br><br><br>
+                    {% endif %}
+                    {% if request.GET.search and data.paginator.count == 0 %}
+                        <div style="padding:0px 15px !important; text-align:center;">
+                            <div class="row" style="padding-bottom:15px">
+                                <div class="" style="text-align:center;">
+                                    <img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="height:250px; width:auto; margin: 0 auto; object-fit:cover;">
+                                </div>
+                                <div class="row col-md-6 col-md-offset-3">
+                                    <form method="get">
+                                        <div class="input-group form-group">
+                                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" placeholder="Search employee.." name="search" value="{{ request.GET.search }}">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="row col-md-6 col-md-offset-3">
+                                    <p>
+                                        Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.search %}{{ request.GET.search }}{% endif %}'</i>. Please try another keyword.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                    <form method="get">
+                        <div class="input-group form-group">
+                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search Payroll" name="search" value="{{ request.GET.search }}" autocomplete="off">
+                        </div>
+                    </form>
+                    {% if data %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="text-left">ACTION</th>
+                                    <th>PURPOSE</th>
+                                    <th>DESCRIPTION</th>
+                                    <th class="text-center">PERIOD COVERED FROM</th>
+                                    <th class="text-center">PERIOD COVERED TO</th>
+                                    <th class="text-center">DATE CREATED</th>
+                                    <th class="text-right">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in data %}
+                                <tr id="{{ row.id }}">
+                                    <td class="text-left">
+                                        <a href="javascript: void(0);" data-role="edit" data-id="{{ row.id }}">Edit</a> |
+                                        <a href="{% url 'generate_template' row.id %}" class="okButton">Download Template</a> |
+                                        <a href="{% url 'payrolL_list_view' row.id %}">Details</a>
+                                    </td>
+                                    <td data-target="purpose" style="display:none;">{{ row.purpose_id }}</td>
+                                    <td>{{ row.purpose.name }}</td>
+                                    <td>{{ row.description }}</td>
+                                    <td style="display:none;" data-target="period_from">{{ row.period_from|date:'Y-m-d' }}</td>
+                                    <td style="display:none;" data-target="period_to">{{ row.period_to|date:'Y-m-d' }}</td>
+                                    <td style="display:none;" data-target="description">{{ row.description }}</td>
+                                    <td style="display:none;" data-target="empstatus">{{ row.empstatus_id }}</td>
+                                    <td style="display:none;" data-target="payroll_status">{{ row.payroll_status }}</td>
+                                    <td class="text-center">{{ row.period_from|date:"m/d/Y" }}</td>
+                                    <td class="text-center">{{ row.period_to|date:"m/d/Y" }}</td>
+                                    <td class="text-center">{{ row.date_created|date:"m/d/Y H:i:s A" }}</td>
+                                    <td class="text-right">
+                                        {% if row.status == 1 %}
+                                        <span class="label label-primary">Active</span>
+                                        {% else %}
+                                        <span class="label label-default">Inactive</span>
+                                        {% endif %}</td>
+                                </tr>
+                                {% endfor %}
+                             </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" style="margin: 0 auto;">
+                        <p class="text-center">There is no data to show you right now. </p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">APPLICABLE PERIOD</h3>
+
+            </div>
+            <form id="submitForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="panel-group" id="accordion">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#detailsCollapse"><strong>DETAILS</strong></a>
+                            </div>
+                        </div>
+                        <div id="detailsCollapse" class="panel-collapse collapse in">
+                            <div class="panel-body">
+                                <input type="hidden" name="update_id" id="update_id" value="0">
+                                <div class="form-group">
+                                    <label>Purpose</label>
+                                    <select class="form-control select" name="purpose" id="purpose" required>
+                                        <option></option>
+                                        {% for ct in category %}
+                                        <optgroup label="{{ ct.name }}">
+                                            {% for row in purpose %}
+                                            {% if row.category_id == ct.id %}
+                                            <option value="{{ row.id }}">{{ row.name }}</option>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label>Filter</label>
+                                            <select class="form-control select" name="filter_dates" id="filter_dates" required>
+                                                <option></option>
+                                                <option value="1">In Between</option>
+                                                <option value="2">Month/Year</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="show_filter_dates"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea class="form-control" name="description" id="description" rows="3"></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <label>Employment Status</label>
+                                            <select class="form-control select" name="empstatus" id="empstatus">
+                                                {% for row in employee_group %}
+                                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <label>Payroll Status</label>
+                                            <select class="form-control select" name="payroll_status" id="payroll_status" required>
+                                                <option></option>
+                                                <option value="1">Incumbent</option>
+                                                <option value="2">Separated</option>
+                                                <option value="3">On-Hold</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#draftCollapse"><strong>DRAFT COLUMNS</strong></a>
+                            </div>
+                        </div>
+                        <div id="draftCollapse" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="form-group">
+                                            <label>Column Group</label>
+                                            <select class="form-control select" id="column_group">
+                                                <option></option>
+                                                {% for row in column_group %}
+                                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="column-count: 3;">
+                                    <input type="checkbox" name="selectAllColumns"> Select All <br>
+                                    {% for row in columns %}
+                                    {% if row.column_type_id %}
+                                    <input type="checkbox" name="column[]" class="column" id="column{{ row.id }}" value="{{ row.id }}"> {{ row.attribute }} <br>
+                                    {% else %}
+                                    <input type="checkbox" name="column[]" class="column" id="column{{ row.id }}" value="{{ row.id }}" onclick="return false;" checked> {{ row.attribute }} <br>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-info pull-right">
+                    <span class="loading open-circle" style="display:none;"></span> Save changes
+                </button>
+                <br><br>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="draft-columns" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">DRAFT COLUMN GROUP</h3>
+
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="print-obs-dv" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">PRINT OBS/DV Form</h3>
+
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'print_obs_dv_form' %}" method="POST" target="_blank">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>DV Number</label>
+                    <input type="text" class="form-control" name="dv_number" id="dv_number" autocomplete="off">
+                </div>
+                <div class="form-group pull-right">
+                    <button type="submit" class="btn btn-info">Print</button>
+                </div>
+                <br><br>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('.okButton').click(function() {
+        setTimeout(function () {
+           $(".loader-wrapper").fadeOut("slow");
+        }, 500);
+    });
+
+    $(':checkbox[name=selectAllColumns]').click (function () {
+        $('.column').prop('checked', this.checked);
+    });
+
+    $(document).on('click', 'button[data-role=draft]', function(){
+        $('#draft-columns').modal('show').find('.modal-body').empty();
+        $('#draft-columns').modal('show').find('.modal-body').load("{% url 'draft_column_group' %}");
+    });
+
+     $('#submitForm').on('submit', function(e){
+    	var form = new FormData(this);
+	    e.preventDefault();
+	    $.ajax({
+            data        : form,
+            url         : '{% url "payroll_list" %}',
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false,
+            beforeSend: function(){
+                $('.loading').css('display', '');
+                $('.btn').prop("disabled", true);
+            },
+            success: function(response){
+                if (response.data == "success"){
+                    window.location.href = "{% url 'payroll_list' %}";
+                }
+            },
+            complete: function(){
+                $('.loading').css('display', 'none');
+                $('.btn').prop("disabled", false);
+            }
+        });
+    });
+
+    in_between = '<div class="col-sm-4">\
+                    <div class="form-group">\
+                        <label>Period Covered From</label>\
+                        <input type="date" class="form-control" name="period_from" id="period_from">\
+                    </div>\
+                </div>\
+                <div class="col-sm-4">\
+                    <div class="form-group">\
+                        <label>Period Covered To</label>\
+                        <input type="date" class="form-control" name="period_to" id="period_to">\
+                    </div>\
+                </div>';
+
+    month_year = '<div class="col-sm-5">\
+                    <div class="form-group">\
+                        <label>Month/Year</label>\
+                        <input type="month" class="form-control" name="period_from" id="month_year">\
+                    </div>\
+                </div>';
+
+    $(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        var dv_no = $('#'+id).children('td[data-target=dv_no]').text();
+        var purpose = $('#'+id).children('td[data-target=purpose]').text();
+        var period_from = $('#'+id).children('td[data-target=period_from]').text();
+        var period_to = $('#'+id).children('td[data-target=period_to]').text();
+        var description = $('#'+id).children('td[data-target=description]').text();
+        var payroll_status = $('#'+id).children('td[data-target=payroll_status]').text();
+        var empstatus = $('#'+id).children('td[data-target=empstatus]').text();
+
+        $('#update_id').val(id);
+        $('#dv_no').val(dv_no);
+        $('#purpose').select2('val', purpose);
+
+        $('#filter_dates').select2('val', 1);
+        $('#show_filter_dates').empty();
+		$('#show_filter_dates').append(in_between);
+
+        $('#period_from').val(period_from);
+        $('#period_to').val(period_to);
+        $('#description').val(description);
+        $('#payroll_status').select2('val', payroll_status);
+        $('#empstatus').select2('val', empstatus);
+        getColumns(id);
+        $('#add').modal('show');
+    });
+
+    function getColumns(payroll_id){
+        $.ajax({
+            data: {
+                'payroll_id': payroll_id
+            },
+            url: "{% url 'get_column' 1 %}",
+            type: "POST",
+            success: function(response){
+                var data = response.data;
+
+                for(var i = 0; i < data.length; i++){
+                    $('#column'+data[i]['column_id']).prop('checked', true);
+                }
+            }
+        });
+    }
+
+    $('#column_group').on('change', function(){
+        $.ajax({
+            data: {
+                'cg_id': $(this).val()
+            },
+            url: "{% url 'get_column' 2 %}",
+            type: "POST",
+            success: function(response){
+                var data = response.data;
+
+                for(var i = 0; i < data.length; i++){
+                    $('#column'+data[i]['column_id']).prop('checked', true);
+                }
+            }
+        });
+    });
+
+    $('#add').on('hidden.bs.modal', function () {
+        $('#update_id').val(0);
+    });
+
+    $('#filter_dates').on('change', function(){
+		if ($(this).val() == "1"){
+            $('#show_filter_dates').empty();
+			$('#show_filter_dates').append(in_between);
+
+            $('#purpose').on('change', function(){
+			    onChangeDescription(1, 0);
+			});
+
+			$('#period_to').on('change', function(){
+			    onChangeDescription(1, 0);
+			});
+	    } else if ($(this).val() == "2"){
+	        $('#show_filter_dates').empty();
+			$('#show_filter_dates').append(month_year);
+
+            $('#purpose').on('change', function(){
+			    onChangeDescription(2, $(this).val());
+			});
+
+			$('#month_year').on('change', function(){
+				onChangeDescription(2, $(this).val());
+			});
+	    }
+	});
+
+	function onChangeDescription(value, month){
+	    const monthNames = ["January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"
+            ];
+
+	    if (value == 1){
+            period_from = new Date($('#period_from').val());
+            period_to = new Date($('#period_to').val());
+
+            $('#description').val($('#purpose option:selected').text() + ": " + monthNames[period_from.getMonth()] + " " + period_from.getDate() + "-" + period_to.getDate() + "," + period_to.getFullYear());
+	    } else if (value == 2){
+	        month_year = new Date(month);
+
+            $('#description').val($('#purpose option:selected').text() + ": " + monthNames[month_year.getMonth()] + " " + month_year.getFullYear());
+	    }
+	}
+</script>
+{% endblock %}

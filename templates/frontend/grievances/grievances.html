@@ -1,0 +1,668 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Grievances</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Grievances</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-xs-4">
+        <div class="title-action">
+            {% if user|check_permission:'grievance_officer' or user|check_permission:'superadmin' or user|check_permission:'grievance_administrator' %}
+				<button class="btn btn-info" data-toggle="modal" data-target="#grievance-modal"><i class="fas fa-plus"></i> New Grievance</button>
+			{% endif %}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="table-responsive">
+						<table class="table table-hover table-bordered" id="table-grievances" width="100%">
+							<thead>
+								<tr>
+									<th class="display-none">Id</th>
+									<th width="10%">Action</th>
+									<th class="text-center">Tracking No</th>
+									<th>Client</th>
+									<th class="text-center">Contact No</th>
+									<th class="text-center" style="width:15%;">Address</th>
+									<th class="text-center" style="width:15%;">Query</th>
+									<th class="text-center">Media</th>
+									<th class="text-center">Date Recorded</th>
+									<th class="text-right">Status</th>
+									<th class="display-none">Status Id</th>
+									<th class="display-none">Latest Status Employee Id</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="ibox">
+						<div class="ibox-title bg-primary">
+							<h5>FILTER</h5>
+						</div>
+						<div class="ibox-content">
+							<h4>By status</h4>
+							<div class="list-group">
+								<a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+								<a class="list-group-item"  id="status-1" href="javascript:;" data-role="status" data-filter="1">Resolved</a>
+								<a class="list-group-item"  id="status-2" href="javascript:;" data-role="status" data-filter="2">Referred</a>
+								<a class="list-group-item" id="status-3" href="javascript:;" data-role="status" data-filter="3">For follow-up</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="ibox">
+						<div class="ibox-title bg-primary">
+							<h5>OVERVIEW</h5>
+						</div>
+						<div class="ibox-content">
+							<form id="getGrievanceOverview">
+								{% csrf_token %}
+								<div class="row doughnutChartDiv" style="margin-bottom:10px;">
+									<canvas id="doughnutChart" class="chartjs-render-monitor" style="display: block;"></canvas>
+								</div>
+								<div class="row" style="">
+									<div class="col-md-10">
+										Parameter
+										<select class="form-control select" name="parameter">
+											<option value="media">Media</option>
+											<option value="section">Section</option>
+											<option value="province">Province</option>
+											<option value="status">Status</option>
+										</select>
+									</div>
+									<div class="col-md-2" style="padding-left:0px;">
+										&nbsp;
+										<button class="form-control" type="submit"><i class="fa fa-search"></i></button>
+									</div>
+								</div>
+								<div class="row" style="margin-top:10px;">
+									<div class="col-md-12">
+										Scope
+										<div id="reportrange" class="form-control opensright" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #e7eaec; width: 100%">
+											<i class="fa fa-calendar"></i>&nbsp;
+											<span></span> <i class="fa fa-caret-down pull-right" style="margin-top:5px;"></i>
+											<input type="date" name="dt_from" id="dt_from" class="form-control" style="display:none;">
+											<input type="date" name="dt_to" id="dt_to" class="form-control" style="display:none;">
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal" id="view-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">VIEW GRIEVANCE QUERY</h3>
+				<small>View specific grievance query details and information.</small>
+	        </div>
+	        <div class="modal-body">
+			</div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="grievance-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">GRIEVANCE QUERY</h3>
+				<small>Please provide specific information about the query.</small>
+	        </div>
+	        <form id="submitGrievanceForm" enctype="multipart/form-data">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+	        	<div class="row">
+		        	<div class="form-group col-md-3">
+						<label>First Name<span class="text-danger">*</span></label>
+						<input type="text" class="form-control" name="first_name" required>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Middle Name</label>
+						<input type="text" class="form-control" name="middle_name">
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Last Name<span class="text-danger">*</span></label>
+						<input type="text" class="form-control" name="last_name" required>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Ext Name</label>
+    					<select class="form-control select" name="ext_name">
+    						<option></option>
+    						{% for row in extension %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-4">
+		        		<label>Contact Number</label>
+						<input type="text" class="form-control" name="contact_number">
+		        	</div>
+		        	<div class="form-group col-md-4">
+		        		<label>Date Received<span class="text-danger">*</span></label>
+						<input type="datetime-local" class="form-control" name="date_received" required>
+		        	</div>
+		        	<div class="form-group col-md-4">
+		        		<label>Media<span class="text-danger">*</span></label>
+    					<select class="form-control input-sm select" name="media" required>
+    						<option></option>
+    						{% for row in media %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-3">
+		        		<label>Province</label>
+    					<select class="form-control input-sm select" id="rs-province" name="ra_prov_code">
+    						<option></option>
+    						{% for row in provs %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>City / Municipality</label>
+                        <select class="form-control input-sm select" id="rs-city" name="ra_city" disabled></select>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Barangay</label>
+                        <select class="form-control input-sm select" id="rs-brgy" name="ra_brgy" disabled></select>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Detailed Address (if any)</label>
+						<input type="text" class="form-control" name="detailed_address">
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12" style="margin-bottom:0;">
+		        		<label>Details of Query<span class="text-danger">*</span></label>
+						<textarea class="form-control" style="resize:vertical; min-height:100px;" name="details_of_query" required></textarea>
+						<input type="checkbox" checked class="checkboxinput" style="margin-top:15px;" name="is_confidential" id="is_confidential">
+		        		<label>Is this confidential?</label>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-body" style="border-top:1px solid #e5e6e7;">
+	        	<div class="row">
+		        	<div class="form-group col-md-3">
+		        		<label>Action<span class="text-danger">*</span></label>
+    					<select class="form-control input-sm select" id="status" name="status" required>
+    						<option></option>
+    						{% for row in status %}
+    						<option value="{{ row.id }}" data-id="{{ row.need_emp }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Classification<span class="text-danger">*</span></label>
+    					<select class="form-control input-sm select" name="classification" required>
+    						<option></option>
+    						{% for row in classification %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+		        	<div class="form-group col-md-3">
+						<div id="gri_off" style="display:none;">
+							<label>Grievance Officer<span class="text-danger">*</span></label>
+							<input type="text" class="form-control typeahead_2" name="grievance_officer" id="grievance_officer">
+						</div>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Date Resolved</label>
+						<input type="datetime-local" class="form-control" name="date_resolved">
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Action Taken or Answer to Query<span class="text-danger">*</span></label>
+						<textarea class="form-control" style="resize:vertical; min-height:100px;" name="action_taken" required></textarea>
+		        	</div>
+		        	<div class="form-group col-md-12" style="margin-bottom:0;">
+		        		<label>Attachments</label>
+						<div class="custom-file">
+							<input type="file" name="attachment" id="attachment" class="form-control custom-file-input-multiple" multiple>
+							<label for="attachment" class="custom-file-label">Choose files..</label>
+						</div>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="update-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">UPDATE STATUS OF GRIEVANCE QUERY</h3>
+				<small>Change current status of specific grievance query.</small>
+	        </div>
+	        <form id="updateLeaveForm" enctype="multipart/form-data">
+			<div class="modal-body" id="modal-body">
+
+			</div>
+	        <div class="modal-body" style="border-top:1px solid #e5e6e7;">
+	        	{% csrf_token %}
+				<input type="hidden" class="form-control" name="gr_id" id="gr_id">
+	        	<div class="row">
+		        	<div class="form-group col-md-3">
+		        		<label>Action<span class="text-danger">*</span></label>
+    					<select class="form-control input-sm select" name="update_status" id="update_status" required>
+    						<option></option>
+    						{% for row in status %}
+    						<option value="{{ row.id }}" data-id="{{ row.need_emp }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Classification<span class="text-danger">*</span></label>
+    					<select class="form-control input-sm select" name="update_classification" id="update_classification" required>
+    						<option></option>
+    						{% for row in classification %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+		        	<div class="form-group col-md-3">
+						<div id="update_gri_off" style="display:none;">
+							<label>Grievance Officer<span class="text-danger">*</span></label>
+							<input type="text" class="form-control typeahead_2" name="update_grievance_officer" id="update_grievance_officer">
+						</div>
+		        	</div>
+		        	<div class="form-group col-md-3">
+		        		<label>Date Resolved</label>
+						<input type="datetime-local" class="form-control" name="update_date_resolved" id="update_date_resolved">
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Action Taken or Answer to Query<span class="text-danger">*</span></label>
+						<textarea class="form-control" style="resize:vertical; min-height:100px;" name="action_taken" required></textarea>
+		        	</div>
+		        	<div class="form-group col-md-12" style="margin-bottom:0;">
+		        		<label>Attachments</label>
+						<div class="custom-file">
+							<input type="file" name="attachment" id="attachment_update" class="form-control custom-file-input-multiple" multiple>
+							<label for="attachment_update" class="custom-file-label">Choose files..</label>
+						</div>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$.get('{% url "filter_employee_by_permission" "grievance_officer" "false" %}', function(data){
+		$(".typeahead_2").typeahead({
+			source:data,
+			highlight: true
+		});
+    },'json');
+
+    GrievanceTable();
+
+	function GrievanceTable(){
+		$('#table-grievances').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 8, 'desc' ]],
+			'ajax': {
+				'url': '/api/grievances/?format=datatables',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{'data': 'id', 'className': 'display-none', 'searchable': false },
+				{'data': 'get_latest_status',
+					'render': function(data, type, row, meta){
+						template = '<a data-toggle="modal" data-role="view" data-target="#view-modal" data-id="'+ row['id'] +'">View</a>';
+
+						if(row['get_employee_by_latest_status'] == '{{ request.session.emp_id }}' && row['get_latest_status_id'] != 1) {
+							template += ' | <a data-toggle="modal" data-role="update" data-target="#update-modal" data-id="' + row['id'] +'">Update</a>';
+						}
+						return template;
+					},
+					'searchable': false
+				},
+				{'data': 'tracking_no', 'className': 'text-center'},
+				{'data': 'client_name', 'name': 'client_fname, client_mname, client_lname', 'className': 'text-center' },
+				{'data': 'client_contactnumber', 'className': 'text-center' },
+				{'data': 'client_address', 'className': 'text-center' },
+				{'data': 'client_message',
+					'render': function(data, type, row, meta){
+						if (row['client_message'].length > 100){
+							return row['client_message'].slice(0, 80) + '.. <a data-toggle="modal" data-role="view" data-target="#view-modal" data-id="' + row['id'] +'"><em>Read more</em></a>';
+						}else {
+							return row['client_message'];
+						}
+					},
+					'className': 'text-center'
+				},
+				{'data': 'media_name', 'name': 'gmedia.name', 'className': 'text-center' },
+				{'data': 'datetime', 'className': 'text-center' },
+				{'data': 'status', 'className': 'text-right', 'searchable': false },
+				{'data': 'get_latest_status_id', 'className': 'display-none', 'searchable': false },
+				{'data': 'get_employee_by_latest_status', 'className': 'display-none', 'searchable': false }
+			],
+		});
+	}
+
+	$('#status').on('change', function(e){
+		if($(this).find(':selected').data('id') == 'True') {
+			$('#gri_off').css('display','block');
+			$('#grievance_officer').attr('required','required');
+		} else {
+			$('#gri_off').css('display','none');
+			$('#grievance_officer').removeAttr('required');
+		}
+	});
+
+	$('#update_status').on('change', function(e){
+		if($(this).find(':selected').data('id') == 'True') {
+			$('#update_gri_off').css('display','block');
+			$('#update_grievance_officer').attr('required','required');
+		} else {
+			$('#update_gri_off').css('display','none');
+			$('#update_grievance_officer').removeAttr('required');
+		}
+	});
+
+    $(document).on('click', 'a[data-role=update]', function(){
+        $('#update-modal').modal('show').find('#modal-body').empty();
+        $('#update-modal').modal('show').find('#modal-body').load("/grievances/view/" + $(this).data('id'));
+        $('#gr_id').val($(this).data('id'));
+    });
+
+    $(document).on('click', 'a[data-role=view]', function(){
+        $('#view-modal').modal('show').find('.modal-body').empty();
+        $('#view-modal').modal('show').find('.modal-body').load("/grievances/view/" + $(this).data('id'));
+    });
+
+    $(document).on('click', 'a[data-role=status]', function(){
+    	$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+    	if($(this).data('filter') == 'all'){
+    		$('#table-grievances').DataTable().ajax.url('/api/grievances/?format=datatables').load();
+    	}else{
+			$('#table-grievances').DataTable().ajax.url('/api/grievances/?format=datatables&status='+$(this).data('filter')).load();
+		}
+	});
+
+    $('#submitGrievanceForm').on('submit', function(e){
+    	var form = new FormData(this);
+	    e.preventDefault();
+		Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to write this grievance query?",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "grievance_module" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "Grievance query has been written and saved.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#submitGrievanceForm').trigger('reset');
+                    	$(".select").empty();
+                    	$('#grievance-modal').modal('hide');
+                        $('#table-grievances').DataTable().ajax.reload();
+                    }
+                });
+            }
+		});
+    });
+
+    $('#updateLeaveForm').on('submit', function(e){
+    	var form = new FormData(this);
+	    e.preventDefault();
+		Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to update this grievance query?",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "update_grievance" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "Grievance query has been updated.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                    	$('#updateLeaveForm').trigger('reset');
+                    	$(".select").empty();
+                    	$('#update-modal').modal('hide');
+                        $('#table-grievances').DataTable().ajax.reload();
+                    }
+                });
+            }
+		});
+    });
+
+	$(document).ready(function(){
+        $('#rs-province').on('change', function(e){
+            var rs_id = $(this).val();
+            $.ajax({
+                url: "{% url 'show-city' %}",
+                data: {
+                    prov_code: rs_id
+                },
+                type: "POST"
+            })
+            .done(function(data){
+                $('#rs-city').prop('disabled', false);
+                $('#rs-brgy').prop('disabled', false);
+
+                if (data.data){
+                    var data = data.data;
+
+                    $('#rs-city').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['city_name'],data[i]['id']);
+                        $('#rs-city').append(newOption);
+                    }
+                    $('#rs-city').select2('val','');
+
+                } else {
+                    $('#rs-city').val(null).trigger('change');
+                    $('#rs-brgy').val(null).trigger('change');
+                    $('#rs-city').prop('disabled', true);
+                    $('#rs-brgy').prop('disabled', true);
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#rs-city').on('change', function(e){
+            var rs_city_code = $(this).val();
+            $.ajax({
+                url: "{% url 'show-brgy' %}",
+                data: {
+                    city_code: rs_city_code
+                },
+                type: "POST"
+            })
+            .done(function(data){
+                if (data.data){
+                    var data = data.data;
+                    $('#rs-brgy').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['brgy_name'],data[i]['id']);
+                        $('#rs-brgy').append(newOption);
+                    }
+                    $('#rs-brgy').select2('val','');
+                } else {
+                    $('#rs-brgy').val(null).trigger('change');
+                }
+            });
+            e.preventDefault();
+        });
+	});
+</script>
+<script type="text/javascript">
+	$(function() {
+		var start = moment().subtract(6, 'days');
+		var end = moment();
+		function cb(start, end) {
+			$('#reportrange span').html(start.format('MMM DD YYYY') + '&emsp;-&emsp;' + end.format('MMM DD YYYY'));
+			$('#dt_from').val(start.format('YYYY-MM-DD'));
+			$('#dt_to').val(end.format('YYYY-MM-DD'));
+		}
+		$('#reportrange').daterangepicker({
+			startDate: start,
+			endDate: end,
+			opens: 'left',
+			drops: 'up',
+			ranges: {
+			   'Today': [moment(), moment()],
+			   'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+			   'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+			   'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+			   'This Month': [moment().startOf('month'), moment().endOf('month')],
+			   'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+			}
+		}, cb);
+		cb(start, end);
+	});
+
+	shuffle_array(background_colors);
+	var doughnutData = {
+		labels: [],
+		datasets: []
+	};
+	var doughnutOptions = {
+		responsive: true
+	};
+	var ctx4 = document.getElementById("doughnutChart").getContext("2d");
+	var chartInstance = new Chart(ctx4, {type: 'doughnut', data: doughnutData, options:doughnutOptions});
+
+	$('#getGrievanceOverview').on('submit', function(e){
+		e.preventDefault();
+		$.ajax({
+			data         : new FormData(this),
+			url          : '{% url "get-grievance-overview" %}',
+			type         : 'POST',
+			cache        : false,
+			contentType  : false,
+			processData  : false,
+			success 	 : function(result){
+				data = []
+				backgroundColor = []
+				doughnutData = {
+					labels: [],
+					datasets: []
+				};
+				shuffle_array(background_colors);
+				if(result.data.length > 0){
+					$('.doughnutChartDiv').css('display', 'block');
+					jQuery.each(result.data, function(index, item) {
+						var item_name = '';
+						$.ajaxSetup({async: false});
+						$.get("/grievance-get-province-name/"+item.name).done(function(r) {
+						    item_name = r.data;
+						});
+						doughnutData.labels.push(item_name);
+						data.push(item.num);
+						backgroundColor.push(background_colors[index]);
+					});
+					doughnutData.datasets.push({data, backgroundColor});
+					chartInstance.destroy();
+					chartInstance = new Chart(ctx4, {type: 'doughnut', data: doughnutData, options:doughnutOptions});
+				} else {
+					$('.doughnutChartDiv').css('display', 'none');
+				}
+			}
+		});
+    });
+
+	$(document).ready(function(){
+		$('#getGrievanceOverview').submit();
+	});
+</script>
+{% endblock %}

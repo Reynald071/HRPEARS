@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+{% load static %}
+{% load qr_code %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Certificates for Participants</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0px !important;;
+				padding: 35px !important;
+				border: 0.5px solid transparent;
+				height: 216mm !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		  	.blue{
+		  		color: #1d58a6 !important;
+		  	}
+		  	.gray{
+		  		color:#E8E8E8 !important;
+		  	}
+		}
+		@page {
+			size: auto;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">
+			<strong>
+                Certificates for Participants&emsp;
+                <small><em>Note: Paper size is Letter, margin is None</em></small>
+            </strong>
+		</a>
+		<ul class="navbar-nav ml-auto">
+			<li>
+				<div class="btn-group">
+					<button type="button" data-toggle="dropdown" class="btn btn-success dropdown-toggle"><span class="loading open-circle" style="display:none;"></span> <i class="fas fa-file"></i> Certificate Type <span class="caret"></span></button>
+					<div class="dropdown-menu">
+						{% for row in certificate_type %}
+						<a class="dropdown-item" href="javascript:;" data-role="certificate_type" data-title="{{ row.keyword|upper }}" data-name="{{ row.adjective }}">{{ row.keyword }}</a>
+						{% endfor %}
+					</div>
+				</div>
+				&emsp;
+			</li>
+			<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+    {% for row in participants %}
+        {% if forloop.first %}
+        <page size="letter" layout="landscape" class="page" style="padding: 35px; page-break-before: always;">
+            <div class="containerX" style="position: relative; border: 1px solid black; height: 99%;">
+                <img loading="lazy"  src="{% static 'image/certificate_header.png' %}" width="100%" style="margin-top: -15px;">
+                <p style="font-size: 15px; margin-top: -25px; color: black;" class="text-center mb-2">
+                    Republic of the Philippines<br>
+                    <strong>DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT</strong><br>
+                    Field Office Caraga<br>
+                    R. Palma Street, Butuan City
+                </p>
+                <p style="font-size: 40px; color: #1d58a6;" class="text-center blue">
+                    CERTIFICATE OF <span class="training_keyword blue">COMPLETION</span>
+                </p>
+                <p class="text-center" style="font-size: 15px;">
+                    This Certificate is presented to
+                </p>
+                <div class="font-adjustable text-center" style="width: 80%; margin: auto; height: 100px !important; font-size: 40px; color:black;">
+                    <div style="border: 2px solid black; width: 700px;"></div>
+                </div>
+                <p class="text-center" style="font-size: 15px; color: black; margin-top: -20px;">
+                    for successfully <span class="training_adjective">completing</span> the
+                </p>
+                <center>
+                <div class="font-adjustable-tttitle text-center" style="margin: auto; height: 60px !important; font-size: 20px; color: black; width: 95%;">
+                    <strong>{{ training.training.tt_name|upper }}</strong>
+                </div>
+                </center>
+                <p class="text-center" style="font-size: 15px; color: black;">
+                    held on {{ training.get_inclusive_dates }}, {% if training.is_online_platform %}via{% else %}at{% endif %} {{ training.venue }}.<br><br>
+                    Given this {{ training.end_date|date:'jS' }} day of {{ training.end_date|date:'F Y' }}.
+                </p><br><br><br>
+                <p style="font-size: 15px; position: absolute; color:#E8E8E8; margin-top: -50px; margin-left: 50px;" class="text-center gray">
+                    NOT VALID<br>
+                    WITHOUT A DRY SEAL
+                </p>
+                {% getemployeebyempid rd.emp_id as rd_obj %}
+                <div style="position: absolute; margin-left: 680px !important; margin-top: -50px;">
+                    {% getHash training.id as pk_training %}
+                    {% getHash row.emp_id as pk_id %}
+                    {% get_certificate_link "https://caraga-portal.dswd.gov.ph/learning-and-development/certificate-authenticity" pk_training 0 as qr_url %}
+                    {% qr_from_text qr_url size="T" format_dark_color="red" finder_dark_color="#1d58a6" %}
+                </div>
+                <div style="position: absolute; margin-left: 825px !important; margin-top: -30px;">
+                    <img loading="lazy"  src="{% static 'image/socotec.png' %}" style="width: 39mm;" id="iso-logo">
+                </div>
+                <p class="text-center" style="font-size: 20px; color: black;">
+                    <strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong><br>
+                    {{ rd.name }}
+                </p>
+            </div>
+        </page>
+        {% endif %}
+	{% endfor %}
+	{% for row in participants %}
+	<page size="letter" layout="landscape" class="page" style="padding: 35px; page-break-before: always;">
+		<div class="containerX" style="position: relative; border: 1px solid black; height: 99%;">
+			<img loading="lazy"  src="{% static 'image/certificate_header.png' %}" width="100%" style="margin-top: -15px;">
+			<p style="font-size: 15px; margin-top: -25px; color: black;" class="text-center mb-2">
+				Republic of the Philippines<br>
+				<strong>DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT</strong><br>
+				Field Office Caraga<br>
+				R. Palma Street, Butuan City
+			</p>
+			<p style="font-size: 40px; color: #1d58a6;" class="text-center blue">
+				CERTIFICATE OF <span class="training_keyword blue">COMPLETION</span>
+			</p>
+			<p class="text-center" style="font-size: 15px;">
+				This Certificate is presented to
+			</p>
+			<div class="font-adjustable text-center" style="width: 80%; margin: auto; height: 100px !important; font-size: 40px; color:black;">
+				<u><strong>{% if row.emp_id %}{{ row.emp.pi.user.get_fullname|upper }}{% else %}{{ row.participants_name }}{% endif %}</strong></u>
+			</div>
+			<p class="text-center" style="font-size: 15px; color: black; margin-top: -20px;">
+				for successfully <span class="training_adjective">completing</span> the
+			</p>
+			<center>
+			<div class="font-adjustable-tttitle text-center" style="margin: auto; height: 60px !important; font-size: 20px; color: black; width: 95%; margin-top: -10px;">
+				<strong>{{ training.training.tt_name|upper }}</strong>
+			</div>
+			</center>
+			<p class="text-center" style="font-size: 15px; color: black;">
+				held on {{ training.get_inclusive_dates }}, {% if training.is_online_platform %}via{% else %}at{% endif %} {{ training.venue }}.<br><br>
+				Given this {{ training.end_date|date:'jS' }} day of {{ training.end_date|date:'F Y' }}.
+			</p><br><br><br>
+			<p style="font-size: 15px; position: absolute; color:#E8E8E8; margin-top: -50px; margin-left: 50px;" class="text-center gray">
+				NOT VALID<br>
+				WITHOUT A DRY SEAL
+			</p>
+			{% getemployeebyempid rd.emp_id as rd_obj %}
+			<div style="position: absolute; margin-left: 680px !important; margin-top: -50px;">
+				{% getHash training.id as pk_training %}
+				{% getHash row.emp_id as pk_id %}
+				{% get_certificate_link "https://caraga-portal.dswd.gov.ph/learning-and-development/certificate-authenticity" pk_training pk_id as qr_url %}
+				{% qr_from_text qr_url size="T" format_dark_color="red" finder_dark_color="#1d58a6" %}
+			</div>
+			<div style="position: absolute; margin-left: 825px !important; margin-top: -30px;">
+				<img loading="lazy"  src="{% static 'image/socotec.png' %}" style="width: 39mm;" id="iso-logo">
+			</div>
+			<p class="text-center" style="font-size: 20px; color: black;">
+				<strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong><br>
+				{{ rd.name }}
+			</p>
+        </div>
+    </page>
+	{% endfor %}
+
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+	<script src="{% static 'js/textFit.min.js' %}"></script>
+	<script>
+		$(document).on('click', 'a[data-role=certificate_type]', function(){
+			$('.training_keyword').text($(this).data('title'));
+			$('.training_adjective').text($(this).data('name'));
+		});
+
+		textFit($('.font-adjustable'), {maxFontSize: 40});
+		textFit($('.font-adjustable-tttitle'), {maxFontSize: 25});
+	</script>
+</body>
+</html>

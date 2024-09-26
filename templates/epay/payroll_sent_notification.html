@@ -1,0 +1,204 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item active">Send Notification</li>
+            </ol>
+        </nav>
+        <div class="row mt-3">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <p><strong>MESSAGE INFORMATION</strong></p>
+                        <form id="sendNotificationForm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info btn-sm float-end" style="margin-top: -30px !important;"><i class="fas fa-paper-plane"></i> Send</button>
+                        <button type="button" class="btn btn-info btn-sm float-end" data-bs-toggle="modal" data-bs-target="#import-modal" style="margin-top: -30px !important; margin-right: 10px !important;"><i class="fas fa-file-import"></i> Bulk</button>
+                        <br>
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                <label>Purpose <span class="text-danger">*</span></label>
+                                <select class="form-control form-control-sm select" name="purpose" required>
+                                    <option></option>
+                                    {% for row in purpose %}
+                                    <option value="{{ row.name }}">{{ row.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-lg-4">
+                                <label>DV Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" name="dv_no" autocomplete="off" required>
+                            </div>
+                            <div class="col-lg-4">
+                                <label>Date Processed <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" name="date_processed" autocomplete="off" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-lg-6">
+                                <label>Period From <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" name="start_date" required>
+                            </div>
+                            <div class="col-lg-6">
+                                <label>Period To <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" name="end_date" required>
+                            </div>
+                        </div>
+                        <table class="table table-bordered">
+                            <thead>
+                                <th>
+                                    <center>
+                                        <input type="checkbox" class="form-check-input" data-role="selectAll">
+                                    </center>
+                                </th>
+                                <th>Employee Name</th>
+                                <th>Position</th>
+                                <th class="text-center">Section</th>
+                            </thead>
+                            <tbody>
+                                {% if employee %}
+                                {% for row in employee %}
+                                <tr>
+                                    <td>
+                                        <center>
+                                            <input type="checkbox" class="check-item" name="employee_name[]" value="{{ row.emp_id }}">
+                                        </center>
+                                    </td>
+                                    <td class="align-middle">{{ row.emp.pi.user.get_fullname|upper }}</td>
+                                    <td class="align-middle">{{ row.emp.position.name|upper }}</td>
+                                    <td class="align-middle text-center">{{ row.emp.section.sec_acronym|upper }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No data available.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <p><strong>SENT LOGS</strong></p>
+                        <a href="{% url 'view_payroll_sent_logs' %}" class="btn btn-info btn-sm float-end" style="margin-top: -35px !important;">View All</a>
+                        <br>
+                        {% if sms_logs %}
+                        <ul class="timeline-with-icons" style="margin-left: 20px;">
+                        {% for row in sms_logs %}
+                            {% if forloop.first %}
+                                <li class="timeline-item">
+                                    <div>
+                                        <span class="timeline-icon">
+                                            <i class="text-primary fa-sm fa-fw"></i>
+                                        </span>
+                                        <h6 class="text-blue">
+                                            <strong>
+                                            {{ row.dv_no }}<br>
+                                            {{ row.emp.pi.user.get_fullname|upper }}
+                                            </strong>
+                                        </h6>
+                                        <p class="text-muted">PERIOD DATE: {{ row.period_date }}</p>
+                                        <p>{{ row.date_sent }}</p>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="timeline-item">
+                                    <div>
+                                        <span class="timeline-icon">
+                                            <i class="text-primary fa-sm fa-fw"></i>
+                                        </span>
+                                        <h6>
+                                            <strong>
+                                            {{ row.dv_no }}<br>
+                                            {{ row.emp.pi.user.get_fullname|upper }}
+                                            </strong>
+                                        </h6>
+                                        <p class="text-muted">PERIOD DATE: {{ row.period_date }}</p>
+                                        <p>{{ row.date_sent }}</p>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% else %}
+                            No sent logs available yet.
+                        {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="import-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>BULK SEND</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="importForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="alert alert-info pb-0">
+                    <i class="fas fa-info-circle"></i>
+                    Important Note <br>
+                    <ul>
+                        <li>The "Period From" and "Period To" dates should be in the format "yyyy-mm-dd".</li>
+                    </ul>
+                </div>
+                <div class="form-group">
+                    <label>Upload Template <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control form-control-sm file-control" name="template_file" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{% static 'templates/bulk_send_payroll_notification_template.csv' %}" class="btn btn-light btn-sm" download>Download Template</a>
+                <button type="submit" class="btn btn-info btn-sm">Send</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(document).on('click', 'input[data-role=selectAll]', function(){
+        $('.check-item').prop('checked', this.checked);
+    });
+
+    $('#sendNotificationForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "payroll_sent_notification" %}';
+        var title = "Are you sure";
+        var text = "You want to notify the employee that they're payroll are already for processing";
+        var link_attr = '{% url "payroll_sent_notification" %}';
+
+        submitFormWithConfirmation(form, url, title, text, {link_attr: link_attr});
+
+        e.preventDefault();
+    });
+
+    $('#importForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "bulk_send_payroll_notification" %}';
+        var title = "Are you sure";
+        var text = "You want to notify the employee that they're payroll are already for processing";
+        var link_attr = '{% url "payroll_sent_notification" %}';
+
+        submitFormWithConfirmation(form, url, title, text, {link_attr: link_attr});
+
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

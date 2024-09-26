@@ -1,0 +1,91 @@
+<br>
+<center><label>CTDO Report as of {{ month|date:'F Y' }}</label></center>
+<br><br>
+<div>
+    <div class="row">
+        <div class="col-lg-6">
+            <center>
+                <h1 class="bold">{{ total_application_per_month }}</h1>
+                <label>Application</label>
+                <canvas id="totalApplicationChart" height="200"></canvas>
+            </center>
+        </div>
+        <div class="col-lg-6">
+            <center>
+                <h1 class="bold">{{ total_pending_application_per_month }}</h1>
+                <label>Pending Application</label>
+                <canvas id="totalPendingApplicationChart" height="200"></canvas>
+            </center>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-lg-6">
+            <center>
+                <h1 class="bold">{{ total_approved_application_per_month }}</h1>
+                <label>Approved Application</label>
+                <canvas id="totalApproveApplicationChart" height="200"></canvas>
+            </center>
+        </div>
+        <div class="col-lg-6">
+            <center>
+                <h1 class="bold">{{ total_cancelled_application_per_month }}</h1>
+                <label>Cancelled Application</label>
+                <canvas id="totalCancelledApplicationChart" height="200"></canvas>
+            </center>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    Chart.defaults.global.defaultFontFamily = 'Inter, sans-serif';
+    var doughnutOptions = {
+        responsive: true
+    };
+
+    var totalApplicationData = {
+        labels: ["Male", "Female"],
+        datasets: [{
+            data: ['{{ total_application_m_per_month }}', '{{ total_application_f_per_month }}'],
+            backgroundColor: ["#B2DFDB", "#B3E5FC"]
+        }],
+    };
+
+    var ctx4 = document.getElementById("totalApplicationChart").getContext("2d");
+    new Chart(ctx4, {type: 'doughnut', data: totalApplicationData, options:doughnutOptions});
+
+    var totalPendingApplicationData = {
+        labels: ["Male", "Female"],
+        datasets: [{
+            data: ['{{ total_pending_application_m_per_month }}', '{{ total_pending_application_f_per_month }}'],
+            backgroundColor: ["#F5F5F5", "#CFD8DC"]
+        }],
+    };
+
+    var ctx4 = document.getElementById("totalPendingApplicationChart").getContext("2d");
+    new Chart(ctx4, {type: 'doughnut', data: totalPendingApplicationData, options:doughnutOptions});
+
+    var totalApprovedApplicationData = {
+        labels: ["Male", "Female"],
+        datasets: [{
+            data: ['{{ total_approved_application_m_per_month }}', '{{ total_approved_application_f_per_month }}'],
+            backgroundColor: ["#BBDEFB", "#E3F2FD"]
+        }],
+    };
+
+    var ctx4 = document.getElementById("totalApproveApplicationChart").getContext("2d");
+    new Chart(ctx4, {type: 'doughnut', data: totalApprovedApplicationData, options:doughnutOptions});
+
+    var totalCancelledApplicationData = {
+        labels: ["Male", "Female"],
+        datasets: [{
+            data: ['{{ total_cancelled_application_m_per_month }}', '{{ total_cancelled_application_f_per_month }}'],
+            backgroundColor: ["#FFECB3", "#FFF8E1"]
+        }],
+    };
+
+    var ctx4 = document.getElementById("totalCancelledApplicationChart").getContext("2d");
+    new Chart(ctx4, {type: 'doughnut', data: totalCancelledApplicationData, options:doughnutOptions});
+
+</script>
+{% endblock %}

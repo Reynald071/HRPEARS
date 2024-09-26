@@ -1,0 +1,209 @@
+{% block style %}
+<style type="text/css">
+    .notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+<div class="row" id="page-content">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+        <form id="submitReferenceForm" name="myform">
+        {% csrf_token %}
+        <div class="pull-left">
+            <div class="form-group">
+                <label>Choose Shortcuts</label>
+                <select class="form-control shortcuts select">
+                    {% for row in shortcuts %}
+                    {% if row.name == "Reference" %}
+                    <option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.backend_url }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+				</div>
+        </div>
+        <div class="pull-right" style="margin-top:23px;">
+            <div class="form-group">
+                <button type="submit" class="btn btn-info">Save changes</button>
+                <div class="btn-group">
+                <button id="btn-previous-additional" class="btn btn-default">Previous</button>
+                <a class="btn btn-default disabled">Next</a>
+                </div>
+            </div>
+        </div>
+        <table class="table table-bordered reference notboldandbig">
+            <thead>
+                <th colspan="4">
+                    <h3>X. REFERENCE</h3>
+                </th>
+            </thead>
+            <tbody style="font-size: 11px;">
+                <tr>
+                    <th class="text-center" width="40%" height="20px">NAME</th>
+                    <th class="text-center" width="30%">ADDRESS</th>
+                    <th class="text-center" width="20%">TEL. NO.</th>
+                    <th width="5%">
+                        <center><button type="button" class="btn btn-info btn-xs add"><i class="fas fa-plus"></i></button></center>
+                    </th>
+                </tr>
+                <tr></tr>
+                {% if reference %}
+                    <input type="hidden" value="{{ reference.count }}" id="total">
+                    {% for row in reference %}
+                    <tr id="{{ row.id }}">
+                       <td class="nopadding" style="background: white;">
+                            <input type="text" class="form-control borderless input-sm name" name="name[]" value="{{ row.name }}">
+                        </td>
+                        <td class="nopadding" style="background: white;">
+                            <input type="text" class="form-control borderless input-sm address" name="address[]" value="{{ row.address }}">
+                        </td>
+                        <td class="nopadding" style="background: white;">
+                            <input type="text" class="form-control borderless input-sm tel_no text-center" name="tel_no[]" value="{{ row.tel_no }}" onkeypress="return isNumberKeyDash(event)">
+                        </td>
+                        <td class="nopadding" style="background: white;">
+                            <center><button type="button" class="btn btn-danger btn-xs" data-role="delete" data-id="{{ row.id }}"><i class="fa fa-minus"></i></button></center>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+    function isNumberKeyDash(evt)
+    {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode != 45 && charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    $('#btn-previous-additional').on('click', function(){
+        callPage("{% url 'update_additional_information' pi_id %}");
+    });
+
+    var fieldHTML = '<tr>\
+                    <td class="nopadding" style="background: white;">\
+                        <input type="text" class="form-control borderless input-sm name" name="name[]">\
+                    </td>\
+                    <td class="nopadding" style="background: white;">\
+                        <input type="text" class="form-control borderless input-sm address" name="address[]">\
+                    </td>\
+                    <td class="nopadding" style="background: white;">\
+                        <input type="text" class="form-control borderless input-sm tel_no text-center" name="tel_no[]" onkeypress="return isNumberKeyDash(event)">\
+                    </td>\
+                    <td class="nopadding" style="background: white;">\
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="remove"><i class="fa fa-minus"></i></button></center>\
+                    </td>\
+                </tr>';
+
+    $('.add').on('click', function(){
+        $('.reference > tbody:last-child').append(fieldHTML);
+    });
+
+    $(document).on('click', 'button[data-role=remove]', function(){
+        $(this).parent().parent().parent().remove();
+    });
+
+    $('#submitReferenceForm').on('submit', function(e){
+        if (checkForm() == 0){
+            $.ajax({
+                data        : new FormData(this),
+                url         : '{% url "update_reference" pi_id %}',
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                Swal.fire("Well done!", "Reference has been saved successfully.", "success");
+            });
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+        invalid = 0;
+        $('.name').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger bg-white'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.address').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger bg-white'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.tel_no').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger bg-white'>This field is required.</span>");
+                invalid += 1;
+            } else if (this.value.length != 11){
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger bg-white'>This field requires eleven digits.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        return invalid;
+    }
+
+    $(document).on('click', 'button[data-role=delete]', function(){
+        var id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this reference?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+                $.ajax({
+                    url: "/delete-reference/",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('tr#'+id).remove();
+                    Swal.fire("Success!", "Your reference was successfully deleted. Farewell.", "success");
+                });
+            }
+        });
+    });
+
+    $('.shortcuts').on('select2:select', function(){
+        callPage($(this).val() + {{ pi_id }});
+    });
+</script>

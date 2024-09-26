@@ -1,0 +1,273 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style type="text/css">
+    th{
+        background: #F5F5F5;
+    }
+    .select2-selection__rendered {
+        font-size: 12px !important;
+        font-weight: bold;
+        color: inherit !important;
+        text-transform: uppercase;
+    }
+    .select2-results__option{
+        text-transform: uppercase;
+    }
+    
+    .form-control-sm{
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .notboldandbig th {
+    	font-size: 12px !important;
+		font-weight: normal;
+		font-size: 95%;
+    }
+
+    td.p-0 {
+		text-align: center;
+		vertical-align: middle !important;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">{{ tab_title }}</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					{{ tab_parent }}
+				</li>
+                {% if tab_child and tab_child != '' %}
+				<li class="breadcrumb-item">
+					{{ tab_child }}
+				</li>
+                {% endif %}
+				<li class="breadcrumb-item active">
+					<strong>{{ tab_title }}</strong>
+				</li>
+			</ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                <button class="btn btn-info" onclick="$('#click-submit').click();">Save changes</button>
+                <div class="btn-group">
+                    <a href="{% url 'additional' %}" class="btn btn-default">Previous</a>
+                    <a class="btn btn-default disabled">Next</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+<div class="card card-info card-outline">
+    <div class="card-body">
+        <form id="submitReferenceForm" name="myform">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="table-responsive">
+                <table class="table table-bordered reference notboldandbig mb-0" style="zoom: 95% !important;">
+                    <thead>
+                        <tr>
+                            <th class="text-center" width="40%" height="20px">NAME</th>
+                            <th class="text-center" width="30%">ADDRESS</th>
+                            <th class="text-center" width="20%">TEL. NO.</th>
+                            <th width="5%">
+                                <center><button type="button" class="btn btn-info btn-xs add"><i class="fas fa-plus"></i></button></center>
+                            </th>
+                        </tr>
+                        <tr></tr>
+                    </thead>
+                    <tbody style="font-size: 11px;">
+                        {% if reference %}
+                            <input type="hidden" value="{{ reference.count }}" id="total">
+                            {% for row in reference %}
+                            <tr id="{{ row.id }}">
+                               <td class="p-0" style="background: white;">
+                                    <input type="text" class="form-control form-control-sm border-0  name" name="name[]" value="{{ row.name }}">
+                                </td>
+                                <td class="p-0" style="background: white;">
+                                    <input type="text" class="form-control form-control-sm border-0  address" name="address[]" value="{{ row.address }}">
+                                </td>
+                                <td class="p-0" style="background: white;">
+                                    <input type="text" class="form-control form-control-sm border-0  tel_no text-center" name="tel_no[]" value="{{ row.tel_no }}">
+                                </td>
+                                <td class="p-0" style="background: white;">
+                                    <center><button type="button" class="btn btn-danger btn-xs" data-role="delete" data-id="{{ row.id }}"><i class="fa fa-minus"></i></button></center>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-lg-12">
+                <table class="table table-bordered mb-0" style="zoom: 95% !important;">
+                    <tr>
+                        <td colspan="2">
+                            Government Issued ID (i.e. Passport, GSIS, SSS, PRC, Driver's License, etc.)<br>
+                            PLEASE INDICATE ID Number
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Government Issued ID:</td>
+                        <td class="p-0" style="background: white;">
+                            <input type="text" class="form-control form-control-sm border-0  text-center" name="government_issued_id" value="DSWD Field Office X" readonly>
+                        </td>
+                    </tr>
+                    <tr>
+                        {% getemployeebyempid request.session.emp_id as employee %}
+                        <td>ID/License/Passport No.:</td>
+                        <td class="p-0" style="background: white;">
+                            <input type="text" class="form-control form-control-sm border-0  text-center" name="id_number" value="{{ employee.id_number }}" readonly>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Date of Issuance:</td>
+                        <td class="p-0" style="background: white;">
+                            <input type="date" class="form-control form-control-sm border-0  text-center" name="date" value="{{ employee.date_id_issuance|date:'Y-m-d' }}" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Place of Issuance:</td>
+                        <td class="p-0" style="background: white;">
+                            <input type="text" class="form-control form-control-sm border-0  text-center" name="place" value="{{ employee.place_id_issuance }}" autocomplete="off" required>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-info display-none" id="click-submit">Save changes</button>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    var fieldHTML = '<tr>\
+                    <td class="p-0" style="background: white;">\
+                        <input type="text" class="form-control form-control-sm border-0  name" name="name[]">\
+                    </td>\
+                    <td class="p-0" style="background: white;">\
+                        <input type="text" class="form-control form-control-sm border-0  address" name="address[]">\
+                    </td>\
+                    <td class="p-0" style="background: white;">\
+                        <input type="text" class="form-control form-control-sm border-0  tel_no text-center" name="tel_no[]">\
+                    </td>\
+                    <td class="p-0" style="background: white;">\
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="remove"><i class="fa fa-minus"></i></button></center>\
+                    </td>\
+                </tr>';
+
+    var x = 0;
+
+    $('.add').on('click', function(){
+        x++;
+        $('.reference').prepend(fieldHTML);
+    });
+
+    $(document).on('click', 'button[data-role=remove]', function(e){
+        e.preventDefault();
+        $(this).closest('tr').remove();
+        x--;
+    });
+
+    $('#submitReferenceForm').on('submit', function(e){
+        if (checkForm() == 0){
+            $.ajax({
+                data        : new FormData(this),
+                url         : '{% url "attachment" %}',
+                type        : 'POST',
+                beforeSend: function() {
+                	$('.btn').prop('disabled', true);
+                	$('a').prop('disabled', true);
+                },
+                success: function(response) {
+                	if(response.data) {
+						Swal.fire({
+                            title: "Well done!",
+                            text: "Reference has been saved successfully.",
+                            icon: "success",
+                            confirmButtonColor: "#3498DB",
+                        });
+					}
+                },
+                complete: function() {
+                	$('.btn').prop('disabled', false);
+                	$('a').prop('disabled', false);
+                },
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+        invalid = 0;
+        $('.name').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger bg-white'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.address').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger bg-white'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        return invalid;
+    }
+
+    $(document).on('click', 'button[data-role=delete]', function(){
+        var id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this reference?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+                $.ajax({
+                    url: "/delete-reference/",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('tr#'+id).remove();
+                    swal("Success!", "Your reference was successfully deleted. Farewell.", "success");
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

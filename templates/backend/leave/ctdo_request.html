@@ -1,0 +1,249 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">CTDO Requests</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Leave
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>CTDO Requests</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#generate-ctdo-report-modal"><i class="fas fa-chart-area"></i> Generate Report</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="ibox">
+				<div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="ctdo-admin-table" width="100%">
+                            <thead>
+                                <th>Action</th>
+                                <th>TRACKING NO.</th>
+                                <th>REQUESTED BY</th>
+                                <th>INCLUSIVE DATES</th>
+                                <th>DATE OF FILING</th>
+                                <th class="text-right">STATUS</th>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+			<div class="ibox">
+				<div class="ibox-title bg-primary">
+					<h5>FILTER</h5>
+				</div>
+				<div class="ibox-content">
+	    			<h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+						<a class="list-group-item"  id="status-0" href="javascript:;" data-role="status" data-filter="0">Pending</a>
+						<a class="list-group-item"  id="status-1" href="javascript:;" data-role="status" data-filter="1">Approved</a>
+						<a class="list-group-item" id="status-2" href="javascript:;" data-role="status" data-filter="2">Cancelled</a>
+                        <a class="list-group-item" id="status-3" href="javascript:;" data-role="status" data-filter="3">Request for Cancellation</a>
+					</div>
+				</div>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="generate-ctdo-report-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">GENERATE CTDO REPORT</h3>
+	        </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-2">
+                        <label style="margin-top: 8px;">Month</label>
+                    </div>
+                    <div class="form-group col-lg-7">
+                        <input type="month" class="form-control form-control" name="month" id="month" required>
+                    </div>
+                    <div class="col-lg-3">
+                        <button type="button" class="btn btn-info btn-block" id="btn-generate-ctdo-report">Generate</button>
+                    </div>
+                </div>
+                <div id="generated-report-ctdo-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="utilize-coc-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">UTILIZE COC EARNED</h3>
+	        </div>
+            <div id="utilize-coc-content"></div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="update-ctdo" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">EDIT CTDO REQUESTS: <span id="ctdo-tracking-no"></span></h3>
+	        </div>
+            <div id="ctdo-update-content"></div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="upload-ctdo-attachment-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">CTDO ATTACHMENT: <span id="ctdo-tracking-no"></span></h3>
+	        </div>
+            <div id="upload-ctdo-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#btn-generate-ctdo-report').on('click', function(){
+        $('#generated-report-ctdo-content').load('/backend/ctdo/report/generate/' + $('#month').val());
+    });
+
+    $(document).on('click', 'a[data-role=status]', function(){
+    	$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+    	if($(this).data('filter') == 'all'){
+    		$('#ctdo-admin-table').DataTable().ajax.url('/api/leave/ctdo/admin/?format=datatables').load();
+    	}else{
+			$('#ctdo-admin-table').DataTable().ajax.url('/api/leave/ctdo/admin/?format=datatables&status='+$(this).data('filter')).load();
+		}
+	});
+	
+    $('#ctdo-admin-table').DataTable({
+		'serverSide': true,
+		'processing': true,
+		'deferRender': true,
+		'lengthMenu': [ 25, 50, 100 ],
+		'order': [[ 0, 'desc' ]],
+		'ajax': {
+			'url': '/api/leave/ctdo/admin/?format=datatables',
+			'type': 'GET',
+			'beforeSend': function (request) {
+				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+			}
+		},
+		'fnCreatedRow': function (row, data, index) {
+			$(row).attr('id', data['id']);
+		},
+		'columns': [
+			{'data': 'id',
+				'render': function(data, type, row, meta) {
+				    var template = '<a href="javascript:;" data-role="update" data-id="'+ data +'" data-title="'+ row['tracking_no'] +'">Details</a>';
+
+                    if(row['status'] == 1) {
+                        template += ' | <a href="javascript:;" data-role="attachment" data-id="'+ data +'">Attachment</a>';
+                    }
+
+					return template;
+				},
+			},
+			{'data': 'tracking_no',
+                'render': function(data, type, row, meta) {
+                    var template = '<a target="_blank" href="/personnel/requests/ctdo/print/'+ row['id'] +'">'+ data +'</a>';
+                    return template;
+                }
+            },
+			{'data': 'requested_by', 'name':'emp.pi.user.first_name, emp.pi.user.last_name'},
+			{'data': 'inclusive_dates', 'searchable': false, 'className': 'text-center'},
+			{'data': 'date_filed', 'className': 'text-center'},
+			{'data': 'status', 'className': 'text-right',
+			    'render': function(data, type, row, meta) {
+				    if(row['status'] == 0) {
+				        return '<span class="label label-primary">Pending</span>';
+				    } else if(row['status'] == 1) {
+				        return '<span class="label label-success">Approved</span>';
+				    } else if(row['status'] == 2) {
+				        return '<span class="label label-warning">Canceled</span>';
+				    } else {
+				        return '<span class="label label-primary">Request for Cancellation</span>';
+				    }
+				},
+			},
+		]
+	});
+
+    $(document).on('click', 'a[data-role=attachment]', function(){
+       var id = $(this).data('id');
+       $('#upload-ctdo-content').load('/backend/ctdo/attachment/' + id, function(){
+            $('#upload-ctdo-attachment-modal').modal('show');
+       });
+    });
+
+	$(document).on('click', 'a[data-role=update]', function(){
+	    var id = $(this).data('id');
+        var tracking_no = $(this).data('title');
+	    $('#ctdo-update-content').load('/backend/ctdo/update/' + id, function(){
+            $('#ctdo-tracking-no').text(tracking_no);
+	        $('#update-ctdo').modal('show');
+	    });
+	});
+
+    $(document).on('click', 'a[data-role=cancel]', function(){
+        var id = $(this).data('id');
+
+        var list = {
+            'id': id,
+        }
+
+        var url = '{% url "cancel_ctdo" %}';
+        var title = "Are you sure";
+        var text = "You want to cancel this request for ctdo?";
+        var loadContent = "#ctdo-update-content";
+        var loadUrl = "/backend/ctdo/update/" + id;
+        var table_id = "#ctdo-admin-table";
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl, table_id: table_id});
+    });
+
+    $(document).on('click', 'a[data-role=approve]', function(){
+        var id = $(this).data('id');
+
+        var list = {
+            'id': id,
+        }
+
+        var url = '{% url "admin_ctdo_approve" %}';
+        var title = "Are you sure";
+        var text = "You want to approve this request for ctdo?";
+        var loadContent = "#ctdo-update-content";
+        var loadUrl = "/backend/ctdo/update/" + id;
+        var table_id = "#ctdo-admin-table";
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl, table_id: table_id});
+    });
+</script>
+{% endblock %}

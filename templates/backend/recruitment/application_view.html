@@ -1,0 +1,173 @@
+<div class="modal-body">
+    <h3 class="mt-3 ">PERSONAL INFORMATION</h3>
+    <div class="row">
+        <div class="col-lg-6">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Last Name</th>
+                        <td>{{ application.last_name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>Middle Name</th>
+                        <td>{{ application.middle_name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>First Name</th>
+                        <td>{{ application.first_name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>Name Extension</th>
+                        <td>{{ application.extension|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>Sex</th>
+                        {% if application.sex == 1 %}
+                        <td>MALE</td>
+                        {% else %}
+                        <td>FEMALE</td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <th>Date of Birth</th>
+                        <td>{{ application.dob|date:"F d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Civil Status</th>
+                        <td>{{ application.civil_status.name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ application.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Contact Number</th>
+                        <td>{{ application.contact_no }}</td>
+                    </tr>
+                    <tr>
+                        <th>Course</th>
+                        <td>{{ application.course }}</td>
+                    </tr>
+                    <tr>
+                        <th>Previous Work Experience</th>
+                        <td>{{ application.work_exp }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-6">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th colspan="2">Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>Province</th>
+                        <td>{{ application.province.name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>City</th>
+                        <td>{{ application.city.name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>Barangay</th>
+                        <td>{{ application.brgy.name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>Zip Code</th>
+                        <td>{{ application.zip_code }}</td>
+                    </tr>
+                    <tr>
+                        <th>Street</th>
+                        <td>{{ application.street|upper }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if el %}
+    <h3 class="mt-5">ELIGIBILITY</h3>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="text-center" rowspan="2">ELIGIBILITY NAME</th>
+                            <th class="text-center" rowspan="2">RATING</th>
+                            <th class="text-center" rowspan="2">DATE OF EXAMINATION/CONFERMENT</th>
+                            <th class="text-center" rowspan="2">PLACE OF EXAMINATION/CONFERMENT</th>
+                            <th class="text-center" colspan="2">LICENSE</th>
+                            <th class="text-center" rowspan="2">ATTACHMENT</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">NUMBER</th>
+                            <th class="text-center">DATE OF VALIDITY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in el %}
+                        <tr>
+                            <td class="text-center">{{ row.name }}</td>
+                            <td class="text-center">{{ row.rating }}</td>
+                            <td class="text-center">{{ row.date|date:"F d, Y" }}</td>
+                            <td class="text-center">{{ row.place }}</td>
+                            <td class="text-center">{{ row.license_number }}</td>
+                            <td class="text-center">{{ row.license_dov|date:"F d, Y" }}</td>
+                            <td class="text-center">
+                                <a href="{{ row.attachment.url }}" target="_blank">{{ row.attachment }}</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <h3 class="mt-5">SUBMITTED FILES</h3>
+    <div class="row">
+        <div class="col-lg-12">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Transcript of Records:</th>
+                        <td><a href="{{ application.tor.url }}" target="_blank">{{ application.tor }}</a></td>
+                    </tr>
+                    <tr>
+                        <th>Application Letter:</th>
+                        <td><a href="{{ application.app_letter.url }}" target="_blank">{{ application.app_letter }}</a></td>
+                    </tr>
+                    <tr>
+                        <th>Personal Data Sheet:</th>
+                        <td><a href="{{ application.pds.url }}" target="_blank">{{ application.pds }}</a></td>
+                    </tr>
+                    <tr>
+                        <th>Work Experience Sheet:</th>
+                        <td><a href="{{ application.we_sheet.url }}" target="_blank">{{ application.we_sheet }}</a></td>
+                    </tr>
+                    {% if application.cert_training %}
+                    <tr>
+                        <th>Certificate of Training:</th>
+                        <td><a href="{{ application.cert_training.url }}" target="_blank">{{ application.cert_training }}</a></td>
+                    </tr>
+                    {% endif %}
+                    {% if application.cert_employment %}
+                    <tr>
+                        <th>Certificate of Employment:</th>
+                        <td><a href="{{ application.cert_employment.url }}" target="_blank">{{ application.cert_employment }}</a></td>
+                    </tr>
+                    {% endif %}
+                    {% if application.ipcr %}
+                    <tr>
+                        <th>IPCR/Performance Evaluation:</th>
+                        <td><a href="{{ application.ipcr.url }}" target="_blank">{{ application.ipcr }}</a></td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Certificates of Appearance</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0 !important;
+				padding: 50px !important;
+				border: 0.5px solid transparent;
+				height: 216mm !important;
+				width: 100% !important;
+				zoom: 128% !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		  	.blue{
+		  		color: #1d58a6 !important;
+		  	}
+		  	.gray{
+		  		color:#E8E8E8 !important;
+		  	}
+		}
+		@page {
+			size: auto;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;"><strong>Certificates of Appearance</strong></a>
+		<ul class="navbar-nav ml-auto">
+			<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	{% for page in pagination|times %}
+	{% if forloop.first %}
+	<page size="letter" class="page" style="padding: 50px">
+		<div class="containerX">
+			{% for row in participants_and_facilitators|slice:":2" %}
+			{% if forloop.first %}
+			<center>
+			<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="25%">&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -10px;">
+			<br><br><br>
+			<h3><strong>CERTIFICATE OF APPEARANCE</strong></h3>
+			</center>
+			<p class="mt-3" style="font-size: 16px;">THIS IS TO CERTIFY THAT THE PERSON WHOSE NAME BELOW APPEARED IN THIS OFFICE.</p>
+			<table width="100%" style="font-size: 16px;">
+				<tr>
+					<th width="15%">Name: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ row.employee_name }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Designation: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{% if row.position != "" %}{{ row.position }}{% else %}&nbsp;{% endif %}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Date: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ training.get_inclusive_dates }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Purpose: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ training.training.tt_name|upper }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+			</table>
+			<br>
+			<p style="font-size: 16px;">
+				Given this {{ training.end_date|date:'jS' }} day of {{ training.end_date|date:'F, Y' }} {% if training.is_online_platform %}via{% else %}at{% endif %} {{ training.venue }}.
+			</p>
+			<br><br>
+			<p style="font-size: 16px; margin-right: 200px;" class="float-right text-center">
+				{% getemployeebyempid rd.emp_id as rd_obj %}
+				<u><strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong></u><br>
+				{{ rd.name }}
+			</p>
+			<br><br><br>
+			<hr style="border: 1px solid black;">
+			{% else %}
+			<br><br>
+			<center>
+			<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="25%">&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -10px;">
+			<br><br><br>
+			<h3><strong>CERTIFICATE OF APPEARANCE</strong></h3>
+			</center>
+			<p class="mt-3" style="font-size: 16px;">THIS IS TO CERTIFY THAT THE PERSON WHOSE NAME BELOW APPEARED IN THIS OFFICE.</p>
+			<table width="100%" style="font-size: 16px;">
+				<tr>
+					<th width="15%">Name: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ row.employee_name }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Designation: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{% if row.position != "" %}{{ row.position }}{% else %}&nbsp;{% endif %}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Date: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ training.get_inclusive_dates }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Purpose: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ training.training.tt_name|upper }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+			</table>
+			<br>
+			<p style="font-size: 16px;">
+				Given this {{ training.end_date|date:'jS' }} day of {{ training.end_date|date:'F, Y' }} {% if training.is_online_platform %}via{% else %}at{% endif %} {{ training.venue }}.
+			</p>
+			<br><br>
+			<p style="font-size: 16px; margin-right: 200px;" class="float-right text-center">
+				{% getemployeebyempid rd.emp_id as rd_obj %}
+				<u><strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong></u><br>
+				{{ rd.name }}
+			</p>
+			<br><br>
+			{% endif %}
+			{% endfor %}
+        </div>
+    </page>
+	{% else %}
+	<page size="letter" class="page" style="padding: 50px">
+		<div class="containerX">
+			{% get_page_range page 2 as page_range %}
+			{% for row in participants_and_facilitators|slice:page_range.0 %}
+			<center>
+			<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="25%">&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -10px;">
+			<br><br><br>
+			<h3><strong>CERTIFICATE OF APPEARANCE</strong></h3>
+			</center>
+			<p class="mt-3" style="font-size: 16px;">THIS IS TO CERTIFY THAT THE PERSON WHOSE NAME BELOW APPEARED IN THIS OFFICE.</p>
+			<table width="100%" style="font-size: 16px;">
+				<tr>
+					<th width="15%">Name: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ row.employee_name }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Designation: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{% if row.position != "" %}{{ row.position }}{% else %}&nbsp;{% endif %}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Date: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ training.get_inclusive_dates }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+				<tr>
+					<th>Purpose: </th>
+					<td>
+						<div style="border-bottom: 1px solid black">
+							{{ training.training.tt_name|upper }}
+						</div>
+					</td>
+					<td width="15%"></td>
+				</tr>
+			</table>
+			<br>
+			<p style="font-size: 16px;">
+				Given this {{ training.end_date|date:'jS' }} day of {{ training.end_date|date:'F, Y' }} {% if training.is_online_platform %}via{% else %}at{% endif %} {{ training.venue }}.
+			</p>
+			<br><br>
+			<p style="font-size: 16px; margin-right: 200px;" class="float-right text-center">
+				{% getemployeebyempid rd.emp_id as rd_obj %}
+				<u><strong>{{ rd_obj.pi.user.get_fullname|upper }}</strong></u><br>
+				{{ rd.name }}
+			</p>
+			<br><br>
+			<hr style="border: 1px solid black;">
+			{% endfor %}
+        </div>
+    </page>
+	{% endif %}
+	{% endfor %}
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

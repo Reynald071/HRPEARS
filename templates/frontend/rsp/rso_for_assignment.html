@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h1 class="bold">Special Order for Assignment</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Transactions
+            </li>
+            <li class="breadcrumb-item">
+                Recruitment Selection and Placement
+            </li>
+            <li class="breadcrumb-item">
+                Special Order for Assignment
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+                    <h3 class="no-margins">GENERATE SPECIAL ORDER FOR ASSIGNMENT</h3>
+                    <small>Search the following employee to generate special order for assignment.</small>
+                </div>
+                <div class="ibox-content">
+                    <div class="form-group">
+                        <label>Employee Name<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control filter-employee-all" id="employee-name" name="employee-name" required autocomplete="off">
+                    </div>
+                    <button type="button" class="btn btn-info" id="btn-generate-so">Generate</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="ibox">
+                <div class="ibox-content" id="so-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#btn-generate-so').on('click', function(){
+        var employee_id = $('#employee-name').val().match(/\[(.*?)\]/);
+        var id_number = employee_id[1];
+        $('#so-content').load('/recruitment-selection-and-placement/special-order/assignment/layout/' + id_number);
+    });
+
+    $(document).ready(function(){
+        $(".filter-employee-all").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee_all" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% load frontend_tags %}
+{% load humanize %}
+<div class="modal-body">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        This is a system generated payslip. If you notice erroneous entries please report to the <strong>Personnel</strong> within 5 days upon receipt of this payslip.
+    </div>
+    <br>
+    <table class="table table-bordered table-hover" style="column-count: 3;">
+        <tbody>
+            {% for ct in column_type %}
+                <tr>
+                    <th colspan="2" style="background: #F5F5F6;">
+                        {{ ct.name }}
+                    </th>
+                </tr>
+                {% for row in details %}
+                    {% for key, value in row.items %}
+                        {% if key != 'Status' and key != '_id' %}
+                            {% payroll_column_type key as column_type %}
+                            {% if ct.id == column_type %}
+                                {% payroll_type_value value as payroll_type_value %}
+                                {% if payroll_type_value.1 != 0 %}
+                                <tr>
+                                    <th width="25%">{{ key }}</th>
+                                    <td>
+                                        {% if payroll_type_value.0 %}
+                                            {{ payroll_type_value.1|floatformat:2|intcomma }}
+                                        {% else %}
+                                            {{ payroll_type_value.1 }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+</div>

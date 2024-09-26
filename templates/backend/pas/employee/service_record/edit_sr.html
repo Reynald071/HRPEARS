@@ -1,0 +1,129 @@
+{% load tags %}
+<form id="editSRForm">
+{% csrf_token %}
+<div class="modal-body">
+    <input type="hidden" name="we_id" value="{{ data.wh.we_id }}">
+    <input type="hidden" name="emp_id" value="{{ data.wh.emp_id }}">
+    <div class="form-group">
+        <label>From</label>
+        <input type="date" class="form-control" name="from" value="{{ data.wh.we.we_from|date:'Y-m-d' }}">
+    </div>
+    <div class="form-group">
+        <label>To</label>
+        <input type="date" class="form-control" name="to" value="{{ data.wh.we.we_to|date:'Y-m-d' }}">
+    </div>
+    <div class="form-group">
+        <label>Designation</label>
+        <select class="form-control edit-select-sr" name="designation">
+            <option></option>
+            {% for row in position %}
+            {% if data.wh.we.position_id == row.id %}
+            <option value="{{ row.id }}" selected>{{ row.name|upper }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name|upper }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Employment Status</label>
+        <select class="form-control edit-select-sr" name="empstatus">
+            <option></option>
+            {% for row in empstatus %}
+            {% if data.wh.we.empstatus_id == row.id %}
+            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Salary Rate</label>
+        <input type="text" class="form-control" name="salary_rate" value="{{ data.wh.we.salary_rate }}" autocomplete="off">
+    </div>
+    <div class="form-group">
+        <label>Place of Assignment</label>
+        <input type="text" class="form-control" name="poa" value="{% if data.poa %}{{ data.poa }}{% endif %}" autocomplete="off">
+    </div>
+    <div class="form-group">
+        <label>Branch</label>
+        <input type="text" class="form-control" name="branch" value="{% if data.branch %}{{ data.branch }}{% endif %}">
+    </div>
+    <div class="form-group">
+        <input type="checkbox" name="is_leave_wo_pay" id="is_leave_wo_pay" {% if data.is_leave_wo_pay %}checked{% endif %}>&emsp;NO L/V W/O PAY
+    </div>
+    <div class="form-group {% if data.is_leave_wo_pay %}display-none{% endif %}" id="leave_w_pay">
+        <label>Leave with Pay Date</label>
+        <input type="text" class="form-control" name="leave_w_pay_date">
+    </div>
+    <div class="form-group">
+        <label>Separation Date</label>
+        <input type="date" class="form-control" name="separation_date" value="{{ data.date|date:'Y-m-d' }}">
+    </div>
+    <div class="form-group">
+        <label>Separation Cause</label>
+        <input type="text" class="form-control" name="cause" value="{% if data.cause %}{{ data.cause}}{% endif %}" autocomplete="off">
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Save changes</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.edit-select-sr').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+    
+    $('#is_leave_wo_pay').on('change', function(){
+        if ($(this).is(':checked')){
+           $('#leave_w_pay').addClass('display-none');
+        } else {
+            $('#leave_w_pay').removeClass('display-none');
+        }
+    });
+
+    $('#editSRForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this work history?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "edit_sr_workhistory" data.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+        }).then(function (response){
+            if (response.value.data == "success"){
+				Swal.fire({
+				  title: "Good job!",
+				  text: response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#editSRForm').trigger('reset');
+						$('#edit_sr_modal').modal('hide');
+						callSRPage('{% url "generate_sr_template" data.wh.emp.id_number %}');
+					}
+				});
+			}
+        });
+        e.preventDefault();
+	});
+</script>
+{% endblock %}

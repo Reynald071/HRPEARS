@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}" />
+    <title>DSWD CDO PORTAL | Set New Password</title>
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style_new.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+    <style>
+        .invalid-feedback{
+            color:#fb4347;
+        }
+
+        .loading{
+            overflow: hidden;
+        }
+
+        th {
+            vertical-align: middle !important;
+        }
+
+        li.nav-item.active {
+            border-bottom: 1px solid white;
+        }
+    </style>
+    {% block style %}{% endblock %}
+</head>
+<body class="login-page" style="min-height: 466px;">
+    <div class="login-box">
+        <div class="card card-outline card-info">
+            <div class="card-header text-center py-3">
+                <a href="{% url 'home' %}" class="h1 font-weight-bolder text-dark">
+                    <img loading="lazy" src="{% static 'image/dswd_logo_4.png' %}" style="width: 150px;"><br>
+                    CDO <span class="text-info">PORTAL</span>
+                </a>
+            </div>
+            <div class="card-body">
+                <div id="alertDiv"></div>
+                <h2 class="font-weight-bold">Set New Password</h2>
+                <p class="mb-4">A strong password is a combination of letters and punctuation marks. It must be atleast 8 characters long.</p>
+                <form id="newPasswordForm">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input type="password" id="password" name="password" class="form-control" autocomplete="off" required placeholder="New Password">
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password" id="password2" name="password2" class="form-control" autocomplete="off" required placeholder="Confirm Password">
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button id="submitBtn" type="submit" class="btn btn-info btn-block">Continue</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <script>$.widget.bridge('uibutton', $.ui.button)</script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script>
+        $('#newPasswordForm').on('submit', function(e){
+			e.preventDefault();
+			var form = new FormData(this);
+			if($('#password').val() == $('#password2').val()){
+				$.ajax({
+					url: '{% url "set_new_password" token %}',
+					data: form,
+					type: 'POST',
+					beforeSend: function() {
+						$("#submitBtn").html('<span class="loading open-circle" style="font-size: 25px;"></span>');
+					},
+					success: function(response){
+						if(response.data) {
+							$('#newPasswordForm').html(`
+                                <div class="alert alert-success" role="alert">
+                                    <span class="font-weight-bold" style="font-size: 16px;"><i class="fas fa-check-circle"></i> Password reset successful</span><hr class="my-2">
+                                    <p class="text-sm">
+                                        ` + response.msg +`
+                                    </p>
+                                    <br><a href="{% url 'home' %}" class="font-weight-bold" style="font-size: 14px;">Please try logging in your account.</a>
+                                </div>
+                            `);
+						} else{
+							$("#submitBtn").html('Continue');
+							$("#alertDiv").html(`
+                                <div class="alert alert-danger" role="alert">
+                                    <span class="font-weight-bold" style="font-size: 16px;"><i class="fas fa-info-circle"></i> Password reset unsuccessful</span><hr class="my-2">
+                                    <p class="text-sm">
+                                        ` + response.msg +`
+                                    </p>
+                                </div>
+                            `);
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			} else {
+				$("#alertDiv").html(`
+                    <div class="alert alert-danger" role="alert">
+                        <span class="font-weight-bold" style="font-size: 16px;"><i class="fas fa-info-circle"></i> Password reset unsuccessful</span><hr class="my-2">
+                        <p class="text-sm">
+                            Password do not match.
+                        </p>
+                    </div>
+                `);
+			}
+		});
+
+		$(document).keydown(function (event) {
+			if (event.keyCode == 123) {
+				return false;
+			} else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+				return false;
+			}
+		});
+    </script>
+    {% block script %}{% endblock %}
+</body>
+</html>

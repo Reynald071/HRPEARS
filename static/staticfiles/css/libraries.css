@@ -1,0 +1,33 @@
+.table {
+    margin: 0px;
+}
+
+.table tr td {
+    white-space: normal;
+}
+
+.ibox {
+    margin-bottom: 20px;
+}
+
+.ibox-title {
+    padding-bottom: 0px;
+}
+
+.ibox-content {
+    padding: 20px;
+}
+
+.ibox-footer {
+    padding: 0px 20px 20px 20px;
+    text-align: right;
+}
+
+.table > tbody > tr > td:last-child {
+    text-align: right;
+}
+
+.table > thead > tr > th:last-child {
+    text-align: right;
+    width: 10%;
+}

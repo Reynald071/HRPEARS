@@ -1,0 +1,99 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+{% load tz %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<script type="text/javascript" src="{% static 'js/humanized_time_span.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/moment.min.js' %}"></script>
+<script>
+	function markPresent(dt, id, url) {
+		window.markDate = new Date(dt);
+		updateClock(id, url);
+	}
+
+	function updateClock(id, url) {
+		var currDate = new Date();
+		var currNoon1 = new Date(new Date().toLocaleDateString()+' 12:00:00');
+		var currNoon2 = new Date(new Date().toLocaleDateString()+' 12:59:00');
+		if (markDate > currDate) {
+			var diff = markDate - markDate;
+		} else {
+			var diff = currDate - markDate;
+			if (diff <= 2000) {
+				document.getElementById('returnbutton').innerHTML = "<a onclick='return confReturn()' href='"+url+"' class='btn btn-sm btn-info'><i class='fas fa-undo'></i> Returned</a>";
+			}
+		}
+		minus1 = moment(currNoon1).isBetween(markDate, currDate);
+		minus2 = moment(currNoon2).isBetween(markDate, currDate);
+		minus = minus1 && minus2;
+		document.getElementById("timer").innerHTML = format(diff/1000, minus);
+		setTimeout(function() {updateClock(id, url)}, 1000);
+	}
+
+	function format(seconds, minus) {
+		var numhours = parseInt(Math.floor(((seconds % 31536000) % 86400) / 3600),10);
+		if (minus) {
+			numhours = numhours - 1;
+		}
+		var numminutes = parseInt(Math.floor((((seconds % 31536000) % 86400) % 3600) / 60),10);
+		var numseconds = parseInt((((seconds % 31536000) % 86400) % 3600) % 60,10);
+			return ((numhours<10) ? "0" + numhours : numhours)
+			+ ":" + ((numminutes<10) ? "0" + numminutes : numminutes)
+			+ ":" + ((numseconds<10) ? "0" + numseconds : numseconds);
+	}
+</script>
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h2><i class="fas fa-thumbtack"></i> Returned</h2>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="ibox-content col-md-6">
+		<div class="row">
+			{% if outpass.count > 0 %}
+			{% for row in outpass %}
+				<div class="col-md-6" style="padding-top:15px !important;">
+					<div class="feed-activity-list">
+						<div class="feed-element" style="text-align:center; border-bottom: none;">
+							<img loading="lazy"  alt="image" class="img-circle" style="height:150px !important; width: auto;" src="{{ row.outpass.in_behalf_of.picture.url }}">
+							<div class="media-body" style="padding-top:10px">
+								<small class="float-right text-navy"><script>document.write(humanized_time_span("{% formatdate row.outpass.date row.outpass.date|time:'H:i:s' %}"));</script></small>&nbsp;
+								<strong>{{ row.outpass.in_behalf_of.pi.user.first_name|upper }} {{ row.outpass.in_behalf_of.pi.user.middle_name|to_middleinitial|upper}} {{ row.outpass.in_behalf_of.pi.user.last_name|upper }}</strong>
+								filed for<br>an outpass on <strong>{{ row.date }}</strong> at <strong>{{ row.time_out }}</strong> <br>
+								{% if row.time_returned != None %}
+									<small class="text-danger">Already returned at {{ row.time_returned }}</small>
+								{% else %}
+									{% url 'trigger-returned' row.id as myurl %}
+									<small class="text-danger">Time elapsed: </small><small class="text-danger" id="timer"><script>markPresent('{{ row.date|date:'Y-m-d' }} {{ row.time_out|time:'H:i:s' }}', '{{ row.id }}', '{{ myurl }}');</script></small>
+								{% endif %}
+								<div class="actions" id="returnbutton">
+									{% if row.time_returned == None and row.time_out < currenttime %}
+										<a onclick="return confReturn()" href="{% url 'trigger-returned' row.id %}" class="btn btn-sm btn-info"><i class="fas fa-undo"></i> Returned</a>
+									{% else %}
+										<button type="button" class="btn btn-sm btn-white" disabled><i class="fas fa-undo"></i> Returned</button>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+			{% else %}
+				<div class="col-md-4" style="padding:15px !important;">
+					No results found.
+				</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+<script>
+	function confReturn(e) {
+		var conf = confirm('Are you sure you want to mark this person to have returned from an outpass?');
+		return conf;
+	}
+</script>
+{% endblock %}

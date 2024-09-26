@@ -1,0 +1,590 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">Announcements</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>Announcements</strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+				{% if user|check_permission:'announcements' or user|check_permission:'superadmin' %}
+					<button class="btn btn-info" data-toggle="modal" data-target="#add-link"><i class="fas fa-plus"></i> Add Link</button>
+					<button class="btn btn-info" data-toggle="modal" data-target="#add-announcement"><i class="fas fa-plus"></i> New Announcement</button>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-5 ml-0">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="card card-info card-outline">
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover" id="table-announcement" width="100%">
+							<thead>
+								<tr>
+									<th width="10%">ACTION</th>
+									<th width="15%">TITLE</th>
+									<th class="text-center" width="25%">CAPTION</th>
+									<th class="text-center" width="15%">DATE PUBLISHED</th>
+									<th class="text-right d-none">IS URGENT</th>
+									<th class="text-right d-none">IS ACTIVE</th>
+									<th class="text-right d-none">UPLOADED BY</th>
+									<th class="text-right" width="15%">TYPE</th>
+									{% if user|check_permission:'superadmin' %}
+									<th class="text-center" width="10%">PUBLISHED BY</th>
+									{% endif %}
+									<th class="text-right" width="10%">STATUS</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="card">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">FILTER</h5>
+				</div>
+				<div class="card-body">
+					<h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item list-group-item-action active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+						<a class="list-group-item list-group-item-action" id="status-1" href="javascript:;" data-role="status" data-filter="1">Active</a>
+						<a class="list-group-item list-group-item-action" id="status-0" href="javascript:;" data-role="status" data-filter="0">Inactive</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="add-announcement" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					WRITE ANNOUNCEMENT
+					<p><small>Upload an attachment or scanned copy of the official document for reference.</small></p>
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form id="submitLeaveForm">
+	        <div class="modal-body">
+				<div class="alert alert-warning alert-dismissable">
+					<button aria-hidden="true" data-dismiss="alert" class="close text-white" type="button">×</button>
+					<strong>NEW!</strong> We can now attach .PDF files in the announcements.
+				</div><br>
+	        	{% csrf_token %}
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Title<span class="asteriskField">*</span></label>
+	                    <div class="pull-right"><input type="checkbox" class="checkboxinput" name="is_urgent"> Is this urgent?</div>
+						<input type="text" class="form-control" name="title" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Caption<span class="asteriskField">*</span></label>
+						<textarea class="form-control" style="resize:vertical; min-height:150px;" name="caption" required></textarea>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12" style="margin-bottom:0px;">
+		        		<label>Attachment<span class="asteriskField">*</span></label>
+						<div class="custom-file">
+							<input type="file" name="attachment" accept="image/png, image/jpeg, application/pdf" id="attachment_add" onchange="triggerFileTypeValidation(this)" class="form-control custom-file-input" required>
+							<label for="attachment_add" class="custom-file-label">Choose file..</label>
+						</div>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="update-announcement" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					UPDATE ANNOUNCEMENT
+					<p><small>Upload an attachment or scanned copy of the official document for reference.</small></p>
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form id="updateAnnouncementForm">
+	        <div class="modal-body">
+				<div class="alert alert-warning alert-dismissable">
+					<button aria-hidden="true" data-dismiss="alert" class="close text-white" type="button">×</button>
+					<strong>NEW!</strong> We can now attach .PDF files in the announcements.
+				</div><br>
+	        	{% csrf_token %}
+				<input type="hidden" name="announcement_id" id="announcement_id">
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Title<span class="asteriskField">*</span></label>
+	                    <div class="pull-right"><input type="checkbox" class="checkboxinput" name="is_urgent" id="is_urgent"> Is this urgent?</div>
+						<input type="text" class="form-control" id="title" name="title" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Caption<span class="asteriskField">*</span></label>
+						<textarea class="form-control" style="resize:vertical; min-height:150px;" id="caption" name="caption" required></textarea>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12" style="margin-bottom:0px;">
+		        		<label>Attachment</label>
+						<div class="custom-file">
+							<input type="file" name="attachment" accept="image/png, image/jpeg, application/pdf" id="attachment" onchange="triggerFileTypeValidation(this)" class="form-control custom-file-input">
+							<label for="attachment" class="custom-file-label">Choose file..</label>
+						</div>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="add-link" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					ADD NEW LINK
+					<p><small>Add a useful link to be displayed in the dashboard.</small></p>
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form id="submitLinkForm">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+				<input type="hidden" class="form-control" name="announcement_type" value="1">
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Title<span class="asteriskField">*</span></label>
+	                    <div class="pull-right"><input type="checkbox" class="checkboxinput" name="is_urgent"> Is this urgent?</div>
+						<input type="text" class="form-control" name="title" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12" style="margin-bottom:0px;">
+		        		<label>Link<span class="asteriskField">*</span></label>
+						<input type="url" class="form-control" name="caption" required>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="update-link" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					UPDATE LINK
+					<p><small>Add a useful link to be displayed in the dashboard.</small></p>
+				</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form id="updateLinkForm">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+				<input type="hidden" name="announcement_id" id="link_id">
+				<input type="hidden" class="form-control" name="announcement_type" value="1">
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Title<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control" id="link_title" name="title" autocomplete="off" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Caption<span class="asteriskField">*</span></label>
+						<input type="url" class="form-control" name="caption" id="link_caption" autocomplete="off" required>
+						<input type="checkbox" class="checkboxinput" style="margin-top:20px;" name="is_urgent" id="link_is_urgent">
+		        		<label>Is this urgent?</label>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	var regexjpg = new RegExp("(.*?)\.(jpg)$");
+	var regexjpeg = new RegExp("(.*?)\.(jpeg)$");
+	var regexpng = new RegExp("(.*?)\.(png)$");
+	var regexpdf = new RegExp("(.*?)\.(pdf)$");
+	function triggerFileTypeValidation(el) {
+		if (!(regexjpg.test(el.value.toLowerCase())) && !(regexjpeg.test(el.value.toLowerCase())) && !(regexpng.test(el.value.toLowerCase())) && !(regexpdf.test(el.value.toLowerCase()))) {
+			el.value = '';
+			alert('Only allowed file types are JPG, PNG and PDF.');
+		}
+	}
+
+	$(document).ready(function(){
+		$('.custom-file-input').on('change', function() {
+            let fileName = $(this).val().split('\\').pop();
+            if (fileName == ''){
+                fileName = 'Choose file..';
+            }
+            if (fileName.length > 35) {
+                fileName = '..'+fileName.substring(fileName.length - 35,fileName.length)
+            }
+            $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        });
+
+        $(document).on('click', 'a[data-role=status]', function(){
+        	$('.list-group-item').removeClass('active');
+        	$('#status-'+$(this).data('filter')).addClass('active');
+
+			if($(this).data('filter') == 'all'){
+				$('#table-announcement').DataTable().ajax.url('/api/announcements/?format=datatables&employee_id='+'{% getHash request.session.emp_id as employee_id %}{{ employee_id }}').load();
+			}else{
+				$('#table-announcement').DataTable().ajax.url('/api/announcements/?format=datatables&employee_id='+'{% getHash request.session.emp_id as employee_id %}{{ employee_id }}&status='+$(this).data('filter')).load();
+        	}
+        });
+
+		AnnouncementTable();
+
+		function AnnouncementTable(){
+			$('#table-announcement').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'lengthMenu': [ 25, 50, 100 ],
+				'order': [[ 5, 'desc' ], [ 4, 'desc' ], [ 3, 'desc' ]],
+				'ajax': {
+					'url': '/api/announcements/?format=datatables&employee_id='+'{% getHash request.session.emp_id as employee_id %}{{ employee_id }}',
+					'type': 'GET',
+					'beforeSend': function (request) {
+						request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+					}
+				},
+				'fnCreatedRow': function (row, data, index) {
+					$(row).attr('id', data['id']);
+				},
+				'columns': [
+					{'data': 'id',
+						'render': function(data, type, row, meta) {
+							if(row['uploaded_by_id'] == {{ request.session.emp_id }} || row['announcement_type']) {
+								template = '<a href="javascript:;" data-role="update" data-type="'+ row['announcement_type'] +'" data-id="'+ row['id'] +'">Update</a> ';
+								template += '| <a href="javascript:;" data-role="delete" data-id="'+ row['id'] +'">Delete</a>';
+								return template;
+							} else {
+								{% if user|check_permission:'superadmin'%}
+									template = '<a data-role="update" data-type="'+ row['announcement_type'] +'" data-id="'+ row['id'] +'">Update</a> ';
+									template += '| <a href="javascript:;" data-role="delete" data-id="'+ row['id'] +'">Delete</a>';
+									return template;
+								{% else %}
+									return "";
+								{% endif %}
+							}
+						}
+					},
+					{'data': 'title' },
+					{'data': 'caption', 'className': 'text-center' },
+					{'data': 'datetime', 'className': 'text-center', 'searchable': false },
+					{'data': 'is_urgent', 'className': 'd-none', 'searchable': false },
+					{'data': 'is_active', 'className': 'd-none', 'searchable': false },
+					{'data': 'uploaded_by_id', 'className': 'd-none', 'name': 'uploaded_by.pi.user.last_name, uploaded_by.pi.user.first_name' },
+					{'data': 'announcement_type',
+						'render': function(data, type, row, meta) {
+							if(row['announcement_type']) {
+								return 'Link';
+							} else {
+								return 'Announcement';
+							}
+						},
+						'className': 'text-center'
+					},
+					{% if user|check_permission:'superadmin' %}
+					{'data': 'published_by', 'className': 'text-center', 'name': 'uploaded_by.pi.user.first_name, uploaded_by.pi.user.last_name' },
+					{% endif %}
+					{'data': 'is_active',
+						'render': function(data, type, row, meta) {
+							if(row['is_active'] == 1) {
+								var s = '<span class="badge badge-success">Active</span>';
+								if(row['is_urgent'] == 1) {
+									s = '<span class="badge badge-danger">Urgent</span> ' + s;
+								}
+								return s;
+							}else if (row['is_active'] == 0) {
+								return '<span class="badge badge-warning">Inactive</span>'
+							}
+						},
+						'className': 'text-right',
+						'searchable': false
+					},
+				],
+			});
+		}
+
+		$(document).on('click', 'a[data-role=update]', function(){
+			var id = $(this).data('id');
+			var title = $('#'+id).find('td:eq(1)').text();
+			var caption = $('#'+id).find('td:eq(2)').text();
+			var urgent = $('#'+id).find('td:eq(4)').text();
+
+			if($(this).data('type') == null){
+				$('#announcement_id').val(id);
+				$('#title').val(title);
+				$('#caption').val(caption);
+				if(urgent == 'true'){
+					$('#is_urgent').prop('checked', 'checked');
+				} else {
+					$('#is_urgent').removeAttr('checked');
+				}
+				$('#update-announcement').modal('show');
+			} else {
+				$('#link_id').val(id);
+				$('#link_title').val(title);
+				$('#link_caption').val(caption);
+				if(urgent == 'true'){
+					$('#link_is_urgent').prop('checked', 'checked');
+				} else {
+					$('#link_is_urgent').removeAttr('checked');
+				}
+				$('#update-link').modal('show');
+			}
+		});
+
+		$('#submitLeaveForm').on('submit', function(e){
+			var form = new FormData(this);
+			form.append('transaction_type', '0');
+			e.preventDefault();
+			Swal.fire({
+				title: "Are you sure?",
+				text: "You want to write this announcement?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        : form,
+						url         : '{% url "announcements" %}',
+						type        : 'POST',
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Your announcement has been written and it will be shown in the DSWD My PORTAL dashboard for 10 working days.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							$('#submitLeaveForm').trigger('reset');
+							$('#add-announcement').modal('hide');
+							$('#table-announcement').DataTable().ajax.reload();
+						}
+					});
+				}
+			});
+		});
+
+		$('#updateAnnouncementForm').on('submit', function(e){
+			var form = new FormData(this);
+			form.append('transaction_type', '1');
+			e.preventDefault();
+			Swal.fire({
+				title: "Are you sure?",
+				text: "You want to update this announcement?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        : form,
+						url         : '{% url "announcements" %}',
+						type        : 'POST',
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Your announcement has been updated, and it will be shown in the DSWD My PORTAL dashboard for 10 working days.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							$('#update-announcement').modal('hide');
+							$('#table-announcement').DataTable().ajax.reload();
+						}
+					});
+				}
+			});
+		});
+
+		$('#updateLinkForm').on('submit', function(e){
+			var form = new FormData(this);
+			form.append('transaction_type', '1');
+			e.preventDefault();
+			Swal.fire({
+				title: "Are you sure?",
+				text: "You want to update this link?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        : form,
+						url         : '{% url "announcements" %}',
+						type        : 'POST',
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Your link has been updated, and it will be shown in the DSWD My PORTAL link widget.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							$('#update-link').modal('hide');
+							$('#table-announcement').DataTable().ajax.reload();
+						}
+					});
+				}
+			});
+		});
+
+		$('#submitLinkForm').on('submit', function(e){
+			var form = new FormData(this);
+			form.append('transaction_type', '0');
+			e.preventDefault();
+			Swal.fire({
+				title: "Are you sure?",
+				text: "You want to add this link?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        : form,
+						url         : '{% url "announcements" %}',
+						type        : 'POST',
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Your link will be added and it will be shown in the DSWD My PORTAL link widget.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							$('#submitLinkForm').trigger('reset');
+							$('#add-link').modal('hide');
+							$('#table-announcement').DataTable().ajax.reload();
+						}
+					});
+				}
+			});
+		});
+
+		$(document).on('click', 'a[data-role=delete]', function(){
+			var id = $(this).data('id');
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to delete this announcement?",
+				icon: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data: {
+							id: id
+						},
+						url         : '{% url "delete-announcement" %}',
+						type        : 'POST',
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Your record was successfully deleted. Farewell.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							$('#table-announcement').DataTable().ajax.reload();
+						}
+					});
+				}
+			});
+		});
+	});
+</script>
+{% endblock %}

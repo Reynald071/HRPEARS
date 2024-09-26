@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/epay/logo.png' %}"/>
+    <title>My PORTAL | E-Pay</title>
+    <link href="{% static 'tracker/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'tracker/css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+    <link href="{% static 'epay/css/epay.css' %}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'epay_home' %}">
+                <img src="{% static 'image/epay/logo.png' %}" alt="" width="30" height="30">
+                <strong>E-Pay</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <a href="{% url 'manage_payroll_employee' %}" class="btn btn-info btn-sm" type="button">
+                        <i class="far fa-user-circle"></i> Manage Employee
+                    </a>&emsp;
+                    <a href="{% url 'payroll_workflow' %}" class="btn btn-outline-primary btn-sm" type="button">
+                        <i class="far fa-clipboard"></i> Payroll Workflow
+                    </a>&emsp;
+                    <a href="{% url 'payroll_monitoring' %}" class="btn btn-outline-primary btn-sm" type="button">
+                        <i class="far fa-chart-bar"></i> Payroll Monitoring
+                    </a>&emsp;
+                </ul>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="{% url 'payroll_sent_notification' %}" class="btn btn-light btn-sm" type="button">
+                    <i class="fas fa-paper-plane"></i> Send Notification
+                </a>
+                <span class="mx-3">Welcome, <strong>{{ user.username }}</strong></span>
+                {% getemployeebyuserid user.id as admin_employee %}
+                <img src="{{ admin_employee.picture.url }}" class="rounded-circle img-thumbnail" alt="User Avatar" width="30" height="30">
+            </div>
+        </div>
+    </nav>
+    {% block content %}{% endblock %}
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'tracker/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'tracker/js/datatables.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+    {% block script %}{% endblock %}
+</body>
+</html>

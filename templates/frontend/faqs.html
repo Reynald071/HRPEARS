@@ -1,0 +1,114 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% load frontend_tags %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-xs-8">
+        <h1 class="bold">Frequently Asked Questions</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                <strong>Frequently Asked Questions</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-xs-4">
+        <div class="title-action">
+            {% if user|check_permission:'superadmin' %}
+            <button class="btn btn-info" data-toggle="modal" data-target="#add"><i class="fas fa-plus"></i> Add New FAQ</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel-group" id="accordion">
+                {% for row in activefaqs %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{ row.id }}"><span class="glyphicon glyphicon-facetime-video"></span> {{ row.question }}</a>
+                            {% if user|check_permission:'superadmin' %}
+                                <div class="pull-right" style="margin-top: -7.5px;"><button class="btn btn-outline" onclick="updateFaq({{ row.id }});" data-toggle="modal" data-target="#add">Update</button></div>
+                            {% endif %}
+                        </h4>
+                    </div>
+                    <div id="collapse{{ row.id }}" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            {% if row.title %}
+                                <h2 class="bold" style="margin-bottom:10px; margin-top:0px; text-align:justify;">
+                                    {{ row.title|safe }}
+                                </h2>
+                            {% endif %}
+                            {% if row.link %}
+                                <div class="youtube-responsive-container youtubeplayer">
+                                    {{ row.link|safe }}
+                                </div>
+                            {% endif %}
+                            {% if row.answer %}
+                                <p style="margin-top:10px; margin-bottom:0px; text-align:justify;">
+                                    {{ row.answer|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">Add a Frequently Asked Question</h3>
+            </div>
+            <form method="POST">
+            {% csrf_token %}
+            <div class="modal-body">
+                <input type="hidden" name="id" id="faq_id">
+                {{ form.title|as_crispy_field }}
+                {{ form.question|as_crispy_field }}
+                {{ form.link|as_crispy_field }}
+                {{ form.answer|as_crispy_field }}
+                {{ form.isactive|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script>
+        $('.panel').on('hidden.bs.collapse', function (e) {
+            $('.youtubeplayer').each(function(index) {
+                $(this).children('iframe').attr('src', $(this).children('iframe').attr('src'));
+            });
+        })
+
+        function updateFaq(id) {
+            $('#faq_id').val(id);
+            var map = new Map();
+
+            {% get_faqs as faq %}
+            {% for row in faq %}
+                map.set({{ row.id }}, ['{{ row.title }}', '{{ row.question }}', '{% if not row.answer or row.answer == '' %}{% else %}{{ row.answer }}{% endif %}', '{{ row.link|safe }}', '{{ row.isactive }}']);
+            {% endfor %}
+
+            $('#id_title').val(map.get(id)[0]);
+            $('#id_question').val(map.get(id)[1]);
+            $('#id_answer').val(map.get(id)[2]);
+            $('#id_link').val(map.get(id)[3]);
+        }
+    </script>
+{% endblock %}

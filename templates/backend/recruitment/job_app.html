@@ -1,0 +1,320 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style type="text/css">
+	.dropdown-menu {
+	    width: 100%;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">Job Applications</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					Admin
+				</li>
+				<li class="breadcrumb-item">
+					Recruitment & Onboarding
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>Job Applications</strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-md-9">
+			<div class="card card-info card-outline">
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover" id="table-app" width="100%">
+							<thead>
+								<tr>
+									<th class="text-left">ACTION</th>
+									<th class="text-center">TRACKING NO.</th>
+									<th class="text-center">VACANCY APPLIED FOR</th>
+									<th class="text-center">DATE OF APPLICATION</th>
+									<th class="text-center">STATUS</th>
+									<th class="d-none">STATUS ID</th>
+									<th class="d-none">REJECTED</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="card">
+				<div class="card-header title bg-info">
+					<h5 class="card-title font-weight-bold">FILTER APPLICATIONS</h5>
+				</div>
+				<div class="card-body">
+					<h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item list-group-item-action active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">
+							All <span id="status-total-all" class="badge badge-primary float-right" style="font-size: 12px;"></span>
+						</a>
+						{% for row in app_status %}
+						<a class="list-group-item list-group-item-action"  id="status-{{ row.id }}" href="javascript:;" data-role="status" data-filter="{{ row.id }}">
+							{{ row.name }} <span id="status-total-{{ row.id }}" class="badge badge-{% if row.id == 9 %}success{% else %}primary{% endif %} float-right" style="font-size: 12px;"></span>
+						</a>
+						{% endfor %}
+						<a class="list-group-item list-group-item-action"  id="status-reject" href="javascript:;" data-role="status" data-filter="reject">
+							Rejected <span id="status-total-reject" class="badge badge-danger float-right" style="font-size: 12px;"></span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="app-view-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+				<h3 class="modal-title"></h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			</div>
+	        <div id="app-content"></div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="vacancy-view-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog vacancy-modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+				<h3 class="modal-title">JOB VACANCY DETAILS</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			</div>
+	        <div id="vacancy-content"></div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="remarks-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+				<h3 class="modal-title">ADD/EDIT REMARKS</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			</div>
+	        <div id="remarks-content"></div>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(function() {
+		function globalInitialization(){
+    		$.get({
+    			url: '/backend/job-application/totals/',
+    			success: function(response){
+    				$('#status-total-all').text(response.total_app);
+    				$('#status-total-1').text(response.total_new_app);
+    				$('#status-total-2').text(response.total_paperscreen);
+    				$('#status-total-3').text(response.total_qualified);
+    				$('#status-total-4').text(response.total_initial_qual);
+    				$('#status-total-5').text(response.total_technical);
+    				$('#status-total-6').text(response.total_interview);
+    				$('#status-total-7').text(response.total_deliberation);
+    				$('#status-total-8').text(response.total_appointed);
+    				$('#status-total-9').text(response.total_hired);
+    				$('#status-total-reject').text(response.total_reject);
+    			}
+    		});
+    	}
+
+		globalInitialization();
+
+		$('#table-app').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 3, 'asc' ]],
+			'ajax': {
+				'url': '/api/employees/job-app/?format=datatables',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+                        var template = "<a href='javascript:;' data-role='app-view' data-id='"+ data +"'>Details</a> | ";
+						if (row['app_status_id'] !== 9 && row['is_rejected'] != 1) {
+							template += "<a href='javascript:;' data-role='approve' data-id='"+ data +"' data-tracking='"+ row['tracking_no'] +"'>Approve</a> | ";
+							template += "<a href='javascript:;' data-role='reject' data-id='"+ data +"' data-tracking='"+ row['tracking_no'] +"'>Reject</a> | ";
+						}
+						template += "<a href='javascript:;' data-role='remarks' data-id='"+ data +"'>Remarks</a>";
+						return template;
+					}
+				},
+				{'data': 'tracking_no', 'className': 'text-center',
+					'render': function(data, type, row, meta) {
+						return "<span class='text-info font-weight-bold'>"+ data +"</span>";
+					}
+				},
+				{'data': 'vacancy', 'className': 'text-center', 'name': 'vacancy.position.name, vacancy.empstatus.name',
+					'render': function(data, type, row, meta) {
+						return "<a href='javascript:;' data-role='vacancy-view' data-id='"+ row['id'] +"'>"+ data +"</a>";
+					}
+				},
+				{'data': 'date_of_app', 'className': 'text-center' },
+				{'data': 'status', 'className': 'text-center', 'name': 'app_status.name',
+					'render': function(data, type, row, meta) {
+						if (row['app_status_id'] == 9) {
+							return '<span class="badge badge-success">HIRED</span>';
+						} else if (row['is_rejected'] != 1) {
+							return data;
+						} else {
+							return '<span class="badge badge-danger">REJECTED</span>';
+						}
+					}
+				},
+				{'data': 'app_status_id', 'className': 'd-none', 'searchable': false, },
+				{'data': 'is_rejected', 'className': 'd-none', 'searchable': false, },
+			]
+		});
+
+		$(document).on('click', 'a[data-role=status]', function(){
+			console.log("clicked");
+			var filter = $(this).data('filter');
+			$('.list-group-item').removeClass('active');
+			$('#status-' + filter).addClass('active');
+			if(filter == 'all'){
+				$('#table-app').DataTable().ajax.url('/api/employees/job-app/?format=datatables').load();
+			}else{
+				$('#table-app').DataTable().ajax.url('/api/employees/job-app/?format=datatables&status=' + filter).load();
+			}
+		});
+
+		$(document).on('click', 'a[data-role=app-view]', function(){
+			var id = $(this).data('id');
+			var tracking_no = $('#'+id).find('td:eq(1)').text();
+			$('#app-view-modal').find('.modal-title').html("APPLICANT INFORMATION (TRACKING NUMBER: " + tracking_no + ")<p><small>Below are the information provided</small></p>");
+			$('#app-view-modal').modal('show').find('#app-content').empty();
+			$('#app-view-modal').modal('show').find('#app-content').load("/backend/job-application/view/" + id);
+		});
+
+		$(document).on('click', 'a[data-role=vacancy-view]', function () {
+            $('#vacancy-view-modal').modal('show').find('#vacancy-content').load('/backend/job-application/vacancy/view/' + $(this).data('id'));
+        });
+
+		$(document).on('click', 'a[data-role=approve]', function(){
+			var id = $(this).data('id');
+			var trackingNo = $(this).data('tracking');
+			Swal.fire({
+			  	title: "Are you sure",
+			  	html: `
+					You want to approve this application with tracking no. <h2 class='text-info font-weight-bold my-2'>`+ trackingNo +`</h2>
+					This application will proceed to the next stage.
+				`,
+			  	icon: "info",
+			  	showCancelButton: true,
+			  	confirmButtonColor: "#3498DB",
+			 	confirmButtonText: "Yes",
+			  	allowOutsideClick: false,
+			  	showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        :{ id: id },
+						url         : '{% url "approve_application" %}',
+						type        : 'POST',
+					});
+				},
+			}).then(function (response){
+				if (response.value.data){
+					Swal.fire({
+						title: "Good job!",
+						html: `
+							Application <span class='text-info font-weight-bold'>`+ trackingNo +`</span> approved successfully.
+							The application is now on <span class='font-weight-bold'>`+ response.value.status +`</span> stage.
+						`,
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							globalInitialization();
+							$('a.active[data-role=status]').click();
+						}
+					});
+				} else {
+					Swal.fire("Oh snap!", "Sorry, it seems like you have an empty request.", "error");
+				}
+			});
+		});
+
+		$(document).on('click', 'a[data-role=reject]', function(){
+			var id = $(this).data('id');
+			var trackingNo = $(this).data('tracking');
+			Swal.fire({
+			  	title: "Are you sure",
+			  	html: `
+					You want to reject this application with tracking no. <h2 class='text-info font-weight-bold my-2'>`+ trackingNo +`</h2>
+					<span class='text-danger font-weight-bold'>THIS CANNOT BE UNDONE.</span>
+				`,
+			  	icon: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+			 	confirmButtonText: "Yes",
+			  	allowOutsideClick: false,
+			  	showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        :{ id: id },
+						url         : '{% url "reject_application" %}',
+						type        : 'POST',
+					});
+				},
+			}).then(function (response){
+				if (response.value.data){
+					Swal.fire({
+						title: "Good job!",
+						html: "Application <span class='text-danger font-weight-bold'>"+ trackingNo +"</span> rejected successfully.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							globalInitialization();
+							$('a.active[data-role=status]').click();
+						}
+					});
+				} else {
+					Swal.fire("Oh snap!", "Sorry, it seems like you have an empty request.", "error");
+				}
+			});
+		});
+
+		$(document).on('click', 'a[data-role=remarks]', function () {
+            $('#remarks-modal').modal('show').find('#remarks-content').load('/backend/job-application/remarks/' + $(this).data('id'));
+        });
+
+    });
+</script>
+{% endblock %}

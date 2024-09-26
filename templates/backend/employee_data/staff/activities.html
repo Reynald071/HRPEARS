@@ -1,0 +1,174 @@
+{% load tags %}
+<div class="ibox" style="margin-top: -15px;" id="page-activities">
+    <div class="row">
+        <div class="col-sm-7">
+            <div class="ibox-title mb-3">
+                <h3 class="bold m-0">Travel History</h3>
+                <small>To view detailed travel orders please click the 'tracking number' and for more travel history click 'See more'.</small>
+            </div>
+            <div class="ibox-content">
+                <table class="table table-bordered">
+                    {% if travel_history %}
+                    <thead>
+                        <tr>
+                            <th>TRACKING NO.</th>
+                            <th>PLACE</th>
+                            <th class="text-right">DATE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in travel_history %}
+                        <tr>
+                            <td><a href="{% if row.detail.rito.tracking_merge %}{% url 'generate-to' row.detail.rito.tracking_merge %}{% else %}{% url 'generate-to' row.detail.rito.tracking_no %}{% endif %}" target="_blank">{{ row.detail.rito.tracking_no }}</a></td>
+                            <td>{{ row.detail.place }}</td>
+                            <td class="text-right">{% if row.detail.inclusive_from == row.detail.inclusive_to %}{{ row.detail.inclusive_from|date:"F d, Y" }}{% else %}{{ row.detail.inclusive_from }} - {{ row.detail.inclusive_to }}{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% else %}
+                    <tbody>
+                        <tr>
+                            <td class="text-center">
+                                You don't have any travel history yet.
+                            </td>
+                        </tr>
+                    </tbody>
+                    {% endif %}
+                </table>
+                {% if user|check_permission:'travel_history' or user|check_permission:'superadmin'%}
+                    {% if travel_history %}
+                    <br>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div>
+                                <a href="{% url 'backend_travel_history' employee.id %}" class="btn btn-info btn-sm" target="_blank">See more</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="ibox-title">
+                <div class="pull-left">
+                    <h3 class="bold">Metadata</h3>
+                </div>
+                {% if user|check_permission:'edit_employee' or user|check_permission:'superadmin' %}
+                <form id="validateForm">
+                {% csrf_token %}
+                <div class="pull-right mb-3">
+                    <input type="hidden" value="{{ employee.pi_id }}" name="pi_id">
+                    <button type="submit" class="btn btn-info" id="btn-validate">Validate</button>
+                </div>
+                </form>
+                {% endif %}
+            </div>
+            <div class="ibox-content">
+                 <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="capslock" style="width:4%;">#</th>
+                            <th>Menu Title</th>
+                            <th class="text-right">Date Updated</th>
+                        </tr>
+                    </thead>
+                    {% for row in pis_config %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ row.name }}</td>
+                        <td class="text-right">
+                        {% for upt in last_update %}
+                            {% if row.id == upt.pis_config_id %}
+                            {{ upt.date|date:"F d, Y H:i A" }}
+                            {% endif %}
+                        {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="ibox-title">
+        <h3 class="bold">SMS Notification</h3>
+    </div>
+    <div class="ibox-content" style="margin-top: -15px;">
+        <div class="table-responsive">
+            <table id="sms-table" class="table table-bordered" width="100%">
+                <thead>
+                    <th>Message</th>
+                    <th class="text-center">Contact Number</th>
+                    <th class="text-center">Date Sent</th>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $('#sms-table').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            "lengthChange": false,
+            'lengthMenu': [ 10, 25 ],
+            'order': [[ 2, 'desc' ]],
+            'ajax': {
+                'url': '/api/sms/user/?format=datatables&receiver_id={{ employee.id }}&contact_number={{ employee.pi.mobile_no }}',
+                'type': 'GET',
+                'beforeSend': function (request) {
+                    request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+                }
+            },
+            'columns': [
+                {'data': 'message', sortable: false },
+                {'data': 'contact_number', 'className': 'text-center', sortable: false },
+                {'data': 'date_sent', 'className': 'text-center' },
+            ],
+        });
+
+        {% if user|check_permission:'edit_employee' or user|check_permission:'superadmin' %}
+        $('#validateForm').on('submit', function(e){
+            var form = new FormData(this);
+            $.ajax({
+                data: form,
+                url: "{% url 'validate_pds' %}",
+                type: "POST",
+                beforeSend: function(){
+                    $('.btn').prop('disabled', true);
+                    $('#btn-validate').html("Validating..");
+                },
+                success: function(response){
+                    if(response.data){
+                        Swal.fire({
+                            title: "Good job!",
+                            html: "ePDS successfully validated.",
+                            icon: "success"
+                        }).then((result) => {
+                            $('#sms-table').DataTable().ajax.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Ooops!",
+                            html: response.msg,
+                            icon: "warning"
+                        });
+                    }
+                },
+                complete: function() {
+                    $('.btn').prop('disabled', false);
+                    $('#btn-validate').html("Validate");
+                },
+                cache       : false,
+                contentType : false,
+                processData : false,
+            });
+            e.preventDefault();
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

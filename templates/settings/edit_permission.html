@@ -1,0 +1,64 @@
+{% load crispy_forms_tags %}
+<form id="permissionForm" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="modal-body">
+    <input type="hidden" name="id" id="id">
+    <div class="form-group">
+        <label>Name<span class="asteriskField">*</span></label>
+        <input type="text" class="form-control" name="name" value="{{ permission.name }}" id="edit_name">
+    </div>
+    {{ form.description|as_crispy_field }}
+    {{ form.badge|as_crispy_field }}
+    <div class="form-group">
+        <label>Codename<span class="asteriskField">*</span></label>
+        <input type="text" class="form-control" value="{{ permission.codename }}" readonly>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Save changes</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('#permissionForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to update this permission",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "update_portal_permission" permission.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        }).then(function (data){
+            if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "You have successfully updated name '" + $('#edit_name').val() +"' in permission.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#permissionForm').trigger('reset');
+                        $('#permission_modal').modal('hide');
+                        $('#permission-table').DataTable().ajax.reload();
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

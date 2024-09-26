@@ -1,0 +1,146 @@
+<p>MOV Type / <strong>{{ mov_type.name }}</strong></p>
+<hr>
+<form id="uploadForm">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" style="margin-top: 7px !important;">File<span class="asteriskField">*</span></label>
+                <div class="col-sm-10"><input type="file" name="file" class="form-control file-control" required></div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group row">
+                <label class="col-sm-3 col-form-label" style="margin-top: 7px !important;">Year<span class="asteriskField">*</span></label>
+                <div class="col-sm-9"><input type="number" name="year" value="{{ year }}" class="form-control" required></div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <button type="submit" class="btn btn-info btn-block">Upload</button>
+        </div>
+    </div>
+</form>
+<table class="table table-bordered" id="table-movs" width="100%">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>Type</th>
+            <th>Filename</th>
+            <th>Year</th>
+            <th>Uploaded by</th>
+            <th>Date Uploaded</th>
+            <th class="display-none">File</th>
+        </tr>
+    </thead>
+</table>
+{% block script %}
+<script>
+    $('#table-movs').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 4, 'desc' ]],
+        'ajax': {
+            'url': '/api/payroll/movs/?format=datatables&mov_type_id='+'{{ mov_type.id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    var template = '';
+                    template += '<a href="'+ row['file'] + '" target="_blank">Preview</a>';
+                    template += ' | <a href="javascript:;" data-role="delete" data-id="'+ data +'">Delete</a>';
+                    return template;
+                }
+            },
+            {'data': 'mov_type', 'name': 'mov_type.name' },
+            {'data': 'filename', 'name': 'file' },
+            {'data': 'year' },
+            {'data': 'uploaded_by', 'name': 'uploaded_by.pi.user.first_name, uploaded_by.pi.user.last_name' },
+            {'data': 'date_uploaded', 'searchable': false },
+            {'data': 'file', 'className': 'display-none'},
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+        var id = $(this).data('id');
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to delete this " + '{{ mov_type.name|lower }}' + " file",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : {
+                        'id': id
+                    },
+                    url         : '{% url "delete_payroll_movs" %}',
+                    type        : 'POST',
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                    title: 'Good job!',
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#uploadForm').trigger('reset');
+                        $('#table-movs').DataTable().ajax.reload();
+                    }
+                });
+            }
+        });
+    });
+
+    $('#uploadForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to upload this " + '{{ mov_type.name|lower }}' + " movs",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "view_payroll_movs" mov_type.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                    title: 'Good job!',
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#uploadForm').trigger('reset');
+                        $('#table-movs').DataTable().ajax.reload();
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

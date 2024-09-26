@@ -1,0 +1,52 @@
+<form id="updateLeaveCredits">
+    {% csrf_token %}
+    <div class="alertDiv"></div>
+    <input type="hidden" name="emp_id" value="{{ leave_credits.emp_id }}">
+    <div class="form-group">
+        <label>Leave Type</label>
+        <select class="form-control select" name="leavetype" readonly>
+            <option></option>
+            {% for row in leave_type %}
+            {% if row.id == leave_credits.leavetype_id %}
+            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Total</label>
+        <input type="text" class="form-control" name="update_total" value="{{ leave_credits.leave_total }}" onkeypress="return isNumberKey(event)">
+    </div>
+    <button type="submit" class="btn btn-info">Save changes</button>
+</form>
+{% block script %}
+<script>
+    function isNumberKey(evt)
+    {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    $('#updateLeaveCredits').on('submit', function(e){
+    	$.ajax({
+    		data: new FormData(this),
+    		url: "{% url 'update_leave_credits' leave_credits.id %}",
+    		type: "POST",
+    		cache       : false,
+            contentType : false,
+            processData : false
+    	})
+    	.done(function(data){
+    		if (data.data == 'success'){
+    			window.location.reload();
+       		}
+    	});
+    	e.preventDefault();
+    });
+</script>
+{% endblock %}

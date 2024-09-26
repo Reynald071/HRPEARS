@@ -1,0 +1,331 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Vest Database</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Administrator</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Vest Borrower</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            {% if user|check_permission:'superadmin' or user|check_permission:'staffing' %}
+				<div class="btn-group">
+					<a class="btn btn-default" href='#' data-role="view">Add Staff</a>
+					<button type="button" data-toggle="dropdown" class="btn btn-info dropdown-toggle"><span class="loading open-circle" style="display:none;"></span><i class="fas fa-file-export"></i> Action <span class="caret"></span></button>
+				</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-right">
+						<a class="btn btn-default" href='{% url "vest_borrower" %}'>Refresh</a>
+					</div>
+					<br><br><br>
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-hover" id="vest_database" width="100%">
+							<thead>
+								<tr>
+									<th class="capslock">Action</th>
+									<th class="capslock">Emp ID</th>
+									<th class="capslock">Full Name</th>
+									<th class="capslock">Section</th>
+									<th class="capslock">Date</th>
+									<th class="capslock">Date Returned</th>
+									<th class="capslock">Status</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	      <div class="col-sm-3">
+	         <div class="row">
+	            <div class="col-md-12">
+	               <div class="ibox">
+	                  <div class="ibox-title bg-primary">
+	                     <h5>FILTER</h5>
+	                  </div>
+	                  <div class="ibox-content">
+	                     <h4>By Category</h4>
+	                     <div class="list-group">
+	                        <a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+	                        <a class="list-group-item"  id="status-0" href="javascript:;" data-role="status" data-filter="0">Borrowed</a>
+	                        <a class="list-group-item"  id="status-1" href="javascript:;" data-role="status" data-filter="1">Returned</a>
+	                     </div>
+	                  </div>
+	               </div>
+	            </div>
+	         </div>
+	      </div>
+	</div>
+</div>
+<div id="myModal" class="modal fade" role="dialog" aria-labelledby="myExtraLargeModalLabel" data-backdrop="static"  aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+        	<h3 class="modal-title">Vest Borrower</h3>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+          <div class="modal-body" id="load_data"> 
+			<form id="vestsubmit">
+				<div class="table-responsive">
+				    <table width="100%" cellspacing="0" class="table table-bordered" id="input_fields_wrap">
+				        <tr>
+				            <td style="display: none;">
+				                <input type="text" id="empid" name="id">
+				            </td>
+				            <td>
+				                <label for="recipient-name" class="col-form-label">Full Name<span class="asteriskField">*</span> </label>
+								<input class="form-control typeahead3" name="fname" required="true" type="text">
+				            </td>
+				            <td>
+				                <label for="recipient-name" class="col-form-label">Number of days to return<span class="asteriskField">*</span> </label>
+				                <input type="text" class="form-control" name="case" style="width:100%;" autocomplete="off">
+				            </td>
+				            <td>
+				                <label for="recipient-name" class="col-form-label">Date Borrowed<span class="asteriskField">*</span> </label>
+				                <input type="date" class="form-control" name="start" style="width:100%;">
+
+				            </td>
+				        </tr>
+				    </table>
+				</div>
+			    <div class="modal-footer">
+			        <button type="submit" class="btn btn-info">Save</button>
+			        <button class="btn btn-light" data-dismiss="modal">Close</button>
+			    </div>
+			</form>    
+          </div> 
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script>
+$("form").attr('autocomplete', 'off');
+datatable_stocks();
+function datatable_stocks(){
+	$('#vest_database').DataTable({
+		'serverSide': true,
+		'processing': true,
+		'deferRender': true,
+		'order': [[ 4, 'desc' ]],
+		'lengthMenu': [25,50,100],
+		'ajax': {
+			'url': '/api/hrws/vest_view?format=datatables',
+			'type': 'GET',
+			'beforeSend': function (request) {
+				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+			}
+		},
+		'fnCreatedRow': function (row, data, index) {
+			$(row).attr('id', data['id']);
+		},
+		'columns': [
+			{'data': 'id',
+				'render': function(data,type,row,meta){
+					if(row['status'] == 1){
+						return "";
+					}else{
+						return "<a href='#' data-role='updatevest' data-id='"+ data + "	'>Return</a> | \
+                             <a href='#' data-role='Remind' data-id="+ data + ">Remind</a>"
+					}
+				}
+			},
+			{'data': 'emp_id', 'className': 'text-center', 'name':'emp.id_number'},
+			{'data': 'full_name','class':'text-center','name':'emp.pi.user.first_name','name':'emp.pi.user.last_name'},
+			{'data':'division','class':'text-center','name':'emp.section.div.div_name'},
+			{'data':'date_borrowed','class':'text-center','name':'date_borrowed'},
+			{'data':'date_returned','class':'text-center','name':'date_returned'},
+			{'data': 'status',
+				'render': function(data,type,row,meta){
+					if(row['status'] == 1){
+						return "<span class='label label-primary'>Returned</span>";
+					}else{
+						return "<span class='label label-danger'>Borrowed</span>";
+					}
+				}
+			},
+		],
+	});
+}
+   $(document).on('click', 'a[data-role=status]', function(){
+		$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+		if($(this).data('filter') == 'all'){
+			$('#vest_database').DataTable().ajax.url('/api/hrws/vest_view?format=datatables').load();
+		}else{
+			$('#vest_database').DataTable().ajax.url('/api/hrws/vest_view?format=datatables&status='+$(this).data('filter')).load();
+		}
+	});
+	$(document).on('click', 'a[data-role=updatevest]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "They already return the Vest?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: "{% url 'updatevest' %}",
+					data: {
+						id: id
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					if (data.data == 'success'){
+						Swal.fire({
+						  title: "Good job!",
+						  text: "The employee Successfully Returned the Vest",
+						  icon: "success",
+						  confirmButtonColor: "#3498DB",
+						  allowOutsideClick: false,
+						}).then((result) => {
+		    				if (result.isConfirmed) {
+						  		$('#vest_database').DataTable().ajax.reload();
+						  	}
+						});
+					}
+				});
+			}
+		});
+    });
+	$(document).on('click', 'a[data-role=Remind]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "They still have the vest?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: "{% url 'remind_vest' %}",
+					data: {
+						id: id
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					if (data.data == 'success'){
+						Swal.fire({
+						  title: "Good job!",
+						  text: "You successfully remind them!",
+						  icon: "success",
+						  confirmButtonColor: "#3498DB",
+						  allowOutsideClick: false,
+						}).then((result) => {
+		    				if (result.isConfirmed) {
+						  		$('#vest_database').DataTable().ajax.reload();
+						  	}
+						});
+					}
+				});
+			}
+		});
+    });
+    $(".typeahead3").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $(document).on('click','a[data-role=view]', function(){ // FOR MODAL PASS TO DIFFERENT MODAL
+      $('#myModal').modal('show')
+    });
+
+    $('#vestsubmit').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "This employee borrowed a Vest?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'insertvest' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data == "Success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully added data",
+                      icon: "info",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#vest_database').DataTable().ajax.reload();
+                        }
+                    });
+                }else if(data == 'Fail'){
+                    Swal.fire({
+                      title: "Insert Failed!",
+                      text: "Data already exists, Kindly search it instead",
+                      icon: "error",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#vest_database').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

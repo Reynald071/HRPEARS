@@ -1,0 +1,72 @@
+<form id="createEmpGroupForm">
+    {% csrf_token %}
+    <div class="form-group">
+        <label>Employee Group</label>
+        <input type="text" class="form-control" name="employee_group">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ACTION</th>
+                    <th>NAME</th>
+                    <th class="text-right">DATE CREATED</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>
+                        <a href="javascript:;" data-role="delete" data-id="{{ row.id }}">Delete</a>
+                    </td>
+                    <td>{{ row.name }}</td>
+                    <td class="text-right">{{ row.date_created }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div class="form-group pull-right">
+        <button type="submit" class="btn btn-info">Save changes</button>
+    </div>
+    <br><br>
+</form>
+{% block script %}
+<script>
+    $('#createEmpGroupForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : "{% url 'employee_group' %}",
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                $('#employee-group').modal('show').find('.modal-body').empty();
+                $('#employee-group').modal('show').find('.modal-body').load('{% url "employee_group" %}');
+            }
+        });
+    });
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+        $.ajax({
+            data        : {
+                id: $(this).data('id'),
+            },
+            url         : "{% url 'employee_group_delete' %}",
+            type        : 'POST',
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                $('#employee-group').modal('show').find('.modal-body').empty();
+                $('#employee-group').modal('show').find('.modal-body').load('{% url "employee_group" %}');
+            }
+        });
+    });
+</script>
+{% endblock %}

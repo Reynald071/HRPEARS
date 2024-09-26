@@ -1,0 +1,146 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/libraries.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Keywords</h1>
+        <ol class="breadcrumb">
+			<li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Libraries
+            </li>
+			<li class="breadcrumb-item">
+                Certifications
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'keywords' %}">Keywords</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Update</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-4">
+            <div class="ibox">
+                <form id="submitForm" novalidate="">
+                    <div class="ibox-content">
+                        {% csrf_token %}
+                        {{ form.keyword|as_crispy_field }}
+                        {{ form.howtofetch|as_crispy_field }}
+
+                        <div class="input-group">
+                            <input type="text" id="queryoutput" class="form-control b-r-sm input-sm" autocomplete="off" placeholder="Output of query" readonly>
+                            <span class="input-group-btn"> <button style="height:30px; font-size:12px;" id="runquery" type="button" class="btn btn-default btn-sm">Run query</button> </span>
+                        </div>
+                        <div class="form-group">
+                            <div id="div_id_need_param" class="checkbox">
+                                <label for="id_need_param" class="">
+                                    <input type="checkbox" name="need_param" value="0" class="checkboxinput" id="id_need_param" {% if form.need_param.value == 1 %}checked{% endif %}> Does query need parameter (employee id)?
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ibox-footer">
+                        <button class="btn btn-info">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	{% getemployeebyempid request.session.emp_id as emp %}
+	$('#runquery').on('click', function(e) {
+		var query = $('#id_howtofetch').val();
+		var keyword = $('#id_keyword').val();
+		var needparam = $('#id_need_param').is(':checked');
+		//need to check for validity of fields first
+		if (keyword == '') {
+			alert('Keyword must be provided before execution of query.');
+		} else if (query == '') {
+			alert('Please provide query to be executed.');
+		} else {
+			if (query.indexOf(keyword) == -1) {
+				alert('Keyword provided was not found as alias in the query to be executed.');
+			} else {
+				$('#queryoutput').val('');
+				$.ajax({
+					url: "{% url 'run-query' %}",
+					type: "POST",
+					data: {
+							"csrf": "{{ csrf_token }}",
+							"keyword": keyword,
+							"query": query,
+							"id": "{{ emp.id_number }}",
+							"needparam": needparam
+					},
+					success: function (r) {
+						if (r.data[0]['error'] == 0) {
+							alert('Error: The executed query returned an empty object.');
+						} else {
+							if (r.data[1]['error'] == 1) {
+								alert('Error: '+r.data[0][keyword]);
+							} else {
+								if (keyword in r.data[0]) {
+									$('#queryoutput').val(r.data[0][keyword]);
+								} else {
+									alert('Keyword provided was not found as alias in the executed query.');
+								}
+							}
+						}
+					},
+				});
+			}
+		}
+	});
+
+	$('#submitForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		$.ajax({
+			url: window.location.pathname,
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				$('.error').remove();
+
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else {
+                    window.location = "{% url 'keywords' %}";
+                }
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+
+	$('#id_keyword').on('input', function() {
+	  	var c = this.selectionStart,
+		  	r = /[^a-z_]/gi,
+		  	v = $(this).val();
+	  	if (r.test(v)) {
+			$(this).val(v.replace(r, ''));
+			c--;
+	  	}
+	  	this.setSelectionRange(c, c);
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,205 @@
+<form id="submitEditForm">
+<div class="modal-body">
+    {% csrf_token %}
+    <div id="alertEditDiv"></div>
+    <div class="row">
+        <div class="col-sm-7">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>From<span class="asteriskField">*</span></label>
+                        <input type="date" id="from" name="from" class="form-control b-r-sm" value="{{ rito.inclusive_from|date:'Y-m-d'}}" required>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>To<span class="asteriskField">*</span></label>
+                        <input type="date" id="to" name="to" class="form-control b-r-sm" value="{{ rito.inclusive_to|date:'Y-m-d'}}" required>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label>Places of Travel<span class="asteriskField">*</span></label>
+                        <textarea class="form-control b-r-sm" name="places" placeholder="Input place/s of travel.." required>{{ rito.place }}</textarea>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label>Purpose<span class="asteriskField">*</span></label>
+                        <textarea class="form-control b-r-sm" name="purpose" placeholder="Write purpose of travel.." required>{{ rito.purpose }}</textarea>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label>Expected Output<span class="asteriskField">*</span></label>
+                        <textarea class="form-control b-r-sm" name="expected_output" placeholder="Expected outputs of the travel.." required=>{{ rito.expected_output }}</textarea>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>Claims<span class="asteriskField">*</span></label>
+                        <select class="form-control select b-r-sm" id="claims" name="claims" required>
+                            <option></option>
+                            {% for row in claims %}
+                            {% if row.id == rito.claims_id %}
+                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                            {% else %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>Means of Transportation<span class="asteriskField">*</span></label>
+                        <select class="form-control select b-r-sm" id="mot" name="mot" required>
+                            <option></option>
+                            {% for row in mot %}
+                            {% if row.id == rito.mot_id %}
+                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                            {% else %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <label>Employee(s)</label>
+            <a id="btn-edit-add" href="javascript:;"><i class="fas fa-plus"></i></a>
+            <div id="edit-items">
+                {% for row in ritopeople %}
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" class="form-control filter_employee_edit_to b-r-sm" name="employee[]" required autocomplete="off" placeholder="e.g. [16-12345] FIRST NAME MIDDLE NAME LAST NAME" value="[{{ row.name.id_number }}] {{ row.name.pi.user.first_name|upper }} {{ row.name.pi.user.last_name|upper }}" readonly> <span class="input-group-append"> <button type="button" class="btn btn-danger" data-role='btn-edit-remove' data-id="{{ row.name_id }}"><i class="fas fa-minus"></i></button> </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info" id="btnSaveForm">Save</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#btn-edit-add').on('click', function(){
+		$('#edit-items').append('<div class="form-group"><div class="input-group minus-remove"><input type="text" class="form-control filter_employee_edit_to b-r-sm" name="employee[]" required autocomplete="off" placeholder="e.g. [16-11626] FIRST NAME MIDDLE NAME LAST NAME"> <span class="input-group-append"> <button type="button" class="btn btn-danger btn-edit-remove"><i class="fa fa-minus"></i></button> </span></div></div></div>');
+
+		$(".filter_employee_edit_to").typeahead({
+			source: function(query, process){
+				return $.get({
+					url: '{% url "filter_employee" %}',
+					data: { query: query },
+					datatype: 'json',
+					success: function (data) {
+						return process(data);
+					}
+				});
+			},
+			highlight: true,
+		});
+	});
+
+	$(document).on('click', 'button[data-role=btn-edit-remove]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+          title: "Are you sure you want to delete this record?",
+          text: "After you delete this record, this will be unrecoverable.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					data: {
+						id: id,
+						detail_id: '{{ rito.id }}'
+					},
+					type: "POST",
+					url: "{% url 'delete_ritopeople' %}"
+				})
+				.done(function(data){
+					if (data.data){
+						Swal.fire("Well done!","Successfully deleted!","success");
+						$('#edit-rito-modal').modal('show').find('#edit-content-tr').empty();
+						$('#edit-rito-modal').modal('show').find('#edit-content-tr').load('{% url "edit_rito" rito.id %}');
+						$('#table-requests').DataTable().ajax.reload();
+					}
+				});
+			}
+	    });
+    });
+
+    $('#submitEditForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this record?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "edit_rito" rito.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == 'success'){
+                Swal.fire({
+                    title: "Good job!",
+                    text: "Initial travel request successfully updated.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#edit-rito-modal').modal('show').find('#edit-content-tr').empty();
+			            $('#edit-rito-modal').modal('show').find('#edit-content-tr').load("{% url "edit_rito" rito.id %}");
+                        $('#table-requests').DataTable().ajax.reload();
+                    }
+                });
+            } else {
+                var conflict = response.value.conflict;
+                $('#alertEditDiv').empty();
+                for(var i=0; i < conflict.length; i++){
+                    $('#alertEditDiv').append(`
+                    <div class='alert alert-warning'>
+                        <i class='fas fa-info-circle'></i>
+                        It seems ` + conflict[i]['name'] + ` has already been scheduled to travel on or within the ` + conflict[i]['text_date'] + `,
+                        as indicated in `+ conflict[i]['text_to']  +`: ` + conflict[i]['to_number'] + `
+                    </div><br>`);
+                }
+			}
+        });
+        e.preventDefault();
+    });
+
+	$('#edit-items').on("click", ".btn-edit-remove", function(e){
+		e.preventDefault();
+		$(this).parent().parent().remove();
+	});
+</script>
+{% endblock %}

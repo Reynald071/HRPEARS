@@ -1,0 +1,354 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% load tags %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/material.css' %}">
+<style type="text/css">
+	.dropdown-menu {
+	    width: 100%;
+	}
+	input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      border-bottom: 0px solid black;
+      width: 150px;
+    }
+	.form-control[readonly] {
+		background-color: transparent !important;
+		opacity: 1;
+		cursor: not-allowed;
+	}
+	.note {
+		position: relative;
+		cursor: not-allowed;
+	}
+	.note:after {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 0;
+		height: 0;
+		display: block;
+		border-left: 10px solid transparent;
+		border-bottom: 10px solid transparent;
+		border-top: 10px solid #009688;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Accomplishment Report</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+			<li class="breadcrumb-item">
+                <a href="javascript:;">My Profile</a>
+            </li>
+			<li class="breadcrumb-item">
+                <a href="{% url 'my-profile' %}#activities">Activities</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Accomplishment Report</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="ibox">
+				<div class="ibox-title">
+					<form id="generateform">
+						<div class="row">
+							<div class="form-group col-md-5">
+								<label>Start Date</label>
+								<input type="date" class="form-control" id="start_date" name="start_date" required>
+							</div>
+							<div class="form-group col-md-5">
+								<label>End Date</label>
+								<input type="date" class="form-control" id="end_date" name="end_date" required>
+							</div>
+							<div class="form-group col-md-2">
+								<label>&nbsp;</label>
+								<div class="btn-group btn-group-justified" role="group" aria-label="..">
+								  	<div class="btn-group" role="group">
+										<button type="submit" id="btnGenerateform" class="btn btn-info">Generate</button>
+										<button type="button" id="btn-reset" class="btn btn-default" style="display: none;">Reset</button>
+								  	</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="ibox-content" id="ibox-content" style="padding: 0px 20px !important;">
+					<form id="submitform">
+						<div class="spinner-example" id="preloader" style="display: none;">
+							<div class="sk-spinner sk-spinner-double-bounce">
+								<div class="sk-double-bounce1"></div>
+								<div class="sk-double-bounce2"></div>
+							</div> <br>
+							<p class="text-center" id="preloader-text">Generating your accomplishment report..</p>
+						</div>
+						<div id="generatedform"></div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!--<div class="modal" id="generate-dtr" role="dialog" aria-hidden="true">-->
+<!--	<div class="modal-dialog">-->
+<!--		<div class="modal-content animated bounceInDown">-->
+<!--            <div class="modal-header bg-info">-->
+<!--                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>-->
+<!--                <h3 class="modal-title">GENERATE DAILY TIME RECORD</h3>-->
+<!--            </div>-->
+<!--			<form method="POST" action="{% url 'print_dtr' %}" target="_blank">-->
+<!--			{% csrf_token %}-->
+<!--			<div class="modal-body">-->
+<!--				<div class="alert alert-info"><i class="fas fa-info-circle"></i> This includes generation of your biometric and work from home attendance.</div><br>-->
+<!--				<div class="form-group">-->
+<!--					<label>Start Date</label>-->
+<!--					<input type="date" class="form-control" max="{% now 'Y-m-d' %}" name="start_date" required>-->
+<!--				</div>-->
+<!--				<div class="form-group">-->
+<!--					<label>End Date</label>-->
+<!--					<input type="date" class="form-control" name="end_date" max="{% now 'Y-m-d' %}" required>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--			<div class="modal-footer">-->
+<!--				<button type="submit" class="btn btn-info">Generate</button>-->
+<!--			</div>-->
+<!--			</form>-->
+<!--		</div>-->
+<!--	</div>-->
+<!--</div>-->
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	var sd, ed = '';
+
+	function getFormattedDate(date, format = 1) {
+		let year = date.getFullYear();
+		let month = (1 + date.getMonth()).toString().padStart(2, '0');
+		let day = date.getDate().toString().padStart(2, '0');
+		var mt = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+		if (format==1) {
+			return year + '-' + month + '-' + day;
+		} else {
+			return mt[month-1] + ' ' + day;
+		}
+	}
+
+	function createTableRow(data) {
+		var thisdate = new Date(data);
+		var url_mask = "{% url 'fetchaccomplishment' 'sanaall' %}".replace("sanaall", getFormattedDate(thisdate, 1).toString());
+		var returneddata = '';
+		$.ajax({
+		  	url: url_mask,
+		  	async: false,
+		  	dataType: 'json',
+		  	success: function (data) {
+				returneddata = data.data;
+		  	}
+		});
+
+		var dt = getFormattedDate(thisdate, 1);
+		var dt2 = getFormattedDate(thisdate, 0);
+		var thisday = thisdate.getDay();
+		var dy = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+		if (thisday > 0 && thisday < 6) {
+			checked = 'checked';
+		} else {
+			if (returneddata.id == '') {
+				checked = '';
+			} else {
+				checked = 'checked';
+			}
+		}
+
+		var disabled = 'disabled';
+		var readonly = 'readonly';
+		var classnote = 'note';
+		var titleforremarks = 'title="'+returneddata.rm+'"'
+		var skip = 'skip';
+		var skipchecked = 'checked';
+		if (returneddata.rm == '') {
+			disabled = '';
+			skip = '';
+			skipchecked = '';
+			readonly = '';
+			classnote = '';
+			titleforremarks = '';
+		}
+
+		if (skip == 'skip') {
+			checked = '';
+		}
+
+		return '\
+			<tr>\
+				<td class="text-center '+classnote+'" style="min-width:30px !important;" '+titleforremarks+'>\
+					<input type="checkbox" style="width:13px;" name="to_include[]" onchange="processCbChange(this, `chk'+dt+'`);" title="'+dy[thisday]+'" '+checked+' '+disabled+' '+skipchecked+'>\
+					<input type="hidden" class="form-control borderless" id="chk'+dt+'" value="'+checked+''+skip+'" name="checked[]">\
+				</td>\
+				<td class="nopadding '+classnote+'" '+titleforremarks+'>\
+					'+dt2+'\
+					<input type="hidden" class="form-control borderless" value="'+dt.toString()+'" name="date_per[]">\
+					<input type="hidden" class="form-control borderless" value="'+returneddata.id+'" name="op_id[]">\
+				</td>\
+				<td class="nopadding '+classnote+'" '+titleforremarks+'>\
+					<input type="text" class="form-control borderless" value="'+returneddata.pv+'" name="place_vis[]" '+readonly+'>\
+				</td>\
+				<td class="nopadding '+classnote+'" '+titleforremarks+'>\
+					<input type="text" class="form-control borderless" value="'+returneddata.op+'" name="output[]" '+readonly+'>\
+				</td>\
+			</tr>\
+		';
+	}
+
+	function createTable(data) {
+		$('#generatedform').empty();
+		$('#generatedform').append('\
+			<table class="table table-bordered" id="generatedtable" style="margin-bottom:0px !important; table-layout:fixed;">\
+				<tr>\
+					<th class="text-center" style="width:5%; overflow:hidden; text-overflow:ellipsis; vertical-align:middle;">TO INCLUDE</th>\
+					<th class="text-center" style="width:15%; vertical-align:middle;">DATE</th>\
+					<th class="text-center" style="width:35%; vertical-align:middle;">PLACE/S VISITED</th>\
+					<th class="text-center" style="width:45%; vertical-align:middle;">ACCOMPLISHMENTS / OUTPUTS</th>\
+				</tr>\
+			</table>\
+			<br>\
+			<div class="form-group">\
+			<input type="checkbox" onchange="ifcheckClick();" style="margin-left: -65px;" id="ifcheck">\
+			<span class="remove-text" style="margin-left: -65px;">Check if to be noted by Division Chief on print, else by the Section Head.</span>\
+			</div>\
+			<div class="form-group">\
+			<input type="checkbox" onchange="ifcheckClick();" id="withdtr" style="margin-left: -65px;">\
+			<span class="remove-text" style="margin-left: -65px;">Print with Daily Time Records</span>\
+			</div>\
+			<button class="btn btn-info" id="btnSubmitform" type="button">Save</button>\
+			<a href="javascript:;" target="_blank" id="btnPrintform" class="btn btn-default" type="button">Print</a>\
+		');
+		data.forEach(item => $('#generatedtable tr:last').after(createTableRow(item)));
+	}
+
+    $('#generateform').on('submit', function(e){
+    	sd = $('#start_date').val();
+    	ed = $('#end_date').val();
+		e.preventDefault();
+		if (sd<=ed) {
+			var form = new FormData(this);
+			$.ajax({
+				data        : form,
+				url         : '{% url "generateform" %}',
+				type        : 'POST',
+				beforeSend: function(){
+					$('.btn').prop("disabled", true);
+					$('#btnGenerateform').html('<span class="loading open-circle"></span> Generating');
+                	$('#preloader').css('display', '');
+				},
+				success: function(data){
+					var info = data.data;
+					createTable(info);
+					$('#ibox-content').css('padding-bottom', '20px');
+					$('#ibox-footer').css('display', '');
+
+					var url_mask = "{% url 'print_accomplishment' 'start_date' 'end_date' 0 0 %}".replace("start_date", sd).replace("end_date", ed);
+					$('#btnPrintform').attr('href', url_mask);
+
+					$('#btnSubmitform').click(function(){
+						$('#submitform').submit();
+					});
+				},
+				complete: function(){
+					$('#btnGenerateform').text('Generate');
+                	$('.btn').prop("disabled", false);
+
+                	$('#preloader').css('display', 'none');
+                	$('#btnGenerateform').css('display', 'none');
+                	$('#btn-reset').css('display', '');
+				},
+				cache       : false,
+				contentType : false,
+				processData : false
+			});
+		} else {
+			Swal.fire({
+			  title: "Date error!",
+			  text: "Start date cannot be greater than end date.",
+			  type: "error"
+			});
+			$('#end_date').val(sd);
+		}
+	});
+
+	$('#btn-reset').on('click', function(){
+		$('#generatedform').empty();
+		$('#start_date').val('');
+		$('#end_date').val('');
+		$('#btnGenerateform').css('display', '');
+		$('#btn-reset').css('display', 'none');
+	});
+
+    $('#submitform').on('submit', function(e){
+    	var form = new FormData(this);
+    	$.ajax({
+			data        : form,
+			url         : '{% url "accomplishment" %}',
+			type        : 'POST',
+			beforeSend: function(data){
+				$('#generatedform').empty();
+				$('#preloader').css('display', '');
+				$('#btn-reset').prop("disabled", true);
+				$('#preloader-text').text('Saving your accomplishment report..');
+			},
+			success: function(response){
+				toastr.success('Saved successfully.', 'Accomplishment Report', {timeOut: 5000})
+			},
+			complete: function(data){
+				$('#preloader').css('display', 'none');
+				$('#preloader-text').text('Generating your accomplishment report..');
+
+				$('#btnGenerateform').click();
+			},
+			cache       : false,
+			contentType : false,
+			processData : false,
+		});
+		e.preventDefault();
+	});
+
+	function processCbChange(el, id) {
+		if ($(el).is(':checked')){
+			$('#'+id).val('checked');
+		} else {
+			$('#'+id).val('');
+		}
+	}
+
+	function ifcheckClick(){
+		var url_mask = "{% url 'print_accomplishment' 'start_date' 'end_date' 0 0 %}".replace("start_date", sd).replace("end_date", ed);
+		if ($('#ifcheck').is(':checked')){
+			url_mask = "{% url 'print_accomplishment' 'start_date' 'end_date' 1 0 %}".replace("start_date", sd).replace("end_date", ed);
+			if ($('#withdtr').is(':checked')){
+				url_mask = "{% url 'print_accomplishment' 'start_date' 'end_date' 1 1 %}".replace("start_date", sd).replace("end_date", ed);
+			}
+		} else {
+			if ($('#withdtr').is(':checked')){
+				url_mask = "{% url 'print_accomplishment' 'start_date' 'end_date' 0 1 %}".replace("start_date", sd).replace("end_date", ed);
+			}
+		}
+		$('#btnPrintform').attr('href', url_mask);
+	}
+</script>
+{% endblock %}

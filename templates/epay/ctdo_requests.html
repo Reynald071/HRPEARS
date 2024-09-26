@@ -1,0 +1,72 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'manage_payroll_employee' %}">Manage Employee</a></li>
+                <li class="breadcrumb-item active">CTDO Requests</li>
+                <li class="breadcrumb-item active">{{ employee.pi.user.get_fullname }}</li>
+            </ol>
+        </nav>
+        <div class="row mt-3">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-bordered table-hover" id="ctdo-table" width="100%">
+                            <thead>
+                                <th>TRACKING NO.</th>
+                                <th class="text-center">INCLUSIVE DATES</th>
+                                <th class="text-center">DATE OF FILING</th>
+                                <th class="text-right">STATUS</th>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#ctdo-table').DataTable({
+		'serverSide': true,
+		'processing': true,
+		'deferRender': true,
+		'lengthMenu': [ 25, 50, 100 ],
+		'order': [[ 2, 'desc' ]],
+		'ajax': {
+			'url': '/api/leave/ctdo/?format=datatables&employee_id={% getHash employee.id %}',
+			'type': 'GET',
+			'beforeSend': function (request) {
+				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+			}
+		},
+		'fnCreatedRow': function (row, data, index) {
+			$(row).attr('id', data['id']);
+		},
+		'columns': [
+			{'data': 'tracking_no'},
+			{'data': 'inclusive_dates', 'searchable': false, 'className': 'text-center'},
+			{'data': 'date_filed', 'className': 'text-center'},
+			{'data': 'status', 'className': 'text-center',
+			    'render': function(data, type, row, meta) {
+				    if(row['status'] == 0) {
+				        return '<span class="badge bg-primary">Pending</span>';
+				    } else if(row['status'] == 1) {
+				        return '<span class="badge bg-success">Approved</span>';
+				    } else if(row['status'] == 2) {
+				        return '<span class="badge bg-warning">Canceled</span>';
+				    } else if(row['status'] == 3) {
+				        return '<span class="badge bg-primary">Request for Cancellation</span>';
+				    }
+				},
+			},
+		]
+	});
+</script>
+{% endblock %}

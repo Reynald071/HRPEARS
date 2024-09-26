@@ -1,0 +1,70 @@
+<form id="updateattachment">
+	{% csrf_token %}
+	<div class="modal-body">
+		<div class="row">
+			<div class="col-sm-12">
+				<label class="form-label">
+					Attachment<span class="asteriskField">*</span>
+                    {% if sweap.attachment %}
+					<br>
+					Current File: <a href="{{sweap.attachment.url}}" target="_blank">{{sweap.attachment}}</a>
+                    {% endif %}
+				</label>
+				<input type="file" name="update_attachment" id="update_attachment" class="form-control file-control" required accept="application/pdf" onchange="triggerFileTypeValidations(this)">
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button type="submit" class="btn btn-info">Save Changes</button>
+	</div>
+</form>
+<script type="text/javascript">
+    var regexpdf = new RegExp("(.*?)\.(pdf)$");
+    function triggerFileTypeValidations(el) {
+        if (!(regexpdf.test(el.value.toLowerCase()))) {
+            el.value = '';
+            alert('The only allowed file types for requirements is pdf.');
+        }
+    }
+
+	$('#updateattachment').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Confirmation",
+	      	text: "Are you sure you want to update the attachment of sweap ?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url         : "{% url 'upload_attachment' pk %}",
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+								html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#vacancies-table').DataTable().ajax.reload();
+	                    			$('#edit-attachment').modal('show').find('.attachment-modal').empty();
+									$('#edit-attachment').modal('show').find('.attachment-modal').load("{% url 'upload_attachment' pk %}");
+                                }
+                            });
+                        }else{
+							Swal.fire("Warning", response.error, "warning");
+						}
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+	});
+</script>

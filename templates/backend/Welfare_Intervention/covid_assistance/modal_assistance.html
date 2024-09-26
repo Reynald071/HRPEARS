@@ -1,0 +1,98 @@
+<form id="covsubmit">
+	<table cellspacing="0" class="table table-bordered notboldandbig" id="input_fields_wrap" width="100%">
+		<tr>
+			<td style="display: none;">
+				<input id="empid" name="id" type="text">
+			</td>
+			<td>
+				<label class="col-form-label" for="recipient-name">Full Name</label>
+				<input autocomplete="off" class="form-control typeahead" name="fname" style="width: 250px;" type="text">
+			</td>
+			<td>
+				<label class="col-form-label" for="recipient-name">Case Category</label>
+				<input class="form-control" name="case" style="width: 200px;" type="text">
+			</td>
+			<td>
+				<label class="col-form-label" for="recipient-name">Date Quarantine</label>
+				<input class="form-control" name="start" style="width: 200px;" type="date">
+			</td>
+			<td>
+				<label class="col-form-label" for="recipient-name">Date Ended</label>
+				<input class="form-control" name="end" style="width: 200px;" type="date">
+			</td>
+			<td>
+				<label class="col-form-label" for="recipient-name">Provision Of Assitance</label>
+				<input class="form-control" name="provision" style="width: 200px;" type="text">
+			</td>
+		</tr>
+	</table>
+	<div class="modal-footer">
+		<button class="btn btn-info" type="submit">Save</button>
+		<button class="btn btn-light" data-dismiss="modal">Close</button>
+	</div>
+</form>
+
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+
+<script type="text/javascript">
+var $input = $(".typeahead");
+$input.typeahead({
+  source: [
+    {% for row in empprofile %}
+    {
+        name: "[{{row.id_number}}], {{row.pi.user.first_name}} {{row.pi.user.last_name}}",
+        fname: "{{row.id_number}}"
+    },
+    {% endfor %}
+
+  ],
+    afterSelect: function (data) {
+        $('#empid').val(data.fname);
+    },
+  autoSelect: true
+});
+
+    $('#covsubmit').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "You want to submit this overtime application?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'insertassistance' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully added data",
+                      icon: "info",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{% url 'covidassistance' %}";
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+
+</script>

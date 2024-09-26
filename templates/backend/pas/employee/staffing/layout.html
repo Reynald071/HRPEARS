@@ -1,0 +1,62 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Staffing</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Employees</strong>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Staffing</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <select class="form-control select" id="template">
+                                    <option></option>
+                                    <optgroup label="Operational Structure">
+                                        <option value="os-template-c">Template C</option>
+                                        <option value="os-template-d">Template D</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-2">
+                            <button type="button" id="preview" class="btn btn-block btn-info">Preview</button>
+                        </div>
+                    </div>
+                    <br>
+                    <div id="staffing-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#preview').on('click', function(){
+        $('#staffing-content').load('/backend/employees/staffing/' + $('#template').val());
+    });
+
+    $(document).on('click', 'button[data-role=generate]', function(){
+        $('#staffing-content').load('/backend/employees/staffing/' + $('#template').val() + '?as_of=' + $('#date').val());
+    });
+</script>
+{% endblock %}

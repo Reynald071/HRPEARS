@@ -1,0 +1,303 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Forms</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                ISO Management
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Forms</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-left">
+						<button class="btn btn-info" data-toggle="modal" data-target="#request-certificate"><i class="fas fa-plus"></i> Upload a Form</button>
+					</div>
+					<div class="pull-right">
+						Showing {{ leave.start_index }} - {{ leave.end_index }} of {{ leave.paginator.count }} entries&emsp;
+						<div class="btn-group">
+							{% if leave.has_other_pages %}
+							  {% if leave.has_previous %}
+								<a class="btn btn-default btn-sm" href="?page={{ leave.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"><i class="fa fa-angle-left"></i></a>
+							  {% else %}
+								<a class="btn btn-default btn-sm disabled"><i class="fa fa-angle-left"></i></a>
+							  {% endif %}
+							  {% if leave.has_next %}
+								<a class="btn btn-default btn-sm" href="?page={{ leave.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"><i class="fa fa-angle-right"></i></a>
+							  {% else %}
+								<a class="btn btn-default btn-sm disabled"><i class="fa fa-angle-right"></i></a>
+							  {% endif %}
+							{% endif %}
+						</div>
+						<a class="btn btn-default btn-sm" href="{% url 'certificate-requests' %}"><i class="fas fa-sync-alt"></i></a>
+					</div>
+					<br><br><br>
+					<form method="get">
+						<div class="input-group form-group">
+							<span class="input-group-addon"><i class="fas fa-search"></i></span>
+							<input type="text" class="form-control" placeholder="Search requests.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+						</div>
+					</form>
+					{% if leave %}
+					<table class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>DOCUMENT NO.</th>
+								<th class="capslock">DOCUMENT TITLE</th>
+								<th class="capslock text-center">REVISION</th>
+								<th class="capslock text-center">DOWNLOADS</th>
+								<th class="capslock text-center">UPLOADED BY</th>
+								<th class="capslock text-center">STATUS</th>
+								<th class="capslock text-right">ACTION</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for row in leave %}
+							<tr>
+								<td>{{ row.document_no }}</td>
+								<td>{{ row.title }}</td>
+								<td class="text-center">{{ row.revision_no }}</td>
+								<td class="text-center">{% getNumberOfDownloads row.id %}</td>
+								<td class="text-center">{{ row.uploaded_by.pi.user.get_fullname }}<br>{{ row.uploaded_on|date:"M d, Y" }}</td>
+								<td class="text-center" style="vertical-align:middle;">
+									{% if row.is_active == 0 %}
+										<span class="label label-danger">Inactive</span>
+									{% else %}
+										<span class="label label-primary">Active</span>
+									{% endif %}
+								</td>
+								<td class="text-right">
+									<a href="javascript:;" data-toggle="modal" data-target="#request-certificate" onclick="$('#iso_id').val('{{ row.id }}');$('#document_no').val('{{ row.document_no }}');$('#title').val('{{ row.title }}');$('#revision').val('{{ row.revision_no }}');$('#remarks').val('{{ row.remarks }}');$('#attachment').removeAttr('required');">Update</a>
+									| <a href="javascript:;" class="delete" data-id="{{ row.id }}">Delete</a>
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					{% else %}
+						<img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" style="margin: 0 auto;">
+						<p class="text-center">There is no data to show you right now.</p>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="ibox">
+				<div class="ibox-title bg-primary">
+					<h5>FILTER</h5>
+				</div>
+				<div class="ibox-content">
+					<h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item {% if request.GET.status == '' or request.GET.status == None or request.GET.search == '' %}{% if request.GET.search is None or request.GET.status is None %}active{% endif %}{% endif %}" href='?status={% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>All</a>
+						<a class="list-group-item {% if request.GET.status == '1' and request.GET.search is None %}active{% endif %}" href='?status=1{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Active</a>
+						<a class="list-group-item {% if request.GET.status == '0' and request.GET.search is None %}active{% endif %}" href='?status=0{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Inactive</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal" id="view-modal" role="dialog" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h4 class="modal-title">Certificate Request Details</h4>
+	        </div>
+			<form id="submitForm">
+			{% csrf_token %}
+			<input type="hidden" name="id" id="id">
+			<input type="hidden" name="temp-id" id="temp-id">
+			<input type="hidden" name="track-id" id="track-id">
+			<input type="hidden" name="id-number" id="id-number">
+			<input type="hidden" name="purpose" id="purpose">
+	        <div class="modal-body" style="padding: 0px;">
+
+			</div>
+			<button id="submitFormBtn" style="display:none;"></button>
+			</form>
+			<div class="modal-footer">
+				<div class="pull-left alert alert-info" style="height: 34px; padding: 6px 12px;">
+					<a class="alert-link" href="javascript:;">Purpose/Note/Remark: </a><span id="contenthere"></span>
+				</div>
+				<button onclick="$('#submitFormBtn').click();" class="btn btn-info">Approve</button>
+				<button id="declineBtn" class="btn btn-danger">Decline</button>
+			</div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="request-certificate" role="dialog" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">Upload a Form</h3>
+	        </div>
+	        <form id="submitRequestForm" enctype="multipart/form-data">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+	        	<div class="row">
+					<div class="col-md-5">
+						<div class="form-group">
+							<input type="hidden" class="form-control" name="iso_id"  id="iso_id">
+							<label>Document No.<span class="asteriskField">*</span></label>
+							<input type="text" class="form-control" name="document_no"  id="document_no" required>
+						</div>
+					</div>
+					<div class="col-md-7">
+						<div class="form-group">
+							<label>Title<span class="asteriskField">*</span></label>
+							<input type="text" class="form-control" name="title"  id="title" required>
+						</div>
+					</div>
+	        	</div>
+	        	<div class="row">
+					<div class="col-md-5">
+						<div class="form-group">
+							<label>Revision<span class="asteriskField">*</span></label>
+							<input type="number" class="form-control" value="0" name="revision" id="revision" min="0" required>
+						</div>
+					</div>
+					<div class="col-md-7">
+						<div class="form-group">
+							<label>Attachment<span class="asteriskField">*</span></label>
+							<div class="custom-file">
+								<input type="file" name="attachment" id="id_attachment" class="form-control custom-file-input-single" required>
+								<label for="id_attachment" class="custom-file-label">Choose file..</label>
+							</div>
+						</div>
+					</div>
+	        	</div>
+	        	<div class="row">
+					<div class="col-md-12">
+						<div class="form-group" style="margin:0px !important;">
+							<label>Remarks</label>
+							<textarea class="form-control" name="remarks" id="remarks" style="resize:vertical; min-height:100px;"></textarea>
+						</div>
+					</div>
+	        	</div>
+			</div>
+	        <div class="modal-footer">
+	        	<button class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+
+
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).on('hidden.bs.modal', function(e){
+		$('#remarks').val('');
+		$('#attachment').val('');
+		$('#revision').val('0');
+		$('#document_no').val('');
+		$('#title').val('');
+	});
+
+	$('.delete').on('click', function(){
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to delete this form?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes, delete it!",
+		  closeOnConfirm: false
+		}).then((result) => {
+            if (result.isConfirmed){
+				$.ajax({
+					url: "{% url 'delete-form' 99999999 %}".replace(99999999, $(this).data('id')),
+					success: function(result){
+						window.location.reload();
+					}
+				});
+			}
+		});
+	});
+
+	$('#submitRequestForm').on('submit', function(e){
+		var form = new FormData(this);
+		var msg = true;
+		if ($('#iso_id').val() == '') {
+			msg = "You want to upload this form?"
+		} else {
+			msg = "You want to update this form?"
+		}
+		Swal.fire({
+		  title: "Are you sure",
+		  text: msg,
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes, submit it!",
+		  closeOnConfirm: false
+		}).then((result) => {
+            if (result.isConfirmed){
+				$.ajax({
+					data        : form,
+					url         : "{% url 'iso-forms' %}",
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false
+				})
+				.done(function(data){
+					var error = data.error;
+					var datax = data.data;
+					if (error){
+						Swal.fire({
+						  title: "Not saved!",
+						  text: "You have already uploaded an ISO Form with document no. " + datax +". Please try with a different document no.",
+						  icon: "error",
+						});
+					} else {
+						var method = data.method;
+						if (method == 'update') {
+							Swal.fire({
+							  title: "Good job!",
+							  text: "You have successfully updated ISO Form with document no. " + datax +".",
+							  icon: "success"
+							}).then((result) => {
+            					if (result.isConfirmed){
+							  		window.location.reload();
+							  	}
+							});
+						} else {
+							Swal.fire({
+							  title: "Good job!",
+							  text: "You have uploaded ISO Form with document no. " + datax +".",
+							  icon: "success"
+							}).then((result) => {
+            					if (result.isConfirmed){
+							  		window.location.reload();
+							  	}
+							});
+						}
+					}
+				});
+			}
+		});
+		e.preventDefault();
+    });
+</script>
+{% endblock %}

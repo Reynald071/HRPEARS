@@ -1,0 +1,58 @@
+<div class="modal-body">
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-borderless">
+                <tr>
+                    <td><strong>TRACKING NO.</strong></td>
+                    <td>
+                        {% if transaction.leave_tracking_no %}
+                            {{ transaction.leave_tracking_no.tracking_no }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td><strong>DOCUMENT DATE</strong></td>
+                    <td>
+                        {{ transaction.document_date }}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>DOCUMENT OWNER</strong></td>
+                    <td colspan="3">{{ transaction.emp.pi.user.get_fullname|upper }}</td>
+                </tr>
+                <tr>
+                    <td><strong>OTHER INFORMATION</strong></td>
+                    <td colspan="3">{{ transaction.other_info|upper }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="p-3">
+
+
+        </ul>
+    </div>
+</div>
+{% if transaction.get_latest_status_details.forwarded_id == request.session.emp_id %}
+<div class="modal-footer">
+    <button type="button" class="btn btn-info">Mark as Received</button>
+    <button type="button" class="btn btn-light">Forward Document</button>
+</div>
+{% endif %}
+{% block script %}
+<script>
+    $(".tracking-filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+</script>
+{% endblock %}

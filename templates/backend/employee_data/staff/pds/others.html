@@ -1,0 +1,573 @@
+{% load crispy_forms_tags %}
+{% block style %}
+<style type="text/css">
+    .notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+
+    .padding-0{
+	    padding-right:0;
+	    padding-left:0;
+	}
+</style>
+{% endblock %}
+<form id="submitOthersForm">
+{% csrf_token %}
+<div class="row">
+	<div class="col-sm-12">
+		<div class="pull-left">
+			<div class="form-group">
+				<label>Choose Shortcuts</label>
+				<select class="form-control shortcuts select">
+					{% for row in shortcuts %}
+					{% if row.name == "Others" %}
+					<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.backend_url }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="pull-right" style="margin-top:23px;">
+			<div class="form-group">
+				<button type="submit" class="btn btn-info">Save changes</button>
+				<div class="btn-group">
+				<button type="button" id="btn-previous-tr" class="btn btn-default">Previous</button>
+				<button type="button" id="btn-next-additional" class="btn btn-default">Next</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row" id="page-content">
+    <div class="col-sm-12">
+        <div class="ibox-content">
+		<div class="table">
+        	<div class="row">
+	        	<div class="col-sm-12 p-0">
+					<table class="table table-bordered">
+						<th>
+							<h3>VIII. OTHER INFORMATION</h3>
+						</th>
+					</table>
+				</div>
+        	</div>
+        	<div class="row">
+        		<div class="col-lg-4 padding-0" style="margin-top: -20px;">
+        			<table class="table table-bordered notboldandbig" style="border-top: 0px">
+        				<thead>
+		    				<td class="text-center">SPECIAL SKILLS AND HOBBIES&emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-hobbies'><i class="fas fa-plus"></i></button>
+								<br><br><small style="color: rgb(245, 245, 246);">(write in full)</small>
+							</td>
+		            		<td width="10%">
+		            			<center><button type="button" class="btn btn-info btn-xs add-skills" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+		            		</td>
+        				</thead>
+	        			<tbody class="fieldSkill">
+	        				{% if skills %}
+	        				{% for a in skills%}
+	        				<tr id="{{ a.id }}">
+	        					<td class="nopadding">
+	        						<select class="form-control input-sm select skills" name="skills[]">
+		                            {% for row in hobbies %}
+		                            {% if row.id == a.hob_id %}
+		                            <option value="{{ row.id }}" selected="selected">{{ row.hob_name }}</option>
+		                            {% else %}
+		                            <option value="{{ row.id }}">{{ row.hob_name }}</option>
+		                            {% endif %}
+		                            {% endfor %}
+		                        </select>
+		                    	</td>
+		                    	<td class="nopadding">
+								<center><button type="button" class="btn btn-danger btn-xs" data-id="{{ a.id }}" data-role="delete-skills"><i class="fa fa-minus"></i></button></center>
+								</td>
+		                    </tr>
+	        				{% endfor %}
+	        				{% endif %}
+		        		</tbody>
+                    </table>
+        		</div>
+        		<div class="col-lg-4 padding-0">
+        			<table class="table table-bordered notboldandbig" style=" margin-top: -20px; border-top: 0px !important">
+        				<thead>
+        					<td class="text-center">
+		            			NON-ACADEMIC DISTINCTIONS / RECOGNITION&emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-recog'><i class="fas fa-plus"></i></button><br>
+		            			<small>(write in full)</small>
+		            		</td>
+		            		<td width="10%">
+		            			<center><button type="button" class="btn btn-info btn-xs add-academic" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+		            		</td>
+        				</thead>
+	        			<tbody class="fieldAcademic">
+	        				{% if reg %}
+	        				{% for b in reg%}
+	        				<tr id="{{ b.id }}">
+	        					<td class="nopadding">
+	        						<select class="form-control input-sm select nonacad" name="nonacad[]" id="nonacad">
+		                            {% for row in nonacad %}
+		                            {% if row.id == b.na_id %}
+		                            <option value="{{ row.id }}" selected="selected">{{ row.na_name }}</option>
+		                            {% else %}
+		                            <option value="{{ row.id }}">{{ row.na_name }}</option>
+		                            {% endif %}
+		                            {% endfor %}
+		                        </select>
+		                    	</td>
+		                    	<td class="nopadding">
+								<center><button type="button" class="btn btn-danger btn-xs" data-id="{{ b.id }}" data-role='delete-acad'><i class="fa fa-minus"></i></button></center>
+								</td>
+		                    </tr>
+	        				{% endfor %}
+	        				{% endif %}
+	        			</tbody>
+                    </table>
+        		</div>
+        		<div class="col-lg-4 padding-0">
+        			<table class="table table-bordered notboldandbig" style="margin-top: -20px; border-top: 0px !important">
+        				<thead>
+        					<td class="text-center">
+		            			MEMBERSHIP IN ASSOCIATION / ORGANIZATION <button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-org'><i class="fas fa-plus"></i></button><br>
+		            			<small>(write in full)</small>
+		            		</td>
+		            		<td width="10%">
+		            			<center><button type="button" class="btn btn-info btn-xs add-org" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+		            		</td>
+        				</thead>
+	        			<tbody class="fieldOrg">
+	        				{% if membership %}
+	        				{% for c in membership %}
+	        				<tr id="{{ c.id }}">
+	        					<td class="nopadding">
+	        						<select class="form-control input-sm select org" name="org[]" id="org">
+		                            {% for row in org %}
+		                            {% if row.id == c.org_id %}
+		                            <option value="{{ row.id }}" selected="selected">{{ row.org_name }}</option>
+		                            {% else %}
+		                            <option value="{{ row.id }}">{{ row.org_name }}</option>
+		                            {% endif %}
+		                            {% endfor %}
+		                        </select>
+		                    	</td>
+		                    	<td class="nopadding">
+								<center><button type="button" class="btn btn-danger btn-xs" data-id="{{ c.id }}" data-role='delete-membership'><i class="fa fa-minus"></i></button></center>
+								</td>
+		                    </tr>
+	        				{% endfor %}
+	        				{% endif %}
+	        			</tbody>
+                    </table>
+        		</div>
+        	</div>
+        </div>
+        </div>
+    </div>
+</div>
+</form>
+
+<div class="modal" id="add-hobbies" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Special Skill / Hobby</h3>
+				<button type="button" class="close text-white" id="close-add-hobbies-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addHobbies">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_hob.hob_name|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add-recog" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Non-academic Distinction / Recognition</h3>
+				<button type="button" class="close text-white" id="close-add-recog-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addRecog">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_na.na_name|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add-org" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Organization</h3>
+				<button type="button" class="close text-white" id="close-add-org-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addOrg">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_org.org_name|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+	$('#close-add-org-modal').on('click', function(){
+        $('#add-org').modal('toggle');
+    });
+
+    $('#close-add-recog-modal').on('click', function(){
+        $('#add-recog').modal('toggle');
+    });
+
+    $('#close-add-hobbies-modal').on('click', function(){
+        $('#add-hobbies').modal('toggle');
+    });
+
+    $('#btn-previous-tr').on('click', function(){
+    	callPage("{% url 'update_trainings' pi_id %}");
+    });
+
+    $('#btn-next-additional').on('click', function(){
+    	callPage("{% url 'update_additional_information' pi_id %}");
+    });
+
+	var fieldSkill = '<tr><td class="nopadding"><select class="form-control input-sm select skills" name="skills[]">\
+                            <option></option>\
+                        </select>\
+						</td>\
+						<td class="nopadding">\
+						<center><button type="button" class="btn btn-danger btn-xs" data-role="remove-skill"><i class="fa fa-minus"></i></button></center>\
+						</td></tr>';
+
+	var fieldNonAcad = '<tr><td class="nopadding"><select class="form-control input-sm select nonacad" name="nonacad[]" id="nonacad">\
+                            <option></option>\
+                        </select>\
+						</td>\
+						<td class="nopadding">\
+						<center><button type="button" class="btn btn-danger btn-xs" data-role="remove-acad"><i class="fa fa-minus"></i></button></center>\
+						</td></tr>';
+
+	var fieldOrg = '<tr><td class="nopadding"><select class="form-control input-sm select org" name="org[]" id="org">\
+                            <option></option>\
+                        </select>\
+						</td>\
+						<td class="nopadding">\
+						<center><button type="button" class="btn btn-danger btn-xs" data-role="remove-membership"><i class="fa fa-minus"></i></button></center>\
+						</td></tr>';
+
+	var x = 0;
+	$('.add-skills').on('click', function(){
+		$('.fieldSkill').append(fieldSkill);
+		$('.select2').nextAll().remove();
+		fetch_hobbies();
+	});
+
+	$('.add-academic').on('click', function(){
+		$('.fieldAcademic').append(fieldNonAcad);
+		$('.select2').nextAll().remove();
+        fetch_nonacads();
+	});
+
+	$('.add-org').on('click', function(){
+		$('.fieldOrg').append(fieldOrg);
+		$('.select2').nextAll().remove();
+        fetch_organizations();
+	});
+
+	$('#submitOthersForm').on('submit', function(e){
+        if (checkForm() == 0){
+            $.ajax({
+                data        : new FormData(this),
+                url         : '{% url "update_others" pi_id %}',
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                Swal.fire("Well done!","Other Information has been saved successfully.", "success");
+            });
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+        invalid = 0;
+        $('.skills').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.nonacad').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.others').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        return invalid;
+    }
+
+    $(document).on('click', 'button[data-role=delete-skills]', function(){
+    	var id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this special skill/hobbies?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: '/delete-skills/',
+					data:{
+						id: id
+					},
+					type: 'POST'
+				})
+				.done(function(e){
+					$('.fieldSkill tr#'+id).remove();
+					Swal.fire("Success!", "Your special skill/hobbies was successfully deleted. Farewell.", "success");
+				});
+			}
+        });
+    });
+
+    $(document).on('click', 'button[data-role=delete-acad]', function(){
+    	var id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this non-academic/recognition?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: '/delete-nonacad/',
+					data:{
+						id: id
+					},
+					type: 'POST'
+				})
+				.done(function(e){
+					$('.fieldAcademic tr#'+id).remove();
+					Swal.fire("Success!", "Your non-academic/recognition was successfully deleted. Farewell.", "success");
+				});
+			}
+        });
+    });
+
+    $(document).on('click', 'button[data-role=delete-membership]', function(){
+    	var id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure?",
+          text: "You want to delete this membership in association/organization?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: '/delete-membership/',
+					data:{
+						id: id
+					},
+					type: 'POST'
+				})
+				.done(function(e){
+					$('.fieldOrg tr#'+id).remove();
+					Swal.fire("Success!", "Your membership in association/organization was successfully deleted. Farewell.", "success");
+				});
+			}
+        });
+    });
+
+    $(document).on('click', 'button[data-role=remove-skill]', function(){
+    	$(this).parent().parent().parent().remove();
+    });
+
+    $(document).on('click', 'button[data-role=remove-acad]', function(){
+    	$(this).parent().parent().parent().remove();
+    });
+
+    $(document).on('click', 'button[data-role=remove-membership]', function(){
+    	$(this).parent().parent().parent().remove();
+    });
+
+    $('#addHobbies').on('submit', function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "admin_add_hobbies" pi_id %}',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=hob_name]').after(error);
+                }
+                else {
+                    $('#add-hobbies').modal('hide');
+                    toastrOptions();
+                    toastr.success("The hobby \'" + response.hob_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_hobbies();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+	$('#addRecog').on('submit', function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "admin_add_recog" pi_id %}',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=na_name]').after(error);
+                }
+                else {
+                    $('#add-recog').modal('hide');
+                    toastrOptions();
+                    toastr.success("The non-academic recognition \'" + response.na_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_nonacads();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+    $('#addOrg').on('submit', function(e){
+       e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "admin_add_org" pi_id %}',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=org_name]').after(error);
+                }
+                else {
+                    $('#add-org').modal('hide');
+                    toastrOptions();
+                    toastr.success("The organization \'" + response.org_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_organizations();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+    function fetch_hobbies(){
+        $.getJSON('{% url "api-hobbies" pi_id %}', function(response) {
+            data_hobbies = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_hobbies.push({id: response.data[d].id, text: response.data[d].hob_name});
+            }
+
+            $('.skills').select2({
+                data: data_hobbies,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    function fetch_nonacads(){
+        $.getJSON('{% url 'api-nonacads' pi_id %}', function(response) {
+            data_nonacads = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_nonacads.push({id: response.data[d].id, text: response.data[d].na_name});
+            }
+
+            $('.nonacad').select2({
+                data: data_nonacads,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    function fetch_organizations(){
+        $.getJSON('{% url 'api-organizations' pi_id %}', function(response) {
+            data_organizations = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_organizations.push({id: response.data[d].id, text: response.data[d].org_name});
+            }
+
+            $('.org').select2({
+                data: data_organizations,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    $('.shortcuts').on('select2:select', function(){
+    	callPage($(this).val() + {{ pi_id }});
+    });
+</script>

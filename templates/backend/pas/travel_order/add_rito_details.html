@@ -1,0 +1,169 @@
+<style>
+	.select2-selection__rendered {
+		line-height: 30px !important;
+	}
+	.select2-container .select2-selection--single {
+		height: 38px !important;
+	}
+	.select2-selection__arrow {
+		height: 34px !important;
+	}
+	.asteriskField {
+		color: red;
+	}
+</style>
+<h5 class="text-center"><b>Add Travel Request</b></h5>
+<p class="text-center">Please fill in the following below.</p>
+<br>
+<div id="alertAddDiv" style="margin-bottom: 15px !important;"></div>
+<form id="submitAddForm">
+<div class="row">
+{% csrf_token %}
+	<div class="col-sm-7">
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="form-group">
+					<label>From<span class="asteriskField">*</span></label>
+					<input type="date" name="from" class="form-control b-r-sm" required>
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<div class="form-group">
+					<label>To<span class="asteriskField">*</span></label>
+					<input type="date" name="to" class="form-control b-r-sm" required>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="form-group">
+					<label>Place of Travel<span class="asteriskField">*</span></label>
+					<textarea class="form-control b-r-sm" name="places" placeholder="Write Something.." required></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="form-group">
+					<label>Purpose<span class="asteriskField">*</span></label>
+					<textarea class="form-control b-r-sm" name="purpose" placeholder="Write Something.." required></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="form-group">
+					<label>Expected Output<span class="asteriskField">*</span></label>
+					<textarea class="form-control b-r-sm" name="expected_output" placeholder="Write Something.." required></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="form-group">
+					<label>Claims<span class="asteriskField">*</span></label>
+					<select class="form-control select b-r-sm" id="claims" name="claims" required>
+						<option></option>
+						{% for row in claims %}
+						<option value="{{ row.id }}">{{ row.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<div class="form-group">
+					<label>Means of Transportation<span class="asteriskField">*</span></label>
+					<select class="form-control select b-r-sm" id="mot" name="mot" required>
+						<option></option>
+						{% for row in mot %}
+						<option value="{{ row.id }}">{{ row.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<button type="button" class="btn btn-warning" id="btn-back">Back</button>
+				<button type="submit" class="btn btn-info"> Submit</button>
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-5">
+        <label>Employee ID Number <a id="btn-add-employee" href="javascript:;"><i class="fas fa-plus"></i></a></label>
+		<div id="items">
+			{% for row in ritopeople %}
+			<div class="form-group">
+				<div class="input-group">
+					<input type="text" class="form-control typeahead_2 filter_employee b-r-sm" name="employee[]" required autocomplete="off" placeholder="e.g. [16-11626] FIRST NAME LAST NAME"> <span class="input-group-append"> <button type="button" class="btn btn-danger" data-role='btn-edit-remove' data-id="{{ row.name_id }}"><i class="fa fa-minus"></i></button> </span>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+</form>
+<script type="text/javascript">
+	$('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+	$('#submitAddForm').on('submit', function(e){
+	    $.ajax({
+	        data        : new FormData(this),
+	        url         : '{% url "add_rito_details" rito.tracking_no %}',
+	        type        : 'POST',
+	        cache       : false,
+	        contentType : false,
+	        processData : false
+	    })
+	    .done(function(response){
+	    	if(response.data == "success"){
+				$('#edit-modal').modal('show').find('.modal-body').empty();
+				$('#edit-modal').modal('show').find('.modal-body').load("{% if rito.tracking_merge %}{% url 'view_rito_details' rito.tracking_merge %}{% else %}{% url 'view_rito_details' rito.tracking_no %}{% endif %}");
+	    	} else {
+	    		var conflict = response.conflict;
+	    		$('#alertAddDiv').empty();
+	    		for(var i=0; i < conflict.length; i++){
+					$('#alertAddDiv').append(`
+						<div class='alert alert-warning'>
+							<i class='fas fa-info-circle'></i>
+							It seems ` + conflict[i]['name'] + ` has already been scheduled to travel on or within the ` + conflict[i]['text_date'] + `,
+							as indicated in `+ conflict[i]['text_to']  +`: ` + conflict[i]['to_number'] + `
+						</div><br>`);
+				}
+			}
+	    });
+		e.preventDefault();
+    });
+
+    $('#btn-add-employee').on('click', function(){
+		$('#items').append('<div class="form-group"><div class="input-group minus-remove"><input type="text" class="form-control typeahead_2 filter_employee b-r-sm" name="employee[]" required autocomplete="off" placeholder="e.g. [16-11626] FIRST NAME LAST NAME"> <span class="input-group-append"> <button type="button" class="btn btn-danger remove_field"><i class="fa fa-minus"></i></button> </span></div></div></div>');
+
+		$(".filter_employee").typeahead({
+			source: function(query, process){
+				return $.get({
+					url: '{% url "filter_employee" %}',
+					data: { query: query },
+					datatype: 'json',
+					success: function (data) {
+						return process(data);
+					}
+				});
+			},
+			highlight: true,
+		});
+	});
+
+	$('#items').on("click", ".remove_field", function(e){
+		e.preventDefault();
+		$(this).parent().parent().remove();
+	});
+
+	$('#btn-back').on('click', function(){
+		$('#edit-modal').modal('show').find('.modal-body').empty();
+		$('#edit-modal').modal('show').find('.modal-body').load("{% if rito.tracking_merge %}{% url 'view_rito_details' rito.tracking_merge %}{% else %}{% url 'view_rito_details' rito.tracking_no %}{% endif %}");
+	});
+</script>

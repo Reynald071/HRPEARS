@@ -1,0 +1,83 @@
+<div class="row">
+	<div class="col-lg-12 justify-content-center">
+		<h3 class="text-center"><b>{% if nominee%}Edit{% else %}Add{% endif %} Nominee for {{ award.name }}</b></h3>
+		<br>
+		<form id="submitAddForm">
+			{% csrf_token %}
+			<div class="col-sm-12">
+				<div class="form-group">
+					<label>Employee ID Number</label>
+					<input type="text" class="form-control typeahead_2 filter_employee b-r-sm" autocomplete="off" name="nominee" required placeholder="e.g. [16-12345] Juan dela Cruz" value="{% if nominee %}[{{ nominee.nominee.id_number }}] {{ nominee.nominee.pi.user.first_name }} {{ nominee.nominee.pi.user.last_name }}{% endif %}" {% if nominee %}disabled{% endif %}>
+				</div>
+				{% if award.category.needs_title %}
+					<div class="form-group">
+						<label>Name of {{ award.category.name }}</label>
+						<input type="text" class="form-control" name="title" value="{{ nominee.title }}" required>
+					</div>
+				{% endif %}
+				<label>Write an overall statement on the consistent demonstration of exemplary ethical behavior and render of extraordinary work performance or service.</label>
+				<div class="form-group">
+					<textarea required name="why" id="why" class="form-control" placeholder="Please write statement with a minimum of 100 words." minlength="" style="resize:vertical; max-height:300px; min-height:150px;">{% if nominee %}{% if nominee.why == None %}{% else %}{{ nominee.why }}{% endif %}{% else %}{% endif %}</textarea>
+				</div>
+				<br>
+				<button type="button" class="btn btn-warning" id="btn-back-nominee">Back</button>
+				<button type="submit" class="btn btn-info" data-id="{{ row.name_id }}">
+					Submit
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+<script type="text/javascript">
+	var limit = 100;
+	$(document).ready(function(){
+		var jsonEmployeesExceptMe = $.ajax({
+			url: '{% url "filter_employee_except_me" %}',
+			async: false,
+			dataType: 'json'
+		}).responseJSON;
+
+		$("#why").textareaCounter({ limit: limit });
+
+		$('#submitAddForm').on('submit', function(e){
+			text = $('#why').val();
+			wordcount = $.trim(text).split(" ").length;
+			if (wordcount < limit) {
+	            document.getElementById('why').setCustomValidity("You only have written "+wordcount+" of minimum "+limit+" words.");
+			} else {
+				$.ajax({
+					data        : new FormData(this),
+					url         : '{% if nominee %}{% url "edit-nominee" nominee.id %}{% else %}{% url "add-nominee" awards_id %}{% endif %}',
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false
+				})
+				.done(function(data){
+					$('.error').remove();
+					if (data.error){
+						error = '<span style="font-size: 11px; clear: both; margin-top: 3px; display: block;" class="text-danger error">' + data.error + '</span>';
+						$('input[name=nominee]').parent().after(error);
+					} else {
+						$('#edit-modal').modal('show').find('.modal-body').empty();
+						$('#edit-modal').modal('show').find('.modal-body').load("/view-nominees/{{ awards_id }}");
+					}
+				});
+			}
+			e.preventDefault();
+		});
+
+		{% if nominee %}
+		{% else %}
+			$(".filter_employee").typeahead({
+				source:jsonEmployeesExceptMe,
+			});
+		{% endif %}
+
+		$('#btn-back-nominee').on('click', function(){
+			$('#modal-footer').show();
+			$('#edit-modal').modal('show').find('.modal-body').empty();
+			$('#edit-modal').modal('show').find('.modal-body').load("/view-nominees/{{ awards_id }}");
+		});
+	});
+</script>

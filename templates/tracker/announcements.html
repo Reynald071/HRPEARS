@@ -1,0 +1,201 @@
+{% extends 'tracker/layout.html' %}
+{% load static %}
+{% load tags %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'tracker' %}">Home</a></li>
+                <li class="breadcrumb-item active">Tracker</li>
+                <li class="breadcrumb-item active">Announcements</li>
+            </ol>
+        </nav>
+        <div class="float-end">
+            {% if user|check_permission:'tracker_posting' or user|check_permission:'superadmin' %}
+            <button type="button" class="btn btn-info" data-bs-target="#add-post-modal" data-bs-toggle="modal"><i class="fas fa-plus"></i> Add Post</button>
+            <br><br>
+            {% endif %}
+        </div>
+        <br>
+        <div class="row mt-5">
+            <div class="col-lg-9">
+                <div class="card">
+                    <div class="card-body">
+                        <p>We are respectfully asking for your assistance for the following documents to be submitted, to wit: </p>
+                        <table class="table table-bordered w-100" id="table-announcements">
+                            <thead>
+                                <tr>
+                                    <th>EMPLOYEE NAME</th>
+                                    <th class="text-center">DATES</th>
+                                    <th class="text-center">DETAILS</th>
+                                    <th class="text-center">DATE POSTED</th>
+                                    <th class="text-center">STATUS</th>
+                                    <th class="display-none">ID</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title fw-bold">FILTER</div>
+                        <div class="list-group">
+                            <a href="javascript:;" class="list-group-item list-group-item-action active" id="status-all" href="javascript:;" data-role="status" data-filter="all">
+                                All
+                            </a>
+                            <a href="javascript:;" class="list-group-item list-group-item-action" id="status-0" href="javascript:;" data-role="status" data-filter="0">
+                                Not submitted
+                            </a>
+                            <a href="javascript:;" class="list-group-item list-group-item-action" id="status-1" href="javascript:;" data-role="status" data-filter="1">
+                                Submitted
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add-post-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>ADD POST</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addPostForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> This posting is for non-submission of documents
+                </div>
+                <div class="mb-3">
+                    <label>Employee Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control filter-employee-all" name="employee" autocomplete="off" required>
+                </div>
+                <div class="mb-3">
+                    <label>Dates <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="dates" autocomplete="off" required>
+                </div>
+                <div class="mb-3">
+                    <label>Details <span class="text-danger">*</span></label>
+                    <select class="form-control" name="details[]" multiple required>
+                        {% for row in sms_type %}
+                            <option value="{{ row.type }}">{{ row.type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="edit-post-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>EDIT POST</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="edit-post-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+$(document).ready(function(){
+    $(".filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $(document).on('click', 'a[data-role=status]', function(){
+    	$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+    	if($(this).data('filter') == 'all'){
+    		$('#table-announcements').DataTable().ajax.url('/api/tracker/announcements/?format=datatables&status=all').load();
+    	}else{
+			$('#table-announcements').DataTable().ajax.url('/api/tracker/announcements/?format=datatables&status=' + $(this).data('filter')).load();
+		}
+	});
+
+    $('#table-announcements').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 3, 'desc' ]],
+        'ajax': {
+            'url': '/api/tracker/announcements/?format=datatables&status=all',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'full_name',
+                render: function(data, type, row, meta) {
+                    "{% if user|check_permission:'tracker_posting' or user|check_permission:'superadmin' %}"
+                        return "<a href='#' data-role='update' data-id='"+ row['id'] +"'>"+ data +"</a>"
+                    "{% else %}"
+                        return data
+                    "{% endif %}"
+                },
+                'name': 'emp.pi.user.last_name, emp.pi.user.first_name',
+                'className': 'align-middle'
+            },
+            {'data': 'dates', 'className': 'text-center align-middle'},
+            {'data': 'details', 'className': 'text-center align-middle' },
+            {'data': 'date_created', 'searchable': false, 'className': 'text-center align-middle'},
+            {'data': 'status',
+                render: function(data, type, row, meta) {
+                    return (data == '0') ? 'Not submitted' : 'Submitted'
+                },
+                'searchable': false,
+                'className': 'text-center align-middle'
+            },
+            {'data': 'id', 'className': 'display-none'},
+        ]
+    });
+
+    $(document).on('click', 'a[data-role=update]', function(){
+        var id = $(this).data('id');
+
+        $('#edit-post-content').load('/tracker/announcements/update/' + id, function() {
+            $('#edit-post-modal').modal('show');
+        });
+    });
+
+    $('#addPostForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "tracker_announcements" %}';
+        var title = "Are you sure";
+        var text = "You want to post this announcement";
+        var modal_id = "#add-post-modal";
+        var table_id = '#table-announcements';
+
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, modal_id: modal_id});
+
+        e.preventDefault();
+    });
+});
+</script>
+{% endblock %}

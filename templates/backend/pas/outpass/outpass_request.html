@@ -1,0 +1,126 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+{% load tz %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h2><i class="fas fa-thumbtack"></i> Requests</h2>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+<!--	<div class="ibox-title">-->
+<!--		<h5>Outpass List</h5>-->
+<!--	</div>-->
+	<div class="col-sm-9">
+		<div class="ibox-content">
+			<form method="get">
+				<div class="input-group form-group">
+					<span class="input-group-addon"><i class="fas fa-search"></i></span>
+					<input type="text" class="form-control" placeholder="Search Tracking Number.." name="search">
+				</div>
+			</form>
+			<form role="form" class="form-inline">
+				Show
+				<select class="form-control input-sm" id="rows" onchange="window.location = '{% url 'outpass-request' %}?rows=' + document.getElementById('rows').value;">
+					<option value="10" {% if rows == "10" %}selected="selected"{% endif %}>10</option>
+					<option value="25" {% if rows == "25" %}selected="selected"{% endif %}>25</option>
+					<option value="50" {% if rows == "50" %}selected="selected"{% endif %}>50</option>
+				</select>
+				Rows
+				<div class="pull-right">
+				Showing <strong>{{ outpass.start_index }} - {{ outpass.end_index }}</strong> of <strong>{{ outpass.paginator.count }}</strong>&emsp;
+				<div class="form-group">
+					{% if outpass.has_other_pages %}
+					  {% if outpass.has_previous %}
+						<a class="btn btn-default btn-sm" href="?page={{ outpass.previous_page_number }}"><i class="fa fa-angle-left"></i></a>
+					  {% else %}
+						<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-left"></i></a>
+					  {% endif %}
+					  {% if outpass.has_next %}
+						<a class="btn btn-default btn-sm" href="?page={{ outpass.next_page_number }}"><i class="fa fa-angle-right"></i></a>
+					  {% else %}
+						<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-right"></i></a>
+					  {% endif %}
+					{% endif %}
+					<a class="btn btn-white btn-sm" href="{% url 'outpass-request' %}"><i class="fas fa-sync-alt"></i></a>
+				</div>
+				</div>
+			</form>
+			<table class="table table-hover" style="font-size: 13px;">
+				<thead>
+					<tr>
+						<th class="capslock" style="width:4%;">#</th>
+						<th>Requested for</th>
+						<th>Requested by</th>
+						<th class="text-center">Date and Time</th>
+						<th class="text-center">Time Returned</th>
+						<th class="text-center">Status</th>
+						<th class="text-center">Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for row in outpass %}
+					{% locatorslips row.outpass.id as lss %}
+					<tr>
+						<td>{{ forloop.counter0|add:outpass.start_index }}</td>
+						<td>{{ row.outpass.in_behalf_of.pi.user.first_name }} {{ row.outpass.in_behalf_of.pi.user.middle_name|to_middleinitial }} {{ row.outpass.in_behalf_of.pi.user.last_name }}</td>
+						<td>{{ row.outpass.emp.pi.user.first_name }} {{ row.outpass.emp.pi.user.middle_name|to_middleinitial }} {{ row.outpass.emp.pi.user.last_name }}</td>
+						<td class="text-center">{{ row.date }} @ {{ row.time_out }}</td>
+						<td class="text-center">{{ row.time_returned }}</td>
+						<td class="text-center">
+							{% if row.outpass.status == 1 %}
+								<span class="badge badge-warning"><span class="fas fa-spinner"></span> Pending</span>
+							{% elif row.outpass.status == 2 %}
+								<span class="badge badge-primary"><span class="fas fa-check"></span> Approved</span>
+							{% else %}
+								<span class="badge badge-danger"><span class="fas fa-times"></span> Declined</span>
+							{% endif %}
+						</td>
+						<td>
+							<center>
+								{% getcurrenttime row.date row.time_out as now %}
+								{% if row.time_returned is None %}
+									{% if now.0 > now.1 %}
+										<div class="btn-group">
+											<button class="btn btn-secondary btn-sm dropdown-toggle" style="padding:0px 10px" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+												Change Status
+											</button>
+											<div class="dropdown-menu" style="padding: 5px !important; width:100%; min-width:0px; text-align:center;">
+												<a class="dropdown-item" style="padding: 5px 0px 0px 0px;" href="{% url 'approve-outpass' row.outpass.id 2 %}"><span class="badge badge-primary" style="display:inline-block; margin: 5px 0px 0px 0px;"><span class="fas fa-check"></span> Approved</span> </a>
+												<a class="dropdown-item" style="padding: 5px 0px 0px 0px;" href="{% url 'approve-outpass' row.outpass.id 3 %}"><span class="badge badge-danger" style="display:inline-block; margin: 3px 0px 0px 0px;"><span class="fas fa-times"></span> Declined</span></a>
+												<a class="dropdown-item" style="padding: 5px 0px 5px 0px;" href="{% url 'approve-outpass' row.outpass.id 1 %}"><span class="badge badge-warning" style="display:inline-block; margin: 3px 0px 5px 0px;"><span class="fas fa-spinner"></span> Pending</span></a>
+											</div>
+										</div>
+									{% endif %}
+								{% endif %}
+							</center>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-sm-3">
+		<div class="ibox">
+			<div class="ibox-title bg-primary">
+				<h5>FILTER</h5>
+			</div>
+			<div class="ibox-content">
+				<h4>By status</h4>
+				<div class="list-group">
+					<a class="list-group-item {% if request.GET.status == '' or request.GET.status == None%}active{% endif %}" href='?status={% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>All</a>
+					<a class="list-group-item {% if request.GET.status == '1'%}active{% endif %}" href='?status=1{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Pending</a>
+					<a class="list-group-item {% if request.GET.status == '2'%}active{% endif %}" href='?status=2{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Approved</a>
+					<a class="list-group-item {% if request.GET.status == '3'%}active{% endif %}" href='?status=3{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>Declined</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

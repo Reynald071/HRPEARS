@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+{% load payroll_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DSWD My PORTAL | Print Payroll</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+        @media print {
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+			}
+			.vertical-right, .vertical-left {
+				margin: 0px !important;
+			}
+			body{-webkit-print-color-adjust: exact; padding-top: 120px;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+			}
+
+			.header{
+				position: fixed;
+				width: 100%;
+				top: 0;
+			}
+
+		  	.footer{
+		  		position: fixed;
+		  		width: 100%;
+		  		bottom: 0;
+		  	}
+
+			.header, .header-space{
+				height: 110px;
+			}
+
+			.footer, .footer-space {
+				height: 193px;
+			}
+
+		  	thead {display: table-header-group;}
+   			tfoot {display: table-footer-group;}
+        }
+
+        .containerX {
+			zoom: 95%;
+		}
+
+		body{
+			font-size: 12px;
+			font-family: 'Inter';
+			color: black;
+		}
+		.bold{
+			font-weight: bold;
+		}
+		th{
+			font-size: 10px;
+		}
+		#table2{
+			border-collapse: collapse;
+			width: 100%;
+		}
+		.text-center{
+			text-align: center;
+		}
+		.no-margins{
+			margin: 0px !important;
+		}
+
+		.content tbody tr td{
+			border: 1px solid #000;
+		}
+	</style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Payroll</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><a class="print-button" id="floatprint" title="Print" style="font-size: 14px;"><i class="fas fa-print"></i> Print</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+	{% for i in payroll.paginator.page_range %}
+    <page size="longflex" layout="landscape" class="page" style="padding: 20px; page-break-after: always;">
+		<div class="containerX">
+			<p class="text-right" style="font-size: 10px;">Sheet {{ forloop.counter }} of {{ payroll.paginator.num_pages }}</p>
+			<div class="header">
+				<p class="text-center bold no-margins" style="font-size: 12px;">PAYROLL SUMMARY</p>
+				<p class="text-center bold" style="font-size: 10px;">{{ data.period_from|date:"F d-"|upper }}{{ data.period_to|date:"d, Y"}}</p>
+				<p style="font-size: 9px;" class="no-margins">Entity Name: &emsp;<strong>Department of Social Welfare and Development Field Office Caraga</strong></p>
+				<p style="font-size: 9px;" class="no-margins">Fund Cluster: </p>
+				<p style="font-size: 9px;" class="no-margins">We acknowledgement receipt of cash shown opposite our name as full compensation for services rendered for the period covered.</p>
+			</div>
+			<table class="content" width="100%" style="font-size: 9px;">
+				<thead><tr><td><div class="header-space"></div></td></tr></thead>
+                <tbody style="font-size: 9px;">
+					<tr>
+						<td colspan="2"></td>
+					{% for row in column_type %}
+						{% if row.id == 1 %}
+						<td class="text-center bold" colspan="{{ count_received }}">{{ row.name|upper }}</td>
+						{% elif row.id == 2 %}
+						<td class="text-center bold" colspan="{{ count_deductions }}">{{ row.name|upper }}</td>
+						{% else %}
+						{% endif %}
+					{% endfor %}
+						<td colspan="4"></td>
+					</tr>
+					<tr>
+						<td class="text-center bold">Serial No.</td>
+						<td class="text-center bold">Purpose</td>
+						<td class="text-center bold">Period</td>
+						<td class="text-center bold">ID Number</td>
+						{% for row in columns %}
+						{% get_column_name row.column_id as column %}
+						<td class="text-center bold">{{ column.attribute }}</td>
+						{% endfor %}
+						<td class="text-center bold">Signature of</td>
+						<td class="text-center bold">Serial No.</td>
+					</tr>
+					{% get_sheet_value i pk type as sheet_value %}
+					{% for row in sheet_value %}
+					<tr>
+						<div class="content">
+						<td class="text-center">{{ forloop.counter0|add:sheet_value.start_index }}</td>
+						<td class="text-center" width="3%">{{ data.purpose.name }}</td>
+						<td class="text-center" width="3%" style="font-size: 8px;">{{ data.period_to|date:"m/d/Y" }}</td>
+						<td class="text-center" width="3%" style="font-size: 8px;">{% get_employee_details row.emp_id as id_number %}{{ id_number.id_number }}</td>
+						{% for c in columns %}
+						{% get_payroll_value pk c.column_id row.emp_id as payroll %}
+						{% get_column_name c.column_id as column %}
+						{% if forloop.last %}
+						<td class="col{{ payroll.column.order }} text-right" width="4%">
+							<span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %}>{{ payroll.value|floatformat:2|intcomma }}</span>
+						</td>
+						{% elif column.order >= 9%}
+							<td class="col{{ payroll.column.order }} text-right" style="font-size: 8px;">
+								<span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %}>{% if payroll.value != '0' %}{{ payroll.value|floatformat:2|intcomma }}{% endif %}</span>
+							</td>
+						{% elif column.order <= 5 %}
+						<td class="col{{ payroll.column.order }}" width="5%">
+							<span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %}>{{ payroll.value }}</span>
+						</td>
+						{% else %}
+						<td class="col{{ payroll.column.order }}">
+							<span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %}>{{ payroll.value }}</span>
+						</td>
+						{% endif %}
+						{% endfor %}
+						<td></td>
+						<td class="text-center">{{ forloop.counter0|add:sheet_value.start_index }}</td>
+						</div>
+					</tr>
+					{% endfor %}
+					{% if forloop.last %}
+					<tr>
+						<td class="bold">TOTAL</td><td></td><td></td><td></td>
+						{% for row in columns %}
+						{% if row.column_id == 80 %}
+						<td class="bold">TOTAL</td>
+						{% else %}
+							{% get_overall_value pk row.column_id type as overall %}
+							{% if overall == '-' %}
+							<td class="text-center">{{ overall|floatformat:2|intcomma }}</td>
+							{% elif row.column_id == 81 %}
+							<td></td>
+							{% else %}
+							<td class="text-right bold">{{ overall|floatformat:2|intcomma }}</td>
+							{% endif %}
+						{% endif %}
+						{% endfor %}
+						<td></td><td></td>
+					</tr>
+					{% endif %}
+				</tbody>
+				<tfoot><tr><td><div class="footer-space"></div></td></tr></tfoot>
+            </table>
+			<br>
+			<div class="footer">
+			<table width="100%" style="font-size: 10px;">
+				<tr>
+					<td width="30%" colspan="2">
+						<p>A. <span class="bold">CERTIFIED:</span> Services rendered as stated.</p>
+					</td>
+					<td width="30%" colspan="2">
+						<p>C. <span class="bold">APPROVED FOR PAYMENT:</span> <br>{% get_overall_value pk 4 type as total_amount_accrude %}{% amount_to_words total_amount_accrude|floatformat:2 %}</p>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="40" value="MARIA REA R. SAMPIANO"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="40" value="AO II / Personnel Officer">
+					</td>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="10"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="10" value="Date">
+					</td>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="40" value="RAMIL M. TACULOD"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="40" value="OIC-ARDA">
+					</td>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="10"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="10" value="Date">
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td width="35%" colspan="2">
+						<p>B. <span class="bold">CERTIFIED:</span> Supporting documents complete and proper; and cash available in the amount of {% get_overall_value pk 75 type as amount_due %}{{ amount_due|floatformat:2}}</p>
+					</td>
+					<td width="30%" colspan="2">
+						<p>D. <span class="bold">CERTIFIED:</span> Each employee whose name appears on the payroll has been paid the amount as indicated opposite his/her name</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="40" value="GRETCHEN F. ESCALA, CPA"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="40" value="Accountant III">
+					</td>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="10"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="10" value="Date">
+					</td>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="40" value="MA. GENETTE B. MARBAN"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="40" value="AO V - Cashier">
+					</td>
+					<td>
+						<br>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; font-weight: bold; text-transform: uppercase; text-align:center" size="10"><br>
+						<input type="text" style="border: 0px !important; text-align:center" size="10" value="Date">
+					</td>
+				</tr>
+			</table>
+			<table style="font-size: 10px; margin-top: -90px; margin-left: 1200px;">
+				<tr>
+					<td><p>E. </p></td>
+				</tr>
+				<tr>
+					<td>ORS/BURS No.:</td>
+					<td>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; text-align:center" size="10">
+					</td>
+				</tr>
+				<tr>
+					<td>Date:</td>
+					<td>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; text-align:center" size="10">
+					</td>
+				</tr>
+				<tr>
+					<td>JEV No.:</td>
+					<td>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; text-align:center" size="10">
+					</td>
+				</tr>
+				<tr>
+					<td>Date:</td>
+					<td>
+						<input type="text" style="border-top: 0px !important; border-left: 0px; border-right: 0px; text-align:center" size="10">
+					</td>
+				</tr>
+			</table>
+			</div>
+		</div>
+    </page>
+	{% endfor %}
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

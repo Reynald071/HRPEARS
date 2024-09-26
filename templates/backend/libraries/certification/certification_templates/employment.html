@@ -1,0 +1,50 @@
+{% load tags %}
+{% load static %}
+{% load humanize %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% load frontend_tags %}
+<div class="row destroyable" style="margin:0px !important; border-color:rgb(231, 234, 236) !important; padding:5px;">
+    <div id="keyword_roster" class="col-sm-12" style="background:#f5f5f5; border: 1px dashed #cecece !important; padding:5px 5px 0px 5px;">
+        <small class="label" style="font-size:12px; font-weight:normal; line-height:18px; display:inline-block; margin-bottom:5px;" draggable="false">
+            This work history is generated from data fetched using ID number: <b>{{ employee.id_number }}</b> under the name of <b>{{ employee.pi.user.first_name }} {{ employee.pi.user.middle_name|to_middleinitial }} {{ employee.pi.user.last_name }}</b>.
+        </small>
+    </div>
+</div>
+<table class="table table-bordered" style="margin-bottom:0px;">
+    <tr>
+        <th class="bold capslock text-center" style="width:35%">Position</th>
+        <th class="bold capslock text-center">Inclusive Dates</th>
+        <th class="bold capslock text-center">Status</th>
+        <th class="bold capslock text-center">Monthly Rate</th>
+        <th class="bold capslock text-center">Project / Program</th>
+    </tr>
+    {% if workhistory %}
+        {% for row in workhistory %}
+            {% if forloop.first %}
+            <tr>
+                {% getworkhistory row.id as work_history %}
+                <td class="text-center">{{ row.position.name }}</td>
+                <td class="text-center">{{ row.we_from }} - PRESENT</td>
+                <td class="text-center">{{ row.empstatus.name }}</td>
+                <td class="text-center">{{ row.salary_rate|intcomma }}</td>
+                <td class="text-center">{{ work_history.project.name }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                {% getworkhistory row.id as work_history %}
+                <td class="text-center">{{ row.position.name }}</td>
+                <td class="text-center">{{ row.we_from }} - {{ row.we_to }}</td>
+                <td class="text-center">{{ row.empstatus.name }}</td>
+                <td class="text-center">{{ row.salary_rate|intcomma }}</td>
+                <td class="text-center">{{ work_history.project.name }}</td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td class="text-center" colspan="5"><img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" width="250px;" style="margin: 0 auto;"><p class="text-center">There is no data to show you right now. </p></td>
+        </tr>
+    {% endif %}
+</table>

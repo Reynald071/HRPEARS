@@ -1,0 +1,321 @@
+{% load frontend_tags %}
+<form id="approveLeaveForm">
+	<div class="modal-body">
+	{% csrf_token %}
+	<div class="row">
+		<div class="col-lg-6">
+			<input type="hidden" value="{{ leave.leaveapp.emp_id }}" name="employee_id">
+			<div class="form-group">
+				<label>Leave Type</label>
+				<select class="form-control select" name="leave_type" id="leave_type" required>
+					<option></option>
+					{% for row in leavesubtype %}
+						<option value="{{ row.id }}">{{ row.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="form-group">
+				<label>Leave Spent</label>
+				<select class="form-control select" name="leave_spent" id="leave_spent"></select>
+			</div>
+		</div>
+		<div class="col-lg-12">
+			<div class="form-group">
+				<label>Reason for Leave</label>
+				<textarea class="form-control" name="reason_for_leave">{% if leave.specify %}{{ leave.specify|title }}{% else %}N/A{% endif %}</textarea>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="form-group">
+				<label>Inclusive Dates</label>
+				<input type="text" class="form-control" value="{% if leave.leaveapp.start_date is None %}{% get_leave_dates leave.leaveapp_id %}{% else %}{% if leave.leaveapp.start_date == leave.leaveapp.end_date %}{{ leave.leaveapp.start_date|date:'F d, Y' }}{% else %}{{ leave.leaveapp.start_date|date:'F d, Y' }} - {{ leave.leaveapp.end_date|date:'F d, Y' }}{% endif %}{% endif %}" readonly>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="form-group">
+				<label>Date of Filing</label>
+				<input type="text" class="form-control" value="{{ leave.leaveapp.date_of_filing }}" readonly>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<div class="form-group">
+				<label>Requested by</label>
+				<input type="text" class="form-control" value="{{ leave.leaveapp.emp.pi.user.get_fullname }}" readonly>
+			</div>
+		</div>
+		<div class="col-lg-6">
+			<p><b>Status <br></b>  {% if leave.leaveapp.status == 0 %}
+			<span class="badge badge-primary mt-2">Pending</span>
+			{% elif leave.leaveapp.status == 1 %}
+			<span class="badge badge-success mt-2">Approved</span>
+			{% elif leave.leaveapp.status == 2 %}
+			<span class="badge badge-warning mt-2">Canceled</span>
+			{% else %}
+			<span class="badge badge-danger mt-2">Disapproved</span>
+			{% endif %}</p>
+		</div>
+		<div class="col-lg-12">
+			<label>Print Logs</label>
+			<div class="table-responsive">
+				<table class="table table-hover table-bordered">
+					<tbody>
+                        {% if print_attempt %}
+						{% for row in print_attempt %}
+						<tr>
+							<td>Print attempt at {{ row.datetime|date:"F m, Y H:i A" }}</td>
+						</tr>
+						{% endfor %}
+                        {% else %}
+                            <tr>
+                                <td>No available data.</td>
+                            </tr>
+                        {% endif %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-sm-12">
+			<h4 class="no-margins">CREDITS MANAGEMENT</h4>
+			<small>Please make sure you do not leave blank on this field.</small>
+			<br><br>
+			<div id="items">
+				{% if credits_history %}
+					{% for credit in credits_history %}
+					{% if forloop.first %}
+						<div class="row" id="credit{{ credit.id }}">
+							<div class="form-group col-md-8">
+								<label>Deduct / Add on<span class="text-danger">*</span></label>
+								<select class="form-control select b-r-sm" name="deduct_on[]" required>
+									<option value=""></option>
+									{% for row in leave_type %}
+										{% if credit.deduct_on_id == row.id %}
+										<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+										{% else %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endif %}
+									{% endfor %}
+								</select>
+							</div>
+							<div class="form-group col-md-4">
+								<label>Days<span class="text-danger">*</span></label>
+								<div class="input-group">
+									<input type="text" class="form-control b-r-sm" name="days[]" value="{{ credit.days }}" required>
+									<span class="input-group-append"> <button type="button" class="btn btn-info" id="add"><i class="fas fa-plus"></i></button> </span>
+								</div>
+							</div>
+						</div>
+					{% else %}
+						<div class="row" id="credit{{ credit.id }}">
+							<div class="form-group col-md-8">
+								<label>Deduct / Add on<span class="text-danger">*</span></label>
+								<select class="form-control select b-r-sm" name="deduct_on[]" required>
+									<option value=""></option>
+									{% for row in leave_type %}
+										{% if credit.deduct_on_id == row.id %}
+										<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+										{% else %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endif %}
+									{% endfor %}
+								</select>
+							</div>
+							<div class="form-group col-md-4">
+								<label>Days<span class="text-danger">*</span></label>
+								<div class="input-group">
+									<input type="text" class="form-control b-r-sm" name="days[]" value="{{ credit.days }}" required>
+									<span class="input-group-append"> <button type="button" class="btn btn-danger" data-role="remove" data-id="{{ credit.id }}"><i class="fas fa-minus"></i></button> </span>
+								</div>
+							</div>
+						</div>
+					{% endif %}
+					{% endfor %}
+				{% else %}
+					<div class="row">
+						<div class="form-group col-md-8">
+							<label>Deduct / Add on<span class="text-danger">*</span></label>
+							<select class="form-control select b-r-sm" name="deduct_on[]" required>
+								<option value=""></option>
+								{% for row in leave_type %}
+								{% if leave.leaveapp.leavesubtype.leavetype_id == row.id %}
+								<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+								{% else %}
+								<option value="{{ row.id }}">{{ row.name }}</option>
+								{% endif %}
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-4">
+							<label>Days<span class="text-danger">*</span></label>
+							<div class="input-group">
+								<input type="text" class="form-control b-r-sm" name="days[]" required>
+								<span class="input-group-append"> <button type="button" class="btn btn-info" id="add"><i class="fas fa-plus"></i></button> </span>
+							</div>
+						</div>
+					</div>
+				{% endif %}
+			</div>
+			<hr>
+			<div class="row">
+				<div class="form-group col-md-12">
+					<label>Additional Remarks</label>
+					<textarea class="form-control" name="additional_remarks" rows="3">{% if leave.leaveapp.additional_remarks %}{{ leave.leaveapp.additional_remarks }}{% endif %}</textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	{% if leave.leaveapp.status == 0 %}
+	<button type="submit" class="btn btn-info">Approve</button>
+	<button type="button" class="btn btn-default" data-role="cancel" data-id="{{ leave.leaveapp.id }}">Cancel</button>
+	{% elif leave.leaveapp.status == 1 %}
+	<button type="button" class="btn btn-default" data-role="cancel" data-id="{{ leave.leaveapp.id }}">Cancel</button>
+	{% endif %}
+</div>
+</form>
+{% block script %}
+<script>
+	$(document).ready(function(){
+		$('#leave_type').on('change', function(){
+			var id = $(this).val();
+
+			$.get({
+				url: '/backend/leave-spent/get/' + id,
+				success: function(response){
+					var data = response.data
+					if(data) {
+						$('#leave_spent').empty();
+						for(var i = 0; i < data.length; i++){
+							var newOption = new Option(data[i]['name'],data[i]['id']);
+							$('#leave_spent').append(newOption);
+						}
+						$('#leave_spent').select2('val', '{{ leave.leavespent_id }}');
+						$('#leave_spent').attr('required', 'required');
+					} else {
+						$('#leave_spent').removeAttr('required');
+					}
+				}
+			});
+		});
+
+		$('#leave_type').select2('val', '{{ leave.leaveapp.leavesubtype_id }}');
+	});
+
+	select2Init();
+	function select2Init(){
+		$('.select').select2({
+			width: "100%",
+			allowClear: true,
+			placeholder: 'Choose',
+		});
+	}
+	var credits_manager = 1;
+    $('#add').on('click', function(){
+		if(credits_manager <= 5){
+			$('#items').append('<div class="row"><div class="form-group col-md-8"><select class="form-control select b-r-sm" name="deduct_on[]" required><option value=""></option>{% for row in leave_type %}<option value="{{ row.id }}">{{ row.name }}</option>{% endfor %}</select></div><div class="form-group col-md-4"><div class="input-group"><input type="text" class="form-control" name="days[]" required><span class="input-group-append"><button type="button" class="btn btn-danger remove_field"><i class="fas fa-minus"></i></button></span></div>');
+			select2Init();
+			credits_manager++;
+		}
+	});
+
+	$(document).on('click', 'button[data-role=remove]', function(){
+		var id = $(this).data('id');
+
+		$.post({
+			data: {
+				id: id,
+			},
+			url: "{% url 'remove_credits_history' %}",
+			success: function(response) {
+				if(response.data) {
+					$('#items #credit'+id).remove();
+				}
+			}
+		});
+	});
+
+	$('#items').on('click', '.remove_field', function(){
+		$(this).parent().parent().parent().parent().remove();
+		credits_manager--;
+	});
+
+    $('#approveLeaveForm').on('submit', function(e){
+		e.preventDefault();
+   		var form = new FormData(this);
+		Swal.fire({
+          	title: "Are you sure",
+          	text: "You want to approve this leave form?",
+          	icon: "info",
+          	showCancelButton: true,
+          	confirmButtonColor: "#3498DB",
+          	confirmButtonText: "Yes",
+          	allowOutsideClick: false,
+          	showLoaderOnConfirm: true,
+		  	preConfirm: function (){
+		    	return $.ajax({
+					data: form,
+					url: "{% url 'view_leave_request' leave.leaveapp_id %}",
+					type: "POST",
+					cache       : false,
+					contentType : false,
+					processData : false
+				});
+		  	},
+		}).then(function(data) {
+		    if (data.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  text: data.value.msg,
+				  icon: "success",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#view-modal').modal('hide');
+						$('#leave-admin-table').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+
+    $(document).on('click', 'button[data-role=cancel]', function(){
+    	var id = $(this).data('id');
+		Swal.fire({
+          title: "Are you sure",
+          text: "You want to cancel this leave form?",
+          icon: "info",
+          showCancelButton: true,
+          confirmButtonColor: "#3498DB",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+          showLoaderOnConfirm: true,
+		    preConfirm: function (){
+		    	return $.ajax({
+					data: { id:  id},
+					url: "{% url 'cancel_leave_request' %}",
+					type: "POST"
+				});
+		    },
+		}).then(function(data) {
+		    if(data.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  text: data.value.msg,
+				  icon: "success",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#view-modal').modal('hide');
+						$('#leave-admin-table').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+</script>
+{% endblock %}

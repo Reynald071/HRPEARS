@@ -1,0 +1,191 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Guidelines</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Awards
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Guidelines</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button type="button" class="btn btn-info" data-target="#upload-guideline" data-toggle="modal">
+                <i class="fas fa-upload"></i> Upload Guideline
+            </button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <table class="table table-bordered" id="table-guideline" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Title</th>
+                                <th>Year</th>
+                            </tr>
+                         </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="upload-guideline" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">UPLOAD GUIDELINE</h3>
+	        </div>
+			<div class="modal-body">
+                <form id="submitForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Year<span class="asteriskField">*</span></label>
+                    <input type="number" class="form-control" name="year" required>
+                </div>
+                <div class="form-group">
+                    <label>Guideline Title<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Attachment<span class="asteriskField">*</span></label>
+                    <input type="file" class="form-control file-control" name="file" required>
+                </div>
+                <br><br>
+                <button type="submit" class="btn btn-info">Submit</button>
+                </form>
+            </div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+$(document).ready(function(){
+    $('#submitForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to upload this new PRAISE Awards Guidelines?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "upload_guidelines" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+        }).then(function (response){
+            if (response.value.data == "success"){
+				Swal.fire({
+				  title: "Good job!",
+				  text: response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#submitForm').trigger('reset');
+						$('#upload-guideline').modal('hide');
+						$('#table-guideline').DataTable().ajax.reload();
+					}
+				});
+			} else {
+				Swal.fire({
+				  title: "Unauthorized transaction",
+				  text: response.value.msg,
+				  icon: "warning",
+				  confirmButtonColor: "#3498DB",
+				});
+			}
+        });
+        e.preventDefault();
+	});
+
+	$('#table-guideline').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 2, 'desc' ]],
+        'lengthMenu': [ 25, 50, 100 ],
+        'ajax': {
+            'url': '/api/awards/guidelines/?format=datatables',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return "<a href='javascript:;' data-role='delete' data-id='"+ data +"'>Delete</a>"
+                },
+                'searchable': false
+            },
+            {'data': 'title' },
+            {'data': 'year' }
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+        var id = $(this).data('id');
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to delete this PRAISE Awards Guidelines?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    url         : '/backend/awards/guidelines/delete/' + id,
+                    type        : 'POST',
+                });
+		    },
+        }).then(function (response){
+            if (response.value.data == "success"){
+				Swal.fire({
+				  title: "Good job!",
+				  text: response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#table-guideline').DataTable().ajax.reload();
+					}
+				});
+			}
+        });
+    });
+});
+</script>
+{% endblock %}

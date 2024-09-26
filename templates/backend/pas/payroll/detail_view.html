@@ -1,0 +1,139 @@
+{% load humanize %}
+{% load payroll_tags %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<style>
+    tr.header
+    {
+        cursor:pointer;
+    }
+    .header .sign:after{
+      content:"◄";
+      display:inline-block;
+    }
+    .header.expand .sign:after{
+      content:"▼";
+     }
+</style>
+{% endblock %}
+<div id="content" style="display: none;">
+<div style="padding:20px;">
+    <div class="row">
+        <div class="col-md-8">
+            <p>Employee ID Number: <br><b>{{ details.0.emp.id_number }}</b></p>
+            <p>Full Name (Surname, First Name Middle Initial): <br><b>{{ details.2.value }} {{ details.3.value }} {{ details.4.value }}</b></p>
+            <p>Responsibility Center: <br><b>{{ details.1.value }}</b></p>
+            <p>Fund Charges: <br><b>{{ details.0.value }}</b></p>
+        </div>
+        <div class="col-md-4">
+            <p>Office Designation: <br><b>{{ details.5.value }}</b></p>
+            <p>Employment Status: <br><b>{{ details.6.value }}</b></p>
+            <p>SG-STEP INC.: <br><b>{{ details.7.value }}</b></p>
+            <p>Monthly Rate: <br><b>{{ details.8.value|floatformat:2|intcomma }}</b></p>
+        </div>
+    </div>
+</div>
+{% if type == 'True' %}
+<form id="submitDetailForm">
+    <button type="submit" class="btn btn-info pull-right" style="margin-right: 20px;">Save changes</button>
+    <br><br><br>
+{% csrf_token %}
+{% endif %}
+<table class="table table-bordered">
+    <tbody>
+        {% for column_type in column_type %}
+        <tr class="header expand">
+            <th style="background: #dee0e3">{{ column_type.name|upper }} <span class="sign"></span></th>
+            <th class="text-right" style="background: #dee0e3">AMOUNT</th>
+            {% if type == 'True' %}
+                <th class="text-right" style="background: #dee0e3">REMARKS</th>
+            {% endif %}
+        </tr>
+            {% for row in data %}
+            {% get_column_name row.column_id as column %}
+            {% get_payroll_value payroll_id row.column_id emp_id as payroll %}
+            {% if column_type.id == column.column_type_id %}
+                {% if payroll.value != '0.00' and type == 'False' %}
+                <tr>
+                    <td class="no-padding">
+                        <input type="hidden" name="list_id[]" value="{{ row.column_id }}">
+                        <input type="text" class="form-control" value="{{ column.attribute }}" style="border:0px !important;" readonly>
+                    </td>
+                    <td class="text-right no-padding">
+                        <input type="text" class="form-control" name="value[]" value="{% if payroll.value %}{{ payroll.value|floatformat:2 }}{% endif %}" style="text-align: right;" autocomplete="off" readonly>
+                    </td>
+                </tr>
+                {% elif type == 'True' %}
+                <tr>
+                    <td class="no-padding">
+                        <input type="hidden" name="list_id[]" value="{{ row.column_id }}">
+                        <input type="text" class="form-control" value="{{ column.attribute }}" style="border:0px !important;" readonly>
+                    </td>
+                    <td class="text-right no-padding">
+                        <input type="text" class="form-control" name="value[]" value="{% if payroll.value %}{{ payroll.value|floatformat:2 }}{% endif %}" style="text-align: right;" autocomplete="off">
+                    </td>
+                    <td class="text-right no-padding">
+                        <input type="text" class="form-control" name="remarks[]" value="{% if payroll.remarks %}{{ payroll.remarks }}{% endif %}" style="text-align: right;" autocomplete="off">
+                    </td>
+                </tr>
+                {% endif %}
+            {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+{% if type == 'False' %}
+</form>
+{% endif %}
+</div>
+{% block script %}
+<script>
+    $('.header').click(function(){
+         $(this).toggleClass('expand').nextUntil('tr.header').slideToggle(100);
+    });
+
+    {% if type == 'True' %}
+    $('#submitDetailForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            data: form,
+            url: '{% url "payroll_detail_view" payroll_id emp_id type %}',
+            type: 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false,
+            beforeSend: function(){
+                $('.loading').css('display', '');
+                $('.btn').prop("disabled", true);
+            },
+            success : function(response){
+                if (response.data == 'success'){
+                    $('#detail_view').modal('show').find('.modal-body #payroll_content').empty();
+                    $('#detail_view').modal('show').find('.modal-body #payroll_content').append('<div class="spinner-example preloader">\
+                                                                                                    <div class="sk-spinner sk-spinner-double-bounce">\
+                                                                                                        <div class="sk-double-bounce1"></div>\
+                                                                                                        <div class="sk-double-bounce2"></div>\
+                                                                                                    </div> <br>\
+                                                                                                    <p class="text-center">Loading..</p>\
+                                                                                                    </div>')
+                    $('#detail_view').modal('show').find('.modal-body #payroll_content').load('{% url "payroll_detail_view" payroll_id emp_id "True" %}');
+                }
+            },
+            complete : function(){
+                $('.loading').css('display', 'none');
+                $('.btn').prop("disabled", false);
+            }
+        });
+    });
+    {% endif %}
+
+    $(document).ready(function(){
+        $('.preloader').fadeOut(500, function(){
+            $('#content').css('display', '');
+            $('.payroll-detail-view').css('padding', '0px');
+        });
+    });
+</script>
+{% endblock %}

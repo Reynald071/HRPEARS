@@ -1,0 +1,169 @@
+<form id="updateForm">
+{% csrf_token %}
+<p class="bold">PERSONAL DETAILS</p>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" class="form-control" name="last_name" value="{{ employee.emp.pi.user.last_name }}">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" class="form-control" name="first_name" value="{{ employee.emp.pi.user.first_name }}">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label>Middle Name</label>
+            <input type="text" class="form-control" name="middle_name" value="{{ employee.emp.pi.user.middle_name }}">
+        </div>
+    </div>
+    <div class="col-md-2">
+        <label>Extension</label>
+        <select class="form-control select" name="extension">
+            <option></option>
+            {% for row in extension %}
+            {% if row.id == employee.emp.pi.ext_id %}
+            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<hr>
+<p class="bold">EMPLOYEE DETAILS</p>
+<div class="row">
+    <div class="col-md-3">
+        <label>ID Number</label>
+        <input type="text" class="form-control" name="id_number" value="{{ employee.emp.id_number }}">
+    </div>
+    <div class="col-md-5">
+        <label>Position</label>
+        <select class="form-control select" name="position">
+            <option></option>
+            {% for row in position %}
+            {% if row.id == employee.emp.position_id %}
+            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label>Employee Status</label>
+        <select class="form-control select" name="emp_status">
+            <option></option>
+            {% for row in emp_status %}
+            {% if row.id == employee.emp.empstatus_id %}
+            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-6">
+        <label>Area of Assignment</label>
+        <select class="form-control select" name="aoa">
+            <option></option>
+            {% for row in aoa %}
+            {% if row.id == employee.emp.aoa_id %}
+            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label>Fund Charge</label>
+        <select class="form-control select" name="fundsource">
+            <option></option>
+            {% for row in fundsource %}
+            {% if row.id == employee.emp.fundsource_id %}
+            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+            {% else %}
+            <option value="{{ row.id }}">{{ row.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-4">
+        <label>Salary Rate</label>
+        <input type="text" class="form-control" name="salary_rate" value="{{ employee.emp.salary_rate }}">
+    </div>
+    <div class="col-md-4">
+        <label>Salary Grade</label>
+        <input type="text" class="form-control" name="salary_grade" value="{{ employee.emp.salary_grade }}">
+    </div>
+    <div class="col-md-4">
+        <label>Step Increment</label>
+        <input type="text" class="form-control" name="step_inc" value="{{ employee.emp.step_inc }}">
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-4">
+        <input type="checkbox" name="is_per_day" id="is_per_day" value="1" {% if employee.is_per_day %}checked{% endif %}> Is per day
+    </div>
+</div>
+<br>
+<hr>
+<p class="bold">PAYROLL STATUS</p>
+<div class="row">
+    <div class="col-md-3">
+        <div class="form-group">
+            <label>Status</label>
+            <select class="form-control select" name="status">
+                <option></option>
+                <option value="1" {% if employee.status == 1 %}selected{% endif %}>Incumbent</option>
+                <option value="2" {% if employee.status == 2 %}selected{% endif %}>Separated</option>
+                <option value="3" {% if employee.status == 3 %}selected{% endif %}>On-Hold</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="form-group">
+            <label>Remarks</label>
+            <textarea class="form-control" rows="3" name="remarks">{{ employee.remarks }}</textarea>
+        </div>
+    </div>
+</div>
+<div class="form-group">
+    <button type="submit" class="btn btn-info">Save changes</button>
+</div>
+</form>
+{% block script %}
+<script>
+    select2Init();
+
+    $('#updateForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : "{% url 'employee_edit' employee.emp.id %}",
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                window.location.href = "{% url 'payroll_employee' %}";
+            }
+        });
+    });
+</script>
+{% endblock %}

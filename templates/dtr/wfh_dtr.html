@@ -1,0 +1,248 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% load tags %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style type="text/css">
+	.dropdown-menu {
+	    width: 100%;
+	}
+	.form-control[readonly] {
+		background-color: transparent !important;
+		opacity: 1;
+		cursor: not-allowed;
+	}
+	.note {
+		position: relative;
+		cursor: not-allowed;
+	}
+	.note:after {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 0;
+		height: 0;
+		display: block;
+		border-left: 10px solid transparent;
+		border-bottom: 10px solid transparent;
+		border-top: 10px solid #009688;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Daily Time Records</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employees
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Daily Time Records</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <a href="{% url 'manage_dtr' %}" class="btn btn-info">
+                <i class="fas fa-gear"></i>
+                Manage
+            </a>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-lg-4">
+			<div class="ibox">
+				<div class="ibox-title">
+					<div class="tabs-container">
+                        <ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#by-name">By Name</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#by-section">By Section</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#by-payroll-incharge">By Payroll Incharge</a></li>
+                        </ul>
+						<div class="tab-content" style="border: 0px !important;">
+							<div id="by-name" class="tab-pane active">
+								<div class="panel-body">
+									<div class="form-group">
+										<label>Employee Name</label>
+										<input type="text" class="form-control filter_employee" name="employee_name" id="employee_name" placeholder="e.g. [16-12345] FIRSTNAME MIDDLENAME LASTNAME" autocomplete="off" required>
+									</div>
+									<div class="row">
+										<div class="form-group col-lg-6">
+											<label>Start Date</label>
+											<input type="date" class="form-control" name="name_start_date" id="name_start_date" required>
+										</div>
+										<div class="form-group col-lg-6">
+											<label>End Date</label>
+											<input type="date" class="form-control" name="name_end_date" id="name_end_date" required>
+										</div>
+									</div>
+									<br>
+									<button type="button" class="btn btn-info btn-block" id="btn-load-employee-dtr">Load</button>
+								</div>
+							</div>
+							<div id="by-section" class="tab-pane">
+								<div class="panel-body">
+									{% csrf_token %}
+									<div class="row">
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label>Section</label>
+												<select class="form-control select" id="section" name="section" required>
+													<option value=""></option>
+													{% for div in division %}
+													<optgroup label="{{ div.div_name }}">
+														{% for row in section %}
+														{% if row.div_id == div.id %}
+															{% if row.id == employee.section_id %}
+															<option value="{{ row.id }}" selected="selected">{{ row.sec_name }}</option>
+															{% else %}
+															<option value="{{ row.id }}">{{ row.sec_name }}</option>
+															{% endif %}
+														{% endif %}
+														{% endfor %}
+													</optgroup>
+													{% endfor %}
+												</select>
+											</div>
+											 <div class="form-group">
+												<label>Area of Assignment</label>
+												<select class="form-control select" id="aoa" name="aoa" required>
+													<option value=""></option>
+													{% for row in aoa %}
+													<option value="{{ row.id }}">{{ row.name }}</option>
+													{% endfor %}
+												</select>
+											</div>
+											<div class="row">
+												<div class="form-group col-lg-6">
+													<label>Start Date</label>
+													<input type="date" class="form-control" id="start_date" name="start_date" required>
+												</div>
+												<div class="form-group col-lg-6">
+													<label>End Date</label>
+													<input type="date" class="form-control" id="end_date" name="end_date" required>
+												</div>
+											</div>
+											<br>
+											<button type="button" class="btn btn-info btn-block" id="btn-load-employee-section">
+												<span class="loading open-circle" style="display:none;"></span> Load
+											</button>
+											<a href="{% url 'wfh_dtr' %}" type="button" class="btn btn-default btn-block">Reset</a>
+										</div>
+									</div>
+								</div>
+							</div>
+                            <div id="by-payroll-incharge" class="tab-pane">
+								<div class="panel-body">
+                                    <div class="form-group">
+                                        <label>Payroll Incharge</label>
+                                        <select class="form-control select" name="payroll-incharge" id="payroll-incharge">
+                                            <option value=""></option>
+                                            {% for row in payroll_incharge %}
+                                            <option value="{{ row.id }}">{{ row.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-lg-6">
+                                            <label>Start Date</label>
+                                            <input type="date" class="form-control" id="pr_start_date" name="start_date" required>
+                                        </div>
+                                        <div class="form-group col-lg-6">
+                                            <label>End Date</label>
+                                            <input type="date" class="form-control" id="pr_end_date" name="end_date" required>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-info btn-block" id="btn-load-employee-pr">Load</button>
+                                </div>
+                            </div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-8">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div id="employee-content">
+						<center>
+							<img loading="lazy"  src="{% static 'image/filter.png' %}" width="40%">
+							<p class="no-margins"><strong>No data available.</strong></p>
+							<small>You can use filter to generate the daily time records.</small>
+						</center>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(".filter_employee").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+	$('#btn-load-employee-dtr').on('click', function(){
+		var employee_name = $('#employee_name').val();
+		var start_date = $('#name_start_date').val();
+		var end_date = $('#name_end_date').val();
+		callPage('/load-employees/dtr/' + employee_name + '/' + start_date + '/' + end_date);
+	});
+
+	$('#btn-load-employee-section').on('click', function(){
+		var section = $('#section').val();
+		var aoa = $('#aoa').val();
+		var start_date = $('#start_date').val();
+		var end_date = $('#end_date').val();
+		callPage('/load-employees/section/' + section + '/' + aoa + '/' + start_date + '/' + end_date);
+	});
+
+    $('#btn-load-employee-pr').on('click', function() {
+        var payroll_incharge = $('#payroll-incharge').val();
+        var start_date = $('#pr_start_date').val();
+		var end_date = $('#pr_end_date').val();
+        callPage('/load-employees/payroll-incharge/' + payroll_incharge + '/' + start_date + '/' + end_date);
+    });
+
+	function callPage(pageRefInput) {
+		$.ajax({
+			url: pageRefInput,
+			type: "GET",
+			dataType: 'text',
+			beforeSend: function() {
+				$('#employee-content').empty();
+				$('#employee-content').append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+			},
+			success: function(response) {
+				$('#employee-content').html(response);
+			},
+			complete: function() {
+				$('#preloader').css('display', 'none');
+			}
+		});
+	}
+</script>
+{% endblock %}

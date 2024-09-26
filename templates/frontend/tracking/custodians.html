@@ -1,0 +1,14 @@
+<table class="table table-bordered table-hovered custodians-table">
+	<tr>
+		<th class="text-left">Full Name of Custodian</th>
+		<th class="text-center">Division</th>
+		<th class="text-right">Section</th>
+	</tr>
+	{% for row in data %}
+	<tr>
+		<td class="text-left">{{ row.user.get_fullname }}</td>
+		<td class="text-center">{{ row.user.get_division }}</td>
+		<td class="text-right">{{ row.user.get_section }}</td>
+	</tr>
+	{% endfor %}
+</table>

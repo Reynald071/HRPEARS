@@ -1,0 +1,477 @@
+{% load tags %}
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+<title>DSWD My PORTAL PDS | Print Page 4</title>
+<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style type="text/css">
+	@media print{
+		.containerX {
+			padding: 0px;
+			margin: 0px;
+			zoom: 85% !important;
+			height: 0% !important;
+		}
+		.br-xd {
+			line-height: 6px !important;
+		}
+		page {
+			margin: 0px;
+			border: 0.1px solid transparent;
+			height: 329mm !important;
+			width: 100% !important;
+		}
+		table .gray-bg{
+			background-color: #E8E8E8 !important;
+		}
+		.adj {
+			padding: 6px 8px !important;
+		}
+		.adj2 {
+			line-height: 34px !important;
+		}
+		.table {
+			page-break-inside: avoid;
+			page-break-after: avoid;
+		}
+		.magic{
+			border-top: 0px !important;
+			border-bottom: 0px !important;
+		}
+		.magic-2{
+			border-right:0px !important;
+		}
+		.magic-3{
+			border-left:0px !important;
+		}
+		.magic-4{
+			border-bottom:0px !important;
+		}
+		.magic-5{
+			border-top:0px !important;
+		}
+		body{-webkit-print-color-adjust: exact;}
+	}
+
+	@page {
+		size: auto;
+	}
+
+	.containerX {
+		zoom: 80%;
+	}
+	tbody td{
+		border: 1px solid black;
+		font-family: Arial Narrow;
+	}
+	thead td{
+		border: 1px solid black;
+		font-family: Arial Narrow;
+	}
+	.font-medium{
+		font-size: 14.67px;
+	}
+	.font-small{
+		font-size: 13.33px;
+	}
+	.font-xsmall{
+		font-size: 12px;
+	}
+	.padding-zero{
+		padding: 0px !important;
+	}
+    .padding-left-right-zero{
+        padding-right:0;
+        padding-left:0;
+    }
+	.magic{
+        border-top: 0px !important;
+        border-bottom: 0px !important;
+        padding:8px !important;
+    }
+    .magic-2{
+    	border-right:0px !important;
+        padding:8px !important;
+    }
+    .magic-3{
+    	border-left:0px !important;
+        padding:8px !important;
+    }
+    .magic-4{
+    	border-bottom:0px !important;
+        padding:8px !important;
+    }
+    .magic-5{
+    	border-top:0px !important;
+        padding:8px !important;
+    }
+  	input{
+  		background: transparent !important;
+  	}
+  	.text-danger{
+    	color:red !important;
+    }
+    .gray-bg{
+		background-color: #E8E8E8 !important;
+	}
+	.center-div {
+		display: flex;
+		justify-content:center;
+		align-items:center;
+		height:18px !important;
+		padding:2px !important;
+		overflow: hidden;
+	}
+
+	.icheck {
+		width: 20px;
+		height: 20px;
+	}
+
+	label.checkbox-label input[type=checkbox]{
+		position: relative;
+		vertical-align: middle;
+		bottom: 5px;
+	}
+</style>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">
+            <strong>Page 4&emsp;
+			<em><small class="font-xsmall">Notes: Paper size is Folio, scale to 90%, margin to 0.19, 0.33, 0.08, 0.36</small></em>
+            </strong>
+        </a>
+		<ul class="nav navbar-nav navbar-right">
+			<li><a href="javascript:;" class="btn btn-info print-button" id="floatprint" title="Print"><i class="fas fa-print"></i> <span id="print">Print</span></a></li>
+		</ul>
+	</div>
+</nav>
+<page size="long" style="padding: 30px; position: relative; page-break-after: always;">
+	<div class="containerX">
+		<table class="table" border="1" style="margin-bottom:0;">
+			<tbody>
+				<tr>
+					<td class="font-small padding-zero magic-2 magic gray-bg" style="padding-top:5px !important;">&nbsp; 34.</td>
+					<td width="65%" class="padding-zero magic magic-3 gray-bg font-medium" style="padding-top:5px !important;">
+						Are you related by consanguinity or affinity to the appointing or recommending authority, or to the<br>
+						chief of bureau or office or to the person who has immediate supervision over you in the Office,<br>
+						Bureau or Department where you will be appointed,
+					</td>
+					<td class="magic"></td>
+				</tr>
+				<tr>
+					<td class="magic magic-2 gray-bg"></td>
+					<td class="padding-zero magic magic-3 gray-bg font-medium">a. within the third degree?</td>
+					<td class="padding-zero magic font-small">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.0.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.0.question == 0 %}checked{% endif %}>&nbsp;NO</label></td>
+				</tr>
+				<tr>
+					<td class="magic-5 magic-2 gray-bg font-medium"></td>
+					<td class="padding-zero magic-5 magic-3 gray-bg font-medium">b. within the fourth degree (for Local Government Unit - Career Employees)?</td>
+					<td class="padding-zero magic-5 font-small" style="padding-bottom:10px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.1.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.1.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, give details: <br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.1.answers %}{{ additional.1.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic-2 magic-4 gray-bg font-medium" style="padding-top:5px !important;">&nbsp; 35.</td>
+					<td class="padding-zero magic-3 magic-4 gray-bg font-medium" style="padding-top:5px !important;">
+						a. Have you ever been found guilty of any administrative offense?
+					</td>
+					<td class="padding-zero magic-4 font-small" style="padding-top:10px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.2.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.2.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, give details: <br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.2.answers %}{{ additional.2.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="magic magic-2 gray-bg"></td>
+					<td class="padding-zero magic-3 magic-4 magic gray-bg font-medium">
+						b. Have you been criminally charged before any court?
+					</td>
+					<td class="padding-zero magic font-small" style="padding-bottom:0 !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.3.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.3.question == 0 %}checked{% endif %}>&nbsp;NO</label>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" class="magic-5 gray-bg font-medium"></td>
+					<td class="padding-zero magic-5 font-small" style="padding-bottom:10px !important; padding-top:0 !important;">&emsp; If YES, give details:<br>
+						&emsp; Date Filed: &emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.3.answers %}{{ additional.3.answers|upper }}{% endif %}" size="32"><br>
+						&emsp; Status of Case/s:<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.4.answers %}{{ additional.4.answers|upper }}{% endif %}" size="30">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic-2 gray-bg" style="padding-top:5px !important;">&nbsp; 36.</td>
+					<td class="padding-zero magic-3 gray-bg font-medium" style="padding-top:5px !important;">
+						Have you ever been convicted of any crime or violation of any law, decree, ordinance or <br> regulation by any court or tribunal?
+					</td>
+					<td class="padding-zero magic-5 font-small" style="padding-top:10px !important; padding-bottom:10px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.5.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.5.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, give details: <br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.5.answers %}{{ additional.5.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic-2 gray-bg" style="padding-top:5px !important;">&nbsp; 37.</td>
+					<td class="padding-zero magic-5 magic-3 gray-bg font-medium" style="padding-top:5px !important;">
+						Have you ever been separated from the service in any of the following modes: <br> resignation, retirement, dropped from the rolls, dismissal, termination, end of term, <br> finished contract or phased out (abolition) in the public or private sector?
+					</td>
+					<td class="padding-zero magic-5 font-small" style="padding-top:10px !important; padding-bottom:10px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.6.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.6.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, give details: <br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.6.answers %}{{ additional.6.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic-2 magic gray-bg" style="padding-top:5px !important;">&nbsp; 38.</td>
+					<td class="padding-zero magic-3 magic-4 gray-bg font-medium" style="padding-top:5px !important;">
+						a. Have you ever been a candidate in a national or local election held within the last year<br> (except Barangay election)?
+					</td>
+					<td class="padding-zero magic-4 font-small" style="padding-top:15px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.7.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.7.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, give details: <br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.7.answers %}{{ additional.7.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-medium padding-zero magic-2 gray-bg magic-5"></td>
+					<td class="padding-zero magic-3 gray-bg magic-5 font-medium">
+						b. Have you resigned from the government service during the three (3)-month period <br> before the last election to promote/actively campaign for a national or local candidate?
+					</td>
+					<td class="padding-zero magic-5 font-small" style="padding-bottom:10px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.8.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.8.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, give details: <br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.8.answers %}{{ additional.8.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic-2 gray-bg" style="padding-top:5px !important;">&nbsp; 39.</td>
+					<td class="padding-zero magic-3 gray-bg font-medium" style="padding-top:5px !important;">
+						Have you acquired the status of an immigrant or permanent resident of another country?
+					</td>
+					<td class="padding-zero magic-5 font-small" style="padding-top:10px !important; padding-bottom:10px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.9.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.9.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, give details (country):<br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.9.answers %}{{ additional.9.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic magic-2 gray-bg" style="padding-top:5px !important;">&nbsp; 40.</td>
+					<td class="padding-zero magic-3 magic gray-bg font-medium" style="padding-top:5px !important;">
+						Pursuant to: (a) Indigenous People's Act (RA 8371); (b) Magna Carta for Disabled<br> Persons (RA 7277); and (c) Solo Parents Welfare Act of 2000 (RA 8972), please answer the following items:
+					</td>
+					<td class="magic-4">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic-2 magic gray-bg"></td>
+					<td class="padding-zero magic-3 magic gray-bg font-medium">
+						a. Are you a member of any indigenous group?
+					</td>
+					<td class="padding-zero magic font-small">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.10.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.10.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, please specify:<br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.10.answers %}{{ additional.10.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic magic-2 gray-bg"></td>
+					<td class="padding-zero magic-3 magic gray-bg font-medium">
+						b. Are you a person with disability?
+					</td>
+					<td class="padding-zero magic font-small">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.11.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.11.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, please specify ID No:<br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.11.answers %}{{ additional.11.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+				<tr>
+					<td class="font-small padding-zero magic magic-2 gray-bg"></td>
+					<td class="padding-zero magic-3 magic gray-bg font-medium">
+						c. Are you a solo parent?
+					</td>
+					<td class="padding-zero magic font-small" style="padding-bottom:10px !important;">
+						&emsp; <label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.12.question == 1%}checked{% endif %}>&nbsp;YES</label>
+						&emsp;&emsp;&nbsp;<label class="checkbox-label"><input class="icheck" type="checkbox" {% if additional.12.question == 0 %}checked{% endif %}>&nbsp;NO</label><br>
+						&emsp; If YES, please specify ID No:<br>
+						&emsp;&emsp; <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid rgb(235,235,235); font-weight: bold;" value="{% if additional.12.answers %}{{ additional.12.answers|upper }}{% endif %}" size="40">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="row" style="border: 1px solid black; border-bottom: none; margin: -1px 0px 0px 0px !important;">
+			<div class="col-sm-9" style="padding:0px;">
+				<table class="table magic-5">
+					<thead>
+						<tr>
+							<td colspan="5" class="font-small magic-3 magic-5 gray-bg">&nbsp; 41. REFERENCES <span class="text-danger" style="font-style: italic;">(Person not related by consanguinity or affinity to applicant /appointee)</span></td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="padding:4px 8px;" colspan="2" width="50%" class="font-small text-center gray-bg magic-3">NAME</td>
+							<td style="padding:4px 8px;" class="magic-3 font-small text-center gray-bg">ADDRESS</td>
+							<td style="padding:4px 8px;" class="magic-3 font-small text-center gray-bg">TEL. NO.</td>
+						</tr>
+					{% if reference %}
+						{% for row in reference %}
+							<tr>
+								<td colspan="2" class="text-center font-medium padding-zero" style="border-left:0;"><div class="center-div" style="height:40px !important;"><strong>{{ row.name|upper }}</strong></div></td>
+								<td class="text-center font-medium padding-zero" style="border-left:0;"><div class="center-div" style="height:40px !important;"><strong>{{ row.address|upper }}</strong></div></td>
+								<td class="text-center font-medium padding-zero" style="border-left:0;"><div class="center-div" style="height:40px !important;"><strong>{{ row.tel_no }}</strong></div></td>
+							</tr>
+						{% endfor %}
+						{% getrange 3 reference.count as reference_range %}
+						{% for row in reference_range|times %}
+							<tr>
+								<td colspan="2" class="text-center font-medium padding-zero"><div class="center-div" style="height:40px !important;">&nbsp;</div></td>
+								<td class="text-center font-medium"></td>
+								<td class="text-center font-medium"></td>
+							</tr>
+						{% endfor %}
+					{% else %}
+						<tr>
+							<td colspan="2" class="text-center font-medium padding-zero"><div class="center-div" style="height:40px !important;"><strong>N/A</strong></div></td>
+							<td class="text-center font-medium padding-zero"><div class="center-div" style="height:40px !important;"><strong>N/A</strong></div></td>
+							<td class="text-center font-medium padding-zero"><div class="center-div" style="height:40px !important;"><strong>N/A</strong></div></td>
+						</tr>
+						{% getrange 3 1 as reference_range %}
+						{% for row in reference_range|times %}
+							<tr>
+								<td colspan="2" class="text-center font-medium padding-zero"><div class="center-div" style="height:40px !important;">&nbsp;</td>
+								<td class="text-center font-medium"></td>
+								<td class="text-center font-medium"></td>
+							</tr>
+						{% endfor %}
+					{% endif %}
+					<tr>
+						<td colspan="4" class="gray-bg font-medium" style="text-align: justify; text-justify: inter-word; border-left:0;">
+							<span class="font-small">42.</span> I declare under oath that I have personally accomplished this Personal Data Sheet which is a true,correct and complete statement pursuant to the provisions of pertinent laws, rules and regulations of the Republic of the Philippines. I authorize the agency head/authorized representative to verify/validate the contents stated herein. I  agree that any misrepresentation made in this document and its attachments shall cause the filing of administrative/criminal case/s against me.
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col-sm-3 padding-left-right-zero" style="margin-top:30px;">
+				<center>
+					<div class="text-center" style="border: 1px solid black; width:160px; height: 200.07874016px; font-size: 10px; font-family: Arial Narrow; margin-top: 0px; background: url('{{ employee.picture.url }}'); background-size: cover; background-position: center;">
+					</div>
+					<br style="line-height:5px;">
+					<p class="font-small">PHOTO</p>
+				</center>
+			</div>
+			<div class="col-sm-5" style="margin-top: -5px; padding-left:10px !important; padding-right:10px !important;">
+				<table class="table table-bordered pds-four" style="white-space: normal !important;">
+					<thead>
+						<tr>
+							<td colspan="2" class="font-small gray-bg padding-zero">
+								&nbsp;&nbsp;Government Issued ID (i.e. Passport, GSIS, SSS, PRC, Driver's License, etc.)
+								<br>&nbsp;&nbsp;<span class="font-xsmall">PLEASE INDICATE ID Number</span>
+							</td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="font-small magic-2">Government Issued ID :</td>
+							<td class="font-medium magic-3"><div class="center-div" style="justify-content:left !important;"><strong>DSWD FO CDO</strong></div></td>
+						</tr>
+						<tr>
+							<td class="font-small magic-2">ID/License/Passport No. :</td>
+							<td class="font-medium magic-3"><div class="center-div" style="justify-content:left !important;"><strong>{{ employee.id_number }}</strong></div></td>
+						</tr>
+						<tr>
+							<td class="font-small magic-2">Date/Place of Issuance :</td>
+							{% getemployeebyempid request.session.emp_id as employee %}
+							<td class="font-medium magic-3"><div class="center-div" style="justify-content:left !important;">
+								<strong>{{ employee.date_id_issuance|date:"m/d/Y"}} / {{ employee.place_id_issuance|upper }}</strong></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col-sm-4" style="margin-top: -5px; padding:0px; padding-bottom: 5px !important;">
+				<table class="table table-bordered pds-four" style="white-space: normal !important;">
+					<tbody>
+						<tr>
+							<td style="padding:38px 0 18px 0;"><br><br></td>
+						</tr>
+						<tr>
+							<td class="padding-zero text-center font-small gray-bg">Signature (Sign inside the box)</td>
+						</tr>
+						<tr>
+							{% get_latest_workexperience request.session.pi_id as latest_work_experience %}
+							<td class="padding-zero text-center font-small">{{ latest_work_experience|date:"m/d/Y"}}</td>
+						</tr>
+						<tr>
+							<td class="padding-zero text-center font-small gray-bg">Date Accomplished</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col-sm-3" style="margin-left: 0px; padding: 0px 10px; margin-top: -30px;">
+				<table class="table table-bordered pds-four" style="white-space: normal !important;">
+					<tbody>
+						<tr>
+							<td style="padding: 72.5px;"></td>
+						</tr>
+						<tr>
+							<td class="padding-zero text-center font-small gray-bg">Right Thumbmark</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col-sm-12" style="margin-top: -10px; padding:0px !important;">
+				<table class="table" style="margin-bottom:0px;">
+					<tbody>
+						<td class="text-center" style="border-top: 1px solid black; border-left:none; border-right:none; padding:8px;">
+							SUBSCRIBED AND SWORN to before me this <u>{{ latest_work_experience|date:"m/d/Y" }}</u>, affiant exhibiting his/her validly issued government ID as indicated above.
+							<center>
+								<div style="margin-top:10px;">
+									<table width="35%" border=1 style="margin-bottom:10px;">
+										<tbody>
+											<tr>
+												{% get_person_administering_oath 'Person Administering Oath' as person_administering_oath %}
+												<td style="border-top: 1px solid black;" class="text-center">
+													<br style="line-height: 75px;">
+													{{ person_administering_oath }}
+												</td>
+											</tr>
+											<tr>
+												<td class="padding-zero font-small text-center gray-bg">Person Administering Oath</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</center>
+						</td>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<p class="font-small float-right" style="font-family: Arial Narrow;"><i>CS FORM 212 (Revised 2017), Page 4 of 4</i></p><br>
+	</div>
+</page>
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/adminlte.min.js' %}"></script>
+<script src="{% static 'js/plugins/sweetalert/sweetalert.min.js' %}"></script>
+<script src="{% static 'js/functions.js' %}"></script>
+<script type="text/javascript">
+	document.body.addEventListener("click", function (evt) { evt.preventDefault(); });
+</script>

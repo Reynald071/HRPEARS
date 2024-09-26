@@ -1,0 +1,407 @@
+{% load crispy_forms_tags %}
+{% block style %}
+<style type="text/css">
+    .notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+<div class="row" id="page-content">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+        <form id="submitCivilServiceForm">
+        {% csrf_token %}
+         <div class="pull-left">
+			<div class="form-group">
+				<label>Choose Shortcuts</label>
+				<select class="form-control shortcuts select">
+					{% for row in shortcuts %}
+					{% if row.name == "Civil Service Eligibility" %}
+					<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.backend_url }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+        <div class="pull-right" style="margin-top:23px;">
+            <div class="form-group">
+                <button type="submit" class="btn btn-info">Save changes</button>
+                <div class="btn-group">
+                <button type="button" id="btn-previous-eb" class="btn btn-default">Previous</button>
+                <button type="button" id="btn-next-we" class="btn btn-default">Next</button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-bordered notboldandbig tbl-cs">
+            <thead>
+                <th colspan="9">
+                    <h3>IV. CIVIL SERVICE ELIGIBILITY</h3>
+                </th>
+            </thead>
+            <tbody style="font-size: 11px;">
+            	<tr>
+                    <th rowspan="3" class="text-center nopadding" width="30%">
+                        CAREER SERVICE / RA 1080 (BOARD/BAR) UNDER SPECIAL LAWS / CES / <br>CSEE BARANGAY ELIGIBILITY / DRIVER'S LICENSE&emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-el'><i class="fas fa-plus"></i></button>
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="20%">
+                    	COURSE <br>
+                    	<small>(if applicable)</small>
+                    </th>
+                    <th rowspan="3" class="text-center nopadding">
+                    	RATING <br>
+                    	<small>(if applicable)</small>
+                    </th>
+                    <th rowspan="3" class="text-center nopadding">
+                    	DATE OF EXAMINATION / CONFERMENT<br>
+                        (mm/dd/yyyy)
+                    </th>
+                    <th rowspan="3" class="text-center nopadding">
+                    	PLACE OF EXAMINATION / CONFERMENT
+                    </th>
+                    <th colspan="2" class="text-center nopadding">
+                        LICENSE <small>(if applicable)</small>
+                    </th>
+                    <th rowspan="3">
+                    	<center><button type="button" class="btn btn-info btn-xs add" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+                    </th>
+                </tr>
+                <tr>
+                	<th class="text-center">NUMBER</th>
+                	<th class="text-center">DATE OF VALIDITY</th>
+                </tr>
+                <tr></tr>
+                {% if civil %}
+                {% for cs in civil %}
+                <tr class="fieldwrapper" id="{{ cs.id }}">
+                	<td class="nopadding">
+                		<select class="form-control input-sm select el" name="el[]">
+                            <option></option>
+                            {% for row in el %}
+                            {% if row.id == cs.el_id %}
+                            <option value="{{ row.id }}" selected="selected">{{ row.el_name }}</option>
+                            {% else %}
+                            <option value="{{ row.id }}">{{ row.el_name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                	</td>
+                    <td class="nopadding">
+                		<select class="form-control input-sm select el" name="course[]" id="course">
+                            <option></option>
+                            {% for row in course %}
+                            {% if row.id == cs.course_id %}
+                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                            {% else %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless rating text-center" name="rating[]" value="{{ cs.cs_rating }}">
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless date_exam text-center" name="date_exam[]" value="{{ cs.cs_dateexam }}">
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless place" name="place[]" value="{{ cs.cs_place }}">
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless number text-center" name="number[]" value="{{ cs.cs_number }}">
+                	</td>
+                	<td class="nopadding">
+                		<input type="date" class="form-control input-sm borderless date_val text-center" name="date_val[]" value="{{ cs.cs_date_val }}">
+                	</td>
+                	<td>
+                		<center><button type="button" class="btn btn-danger btn-xs" data-id="{{ cs.id }}" data-role="delete-cs"><i class="fa fa-minus"></i></button></center>
+                	</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr class="fieldwrapper">
+                	<td class="nopadding">
+                		<select class="form-control input-sm select el" name="el[]">
+                            <option></option>
+                            {% for row in el %}
+                            <option value="{{ row.id }}">{{ row.el_name }}</option>
+                            {% endfor %}
+                        </select>
+                	</td>
+                    <td class="nopadding">
+                		<select class="form-control input-sm select el" name="course[]" id="course">
+                            <option></option>
+                            {% for row in course %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless rating text-center" name="rating[]">
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless date_exam text-center" name="date_exam[]">
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless place" name="place[]">
+                	</td>
+                	<td class="nopadding">
+                		<input type="text" class="form-control input-sm borderless number text-center" name="number[]">
+                	</td>
+                	<td class="nopadding">
+                		<input type="date" class="form-control input-sm borderless date_val text-center" name="date_val[]">
+                	</td>
+                	<td>
+                		<center><button type="button" class="btn btn-danger btn-xs" data-role="remove-cs"><i class="fa fa-minus"></i></button></center>
+                	</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal eligibility" id="add-el" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Eligibility</h3>
+                <button type="button" class="close text-white" id="close-add-el-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addEl">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form.el_name|as_crispy_field }}
+                {{ form.el_level|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+	$('#close-add-el-modal').on('click', function(){
+        $('#add-el').modal('toggle');
+    });
+
+	$('#btn-previous-eb').on('click', function(){
+	    callPage("{% url 'update_educational_background' pi_id %}");
+    });
+
+    $('#btn-next-we').on('click', function(){
+        callPage("{% url 'update_work_experience' pi_id %}");
+    });
+
+	var fieldCSHTML= '<tr class="fieldwrapper">\
+                	<td class="nopadding">\
+                		<select class="form-control input-sm select el" name="el[]">\
+                            <option></option>\
+                        </select>\
+                	</td>\
+                	// <td class="nopadding">\
+                	// 	<select class="form-control input-sm select el" name="course[]" id="course">\
+                 //            <option></option>\
+                 //            {% for row in course %}\
+                 //            <option value="{{ row.id }}">{{ row.name }}</option>\
+                 //            {% endfor %}\
+                 //        </select>\
+                	// </td>\
+                	<td class="nopadding">\
+                		<input type="text" class="form-control input-sm borderless rating text-center" name="rating[]">\
+                	</td>\
+                	<td class="nopadding">\
+                		<input type="text" class="form-control input-sm borderless date_exam text-center" name="date_exam[]">\
+                	</td>\
+                	<td class="nopadding">\
+                		<input type="text" class="form-control input-sm borderless place" name="place[]">\
+                	</td>\
+                	<td class="nopadding">\
+                		<input type="text" class="form-control input-sm borderless number text-center" name="number[]">\
+                	</td>\
+                	<td class="nopadding">\
+                		<input type="date" class="form-control input-sm borderless date_val text-center" name="date_val[]">\
+                	</td>\
+                	<td>\
+                		<center><button type="button" class="btn btn-danger btn-xs" data-role="remove-cs"><i class="fa fa-minus"></i></button></center>\
+                	</td>\
+                </tr>';
+
+    $('.add').on('click', function(){
+        $('.tbl-cs > tbody:last-child').append(fieldCSHTML);
+        fetch_eligibility();
+    });
+
+    $(document).on('click','button[data-role="remove-cs"]', function(){
+        $(this).parent().parent().parent().remove();
+    });
+
+    $('#submitCivilServiceForm').on('submit', function(e){
+        if (checkForm() == 0){
+            $.ajax({
+                data        : new FormData(this),
+                url         : '{% url "update_civil_service" pi_id %}',
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                Swal.fire("Well done!", "Civil Service Eligibility has been saved successfully.", "success");
+            });
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+        invalid = 0;
+        // $('.el').each( function() {
+        //     if (this.value == "") {
+        //         $(this).nextAll('.error').remove();
+        //         $(this).after("<span class='error text-danger'>This field is required.</span>");
+        //         invalid += 1;
+        //     } else {
+        //         $(this).nextAll('.error').remove();
+        //     }
+        // });
+
+        // $('.rating').each( function() {
+        //     if (this.value == "") {
+        //         $(this).nextAll().remove();
+        //         $(this).after("<span class='error text-danger'>This field is required.</span>");
+        //         invalid += 1;
+        //     } else {
+        //         $(this).nextAll().remove();
+        //     }
+        // });
+
+        // $('.number').each( function() {
+        //     if (this.value == "") {
+        //         $(this).nextAll().remove();
+        //         $(this).after("<span class='error text-danger'>This field is required.</span>");
+        //         invalid += 1;
+        //     } else {
+        //         $(this).nextAll().remove();
+        //     }
+        // });
+
+
+
+	 $('.date_exam').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.place').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+
+        return invalid;
+    }
+
+    $(document).on('click', 'button[data-role=delete-cs]', function(){
+        id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes, delete it!",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+                $.ajax({
+                    url: "/delete-civil-service/",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('tr#'+id).remove();
+                    Swal.fire("Success!", "Your record was successfully deleted. Farewell.", "success");
+                });
+            }
+        });
+    });
+
+    $('#addEl').on('submit', function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "admin_add_eligibility" pi_id %}',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=el_name]').after(error);
+                }
+                else {
+                    $('#add-el').modal('toggle');
+                    toastrOptions();
+                    toastr.success("The eligibility \'" + response.el_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_eligibility();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+
+    function fetch_eligibility(){
+        $.getJSON('{% url 'api-eligibilities' pi_id %}', function(response) {
+            data_eligibilities = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_eligibilities.push({id: response.data[d].id, text: response.data[d].el_name});
+            }
+
+            $('.el').select2({
+                data: data_eligibilities,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    $('.shortcuts').on('select2:select', function(){
+        callPage($(this).val() + {{ pi_id }});
+    });
+</script>
+{% endblock %}

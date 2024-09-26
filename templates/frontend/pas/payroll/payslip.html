@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+{% load static %}
+{% load payroll_tags %}
+{% load humanize %}
+{% load tags %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Payslip</title>
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				border: 0.5px solid transparent;
+			}
+
+			.default{
+			    width: 33.33%;
+			    height: 94% !important;
+			    zoom: 90%;
+			}
+
+			body{-webkit-print-color-adjust: exact;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+		  	}
+        }
+
+        .no-margins{
+            margin: 0px !important;
+        }
+
+        #watermark{
+            top: 45%;
+            transform: rotate(45deg);
+            margin:0 auto;
+            font-size: 50px;
+            position: absolute;
+            opacity: 0.1;
+            overflow: hidden;
+            font-weight: bold;
+        }
+
+        #watermark2{
+            top: 30%;
+            z-index: -1;
+            opacity: 0.1;
+            position: absolute;
+            margin-left: 7%;
+        }
+    </style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Employee's Payslip</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="javascript:;" class="print-button" id="floatprint" title="Print" style="font-size: 14px;"><i class="fas fa-print"></i> Print</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+    <page size="longflex" layout="landscape" class="page" style="padding: 10px; position: relative; font-family: 'Inter'; z-index: -2;">
+        {% if details %}
+        {% for row in copies|times %}
+        <div class="col-md-4 default" style="font-size: 11px; border: 1px solid #aaa; background:transparent !important; height: 100%">
+            <p id="watermark">CONFIDENTIAL</p>
+            <img loading="lazy"  src="{% static 'image/dswd.png' %}" width="80%" id="watermark2">
+            <br>
+            <div class="row">
+                 <div class="col-sm-2">
+                    <img loading="lazy"  src="{% static 'image/dswd.png' %}" width="50px">
+                </div>
+                <div class="col-sm-10">
+                    <h6 class="no-margins"><strong>DSWD FIELD OFFICE CARAGA</strong></h6>
+                    <h6 class="no-margins">Capitol Site, Butuan City</h6>
+                </div>
+            </div>
+            <br>
+            <p class="text-center no-margins">EMPLOYEE'S PAYSLIP</p>
+            <p class="text-center">For the period of <strong>{{ period }}</strong></p>
+            <hr class="no-margins">
+            <br>
+            <div style="border: 1px solid #aaa;">
+            <table width="100%">
+                {% for row in details %}
+                {% if forloop.last %}
+                <tr>
+                    <td>&emsp;{{ row.column.attribute }}: </td>
+                    <th>{{ row.value|floatformat:2|intcomma }}</th>
+                </tr>
+                {% else %}
+                <tr>
+                    <td>&emsp;{{ row.column.attribute }}: </td>
+                    <th>{{ row.value }}</th>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </table>
+            </div>
+            <br>
+            <table width="100%">
+                {% for row in column_type %}
+                    <tr>
+                        <th style="border-bottom: 1px solid #aaa;">{{ row.name|upper }}</th>
+                        <th class="text-right" style="border-bottom: 1px solid #aaa;"></th>
+                    </tr>
+                    {% for c in columns %}
+                    {% get_column_name c.column_id as column_name %}
+                    {% get_column_type c.column_id as column_type %}
+                        {% if row.id == column_type %}
+                            <tr>
+                                <td>{{ column_name.attribute }}</td>
+                                {% get_column_value c.column_id emp_id period_from period_to as payroll %}
+                                <td class="text-right">{{ payroll|floatformat:2|intcomma }}&emsp;</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    <tr>
+                        <th>&nbsp;</th>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <th style="font-size: 12px; border-bottom: 1px solid #aaa;">TOTAL DEDUCTIONS</th>
+                    {% get_payslip_total period_from period_to emp_id as total %}
+                    <td class="text-right" style="border-bottom: 1px solid #aaa;">{{ total.0|floatformat:2|intcomma }}&emsp;</td>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px; border-right: 0px !important;">NET TAKE HOME PAY</th>
+                    <th style="border-left: 0px !important;" class="text-right">{{ net_take|floatformat:2|intcomma }}&emsp;</th>
+                </tr>
+                {% if benefits %}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px;">BENEFITS</th>
+                    <th></th>
+                </tr>
+                {% for row in benefits %}
+                <tr>
+                    {% get_column_name row.column_id as column_name %}
+                    <td>{{ column_name.attribute }}</td>
+                    {% get_benefits_value_on_payslip row.column_id emp_id period_from period_to as payroll %}
+                    <td class="text-right">{{ payroll|floatformat:2|intcomma }}&emsp;</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                {% if additional_benefits %}
+                <tr>
+                    <th style="font-size: 12px;">ADDITIONAL BENEFITS</th>
+                    <th></th>
+                </tr>
+                {% for row in additional_benefits %}
+                <tr>
+                    {% get_column_name row.column_id as column_name %}
+                    <td>{{ column_name.attribute }}</td>
+                    {% get_additional_benefits_value row.column_id emp_id period_from period_to as payroll %}
+                    <td class="text-right">{{ payroll|floatformat:2|intcomma }}&emsp;</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+            <br>
+            <table width="100%" border="1">
+                <tbody><tr>
+                    <th style="font-size: 10px; border-right: 0px !important;">TOTAL TAKE HOME PAY received for the month</th>
+                    <th style="border-left: 0px !important;" class="text-right">{{ total_net_take|floatformat:2|intcomma }}&emsp;</th>
+                </tr>
+            </tbody></table>
+            <br>
+            <div class="row">
+                <div class="col-sm-5">
+                    <small>Certified true and correct:</small>
+                    <br><br>
+                    <small>{{ config.key_acronym|upper }}</small> <br>
+                    <small>Head, Personnel Section</small>
+                </div>
+                <div class="col-sm-7" style="text-align: justify;">
+                    <small>Note: <br>This is a system generated payslip. If you notice erroneous entries please report to the Personnel within 5 days upon receipt of this payslip.</small> <br><br>
+                    <small>Date Issued: {{ date|date:"m/d/Y H:i:s A" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No Data Available</p>
+        {% endif %}
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+	<script type="text/javascript">
+		var page = $('.page').height();
+		var container = $('.containerX').height();
+
+		if (container > page) {
+			$('.page').css('height', container + 45);
+		}
+
+		$(document).keydown(function (event) {
+			if (event.keyCode == 123) {
+				return false;
+			} else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+				return false;
+			}
+		});
+
+	</script>
+</body>
+</html>

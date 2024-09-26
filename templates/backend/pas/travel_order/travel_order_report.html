@@ -1,0 +1,121 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link rel="stylesheet" href="{% static 'css/plugins/textSpinners/spinners.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Travel Report</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Travel Management
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Travel Report</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="form-group col-md-4">
+                            <label>Search Places / Purpose</label>
+                            <input type="text" class="form-control" name="keyword" id="keyword" {% if rito %}value="{{ keyword }}"{% endif %} placeholder="Search Keyword" autocomplete="off">
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Period Covered From</label>
+                            <input type="date" class="form-control" name="inclusive_from" id="inclusive_from" {% if rito %}value="{{ inclusive_from }}"{% endif %} required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Period Covered To</label>
+                            <input type="date" class="form-control" name="inclusive_to" id="inclusive_to" {% if rito %}value="{{ inclusive_to }}"{% endif %} required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>&nbsp;</label>
+                            <div class="btn-group btn-group-justified" role="group" aria-label="..">
+                                <div class="btn-group" role="group">
+                                    <button type="submit" class="btn btn-info" id="btn-loading">
+                                        <span class="loading open-circle" style="display:none;"></span> Load
+                                    </button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'travel_order_report' %}" type="button" class="btn btn-default">Reset</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                    {% if rito %}
+                    <form method="POST" action="{% url 'generate_travel_report' %}" target="_blank">
+                    {% csrf_token %}
+                    <input type="hidden" name="generate_keyword" value="{{ keyword }}">
+                    <input type="hidden" name="generate_inclusive_from" value="{{ inclusive_from }}">
+                    <input type="hidden" name="generate_inclusive_to" value="{{ inclusive_to }}">
+                    <table class="table table-bordered" style="font-size: 13px;">
+                        <tr>
+                            <td class="text-center bold"><small>Tracking No.</small></td>
+                            <td class="text-center bold"><small>Names - Position/Area of Assignment</small><br><small style="margin-top:-5px; font-weight:lighter;">R(SN, FN M. II)</small></td>
+                            <td class="text-center bold"><small>Place/s of Visit</small></td>
+                            <td class="text-center bold"><small>Duration of Travel</small><br><small style="margin-top:-5px; font-weight:lighter;">(Inclusive of Travel Time)</small></td>
+                            <td class="text-center bold"><small>Purpose</small></td>
+                            <td class="text-center bold"><small>Expected Output</small></td>
+                            <td class="text-center bold"><small>Means of <br>Transportation</small><br><small style="margin-top:-5px; font-weight:lighter; font-size: 9px;"><b>1</b> PUV Vice-Versa <br> <b>2</b> RP Vice-Versa <br> <b>3</b> RP-one-way PUV one-way <br> <b>4</b> Hired Van</small></td>
+                            <td class="text-center bold"><small>Claims</small><br><small style="margin-top:-5px; font-weight:lighter; font-size: 9px;"><b>1</b> without per diem <br> <b>2</b> with per diem <br><b>3</b> Official Time Only <br><b>4</b> Compensatory Day off</small></td>
+                        </tr>
+                        {% for row in rito %}
+                        {% check_to_exist row.rito_id as check_to_exist%}
+                        {% if check_to_exist %}
+                        <tr id="{{ row.id }}">
+                            <td class="text-center">{{ row.rito.tracking_no }}</td>
+                            <td width="30%" class="padding-5">
+                                <ol>
+                                {% ritopeople row.id as people %}
+                                    {% for emp in people %}
+                                        <li style="margin-left: 20px;">{{ emp.name.pi.user.first_name }}
+                                        {{ emp.name.pi.user.middle_name|to_middleinitial }}
+                                        {{ emp.name.pi.user.last_name }} - {{ emp.name.position.acronym }} / {{ emp.name.aoa.name }}</li>
+                                    {% endfor %}
+                                </ol>
+                            </td>
+                            <td class="text-center padding-5" width="15%">{{ row.place }}</td>
+                            <td class="text-center padding-5" width="10%">
+                                {% if row.inclusive_from == row.inclusive_to %}
+                                {{ row.inclusive_from }}
+                                {% else %}
+                                {{ row.inclusive_from }} - {{ row.inclusive_to }}
+                                {% endif %}
+                            </td>
+                            <td class="text-center padding-5">{{ row.purpose }}</td>
+                            <td class="text-center padding-5">{{ row.expected_output }}</td>
+                            <td class="text-center padding-5" data-target="mot">
+                                {{ row.mot.name }}
+                            </td>
+                            <td class="text-center padding-5" data-target="claims" width="10%">
+                                {{ row.claims.name}}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </table>
+                    <button type="submit" class="btn btn-info">Print</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

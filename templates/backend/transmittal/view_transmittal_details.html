@@ -1,0 +1,146 @@
+{% load tags %}
+{% load static %}
+<div class="modal-body">
+    <div class="row">
+        <div class="col-lg-12">
+            <table class="table table-bordered">
+                <tr>
+                    <th>Document Name</th>
+                    <td>
+                        <select class="form-control edit-select" name="document_name" id="document_name" required>
+                            {% for row in type %}
+                                {% if row.id == transmittal.document_name_id %}
+                                    <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                    <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <th>Document Date</th>
+                    <td>
+                        <input type="date" class="form-control" name="document_date" id="document_date" value="{{ transmittal.document_date|date:'Y-m-d' }}" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Details</th>
+                    <td colspan="3">
+                        <input type="text" class="form-control" name="details" id="details" value="{{ transmittal.details }}" autocomplete="off" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Date Registered</th>
+                    <td colspan="3">{{ transmittal.date_added }}</td>
+                </tr>
+            </table>
+            <br>
+            <p class="bold capslock" style="margin-bottom:5px;">TRAIL</p>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th>STATUS</th>
+                            <th class="text-center">Date Received / Forwarded</th>
+                            <th class="text-center">Date Approved / Disapproved</th>
+                            <th class="text-center">Forwarded To</th>
+                            <th class="text-center">Responsible Person</th>
+                            <th class="text-center">Remarks</th>
+                        </tr>
+                        {% get_transmittal_trail transmittal.id as transmittal_trail %}
+                        {% if transmittal_trail %}
+                            {% for row in transmittal_trail %}
+                            <tr>
+                                <td>{{ row.get_status|safe }}</td>
+                                <td class="text-center">{% if row.date %}{{ row.date }}{% endif %}</td>
+                                <td class="text-center">{% if row.date_approved %}{{ row.date_approved|date:"Y-m-d, H:i A" }}{% endif %}</td>
+                                <td class="text-center">{{ row.forwarded_to.div_name }}</td>
+                                <td class="text-center">{{ row.emp.pi.user.get_fullname }}</td>
+                                <td class="text-center">{% if row.remarks %}{{ row.remarks }}{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            <br>
+            {% if transmittal.get_latest_status.status != 2 and transmittal.get_latest_status.status != 3 and transmittal.get_latest_status.status != 4 %}
+            <form id="submitTransmittalForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Status<span class="asteriskField">*</span></label>
+                <select class="form-control edit-select" name="status" id="transmittal-status" required>
+                    <option></option>
+                    <option value="2">Approved</option>
+                    <option value="3">Disapproved</option>
+                    <option value="4">For Return</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Remarks</label>
+                <textarea class="form-control" name="remarks" rows="3"></textarea>
+            </div>
+            <br>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline btn-info" id="btn-update">Update</button>
+    {% if transmittal.get_latest_status.status != 2 and transmittal.get_latest_status.status != 3 and transmittal.get_latest_status.status != 4 %}
+    <button type="button" class="btn btn-info" id="btn-save-changes">Save changes</button>
+    {% endif %}
+</div>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('.edit-select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#back-button').on('click', function(){
+        $('#new-content').empty();
+        $('#table-employee-transmittal-content').css('display', 'block');
+    });
+
+    $('#btn-update').on('click', function(){
+        var list = {
+            'document_name': $('#document_name').val(),
+            'document_date': $('#document_date').val(),
+            'details': $('#details').val()
+        }
+
+        var url = '{% url "update_transmittal_details" transmittal.id %}';
+        var title = "Are you sure";
+        var text = "You want to update this transmittal details";
+        var table_id = '#workflow-table'
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {table_id: table_id});
+    })
+
+    $('#btn-save-changes').on('click', function(){
+        if($('#transmittal-status').val() != '') {
+            $('#submitTransmittalForm').submit();
+        } else {
+            Swal.fire('Ooops!', 'Please fill in the status field before saving it.', 'warning');
+        }
+    })
+
+    {% if transmittal.get_latest_status.status != 2 and transmittal.get_latest_status.status != 3 %}
+    $('#submitTransmittalForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "view_transmittal_details" transmittal.id %}';
+        var title = "Are you sure";
+        var text = "You want to " + $('#transmittal-status option:selected').text().toLowerCase() + " this document";
+        var loadContent = '#new-content';
+        var loadUrl = '/backend/transmittal/view/details/{{ transmittal.id }}';
+        var table_id = '#workflow-table'
+
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, loadContent: loadContent, loadUrl: loadUrl});
+
+        e.preventDefault();
+    });
+    {% endif %}
+</script>
+{% endblock %}

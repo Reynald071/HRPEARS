@@ -1,0 +1,388 @@
+{% load tags %}
+{% load static %}
+{% block style %}
+	<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+   	<link href="{% static 'css/plugins/dualListbox/bootstrap-duallistbox.min.css' %}" rel="stylesheet">
+   	<link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
+{% endblock %}
+<div class="ibox" id="page-settings" style="margin-top: -15px;">
+	{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin'%}
+	<div class="row">
+		<form id="updateUserForm" class="w-100">
+		{% csrf_token %}
+		<div class="col-md-12">
+			<div class="ibox-title mb-3">
+				<div class="pull-right">
+					<button type="button" id="btn_create" class="btn btn-info display-none">
+						<span id="btn_create_loading" class="loading open-circle" style="display:none;"></span> Create Active Directory Account
+					</button>
+					<button type="button" id="btn_compare" class="btn btn-default" disabled>
+						<span class="btn_compare_loading loading open-circle"></span> Compare
+					</button>
+					<button type="submit" class="btn btn-info" id="btn_update">
+						<span class="btn_save_loading loading open-circle" style="display:none;"></span> Save changes
+					</button>
+				</div>
+				<h3 class="bold m-0">Active Directory</h3>
+				<small>Sync CDO PORTAL account in active directory.</small>
+			</div>
+			<div class="ibox-content" style="padding-bottom: 0px !important;">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="row">
+							<div class="form-group col-sm-6">
+								<label>First name</label>
+								<input type="text" name="first_name" class="form-control" value="{{ employee.pi.user.first_name|title }}" autocomplete="off">
+							</div>
+							<div class="form-group col-sm-6">
+								<label>Initials</label>
+								<input type="text" name="initials" class="form-control" value="{{ employee.pi.user.middle_name|first }}" autocomplete="off">
+							</div>
+						</div>
+						<div class="row">
+							<div class="form-group has-success col-sm-6 compare" style="margin-top: -13px; display: none;">
+								<input type="text" class="form-control" id="ad_first_name" autocomplete="off" readonly>
+							</div>
+							<div class="form-group has-success col-sm-6 compare" style="margin-top: -13px; display: none;">
+								<input type="text" class="form-control" id="ad_initials" autocomplete="off" readonly>
+							</div>
+						</div>
+						<div class="form-group">
+							<label>Last name</label>
+							<input type="text" name="last_name" id="last_name" class="form-control" value="{{ employee.pi.user.last_name|title }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_last_name" autocomplete="off" readonly>
+						</div>
+						<div class="form-group">
+							<label>Telephone Number</label>
+							<input type="text" name="telephone_number" id="telephone_number" class="form-control" value="{{ employee.pi.mobile_no }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_telephone_number" autocomplete="off" readonly>
+						</div>
+						<div class="form-group">
+							<label>Display name</label>
+							<input type="text" name="display_name" id="display_name" class="form-control" value="{{ employee.pi.user.get_fullname }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_display_name" autocomplete="off" readonly>
+						</div>
+						<div class="form-group">
+							<label>Email</label>
+							<input type="text" name="email" id="email" class="form-control" value="{{ employee.pi.user.email|lower }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_email" autocomplete="off" readonly>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							 <label>User logon name</label>
+							<input type="text" name="username" class="form-control" value="{{ employee.pi.user.username }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_username" autocomplete="off" readonly>
+						</div>
+
+						<div class="form-group">
+							<label>Employee ID Number</label>
+							<input type="text" name="id_number" class="form-control" value="{{ employee.id_number }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_id_number" autocomplete="off" readonly>
+						</div>
+						<div class="form-group">
+							<label>Job Title</label>
+							<input type="text" name="job_title" id="job_title" class="form-control" value="{{ employee.position.name }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_job_title" autocomplete="off" readonly>
+						</div>
+						<div class="form-group">
+							<label>Department</label>
+							<input type="text" name="department" id="department" class="form-control" value="{{ employee.section.sec_name }}" autocomplete="off">
+						</div>
+						<div class="form-group has-success compare" style="margin-top: -13px; display: none;">
+							<input type="text" class="form-control" id="ad_department" autocomplete="off" readonly>
+						</div>
+						<div class="form-group has-success compare" style="display:none;">
+							<label>Last Updated On</label>
+							<input type="text" class="form-control" id="ad_last_updated_on" autocomplete="off" readonly>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		</form>
+		</div>
+    </div>
+	<hr>
+	{% endif %}
+	{% if user|check_permission:'superadmin'%}
+	<div class="ibox-title mb-3">
+		<h3 class="bold m-0">Permission</h3>
+		<small>You can select permission that is applicable to the user.</small>
+	</div>
+	<div class="ibox-content">
+		<form id="submitPermissionForm" class="wizard-big">
+			{% csrf_token %}
+			<input type="hidden" name="user_id" value="{{ employee.pi.user_id }}">
+			<select class="form-control dual_select" id="permission" name="permission[]" multiple>
+				{% for row in auth_permission %}
+				{% get_userpermission employee.pi.user_id row.id as user_permission%}
+				{% if user_permission %}
+				<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+				{% else %}
+				<option value="{{ row.id }}">{{ row.name }}</option>
+				{% endif %}
+				{% endfor %}
+			</select>
+		</form>
+	</div>
+	{% endif %}
+	{% if user|check_permission:'dtr_logs' or user|check_permission:'superadmin' %}
+	<hr>
+	<div class="row">
+<!--		<div class="col-lg-6">-->
+<!--			<div class="ibox-title">-->
+<!--				<h3 class="bold m-0">Daily Time Record</h3>-->
+<!--				<small>Please fill in the serial number input to sync with the biometric entries.</small>-->
+<!--			</div>-->
+<!--			<form id="registerDTRPinForm">-->
+<!--			{% csrf_token %}-->
+<!--			<div class="ibox-content">-->
+<!--				<div class="form-group">-->
+<!--					<label>Serial Number</label>-->
+<!--					<input type="text" class="form-control" name="serial_number" id="serial_number" value="{% if dtr %}{{ dtr.pin_id }}{% endif %}">-->
+<!--				</div>-->
+<!--				<div class="form-group">-->
+<!--					<button type="submit" class="btn btn-info">-->
+<!--						<span class="loading open-circle" style="display:none;"></span> Save changes-->
+<!--					</button>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--			</form>-->
+<!--		</div>-->
+        <div class="col-lg-6">
+            <div class="ibox-title mb-3">
+				<h3 class="bold m-0">Payroll Incharge</h3>
+				<small>Assign employee to a payroll incharge.</small>
+			</div>
+            <div class="ibox-content">
+                <form id="addPayrollInchargeForm">
+			    {% csrf_token %}
+                <div class="form-group">
+                    <label>Select Payroll Incharge</label>
+                    <input type="hidden" name="employee_pk" value="{{ employee.id }}" required>
+                    <select class="form-control select" name="payroll_incharge" required>
+                        <option></option>
+                        {% for row in payroll_incharge %}
+                            {% if your_payroll_incharge.payroll_incharge_id == row.id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                            {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+					<button type="submit" class="btn btn-info">
+						Save changes
+					</button>
+				</div>
+                </form>
+            </div>
+        </div>
+	</div>
+	{% else %}
+	<p>You do not have access to the DSWD My PORTAL Settings.</p>
+	{% endif %}
+</div>
+
+{% block script %}
+<script src="{% static 'js/plugins/dualListbox/jquery.bootstrap-duallistbox.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('.dual_select').bootstrapDualListbox({
+	        selectorMinimalHeight: 200
+	    });
+
+		$('.select').select2({
+	        width: "100%",
+	        allowClear: true,
+	        placeholder: 'Choose',
+	    });
+
+	   	{% if user|check_permission:'dtr_logs' or user|check_permission:'superadmin' %}
+	    $('#registerDTRPinForm').on('submit', function(e){
+			e.preventDefault();
+			var formData = new FormData(this);
+			formData.append('emp_id', '{{ employee.id }}');
+			$.ajax({
+				url: "{% url 'registered_dtr_pin' %}",
+				data: formData,
+				type: 'POST',
+				beforeSend: function() {
+					$('.loading').css('display', '');
+                	$('.btn').prop("disabled", true);
+				},
+				success: function(response) {
+					if(response.data == "success") {
+						Swal.fire("Success", "Register Employee Daily Time Record Pins", "success");
+					}
+				},
+				complete: function() {
+					$('.loading').css('display', 'none');
+                	$('.btn').prop("disabled", false);
+				},
+				cache: false,
+				contentType: false,
+				processData: false
+			});
+		});
+		{% endif %}
+
+		{% if user|check_permission:'superadmin'%}
+		$('#permission').on('change', function(){
+			var form = document.getElementById('submitPermissionForm');
+			var formData = new FormData(form);
+			$.ajax({
+				url: "{% url 'permission' %}",
+				data: formData,
+				type: "POST",
+				cache: false,
+				contentType: false,
+				processData: false
+			})
+		});
+        {% endif %}
+
+		{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin'%}
+	    getADData();
+
+		$('#btn_compare').on('click', function(){
+			$('.compare').toggle(500);
+		});
+
+		$('#updateUserForm').on('submit', function(e){
+			$.ajax({
+				data        : new FormData(this),
+				url         : '{% url "update_user" employee.pi.user.id %}',
+				type        : 'POST',
+				beforeSend: function(){
+					$('.btn_save_loading').css('display', '');
+					$('button').prop("disabled", true);
+				},
+				success: function(data){
+					if (data.data){
+						$('.compare').hide();
+						getADData();
+						Swal.fire({
+							title: "Good job!",
+							html: "User information has been updated successfully!",
+							icon: "success"
+						});
+					} else{
+						Swal.fire("Ooops!", data.msg, "warning");
+						$('#alertDiv').empty();
+						$('#alertDiv').html("<div class='alert alert-warning'>" + data.msg + "</div>");
+					}
+				},
+				complete: function(){
+					$('.btn_save_loading').css('display', 'none');
+					$('button').prop("disabled", false);
+				},
+				cache       : false,
+				contentType : false,
+				processData : false
+			});
+			e.preventDefault();
+		});
+
+        $('#addPayrollInchargeForm').on('submit', function(e){
+            var form = this;
+
+            var url = '{% url "add_payroll_incharge" %}';
+            var title = "Are you sure";
+            var text = "You want to assign this employee to this payroll incharge";
+
+            submitFormWithConfirmation(form, url, title, text);
+
+            e.preventDefault();
+        });
+
+		function getADData(){
+			$.ajax({
+				url: "{% url 'get_user_attribute' employee.pi.user.username %}",
+				type: "GET"
+			}).done(function(data){
+				if(data.error){
+					$('#btn_create').css('display', 'block');
+					$('#btn_compare').css('display', 'none');
+					$('#btn_update').css('display', 'none');
+				} else {
+					$('#btn_create').css('display', 'none');
+					$('#btn_compare').css('display', '');
+					$('#btn_update').css('display', '');
+					$('#ad_first_name').val(data.first_name);
+					$('#ad_last_name').val(data.last_name);
+					$('#ad_initials').val(data.initials);
+					$('#ad_id_number').val(data.id_number);
+					$('#ad_display_name').val(data.display_name);
+					$('#ad_telephone_number').val(data.telephone_number);
+					$('#ad_email').val(data.email);
+					$('#ad_job_title').val(data.job_title);
+					$('#ad_department').val(data.department);
+					$('#ad_last_updated_on').val(data.last_updated_on);
+					$('#ad_username').val(data.username + "@ENTDSWD.LOCAL");
+					$('.btn_compare_loading').css('display', 'none');
+					$('#btn_compare').prop("disabled", false);
+				}
+			});
+		}
+
+		$('#btn_create').on('click', function(){
+			$.ajax({
+				data: {
+					'first_name': '{{ employee.pi.user.first_name|title }}',
+					'last_name': '{{ employee.pi.user.last_name|title }}',
+					'initials': '{{ employee.pi.user.middle_name|first }}',
+					'id_number': '{{ employee.id_number }}',
+					'display_name': $('#display_name').val(),
+					'contact_number': $('#telephone_number').val(),
+					'email': $('#email').val(),
+					'title': $('#job_title').val(),
+					'department': $('#department').val(),
+					'username': '{{ employee.pi.user.username }}',
+					'emp_id': '{{ employee.id }}'
+				},
+				url: "{% url 'ad_account_creation' %}",
+				type: "POST",
+				beforeSend: function(){
+					$('#btn_create_loading').css('display', '');
+					$('button').prop("disabled", true);
+				},
+				success: function(response){
+					if(response.data == "success"){
+						getADData();
+						Swal.fire({
+							title: "Good job!",
+							html: "User information has been created successfully in Active Directory",
+							icon: "success"
+						});
+					} else {
+						Swal.fire("Ooops!", response.msg, "warning");
+					}
+				},
+				complete: function(){
+					$('#btn_create_loading').css('display', 'none');
+					$('button').prop("disabled", false);
+				},
+			});
+		});
+		{% endif %}
+	});
+</script>
+{% endblock %}

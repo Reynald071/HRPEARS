@@ -1,0 +1,135 @@
+{% load frontend_tags %}
+<form id="submitAddForm">
+    {% csrf_token %}
+    <input type="hidden" class="form-control" name="type_id" value="{{ type_id }}">
+    <div class="form-group">
+        <div class="input-group">
+            <input type="text" class="form-control typeahead_2 filter_employee b-r-sm" name="emp" required autocomplete="off" placeholder="e.g. [16-12345] Juan dela Cruz">
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-info" data-id="{{ row.name_id }}">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <tr>
+            <th class="text-left">Shared with Employee</th>
+            <th class="text-right">Action</th>
+        </tr>
+        {% if data %}
+            {% for row in data %}
+                <tr>
+                    <td class="text-left">{{ row.emp.get_fullname }}</td>
+                    <td class="text-right">
+                        <a data-role="delete_permission" data-id="{{ row.id }}"><i class="far fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="2" class="text-center">No data available in table</td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+{% block script %}
+<script>
+    var jsonEmployeesExceptMe = $.ajax({
+        url: '{% url "filter_employee_except_me" %}',
+        async: false,
+        dataType: 'json'
+    }).responseJSON;
+
+    $(".filter_employee").typeahead({
+        source:jsonEmployeesExceptMe,
+    });
+
+	$(document).on('click', 'a[data-role=delete_permission]', function(e){
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to remove access to calendar for selected employee?",
+            icon: "error",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url         : "{% url 'unshare-calendar' 999999999 %}".replace(999999999, $(this).data('id')),
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have removed access for selected employee.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                var url = '{% url "calendar-sharing" 999999999 %}'.replace(999999999, data.type_id);
+                                $('#view_shared_modal-body').empty();
+                                $('#view_shared_modal-body').load(url);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+	});
+
+    $('#submitAddForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to share calendar to selected employee?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'share-calendar' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully shared calendar to selected employee.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                var url = '{% url "calendar-sharing" 999999999 %}'.replace(999999999, data.type_id);
+                                $('#view_shared_modal-body').empty();
+                                $('#view_shared_modal-body').load(url);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

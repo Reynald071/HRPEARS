@@ -1,0 +1,68 @@
+{% extends 'tracker/layout.html' %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'tracker' %}">Home</a></li>
+                <li class="breadcrumb-item active">Carbon Copy</li>
+            </ol>
+        </nav>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="table-cc" width="100%">
+                        <thead>
+                            <tr>
+                                <th>ACTION</th>
+                                <th class="display-none">CRYPTO</th>
+                                <th>TRACKING NO.</th>
+                                <th>DATE</th>
+                                <th>SHIPPED BY</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#table-cc').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 0, 'desc' ]],
+        'ajax': {
+            'url': '/api/tracker/package/cc/?format=datatables&pk={{ request.session.emp_id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return "<a href='#' class='text-green' data-role='action-details' data-id='"+ row['crypto'] +"'>Details</a>";
+                },
+                'searchable': false
+            },
+            {'data': 'crypto', 'className': 'display-none', 'searchable': false },
+            {'data': 'tracking_no' },
+            {'data': 'date_created', 'className': 'text-center' },
+            {'data': 'shipped_by', 'name': 'createdby.pi.user.last_name, createdby.pi.user.first_name', 'className': 'text-center'},
+            {'data': 'latest_status', 'className': 'text-center', 'searchable': false},
+        ]
+    });
+
+    $(document).on('click', 'a[data-role=action-details]', function(){
+        var id = $(this).data('id');
+        window.open('/tracker/package/details/' + id, '_blank');
+    });
+</script>
+{% endblock %}

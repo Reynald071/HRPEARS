@@ -1,0 +1,81 @@
+<form id="remarksForm">
+<div class="modal-body">
+    {% csrf_token %}
+    <div class="row mb-3">
+        <div class="col-sm-3">
+            <button type="button" id="reject-btn" class="btn btn-info btn-sm">For Rejection</button>
+        </div>
+        <div class="col-sm-4">
+            <button type="button" id="hired-btn" class="btn btn-info btn-sm">For New Hired</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <textarea id="remarks" name="remarks" class="form-control" rows="8" placeholder="Add Remarks...">{{ application.remarks|default_if_none:"" }}</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" id="btn-clear">Clear</button>
+    <button type="submit" class="btn btn-info" id="btnSaveForm">Save</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('#reject-btn').on('click', function (e) {
+		$('#remarks').val("Thank you for your application and interest in the position {{ application.vacancy.position.name }} in DSWD CDO. After careful consideration, we regret to inform you that we have chosen to move forward with other candidates whose qualifications more closely align with our current needs. We appreciate your time and effort in applying and wish you the best in your job search.");
+		e.preventDefault();
+    });
+    $('#hired-btn').on('click', function (e) {
+		$('#remarks').val("Congratulations on your new role as an {{ application.vacancy.position.name }} at DSWD CDO! We are thrilled to welcome you to the team and look forward to your valuable contributions in this position. Best wishes for a successful journey with us!.");
+		e.preventDefault();
+    });
+    $('#btn-clear').on('click', function (e) {
+		$('#remarks').val('');
+    });
+
+    $('#remarksForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            html: "You want to update the remarks of application <span class='text-info font-weight-bold'>{{ application.tracking_no }}</span>?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "app_remarks" application.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                });
+            },
+        }).then(function (response){
+            if (response.value.data){
+                Swal.fire({
+                    title: "Good job!",
+                    text: "Remarks successfully updated.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#remarks-modal').modal('show').find('#remarks-content').empty();
+			            $('#remarks-modal').modal('show').find('#remarks-content').load("{% url 'app_remarks' application.id %}");
+                    }
+                });
+            } else {
+                Swal.fire("Oh snap!", "Sorry, it seems like you have an empty request.", "error");
+            }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,461 @@
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<style>
+    .note-editor.note-frame .note-editing-area .note-editable {
+        border: 1px solid #ddd !important;
+    }
+
+    .note-popover.popover .popover-content a {
+        z-index: 9999 !important;
+    }
+</style>
+{% endblock %}
+<div class="modal-body">
+{#    <a href="{% url 'print_drf' services.id %}" target="_blank" type="button" class="btn btn-info pull-right">Print DRF</a>#}
+    <div class="tabs-container">
+        <ul class="nav nav-tabs" role="tabUL">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#tab-1"> Details&nbsp;
+                    {% if services.get_latest_transaction.status == 0 %}
+                        <span class="badge badge-secondary">PENDING</span>
+                    {% elif services.get_latest_transaction.status == 1 %}
+                        <span class="badge badge-primary">RESOLVED</span>
+                    {% elif services.get_latest_transaction.status == 3 %}
+                        <span class="badge badge-danger">DECLINED</span>
+                    {% elif services.get_latest_transaction.status == 4 %}
+                        <span class="badge badge-info">REFERRED</span>
+                    {% endif %}
+                </a>
+            </li>
+{#            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2"> Message&nbsp; <span class="badge badge-warning" id="total_message">{{ total_message }}</span></a></li>#}
+        </ul>
+        <div class="tab-content">
+            <div id="tab-1" class="tab-pane active">
+                <div class="border p-3">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0" style="zoom:95% !important; max-width: 100%;">
+                            <tr>
+                                <th>TRACKING NUMBER</th>
+                                <td>{{ services.tracking_no }}</td>
+                                <th>DATE REQUESTED</th>
+                                <td>{{ services.date_time }}</td>
+                            </tr>
+                            <tr>
+                                <th>SERVICES TYPE</th>
+                                <td colspan="3">{{ services.classification.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>PURPOSE</th>
+                                <td colspan="3">{{ services.purpose }}</td>
+                            </tr>
+                            <tr>
+                                <th>YEAR</th>
+                                <td>{{ services.year }}</td>
+                                <th>SEMESTER</th>
+                                <td>{% if services.semester == 1 %}1st{% elif services.semester == 2 %}2nd{% else %}N/A{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <th>DESCRIPTION</th>
+                                <td colspan="3">{{ services.description|safe }}</td>
+                            </tr>
+                            <tr>
+                                <th>ATTACHMENT</th>
+                                <td colspan="3">
+                                    <table class="table table-bordered mb-0">
+                                        {% get_services_attachment services.id as services_attachment %}
+                                        {% if services_attachment %}
+                                            {% for row in services_attachment %}
+                                            {% get_extension row.file.url as get_extension %}
+                                            <tr>
+                                                <td>{{ row.file|filename }}</td>
+                                                <td class="text-center">
+                                                    {% if get_extension.1 == ".pdf" %}
+                                                    <a href="javascript:void(0)" data-role="view-attachment" data-content="{{ row.file.url }}" data-title="{{ row.file|filename }}" data-filter="pdf">View</a>
+                                                    {% else %}
+                                                    <a href="javascript:void(0)" data-role="view-attachment" data-content="{{ row.file.url }}" data-title="{{ row.file|filename }}" data-filter="image">View</a>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="2">No attachment available.</td>
+                                            </tr>
+                                        {% endif %}
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>REQUESTED BY</th>
+                                <td colspan="3">{{ services.requested_by.pi.user.get_fullname }}</td>
+                            </tr>
+                            <tr>
+                                <th>ASSIGNED BY</th>
+                                <td colspan="3">{% if services.assigned_emp_id %}{{ services.assigned_emp.pi.user.get_fullname }}{% else %}N/A{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <label>TRAIL</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered mb-0">
+                                            <thead>
+                                                <tr>
+                                                    {% if request.session.emp_id == row.emp_id or user|check_permission:'superadmin' %}
+                                                    <th width="10%">ACTION</th>
+                                                    {% endif %}
+                                                    <th width="40%">ACTIONS TAKEN</th>
+                                                    <th width="20%" class="text-center">RESPONSIBLE PERSON</th>
+                                                    <th width="20%" class="text-center">DATE</th>
+                                                    <th width="10%" class="text-center">STATUS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% get_services_transaction services.id as services_transaction %}
+                                                {% if services_transaction.count == 1 %}
+                                                    <tr>
+                                                        {% if request.session.emp_id == row.emp_id or user|check_permission:'superadmin' %}
+                                                            <td colspan="5" class="text-center">Request is still pending..</td>
+                                                        {% else %}
+                                                            <td colspan="4" class="text-center">Request is still pending..</td>
+                                                        {% endif %}
+                                                    </tr>
+                                                {% else %}
+                                                    {% for row in services_transaction %}
+                                                        {% if not forloop.first %}
+                                                            <tr>
+                                                                {% if request.session.emp_id == row.emp_id or user|check_permission:'superadmin' %}
+                                                                <td>
+                                                                    <a href="javascript:;" data-role="update-btn" data-id="{{ row.id }}">Update</a>
+                                                                </td>
+                                                                {% endif %}
+                                                                <td>
+                                                                    {{ row.remarks|safe }}
+                                                                    <br>
+                                                                    {% get_services_attachment row.id as attachment %}
+                                                                    {% for row in attachment %}
+                                                                        {% checkiffileexists row.file.url as file_exists %}
+                                                                        {% if row.file and file_exists %}
+                                                                            <a href="javascript:;" data-url="{{ row.file.url }}" data-title="{{ row.file|filename }}" id="download-btn"><i class="fas fa-paperclip"></i> {{ row.file|filename }}</a><br>
+                                                                        {% else %}
+                                                                            <a href="javascript:;" title="File not found"><i class="fas fa-paperclip"></i> {{ row.file.url }}</a><br>
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                    <br>
+                                                                    <p>Please fill in the customer satisfactory form below: </p><a href="https://bit.ly/3lJ1EH7">https://bit.ly/3lJ1EH7</p>
+                                                                </td>
+                                                                <td class="text-center">{{ row.emp.pi.user.get_fullname }}</td>
+                                                                <td class="text-center">{{ row.date_time }}</td>
+                                                                <td class="text-center">
+                                                                    {% if row.status == 1 %}
+                                                                        <label class="label label-primary">Resolved</label>
+                                                                    {% elif row.status == 3 %}
+                                                                        <label class="label label-danger">Declined</label>
+                                                                    {% elif row.status == 4 %}
+                                                                        <label class="label label-info">Referred</label>
+                                                                    {% endif %}
+                                                                </td>
+                                                            </tr>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id="updateHelpDeskTransactionContent"></div>
+                    {% if services.assigned_emp_id == request.session.emp_id and services.get_latest_transaction.status == 0 or services.get_latest_transaction.status == 4 %}
+                    <br>
+                    <form id="actionForm">
+                    {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label>Status<span class="asteriskField">*</span></label>
+                                    <select class="form-control edit-select" id="status" name="status" required>
+                                        <option></option>
+                                        <option value="1">Resolved</option>
+                                        <option value="4">For Referral</option>
+                                        <option value="3">Declined</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label>Referred for Action To </label> <span id="refers_to_text">(Optional)</span>
+                                    <input type="text" class="form-control view_filter_employee" name="refers_to" id="refers_to">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label>Action Taken<span class="asteriskField">*</span></label>
+                                    <textarea class="edit-summernote" name="action_taken"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Attachment (Optional)</label>
+                            <input type="file" class="form-control file-control" name="attachment" multiple>
+                        </div>
+                        <button type="submit" class="btn btn-info">Save changes</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            <div id="tab-2" class="tab-pane">
+                <div class="border p-3">
+                    <div class="chat-content"></div>
+                    {% if services.assigned_emp_id == request.session.emp_id or services.requested_by_id == request.session.emp_id and services.get_latest_transaction.status != 1 and services.get_latest_transaction.status != 3 %}
+                    <form id="submitMessageForm">
+                        <div class="row">
+                        {% csrf_token %}
+                            <div class="col-sm-12">
+                                <div class="chat-message-form">
+                                    <div class="form-group">
+                                        <textarea class="form-control message-input" name="message" id="message" onkeypress="onEnter();" rows="3" placeholder="Write a message.."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+function onEnter() {
+    var key = window.event.keyCode;
+    if (key === 13) {
+        $('#submitMessageForm').submit();
+        return false;
+    }
+}
+
+$(document).ready(function(){
+    $(document).on('click', 'a[data-role=update-btn]', function(){
+        var id = $(this).data('id');
+        $('#updateHelpDeskTransactionContent').load('/help-desk/update/' + id);
+    });
+
+    $('a[href="#tab-2"]').on('click', function(){
+        callMessagePage('/help-desk/message/' + {{ services.id }});
+    });
+
+    $('#download-btn').on('click', function(){
+        var file_url = $(this).data('url');
+        var filename = $(this).data('title');
+        Swal.fire({
+            title: "Confirmation",
+            html: "Please complete the client satisfaction measurement form before downloading the file. Thank you!",
+            icon: "success",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showCancelButton: true,
+            cancelButtonText: 'Cancel',
+            confirmButtonText: 'Download'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var link = document.createElement("a");
+                link.setAttribute("href", file_url);
+                link.setAttribute("download", filename);
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+    });
+
+    function callMessagePage(pageRefInput) {
+        $.ajax({
+            url: pageRefInput,
+            type: "GET",
+            dataType: 'text',
+            beforeSend: function() {
+                $('.chat-content').empty();
+                $('.chat-content').append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+            },
+            success: function(response) {
+                $('.chat-content').html(response);
+            },
+            complete: function() {
+                $('#preloader').css('display', 'none');
+            }
+        });
+    }
+
+    $(document).on('click', 'a[data-role=view-attachment]', function(){
+        $('#preview-attachment-modal').find('.modal-title').text($(this).data('title'));
+        if($(this).data('filter') == 'image') {
+            $('#preview-attachment-pdf').css('display', 'none');
+            $('#preview-attachment-image').css('display', 'block');
+            $('#preview-attachment-image').attr('src', $(this).data('content'));
+        } else {
+            $('#preview-attachment-image').css('display', 'none');
+            $('#preview-attachment-pdf').css('display', 'block');
+            $('#preview-attachment-pdf').attr('src', $(this).data('content'));
+        }
+        $('#preview-attachment-modal').modal('show');
+    });
+
+    $('#status').on('change', function(){
+        if($('#status').val() == "4") {
+            $('#refers_to_text').html("<span class='asteriskField'>*</span>");
+        } else {
+            $('#refers_to_text').html("(Optional)");
+        }
+    });
+
+    $(document).on('click', 'a[data-role=delete-additional-info]', function(){
+        var id = $(this).data('id');
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to delete this message?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : { id: id},
+                    url         : '{% url "delete_additional_info" %}',
+                    type        : 'POST',
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#view-request-modal').find('.view-content').empty();
+                        $('#view-request-modal').find('.view-content').load("/help-desk/view/" + "{{ services.id }}");
+                    }
+                });
+            }
+        });
+    });
+
+    $('#submitMessageForm').on('submit', function(e){
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : '{% url "add_additional_info" services.id %}',
+            type        : 'POST',
+            beforeSend: function(){
+                $('#message').prop("disabled", true);
+            },
+            success: function(response) {
+                if(response.data == "success") {
+                    $('#submitMessageForm').trigger('reset');
+                    $('.chat-content').load('/help-desk/message/' + {{ services.id }});
+                }
+            },
+            complete: function(){
+                $('#message').prop("disabled", false);
+            },
+            cache       : false,
+            contentType : false,
+            processData : false,
+        });
+        e.preventDefault();
+    });
+
+    $('#actionForm').on('submit', function(e){
+        if($('#status').val() == "") {
+            Swal.fire("Ooops!", "The following mandatory fields are not filled in:Refers To", "warning");
+        } else {
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to execute selected action for this request?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "view_help_desk" services.id %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#actionForm').trigger('reset');
+                            $('#view-request-modal').find('.view-content').empty();
+                            initializeTotals();
+                            $('#view-request-modal').find('.view-content').load("/help-desk/view/" + "{{ services.id }}");
+                            $('#help-desk-table').DataTable().ajax.reload();
+                            $('#help-desk-table-atm').DataTable().ajax.reload();
+                            $('#help-desk-table-all').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        }
+        e.preventDefault();
+    });
+
+    $.get('{% url "filter_employee_by_permission" "hd_assistant" "false" %}', function(data){
+        $(".view_filter_employee").typeahead({
+            source: data,
+            highlight: true
+        });
+    },'json');
+
+    $('.edit-select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('.edit-summernote').summernote({
+        height: $(window).height() * 0.2,
+        dialogsInBody: true,
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+});
+</script>
+{% endblock %}

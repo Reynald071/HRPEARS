@@ -1,0 +1,80 @@
+{% load tags %}
+{% load static %}
+<table class="table table-bordered">
+    <tr>
+        <th>Action</th>
+        <th class="text-center">Month/Year Earned</th>
+        <th class="text-center">Days</th>
+        <th class="text-center">Hours</th>
+        <th class="text-center">Minutes</th>
+        <th class="text-center">Date Expiry</th>
+    </tr>
+    {% for row in coc %}
+    <tr>
+        <td>
+            <a href="javascript:;" data-role="update" data-id="{{ row.id }}">Update</a>
+             | <a href="javascript:;" data-role="remove" data-id="{{ row.id }}">Remove</a>
+        </td>
+        <td class="text-center">
+            <input type="text" class="form-control" name="update_month_earned" value="{{ row.month_earned }}">
+        </td>
+        <td class="text-center days">
+            <input type="text" class="form-control" name="update_days" value="{{ row.days }}">
+        </td>
+        <td class="text-center hours">
+            <input type="text" class="form-control" name="update_hours" value="{{ row.hours }}">
+        </td>
+        <td class="text-center minutes">
+            <input type="text" class="form-control" name="update_minutes" value="{{ row.minutes }}">
+        </td>
+        <td class="text-center">
+            <input type="date" class="form-control" name="update_expiry_date" value="{{ row.expiry_date|date:'Y-m-d' }}">
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(document).on('click', 'a[data-role=remove]', function(){
+        var list = {
+            'id': $(this).data('id'),
+        }
+
+        var url = '{% url "remove_custom_coc_balance" %}';
+        var title = "Are you sure";
+        var text = "You want to remove this coc balance";
+        var loadUrl = "{% url "view_custom_coc_balance" ctdo.id %}";
+        var loadContent = "#view-custom-coc-content";
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+    });
+
+    $(document).on('click', 'a[data-role=update]', function(){
+        var id = $(this).data('id');
+
+        var $row = $(this).closest('tr');
+
+        var month_earned = $row.find('input[name="update_month_earned"]').val();
+        var days = $row.find('input[name="update_days"]').val();
+        var hours = $row.find('input[name="update_hours"]').val();
+        var minutes = $row.find('input[name="update_minutes"]').val();
+        var expiry_date = $row.find('input[name="update_expiry_date"]').val();
+
+        var list = {
+            'id': id,
+            'month_earned': month_earned,
+            'days': days,
+            'hours': hours,
+            'minutes': minutes,
+            'expiry_date': expiry_date
+        }
+
+        var url = '{% url "update_custom_coc_balance" %}';
+        var title = "Are you sure";
+        var text = "You want to update this coc balance";
+
+        submitDataWithoutFormConfirmation(list, url, title, text);
+    });
+</script>
+{% endblock %}

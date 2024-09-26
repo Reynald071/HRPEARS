@@ -1,0 +1,471 @@
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% block style %}
+<style type="text/css">
+    .notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row" id="page-content">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+        <form id="submitWorkForm">
+        {% csrf_token %}
+        <div class="pull-left">
+			<div class="form-group">
+				<label>Choose Shortcuts</label>
+				<select class="form-control shortcuts select">
+					{% for row in shortcuts %}
+					{% if row.name == "Work Experience" %}
+					<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.backend_url }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+        <div class="pull-right" style="margin-top:23px;">
+            <div class="form-group">
+                <button type="submit" class="btn btn-info">Save changes</button>
+                <div class="btn-group">
+                <button type="button" id="btn-previous-cs" class="btn btn-default">Previous</button>
+                <button type="button" id="btn-next-vw" class="btn btn-default">Next</button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-bordered notboldandbig tbl-we">
+            <thead>
+                <th colspan="9">
+                    <h3>V. WORK EXPERIENCE</h3>
+                </th>
+            </thead>
+            <tbody style="font-size: 11px;">
+                <tr>
+                    <th colspan="2" class="text-center nopadding">
+                        INCLUSIVE DATES
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="20%">
+                        POSITION TITLE
+{#                        &emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-position'><i class="fas fa-plus"></i></button><br>#}
+                        <br><small>(write in full / do not abbreviate)</small>
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="20%">
+                        DEPARTMENT / AGENCY / OFFICE / COMPANY<br>
+                        <small>(write in full / do not abbreviate)</small>
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="10%">
+                        MONTHLY SALARY
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="8%">
+                        SALARY/ JOB/ PAY GRADE <small>(if applicable)</small> & STEP INCREMENT <small>(format "00-0")</small>
+                    </th>
+                    <th rowspan="3" class="text-center nopadding" width="10%">
+                        STATUS OF APPOINTMENT
+                    </th>
+                    <th rowspan="3" class="text-center nopadding">
+                        GOV'T SERVICE <small>(Y/N)</small>
+                    </th>
+                    <th rowspan="3" class="nopadding" width="3%">
+                        <center><button type="button" class="btn btn-info btn-xs add" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+                    </th>
+                </tr>
+                <tr>
+                    <th class="text-center nopadding">FROM</th>
+                    <th class="text-center nopadding">TO</th>
+                </tr>
+                <tr></tr>
+                {% if work %}
+                {% for e in work %}
+                <tr id="{{ e.id }}">
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]" value="{{ e.we_from|date:'Y-m-d' }}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]" value="{{ e.we_to|date:'Y-m-d'}}">
+                    </td>
+{#                    <td class="nopadding">#}
+{#                        <select class="form-control input-sm select position" name="position[]">#}
+{#                            <option></option>#}
+{#                            {% for row in position %}#}
+{#                            {% if row.id == e.position_id %}#}
+{#                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>#}
+{#                            {% else %}#}
+{#                            <option value="{{ row.id }}">{{ row.name }}</option>#}
+{#                            {% endif %}#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    </td>#}
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless position" name="position[]" value="{{ e.position_name }}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless company" name="company[]" value="{{ e.company }}">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless salary text-center" name="salary[]" value="{{ e.salary_rate|intcomma }}">
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless sg_step text-center" name="sg_step[]" value="{{ e.sg_step }}">
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select as" name="as[]">
+                            <option></option>
+                            {% for row in app_status %}
+                            {% if row.id == e.empstatus_id %}
+                            <option value="{{ row.id }}" selected="selected">{{ row.acronym }}</option>
+                            {% else %}
+                            <option value="{{ row.id }}">{{ row.acronym }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select gs" name="gs[]">
+                            <option></option>
+                            {% if e.govt_service == 1 %}
+                            <option value="1" selected="selected">YES</option>
+                            <option value="0">NO</option>
+                            {% elif e.govt_service == 0 %}
+                            <option value="1">YES</option>
+                            <option value="0" selected="selected">NO</option>
+                            {% else %}
+                            <option value="1">YES</option>
+                            <option value="0">NO</option>
+                            {% endif %}
+                        </select>
+                    </td>
+                    <td class="nopadding">
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="delete-we" data-id="{{ e.id }}"><i class="fa fa-minus"></i></button></center>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]">
+                    </td>
+                    <td class="nopadding">
+                        <input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]">
+                    </td>
+{#                    <td class="nopadding">#}
+{#                        <select class="form-control input-sm select position" name="position[]">#}
+{#                            <option></option>#}
+{#                            {% for row in position %}#}
+{#                            <option value="{{ row.id }}">{{ row.name }}</option>#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    </td>#}
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless position" name="position[]">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless company" name="company[]">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless salary text-center" name="salary[]">
+                    </td>
+                    <td class="nopadding">
+                        <input type="text" class="form-control input-sm borderless sg_step text-center" name="sg_step[]">
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select as" name="as[]">
+                            <option></option>
+                            {% for row in app_status %}
+                            <option value="{{ row.id }}">{{ row.acronym }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="nopadding">
+                        <select class="form-control input-sm select gs" name="gs[]">
+                            <option></option>
+                            <option value="1">Y</option>
+                            <option value="0">N</option>
+                        </select>
+                    </td>
+                    <td class="nopadding">
+                        <center><button type="button" class="btn btn-danger btn-xs" data-role="remove-we"><i class="fa fa-minus"></i></button></center>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-position" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Position</h3>
+                <button type="button" class="close text-white" id="close-add-position-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addPosition">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_pt.name|as_crispy_field }}
+                {{ form_pt.acronym|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+	$('#close-add-position-modal').on('click', function(){
+        $('#add-position').modal('toggle');
+    });
+
+	$('#btn-previous-cs').on('click', function(){
+	    callPage("{% url 'update_civil_service' pi_id %}");
+    });
+
+    $('#btn-next-vw').on('click', function(){
+        callPage("{% url 'update_voluntary_work' pi_id %}");
+    });
+
+	var fieldWEHTML = '<tr>\
+	            		<td class="nopadding">\
+	            			<input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]">\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]">\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<input type="text" class="form-control input-sm borderless position" name="position[]">\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<input type="text" class="form-control input-sm borderless company" name="company[]">\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<input type="text" class="form-control input-sm borderless salary text-center" name="salary[]">\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<input type="text" class="form-control input-sm borderless sg_step text-center" name="sg_step[]">\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<select class="form-control input-sm select as" name="as[]">\
+	                            <option></option>\
+	                            {% for row in app_status %}\
+	                            <option value="{{ row.id }}">{{ row.acronym }}</option>\
+	                            {% endfor %}\
+	                        </select>\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<select class="form-control input-sm select gs" name="gs[]">\
+	                            <option></option>\
+	                            <option value="1">YES</option>\
+	                            <option value="0">NO</option>\
+	                        </select>\
+	            		</td>\
+	            		<td class="nopadding">\
+	            			<center><button type="button" class="btn btn-danger btn-xs" data-role="remove-we"><i class="fa fa-minus"></i></button></center>\
+	            		</td>\
+	            	</tr>'
+
+	$('.add').on('click', function(){
+        $('.tbl-we > tbody:last-child').append(fieldWEHTML);
+
+		// fetch_positions();
+        $('.select').select2({
+            width: "100%",
+            allowClear: true,
+            placeholder: "Choose",
+        });
+    });
+
+    $(document).on('click','button[data-role="remove-we"]', function(){
+        $(this).parent().parent().parent().remove();
+    });
+
+    $('#submitWorkForm').on('submit', function(e){
+    	if (checkForm() == 0){
+	        $.ajax({
+	            data        : new FormData(this),
+	            url         : '{% url "update_work_experience" pi_id %}',
+	            type        : 'POST',
+	            cache       : false,
+	            contentType : false,
+	            processData : false
+	        })
+	        .done(function(data){
+	            Swal.fire("Well done!", "Work Experience has been saved successfully.", "success");
+	        });
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+        invalid = 0;
+        $('.inc_from').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.inc_to').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.position').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.company').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.salary').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.sg_step').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.as').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.gs').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+        return invalid;
+    }
+
+    $(document).on('click', 'button[data-role=delete-we]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+                $.ajax({
+                    url: "/delete-workexperience/",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('.tbl-we tr#'+id).remove();
+                    Swal.fire("Success!", "Your record was successfully deleted. Farewell.", "success");
+                });
+            }
+    	});
+    });
+
+    $('#addPosition').on('submit', function(e){
+    	e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "admin_add_position" user_id %}',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=name]').after(error);
+                }
+                else {
+                    $('#add-position').modal('hide');
+                    toastrOptions();
+                    toastr.success("The position \'" + response.name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_positions();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+    function fetch_positions(){
+        $.getJSON('{% url 'api-positions' user_id %}', function(response) {
+            data_positions = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_positions.push({id: response.data[d].id, text: response.data[d].name});
+            }
+
+            $('.position').select2({
+                data: data_positions,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    $('.shortcuts').on('select2:select', function(){
+        callPage($(this).val() + {{ pi_id }});
+    });
+</script>
+{% endblock %}

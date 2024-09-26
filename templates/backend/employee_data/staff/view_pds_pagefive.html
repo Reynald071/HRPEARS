@@ -1,0 +1,220 @@
+{% load tags %}
+{% block style %}
+<style type="text/css">
+	.pds th{
+		font-family: Arial Narrow;
+	}
+
+	.pds td{
+		font-family: Arial Narrow;
+	}
+
+	.text-capital{
+		text-transform: uppercase;
+	}
+	
+	.padding-zero{
+		padding: 0px !important;
+	}
+	.font-small{
+		font-size: 10px;
+	}
+
+	.font-xsmall{
+		font-size: 9px;
+	}
+
+	.font-xxsmall{
+		font-size: 8px;
+	}
+
+	.magic{
+        border-top: 0px solid black !important; border-bottom: 0px solid black !important;
+    }
+
+    .magic-2{
+    	border-right:0px solid black !important;
+    }
+
+    .magic-3{
+    	border-left:0px solid black !important;
+    }
+
+    .pds thead th {
+    	font-size: 11px;
+    	font-style: italic;
+    }
+    
+</style>
+{% endblock %}
+<div class="col-sm-12" id="page-content">
+	<br>
+	<div class="float-left">
+		<h3 class="bold">Page 5 of 5</h3>
+	</div>
+	<div class="float-right">
+		{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin' %}
+		<button type="button" class="btn btn-info" id="btn-update-pds"><i class="fa fa-edit"></i> Update</button>
+		{% endif %}
+		<a target="_blank" href="{% url 'print_pds_pagefive' pk %}" class="btn btn-info"><i class="fas fa-print"></i> Print Preview</a>
+		<div class="btn-group"> 
+			<a id="btn-page-four" class="btn btn-default">Previous</a>
+			<a id="btn-page-numberone" class="btn btn-default">1</a>
+			<a id="btn-page-numbertwo" class="btn btn-default">2</a>
+			<a id="btn-page-numberthree" class="btn btn-default">3</a>
+			<a id="btn-page-numberfour" class="btn btn-default">4</a>
+			<a id="btn-page-numberfive" class="btn btn-default disabled">5</a>
+			<a class="btn btn-default btn-outline disabled">Next</a>
+		</div>
+	</div>
+	<br><br><br>
+		{% if work %}
+		<table class="table table-bordered pds" style="white-space: normal !important;">
+			<thead>
+				<th colspan="9">V.  WORK EXPERIENCE <br>
+					<small>(Include private employment. Start from your recent work) Description of duties should be indicated in the attached Work Experience sheet.)</small>
+				</th>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="font-small magic-3 gray-bg" colspan="2" width="20%">28. &emsp; <div class="text-center" style="margin-top: -15px;">INCLUSIVE DATES <br>(mm/dd/yyyy)</div></td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="20%">POSITION TITLE <br>(Write in full/Do not abbreviate)</td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="30%">DEPARTMENT / AGENCY / OFFICE / COMPANY <br>(Write in full/Do not abbreviate)</td>
+					<td rowspan="2" class="font-small text-center gray-bg">MONTHLY SALARY</td>
+					<td rowspan="2" class="font-xsmall text-center gray-bg">SALARY/ JOB/ PAY GRADE</td>
+					<td rowspan="2" class="font-small text-center gray-bg">STATUS OF APPOINTMENT</td>
+					<td rowspan="2" class="font-small text-center gray-bg">GOVT SERVICE</td>
+				</tr>
+				<tr>
+					<td class="text-center font-small gray-bg">FROM</td>
+					<td class="text-center font-small gray-bg">TO</td>
+				</tr>
+				{% for row in work %}
+				<tr>
+					<td class="font-small text-center"><strong>{{ row.we_from|date:"m/d/Y" }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.we_to|date:"m/d/Y" }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.position|upper }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.company|upper }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.salary_rate }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.sg_step }}</strong></td>
+					<td class="font-small text-center"><strong>{% getappstatus row.as_id as appstatus %}{{ appstatus.name|upper }}</strong></td>
+					<td class="font-small text-center"><strong>{% if row.govt_service == 1%}Y{% else %}N{% endif %}</strong></td>
+				</tr>
+				{% endfor %}
+				{% getrange 15 work.count as work_range %}
+				{% for row in work_range|times %}
+				<tr>
+					<td class="font-small text-center">&nbsp;</td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+				</tr>
+				{% endfor %}
+				<tr>
+					<td colspan="9" class="text-center text-danger font-small padding-zero gray-bg"><i><strong>(Continue on separate sheet if necessary)</strong></i></td>
+				</tr>
+			</tbody>
+		</table>
+		{% endif %}
+		{% if training %}
+		<table class="table table-bordered pds" {% if work %}style="margin-top: -20px;"{% endif %} style="white-space: normal !important;">
+			<thead>
+				<th colspan="9">VII. LEARNING AND DEVELOPMENT (L&D) INTERVENTIONS/TRAINING PROGRAMS ATTENDED <br><small>(Start from the most recent L&D/training program and include only the relevant L&D/training taken for the last five (5) years for Division Chief/Executive/Managerial positions)</small></th>
+			</thead>
+			<tbody>
+				<tr>
+					<td rowspan="2" width="2%" class="magic-2 font-small gray-bg">30.</td>
+					<td rowspan="2" class="font-small text-center magic-3 gray-bg" width="27%">TITLE OF LEARNING AND DEVELOPMENT<br> INTERVENTIONS/TRAINING PROGRAMS)<br>(Write in full)</td>
+					<td colspan="2" class="font-small text-center padding-zero gray-bg" width="18%">INCLUSIVE DATES OF ATTENDANCE <br>(mm/dd/yyyy)</td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="7%">NUMBER OF HOURS</td>
+					<td rowspan="2" class="font-small text-center padding-zero gray-bg" width="7%">Type of LD<br>( Managerial/ Supervisory/
+						Technical/etc)</td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="20%">CONDUCTED/ SPONSORED BY <br>(Write in full)</td>
+				</tr>
+				<tr>
+					<td class="font-small text-center gray-bg">From</td>
+					<td class="font-small text-center gray-bg">To</td>
+				</tr>
+				{% for row in training %}
+				<tr>
+					<td colspan="2" class="font-small text-center"><strong>{{ row.training|upper }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.tr_from|date:"m/d/Y" }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.tr_to|date:"m/d/Y" }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.tr_hours }}</strong></td>
+					<td class="font-small text-center"><strong>{{ row.training_type|upper }}</strong></td>
+					<td class="font-small text-center padding-zero"><strong>{{ row.conducted|upper }}</strong></td>
+				</tr>
+				{% endfor %}
+				{% if work %}
+				{% getrange 20 training.count as training_range %}
+				{% for row in training_range|times %}
+				<tr>
+					<td colspan="2" class="font-small text-center">&nbsp;</td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+				</tr>
+				{% endfor %}
+				{% else %}
+				{% getrange 40 training.count as training_range %}
+				{% for row in training_range|times %}
+				<tr>
+					<td colspan="2" class="font-small text-center">&nbsp;</td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+				</tr>
+				{% endfor %}
+				{% endif %}
+				<tr>
+					<td colspan="9" class="text-center text-danger font-small padding-zero gray-bg"><i><strong>(Continue on separate sheet if necessary)</strong></i></td>
+				</tr>
+				<tr>
+					<th colspan="2" class="text-center gray-bg"><i>SIGNATURE</i></th>
+					<td colspan="2"></td>
+					<th colspan="2" class="text-center gray-bg"><i>DATE</i></th>
+					<td colspan="3" class="text-center"><strong>{{ date|date:"m/d/Y" }}</strong></td>
+				</tr>
+			</tbody>
+		</table>
+		{% endif %}
+</div>
+{% block script %}
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#btn-page-numberthree').on('click', function(){
+		callPage("{% url 'view_pds_pagethree' pk %}");
+	});
+
+	$('#btn-page-four').on('click', function(){
+		callPage("{% url 'view_pds_pagefour' pk %}");
+	});
+
+	$('#btn-page-numbertwo').on('click', function(){
+		callPage("{% url 'view_pds_pagetwo' pk %}");
+	});
+
+	$('#btn-page-numberone').on('click', function(){
+		callPage("{% url 'view_pds_pageone' pk %}");
+	});
+
+	$('#btn-page-numberfour').on('click', function(){
+		callPage("{% url 'view_pds_pagefour' pk %}");
+	});
+
+	'{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin'%}'
+	$('#btn-update-pds').on('click', function(){
+		callPage("{% url 'update_personal_information' pk %}");
+	});
+	'{% endif %}'
+});
+</script>
+{% endblock %}

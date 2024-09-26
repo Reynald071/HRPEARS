@@ -1,0 +1,200 @@
+{% load static %}
+{% load tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+<form id="addCOCForm">
+{% csrf_token %}
+<div class="row">
+    <div class="col-lg-2">
+         <div class="form-group">
+            <label>Days</label>
+            <input type="number" class="form-control" name="days" required>
+        </div>
+    </div>
+    <div class="col-lg-2">
+         <div class="form-group">
+            <label>Hours</label>
+            <input type="number" class="form-control" name="hours" required>
+        </div>
+    </div>
+    <div class="col-lg-2">
+         <div class="form-group">
+            <label>Minutes</label>
+            <input type="number" class="form-control" name="minutes" required>
+        </div>
+    </div>
+    <div class="col-lg-2">
+         <div class="form-group">
+            <label>Date Expiry</label>
+            <input type="date" class="form-control" name="date_expiry" required>
+        </div>
+    </div>
+    <div class="col-lg-3">
+         <div class="form-group">
+            <label>Month/Year Earned</label>
+            <input type="text" class="form-control" name="month_earned" autocomplete="off" required>
+        </div>
+    </div>
+    <div class="col-lg-1" style="margin-top: 23px !important;">
+        <center>
+            <button type="submit" class="btn btn-info btn-block"><i class="fas fa-plus"></i></button>
+        </center>
+    </div>
+</div>
+</form>
+<br>
+<table class="table table-bordered" id="table-coc-balance">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>Day(s)</th>
+            <th>Hour(s)</th>
+            <th>Minute(s)</th>
+            <th>Date Expiry</th>
+            <th>Month/Year Earned</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+</table>
+<br>
+<label>TOTAL BALANCE</label>
+<table class="table table-bordered">
+    <tbody>
+        <tr>
+            <td><strong>BALANCE</strong></td>
+            <td class="text-center"><strong>DAY(S)</strong></td>
+            <td class="text-center"><strong>HOUR(S)</strong></td>
+            <td class="text-center"><strong>MINUTE(S)</strong></td>
+        </tr>
+        <tr>
+            <th>Total Balance</th>
+            <th class="text-center">{{ total_days }}</th>
+            <th class="text-center">{{ total_hours }}</th>
+            <th class="text-center">{{ total_minutes }}</th>
+        </tr>
+    </tbody>
+</table>
+<br>
+<label>TOTAL UTILIZE BALANCE</label>
+<table class="table table-bordered">
+    <tbody>
+        <tr>
+            <td><strong>BALANCE</strong></td>
+            <td class="text-center"><strong>DAY(S)</strong></td>
+            <td class="text-center"><strong>HOUR(S)</strong></td>
+            <td class="text-center"><strong>MINUTE(S)</strong></td>
+        </tr>
+        <tr>
+            <th>Total Balance</th>
+            <th class="text-center">{{ total_u_days }}</th>
+            <th class="text-center">{{ total_u_hours }}</th>
+            <th class="text-center">{{ total_u_minutes }}</th>
+        </tr>
+    </tbody>
+</table>
+<br>
+<label>TOTAL REMAINING BALANCE</label>
+<table class="table table-bordered">
+    <tbody>
+        <tr>
+            <td><strong>BALANCE</strong></td>
+            <td class="text-center"><strong>DAY(S)</strong></td>
+            <td class="text-center"><strong>HOUR(S)</strong></td>
+            <td class="text-center"><strong>MINUTE(S)</strong></td>
+        </tr>
+        <tr>
+            <th>Total Balance</th>
+            <th class="text-center">{{ total_r_days }}</th>
+            <th class="text-center">{{ total_r_hours }}</th>
+            <th class="text-center">{{ total_r_minutes }}</th>
+        </tr>
+    </tbody>
+</table>
+{% if total_r_days > 15 %}
+<br>
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    Please note that there are employees who have accrued more than 15 days of outstanding balances. It is crucial for these individuals to submit their CTDO applications promptly. We appreciate your attention to this matter.
+</div>
+{% endif %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#addCOCForm').on('submit', function(e){
+        var form = this;
+
+        var url = '/backend/ctdo/coc/view/{{ emp.id_number }}';
+        var title = "Are you sure";
+        var text = "You want to add this employee credits";
+        var loadContent = '#view-coc-content';
+        var loadUrl = '/backend/ctdo/coc/view/{{ emp.id_number }}';
+        submitFormWithConfirmation(form, url, title, text, {loadContent: loadContent, loadUrl:loadUrl});
+
+        e.preventDefault();
+    });
+
+    $('#table-coc-balance').DataTable({
+		'serverSide': true,
+		'processing': true,
+		'deferRender': true,
+		'lengthMenu': [ 25, 50, 100 ],
+		'order': [[ 3, 'desc' ]],
+		'ajax': {
+			'url': '/api/leave/coc/balance/?format=datatables&emp_id={{ emp.id }}',
+			'type': 'GET',
+			'beforeSend': function (request) {
+				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+			}
+		},
+		'fnCreatedRow': function (row, data, index) {
+			$(row).attr('id', data['id']);
+		},
+		'columns': [
+            {'data': 'id',
+				'render': function(data, type, row, meta) {
+                    var template = '<a href="javascript:;" data-role="details" data-id="'+ data +'">Details</a>';
+				    return template;
+				},
+			},
+			{'data': 'days', 'className': 'text-center'},
+            {'data': 'hours', 'className': 'text-center'},
+            {'data': 'minutes', 'className': 'text-center'},
+            {'data': 'date_expiry', 'className': 'text-center'},
+            {'data': 'month_earned', 'className': 'text-center'},
+            {'data': 'status',
+				'render': function(data, type, row, meta) {
+                    if (data == "0") {
+                        return '<span class="label label-danger">Depleted</span>';
+                    } else if (data == "2") {
+                        return '<span class="label label-warning">Expired</span>';
+                    } else {
+                        return '<span class="label label-default">Active</span>'
+                    }
+				},
+                'className': 'text-center'
+			},
+		]
+	});
+
+    $(document).on('click', 'a[data-role=details]', function() {
+        var id = $(this).data('id');
+        $('#coc-utilization-content').load('/backend/ctdo/coc/view/utilization/' + id, function(){
+            $('#view-coc-utilization-modal').modal('show');
+        });
+    });
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+        var list = {
+            'pk': $(this).data('id'),
+        }
+
+        var url = '/backend/ctdo/coc/delete/';
+        var title = "Are you sure";
+        var text = "You want to delete this coc";
+        var table_id = '#table-coc-balance'
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {table_id: table_id});
+    });
+</script>
+{% endblock %}

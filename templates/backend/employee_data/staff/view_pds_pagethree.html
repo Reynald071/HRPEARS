@@ -1,0 +1,357 @@
+{% load tags %}
+{% load frontend_tags %}
+{% block style %}
+<style type="text/css">
+	.pds-three th{
+		font-family: Arial Narrow;
+	}
+
+	.pds-three td{
+		font-family: Arial Narrow;
+	}
+
+	.text-capital{
+		text-transform: uppercase;
+	}
+	
+	.padding-zero{
+		padding: 0px !important;
+	}
+	.font-small{
+		font-size: 13px;
+	}
+
+	.font-smallg{
+		font-size: 12.5px;
+	}
+
+	.font-xsmall{
+		font-size: 11px;
+	}
+
+	.magic{
+        border-top: 0px solid black !important; border-bottom: 0px solid black !important;
+    }
+
+    .magic-2{
+    	border-right:0px solid black !important;
+    }
+
+    .magic-3{
+    	border-left:0px solid black !important;
+    }
+
+    .padding-right-zero{
+        padding-right:0;
+    }
+
+    .padding-left-zero{
+        padding-left:0;
+    }
+
+    .padding-left-right-zero{
+        padding-right:0;
+        padding-left:0;
+    }
+</style>
+{% endblock %}
+<div class="col-sm-12" id="page-content">
+<br>
+{% check_pagefive pk as check_pagefive %}
+<div class="float-left">
+	<span><h3 class="bold">Page 3 of {% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}5{% else %}4{% endif %}</h3></span>
+</div>
+<div class="float-right">
+	{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin' %}
+	<button type="button" class="btn btn-info" id="btn-update-pds"><i class="fa fa-edit"></i> Update</button>
+	{% endif %}
+	<a target="_blank" href="{% url 'print_pds_pagethree' pk %}" class="btn btn-info"><i class="fas fa-print"></i> Print Preview</a>
+	<div class="btn-group"> 
+		<a class="btn btn-default" id="btn-page-two">Previous</a>
+		<a id="btn-page-numberone" class="btn btn-default">1</a>
+		<a id="btn-page-numbertwo" class="btn btn-default">2</a>
+		<a class="btn btn-default disabled">3</a>
+		<a id="btn-page-numberfour" class="btn btn-default">4</a>
+		{% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}
+		<a id="btn-page-numberfive" class="btn btn-default">5</a>
+		{% endif %}
+		<a id="btn-page-four" class="btn btn-default btn-outline">Next</a>
+	</div>
+</div>
+<br><br><br>
+<table class="table table-bordered pds-three" style="white-space: normal !important;">
+	<thead>
+		<th colspan="9" style="font-style: italic; font-size: 11px;">VI. VOLUNTARY WORK OR INVOLVEMENT IN CIVIC / NON-GOVERNMENT / PEOPLE / VOLUNTARY ORGANIZATION/S</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td rowspan="2" width="2%" class="magic-2 font-small">29.</td>
+			<td rowspan="2" class="font-small text-center magic-3" width="30%">NAME & ADDRESS OF ORGANIZATION<br>(Write in full)</td>
+			<td colspan="2" class="font-small text-center padding-zero" width="20%">INCLUSIVE DATES <br>(mm/dd/yyyy)</td>
+			<td rowspan="2" class="font-small text-center" width="7%">NUMBER OF HOURS</td>
+			<td rowspan="2" class="font-small text-center" width="30%">POSITION / NATURE OF WORK</td>
+		</tr>
+		<tr>
+			<td class="font-small text-center">From</td>
+			<td class="font-small text-center">To</td>
+		</tr>
+		{% if voluntary %}
+			{% for row in voluntary %}
+			<tr>
+				<td colspan="2" class="font-small text-center"><strong>{{ row.organization|upper }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.vol_from|date:"m/d/Y" }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.vol_to|date:"m/d/Y" }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.vol_hours }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.now|upper }}</strong></td>
+			</tr>
+			{% endfor %}
+			{% getrange 7 voluntary.count as voluntary_range %}
+			{% for row in voluntary_range|times %}
+			<tr>
+				<td colspan="2" class="font-small text-center">&nbsp;</td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+			</tr>
+
+			{% endfor %}
+		{% else %}
+			<tr>
+				<td colspan="2" class="font-small text-center"><strong>N/A</strong></td>
+				<td class="font-small text-center"><strong>N/A</strong></td>
+				<td class="font-small text-center"><strong>N/A</strong></td>
+				<td class="font-small text-center"><strong>N/A</strong></td>
+				<td class="font-small text-center"><strong>N/A</strong></td>
+			</tr>
+			{% getrange 7 1 as voluntary_range %}
+			{% for row in voluntary_range|times %}
+			<tr>
+				<td colspan="2" class="font-small text-center">&nbsp;</td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+			</tr>
+			{% endfor %}
+		{% endif %}
+		<tr>
+			<td colspan="8" class="text-center text-danger padding-zero font-small gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+		</tr>
+	</tbody>
+</table>
+<table class="table table-bordered pds-three" style="margin-top: -20px; white-space: normal !important;">
+	<thead>
+		<th colspan="9" style="font-style: italic; font-size: 11px;">VII. LEARNING AND DEVELOPMENT (L&D) INTERVENTIONS/TRAINING PROGRAMS ATTENDED <br><small>(Start from the most recent L&D/training program and include only the relevant L&D/training taken for the last five (5) years for Division Chief/Executive/Managerial positions)</small></th>
+	</thead>
+	<tbody>
+		<tr>
+			<td rowspan="2" width="2%" class="magic-2 font-small">30.</td>
+			<td rowspan="2" class="font-small text-center magic-3" width="27%">TITLE OF LEARNING AND DEVELOPMENT<br> INTERVENTIONS/TRAINING PROGRAMS)<br>(Write in full)</td>
+			<td colspan="2" class="font-small text-center padding-zero" width="18%">INCLUSIVE DATES OF ATTENDANCE <br>(mm/dd/yyyy)</td>
+			<td rowspan="2" class="font-small text-center" width="7%">NUMBER OF HOURS</td>
+			<td rowspan="2" class="font-small text-center padding-zero" width="7%">Type of LD<br>( Managerial/ Supervisory/
+				Technical/etc)</td>
+			<td rowspan="2" class="font-small text-center" width="20%">CONDUCTED/ SPONSORED BY <br>(Write in full)</td>
+		</tr>
+		<tr>
+			<td class="font-small text-center">From</td>
+			<td class="font-small text-center">To</td>
+		</tr>
+		{% if training %}
+		{% for row in training %}
+		<tr>
+			<td colspan="2" class="font-small text-center"><strong>{{ row.training|upper }}</strong></td>
+			<td class="font-small text-center"><strong>{{ row.tr_from|date:"m/d/Y" }}</strong></td>
+			<td class="font-small text-center"><strong>{{ row.tr_to|date:"m/d/Y" }}</strong></td>
+			<td class="font-small text-center"><strong>{{ row.tr_hours }}</strong></td>
+			<td class="font-small text-center"><strong>{{ row.training_type|upper }}</strong></td>
+			<td class="font-small text-center padding-zero"><strong>{{ row.conducted|upper }}</strong></td>
+		</tr>
+		{% endfor %}
+		{% getrange 20 training.count as training_range %}
+		{% for row in training_range|times %}
+		<tr>
+			<td colspan="2" class="font-small text-center">&nbsp;</td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+		</tr>
+		{% endfor %}
+		{% else %}
+		<tr>
+			<td colspan="2" class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+		</tr>
+		{% getrange 16 1 as no_training_range %}
+		{% for row in no_training_range|times %}
+		<tr>
+			<td colspan="2" class="font-small text-center">&nbsp;</td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+		</tr>
+		{% endfor %}
+		{% endif %}
+		<tr>
+			<td colspan="9" class="text-center text-danger font-small gray-bg"><i><strong>(Continue on separate sheet if necessary)</strong></i></td>
+		</tr>
+	</tbody>
+	<thead>
+		<th colspan="9" style="font-style: italic; font-size: 11px;">VIII. OTHER INFORMATION</th>
+	</thead>
+</table>
+<div class="row" style="margin-top: -20px;">
+	<div class="col-sm-4 padding-right-zero">
+		<table class="table table-bordered pds-three" style="white-space: normal !important;">
+			<tr>
+				<td class="font-small magic-2 gray-bg">31.</td>
+				<td class="font-small text-center magic-3 gray-bg">SPECIAL SKILLS and HOBBIES<br>&nbsp;</td>
+			</tr>
+			{% if skills %}
+				{% for row in skills %}
+				<tr>
+					<td colspan="2" class="text-center font-small"><strong>{{ row.hob.hob_name|upper }}</strong></td>
+				</tr>
+				{% endfor %}
+				{% getrange 6 skills.count as skills_range %}
+				{% for row in skills_range|times %}
+				<tr>
+					<td colspan="2" class="text-center font-small">&nbsp;</td>
+				</tr>
+				{% endfor %}
+			{% else %}
+			{% getrange 6 1 as no_skills_range %}
+				<tr>
+					<td colspan="2" class="text-center font-small"><strong>N/A</strong></td>
+				</tr>
+				{% for row in no_skills_range|times %}
+				<tr>
+					<td colspan="2" class="text-center font-small">&nbsp;</td>
+				</tr>
+				{% endfor %}
+			{% endif %}
+		</table>
+	</div>	
+	<div class="col-sm-4 padding-left-right-zero">
+		<table class="table table-bordered pds-three" style="white-space: normal !important;">
+			<tr>
+				<td class="font-small text-center gray-bg">NON-ACADEMIC DISTINCTIONS / RECOGNITION <br> (Write in full)</td>
+			</tr>
+			{% if nonacad %}
+				{% for row in nonacad %}
+				<tr>
+					<td class="text-center font-small"><strong>{{ row.na.na_name|upper }}</strong></td>
+				</tr>
+				{% endfor %}
+				{% getrange 6 nonacad.count as nonacad_range %}
+				{% for row in nonacad_range|times %}
+				<tr>
+					<td colspan="2" class="text-center font-small">&nbsp;</td>
+				</tr>
+				{% endfor %}
+			{% else %}
+				<tr>
+					<td colspan="2" class="text-center font-small"><strong>N/A</strong></td>
+				</tr>
+				{% getrange 6 1 as no_nonacad_range %}
+				{% for row in no_nonacad_range|times %}
+				<tr>
+					<td colspan="2" class="text-center font-small">&nbsp;</td>
+				</tr>
+				{% endfor %}
+			{% endif %}
+		</table>
+	</div>
+	<div class="col-sm-4 padding-left-zero">
+		<table class="table table-bordered pds-three" style="white-space: normal !important;">
+			<tr>
+				<td class="font-small magic-2 gray-bg">33.</td>
+				<td class="font-smallg text-center magic-3 gray-bg padding-zero" style="padding-bottom: 1.5px !important;">MEMBERSHIP IN <br>ASSOCIATION/ORGANIZATION <br>(Write in full)</td>
+			</tr>
+			{% if membership %}
+				{% for row in membership %}
+				<tr>
+					<td colspan="2" style="font-size: 10px; line-height: 18px;"><strong>{{ row.org.org_name|upper }}</strong></td>
+				</tr>
+				{% endfor %}
+				{% getrange 6 membership.count as membership_range %}
+				{% for row in membership_range|times %}
+				<tr>
+					<td colspan="2" class="text-center font-small">&nbsp;</td>
+				</tr>
+				{% endfor %}
+			{% else %}
+				<tr>
+					<td colspan="2" class="text-center font-small"><strong>N/A</strong></td>
+				</tr>
+				{% getrange 6 1 as no_membership_range %}
+				{% for row in no_membership_range|times %}
+				<tr>
+					<td colspan="2" class="text-center font-small">&nbsp;</td>
+				</tr>
+				{% endfor %}
+			{% endif %}
+		</table>
+	</div>	
+	<div class="col-sm-12" style="margin-top: -20px !important;">
+		<table class="table table-bordered pds-three" style="white-space: normal !important;">
+			<tr>
+				<td colspan="9" class="text-center text-danger font-small padding-zero gray-bg"><i><strong>(Continue on separate sheet if necessary)</strong></i></td>
+			</tr>
+			<tr>
+				<th width="29%" class="text-center gray-bg"><i>SIGNATURE</i></th>
+				<td width="20%"></td>
+				<th width="18%" class="text-center gray-bg"><i>DATE</i></th>
+				<td width="21%"></td>
+			</tr>
+		</table>
+		<p class="font-small float-right" style="font-family: Arial Narrow;"><i>CS FORM 212 (Revised 2017), Page 3 of 4</i></p>
+	</div>
+</div>
+</div>
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#btn-page-two').on('click', function(){
+			callPage("{% url 'view_pds_pagetwo' pk %}");
+		});
+
+		$('#btn-page-four').on('click', function(){
+			callPage("{% url 'view_pds_pagefour' pk %}");
+		});
+
+		$('#btn-page-numbertwo').on('click', function(){
+			callPage("{% url 'view_pds_pagetwo' pk %}");
+		});
+
+		$('#btn-page-numberone').on('click', function(){
+			callPage("{% url 'view_pds_pageone' pk %}");
+		});
+
+		$('#btn-page-numberfour').on('click', function(){
+			callPage("{% url 'view_pds_pagefour' pk %}");
+		});
+
+		'{% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}'
+		$('#btn-page-numberfive').on('click', function(){
+			callPage("{% url 'view_pds_pagefive' pk %}");
+		});
+		'{% endif %}'
+
+		'{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin'%}'
+		$('#btn-update-pds').on('click', function(){
+			callPage("{% url 'update_personal_information' pk %}");
+		});
+		'{% endif %}'
+	});
+</script>
+{% endblock %}

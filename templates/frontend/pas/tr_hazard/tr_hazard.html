@@ -1,0 +1,334 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Annex A</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Travel Report During Hazards/Hardships
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Annex A</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-xs-4">
+        <div class="title-action">
+            <button class="btn btn-default" data-toggle="modal" data-target="#print-modal"><i class="fas fa-print"></i> Print Annex A</button>
+            <button class="btn btn-info" data-toggle="modal" data-target="#add-report-modal"><i class="fas fa-plus"></i> Add Report</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox">
+                <div class="ibox-content">
+					<div class="tabs-container">
+						<ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#annex-view">Annex A</a></li>
+                        </ul>
+					</div>
+					<div class="tab-content" style="border: 0px !important;">
+						<div id="annex-view" class="tab-pane active">
+							<div class="panel-body">
+								<div class="row">
+									<div class="col-lg-9">
+										<div class="table-responsive" style="margin-top: 15px;">
+											<table class="table table-bordered table-hover" id="table-tr-hazard" width="100%">
+												<thead>
+                                                    <th>ACTION</th>
+													<th class="text-center">DATE</th>
+													<th class="text-center" width="20%">AREAS</th>
+													<th class="text-center" width="35%">ACCOMPLISHMENT/WORK DONE</th>
+													<th class="text-right">STATUS</th>
+													<th class="display-none">DATE FILED</th>
+												</thead>
+											</table>
+										</div>
+									</div>
+									<div class="col-lg-3">
+										<h4>FILTER</h4>
+										<h4>By status</h4>
+										<div class="list-group">
+											<a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+											<a class="list-group-item"  id="status-2" href="javascript:;" data-role="status" data-filter="1">Locked</a>
+											<a class="list-group-item"  id="status-3" href="javascript:;" data-role="status" data-filter="0">Created</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-report-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">TRAVEL REPORT DURING HAZARDS/HARDSHIPS</h3>
+	        </div>
+            <form id="submitHazardForm">
+			{% csrf_token %}
+			<div class="modal-body">
+				<div class="form-group">
+					<label>Date<span class="asteriskField">*</span></label>
+					<input type="date" name="date" class="form-control b-r-sm" required>
+				</div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select class="form-control select" name="category">
+                        {% for row in category %}
+                        <option value="{{ row.id }}">{{ row.category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+				<div class="form-group">
+					<label>Area<span class="asteriskField">*</span></label>
+					<textarea class="form-control b-r-sm" name="area" placeholder="Input area/s.." required></textarea>
+				</div>
+				<div class="form-group">
+					<label>Accomplishment/Work Done<span class="asteriskField">*</span></label>
+					<textarea class="form-control b-r-sm" name="accomplishment" placeholder="Input accomplishment/work done.." required></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-info" id="btnHazardForm">Save</button>
+			</div>
+			</form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="edit-report-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">EDIT TRAVEL REPORT DURING HAZARDS/HARDSHIPS</h3>
+	        </div>
+			<div id="edit-content-tr"></div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="print-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">PRINT TRAVEL REPORT DURING HAZARDS/HARDSHIP</h3>
+	        </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Start Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="hazard_start_date" id="hazard_start_date" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="hazard_end_date" id="hazard_end_date" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" id="printBtn">Print</button>
+            </div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#table-tr-hazard').DataTable({
+		'serverSide': true,
+		'processing': true,
+		'deferRender': true,
+		'order': [[ 0, 'desc' ]],
+		'lengthMenu': [ 25, 50, 100 ],
+		'ajax': {
+			'url': '/api/tr-hazard/annex-a/?format=datatables&employee_id={% getHash request.session.emp_id %}',
+			'type': 'GET',
+			'beforeSend': function (request) {
+				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+			}
+		},
+		'fnCreatedRow': function (row, data, index) {
+			$(row).attr('id', data['id']);
+		},
+		'columns': [
+			{'data': 'id', 'searchable': false,
+                'render': function(data, type, row, meta) {
+				    var template = '<a href="javascript:;" data-role="edit-travel-report" data-id="'+ data + '">Edit</a>';
+					if (row['status'] != '1') {
+						template += ' | <a href="javascript:;" data-role="locked" data-id="'+ data + '">Locked</a>';
+                    }
+
+					return template;
+				}
+            },
+			{'data': 'date', 'className': 'text-center' },
+			{'data': 'area', 'className': 'text-center' },
+			{'data': 'accomplishment', 'className': 'text-center' },
+			{'data': 'status', 'searchable': false,
+			 	'render': function(data, type, row, meta) {
+					if (row['status'] == 1) {
+						status = '<span class="label label-info">Locked</span>'
+					}
+					else {
+						status = '<span class="label label-success">Created</span>'
+					}
+					return status;
+				},
+                'className': 'text-right'
+			 },
+			{'data': 'date_filed', 'className': 'display-none', 'searchable': false },
+		],
+	});
+
+	$('#submitHazardForm').on('submit', function(e){
+		$.ajax({
+			data        : new FormData(this),
+			url         : '{% url "tr_hazard" %}',
+			type        : 'POST',
+			beforeSend: function() {
+				$('.btn').prop("disabled", true);
+				$('#btnHazardForm').html('<span class="loading open-circle"></span> Saving');
+			},
+			success: function(response) {
+				if (response.data == "success"){
+					$('#add-report-modal').modal('toggle');
+					Swal.fire({
+						title: "Good job!",
+						text: response.msg,
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if(result.isConfirmed){
+							$('#submitHazardForm').trigger('reset');
+							$('#table-tr-hazard').DataTable().ajax.reload();
+							$('#add-report-modal').modal('hide');
+						}
+					});
+				}
+			},
+			complete: function() {
+				$('.btn').prop("disabled", false);
+				$('#btnHazardForm').html('Save');
+			},
+			cache       : false,
+			contentType : false,
+			processData : false
+		});
+		e.preventDefault();
+	});
+
+	$(document).on('click', 'a[data-role=locked]', function(){
+		var id = $(this).data('id');
+		Swal.fire({
+			title: "Are you sure",
+			text: "Lock this travel/service report? Once locked, you can't edit it without contacting the super administrator",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.ajax({
+					data        :{ id: id },
+					url         : '',
+					type        : 'POST',
+				});
+			},
+		}).then(function (response){
+			if (response.value.data){
+				Swal.fire({
+					title: "Good job!",
+					text: "Travel Report was successfully deleted.",
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed){
+						$('#table-tr-hazard').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+	});
+
+	$(document).on('click', 'a[data-role=delete]', function(){
+		var id = $(this).data('id');
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to delete this record?",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.ajax({
+					data        :{ id: id },
+					url         : '{% url "locked_travel_annex_a" %}',
+					type        : 'POST',
+				});
+			},
+		}).then(function (response){
+			if (response.value.data){
+				Swal.fire({
+					title: "Good job!",
+					text: response.value.msg,
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed){
+						$('#table-tr-hazard').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+	});
+
+	$('#printBtn').on('click', function(){
+        var url = '/personnel/travel-hazard/annex-a/print/' + $('#hazard_start_date').val() + '/' + $('#hazard_end_date').val();
+        window.open(url, '_blank');
+    });
+
+	$(document).on('click', 'a[data-role=edit-travel-report]', function(){
+		$('#edit-report-modal').modal('show').find('#edit-content-tr').load('/personnel/travel-hazard/annex-a/edit/' + $(this).data('id'));
+	});
+
+	$(document).on('click', 'a[data-role=status]', function(){
+		$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+		if($(this).data('filter') == 'all'){
+			var table = $('#table-tr-hazard').DataTable();
+			table.clear();
+			table.ajax.url('/api/tr-hazard/annex-a/?format=datatables&employee_id={% getHash request.session.emp_id %}').load();
+		}else{
+			var table = $('#table-tr-hazard').DataTable();
+			table.clear();
+			table.ajax.url('/api/tr-hazard/annex-a/?format=datatables&employee_id={% getHash request.session.emp_id %}&status='+$(this).data('filter')).load();
+		}
+	});
+});
+</script>
+{% endblock %}

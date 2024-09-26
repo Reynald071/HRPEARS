@@ -1,0 +1,274 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Summary of IPCR Rating</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Performance
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item">
+                Summary of IPCR Rating
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button type="button" class="btn btn-info" data-target="#add-rating-modal" data-toggle="modal">
+                <i class="fas fa-plus"></i> Add Rating
+            </button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <table class="table table-bordered table-hover" id="ipcr-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Employee Name</th>
+                                <th class="text-center">Year</th>
+                                <th class="text-center">Semester</th>
+                                <th class="text-center">Rating</th>
+                                <th class="display-none">File</th>
+                                <th class="text-center">Attachment</th>
+                                <th class="text-right">Date Added</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add-rating-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">ADD IPC RATING</h3>
+
+            </div>
+            <form id="submitForm" enctype="multipart/form-data">
+	        <div class="modal-body">
+                {% csrf_token %}
+	            <div class="form-group">
+                    <label>Employee<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control filter-employee-by-division" name="employee" autocomplete="off" required>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Year<span class="asteriskField">*</span></label>
+                            <input type="number" class="form-control" name="year" autocomplete="off" required>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Semester<span class="asteriskField">*</span></label>
+                            <select class="form-control select" name="semester" required>
+                                <option></option>
+                                <option value="1">1st</option>
+                                <option value="2">2nd</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Rating<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="ipcr" onkeypress="return isNumberKey(event)" autocomplete="off" required>
+                </div>
+                <div class="form-group" style="margin-bottom:0px;">
+                    <label>Attachment<span class="asteriskField">*</span></label>
+                    <input type="file" class="form-control file-control" name="attachment" required>
+                </div>
+            </div>
+	        <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="upload-ipcr-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">UPLOAD IPC RATING</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body-full"></div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="details-modal" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">UPDATE IPC RATING</h3>
+
+            </div>
+            <form id="submitUpdateForm" enctype="multipart/form-data">
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function isNumberKey(evt)
+    {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    $(".filter-employee-by-division").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_by_division" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#ipcr-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/employees/ipcr/division/?format=datatables&pk={% getHash div_id as hash_pk %}{{ hash_pk }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta){
+                    return '<a href="javascript:;" data-role="details" data-id="'+ data +'">Details</a>'
+                }
+            },
+            {'data': 'full_name', 'name': 'emp.pi.user.last_name, emp.pi.user.first_name'},
+            {'data': 'year', 'className': 'text-center' },
+            {'data': 'semester',
+                'render': function(data, type, row, meta){
+                    if(data == 1){
+                        return "1st Semester"
+                    }else{
+                        return "2nd Semester"
+                    }
+                },
+                'className': 'text-center'
+            },
+            {'data': 'ipcr',
+                'render': function(data, type, row, meta){
+                    return parseFloat(data).toFixed(5);
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'file_id', 'className': 'display-none', 'searchable': false},
+            {'data': 'attachment',
+                'render': function(data, type, row, meta){
+                    template = "";
+
+                    if(row['file_id'] != null){
+                        template +="<a href='javascript:;' data-role='upload' data-id="+ row['file_id'] +">" + data + "</a>";
+                    } else {
+                        template +="<a href='javascript:;' data-role='upload' data-id="+ row['id'] +">" + data + "</a>";
+                    }
+                    return template;
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'date_added', 'className': 'text-right', 'searchable': false}
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=details]', function(){
+        var id = $(this).data('id');
+        $('#details-modal').modal('show').find('.modal-body').load('/backend/performance/ipcr/details/' + id);
+    });
+
+    $(document).on('click', 'a[data-role=upload]', function(){
+        var id = $(this).data('id');
+        $('#upload-ipcr-modal').modal('show').find('.modal-body-full').load('/backend/performance/ipcr/file/' + id);
+    });
+
+    $('#submitForm').on('submit', function(e){
+    	var form = new FormData(this);
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to add this ipc rating",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "ipcr_encoding" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "You have successfully added the ipc rating.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#add-rating-modal').modal('hide');
+                        $('#ipcr-table').DataTable().ajax.reload();
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: "Ooops!",
+                    html: data.value.msg,
+                    icon: "warning",
+                })
+            }
+		});
+		e.preventDefault();
+    });
+</script>
+{% endblock %}

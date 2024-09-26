@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" type="image/png" href="{% static 'image/hrpearlogo_192.png' %}" />
+        <title>DSWD CDO HR Pears | Login</title>
+        <link href="{% static 'css/tailwind.min.css' %}" rel="stylesheet" />
+        <link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet" />
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap");
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;900&display=swap");
+            body {
+                font-family: Inter !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="min-h-screen bg-white flex">
+            <div class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+                <div class="mx-auto w-full max-w-sm">
+                    <div>
+                        <h2 class="mt-6 text-4xl leading-9 font-extrabold text-gray-900">My <span class="text-green-500">PORTAL</span></h2>
+                        <p class="mt-2 text-sm leading-5 text-gray-600 max-w">
+                            to keep connected with us please login with your login credentials
+                        </p>
+                    </div>
+
+                    <div class="mt-8">
+                        <div class="mt-6">
+                            <div id="alertDiv"></div>
+                            <form id="loginForm">
+                                {% csrf_token %}
+                                <div>
+                                    <label for="username" class="block text-sm font-medium leading-5 text-gray-700">
+                                        Username
+                                    </label>
+                                    <div class="mt-1 rounded-md shadow-sm">
+                                        <input
+                                            id="username"
+                                            type="text"
+                                            name="username"
+                                            autocomplete="off"
+                                            required
+                                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="mt-6">
+                                    <label for="password" class="block text-sm font-medium leading-5 text-gray-700">
+                                        Password
+                                    </label>
+                                    <div class="mt-1 rounded-md shadow-sm">
+                                        <input
+                                            id="password"
+                                            type="password"
+                                            name="password"
+                                            autocomplete="off"
+                                            required
+                                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                        />
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="mt-6 flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <input id="remember_me" type="checkbox" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out" />
+                                        <label for="remember_me" class="ml-2 block text-sm leading-5 text-gray-900">
+                                            Remember me
+                                        </label>
+                                    </div>
+                                    <div class="text-sm leading-5">
+                                        <a href="{% url 'forgot_password' %}" class="font-medium text-green-600 hover:text-green-500 focus:outline-none focus:underline transition ease-in-out duration-150">
+                                            Forgot your password?
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="mt-6">
+                                    <span class="block w-full rounded-md shadow-sm">
+                                        <button
+                                            id="submitBtn"
+                                            type="submit"
+                                            class="w-full flex justify-center py-2 px-4 border border-transparent font-medium rounded-md text-white bg-green-500 hover:bg-green-400 focus:outline-none focus:border-green-500 focus:shadow-outline-green active:bg-green-700 transition duration-150 ease-in-out"
+                                        >
+                                            <strong>Sign in</strong>
+                                        </button>
+                                    </span>
+                                </div>
+                            </form>
+                            <p class="mt-2 text-sm text-center leading-5 text-gray-600 max-w">
+                                or login with
+                            </p>
+                            <div class="mt-4">
+                                <span class="block w-full rounded-md shadow-sm">
+                                    <a
+                                        href="{% url 'oidc_authentication_init' %}"
+                                        type="submit"
+                                        class="w-full flex justify-center py-2 px-4 g-white hover:bg-gray-100 text-gray-600 font-semibold py-2 px-4 border border-gray-400 rounded shadow transition duration-150 ease-in-out"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        &emsp;<strong>ISSSO</strong>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden lg:block relative w-0 flex-1">
+                <img loading="lazy"  class="absolute inset-0 h-full w-full object-cover" src="{% static 'image/background.jpg' %}" alt="" />
+            </div>
+        </div>
+        <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+        <script>
+            $(document).ready(function () {
+                $("#loginForm").on("submit", function (e) {
+                    var form = new FormData(this);
+                    $.ajax({
+                        data: form,
+                        url: '{% url "backend-login" %}',
+                        type: "POST",
+                        beforeSend: function () {
+                            $('#submitBtn').addClass('cursor-not-allowed');
+                            $("#submitBtn").html('<span class="loading open-circle" style="font-size: 25px;"></span>');
+                        },
+                        success: function (response) {
+                            if (response.data) {
+                                $('#submitBtn').addClass('cursor-not-allowed');
+                                $("#submitBtn").html('<span class="loading open-circle" style="font-size: 25px;"></span>');
+                                window.location.href = "{% if request.GET.next %}{{ request.GET.next }}{% else %}{% url 'home' %}{% endif %}";
+                            } else {
+                                $('#submitBtn').removeClass('cursor-not-allowed');
+                                $("#submitBtn").html("Sign In");
+                                $("#alertDiv").html(
+                                    `
+                          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                           <div class="flex">
+                            <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                            <div>
+                              <p class="font-bold">` +
+                                        response.msg +
+                                        `</p>
+                              <p class="text-sm">Please try again or would you like to reset your password <a href="{% url 'forgot_password' %}" class="font-semibold text-blue-600">click here</a></p>
+                            </div>
+                          </div>
+                        </div><br>
+                        `
+                                );
+                            }
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                    });
+                    e.preventDefault();
+                });
+            });
+        </script>
+    </body>
+</html>

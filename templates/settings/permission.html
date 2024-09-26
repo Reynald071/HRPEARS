@@ -1,0 +1,338 @@
+<div id="permission_content">
+    <div class="pull-left">
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#add_permission_modal"><i class="fas fa-plus"></i> Add Permission</button>
+    </div>
+    <br><br><br>
+    <div class="table-responsive">
+        <table id="permission-table" class="table table-bordered table-hover" width="100%">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Name</th>
+                    <th class="text-center">Badge</th>
+                    <th class="text-center">Total User</th>
+                    <th class="text-center">Codename</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<div class="modal" id="add_permission_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">ADD PERMISSION</h3>
+
+            </div>
+            <form id="addPermissionForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Name<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="name" id="name">
+                </div>
+                <div class="form-group">
+                    <label>Codename<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="codename">
+                </div>
+                <div class="form-group">
+                    <label>Badge</label>
+                    <input type="file" class="form-control file-control" name="badge_file">
+                </div>
+                <div class="form-group">
+                    <label>Content Type<span class="asteriskField">*</span></label>
+                    <select class="form-control select" name="content_type" required>
+                        <option></option>
+                        {% for row in content_type %}
+                        <option value="{{ row.id }}">{{ row.app_label }} - {{ row.model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="permission_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">UPDATE PERMISSION</h3>
+
+            </div>
+            <div id="edit_permission"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="view_user_permission_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">VIEW USER PERMISSION ON</h3>
+                <small>Below are the users who have this permission.</small>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table id="user-permission-table" class="table table-bordered table-hover" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Name</th>
+                                <th>Position</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function(){
+        select2Init();
+        function select2Init(){
+            $('.select').select2({
+                width: "100%",
+                allowClear: true,
+                placeholder: 'Choose',
+            });
+        }
+
+        PermissionTable();
+
+        $(document).on('click', 'a[data-role=view]', function(){
+            var id = $(this).data('id');
+            var name = $('#'+id).find('td:eq(1)').text();
+
+            $('#view_user_permission_modal').find('.modal-title').text('VIEW USER PERMISSION ON ' + name.toUpperCase());
+            $('#user-permission-table').dataTable().fnDestroy();
+            UserPermissionTable(id);
+            $('#view_user_permission_modal').modal('show');
+        });
+
+        $(document).on('click', 'a[data-role=remove_user]', function(){
+            var id = $(this).data('id');
+            var permission_id = $(this).data('title');
+            var name = $('#'+id).find('td:eq(1)').text();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to remove '" + name + "' from this permission",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : { id: id },
+                        url         : '{% url "delete_portal_user_permission" %}',
+                        type        : 'POST',
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully removed '" + name +"' in this permission.",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#user-permission-table').DataTable().ajax.reload();
+                            $('#permission-table').DataTable().ajax.reload();
+                        }
+                    });
+                }else {
+                    Swal.fire("Ooops!", response.value.msg, "warning");
+                }
+            });
+        });
+
+        $(document).on('click', 'a[data-role=update]',function(){
+            var id = $(this).data('id');
+            $('#permission_modal').modal('show').find('#edit_permission').load('/system/permission/update/' + id);
+        });
+
+        $(document).on('click', 'a[data-role=delete]', function(){
+            var id = $(this).data('id');
+            var name = $('#'+id).find('td:eq(1)').text();
+
+            Swal.fire({
+                title: "Are you sure?",
+                html: "You want to delete this permission<br><small class='text-danger'>Important Note: If deleted, all users that have this permission will lose their authority.</small>",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : { id: id },
+                        url         : '{% url "delete_portal_permission" %}',
+                        type        : 'POST',
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully deleted name '" + name +"' in permission.",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#permission-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#addPermissionForm').on('submit', function(e){
+            var form = new FormData(this);
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to add this permission",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "portal_permission" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully added name '" + $('#name').val() +"' in permission.",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#addPermissionForm').trigger('reset');
+                            $('#add_permission_modal').modal('hide');
+                            $('#permission-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+
+        function PermissionTable(){
+            $('#permission-table').DataTable({
+                'serverSide': true,
+                'processing': true,
+                'deferRender': true,
+                'lengthMenu': [ 25, 50, 100 ],
+                'order': [[ 1, 'asc' ]],
+                'ajax': {
+                    'url': '/api/permissions/?format=datatables',
+                    'type': 'GET',
+                    'beforeSend': function (request) {
+                        request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+                    }
+                },
+                'fnCreatedRow': function (row, data, index) {
+                    $(row).attr('id', data['id']);
+                },
+                'columns': [
+                    {'data': 'id',
+                        'render': function(data, type, row, meta) {
+                            return "<a href='javascript:;' data-role='update' data-id='"+ row['id'] + "'>Edit</a> | <a href='javascript:;' data-role='delete' data-id='"+ row['id'] + "'>Delete</a>"
+                        }
+                    },
+                    {'data': 'name' },
+                    {'data': 'badge',
+                        'render': function(data, type, row, meta) {
+                            if(data) {
+                                return `<center>
+                                    <img class='shimmer' data-toggle="popover"
+                                        data-html="true"
+                                        style="object-fit:cover; width: 50px; height: 50px;"
+                                        data-placement="right"
+                                        data-content="<center><img class='shimmer' src='`+ data + `' style='width: 250px; height: 250px; object-fit:cover;'></center>" src="` + data + `">
+                                    </center>`;
+                            } else {
+                                return '';
+                            }
+                        },
+                        className: 'text-center'
+                    },
+                    {'data': 'total_user',
+                        'searchable': false,
+                        'render': function(data, type, row, meta) {
+                            return "<a href='javascript:;' data-role='view' data-id='"+ row['id'] + "'>"+ row['total_user'] +"</a>"
+                        },
+                        className: 'text-center'
+                    },
+                    {'data': 'codename', 'className': 'text-center' },
+                ],
+                drawCallback: function() {
+                    $('[data-toggle="popover"]').popover({
+                        container: "body"
+                    });
+                }
+            });
+        }
+
+        function UserPermissionTable(permission_id){
+            $('#user-permission-table').DataTable({
+                'serverSide': true,
+                'processing': true,
+                'order': [[ 1, 'asc' ]],
+                'ajax': {
+                    'url': '/api/permissions/user/?format=datatables&permission_id='+permission_id,
+                    'type': 'GET',
+                    'beforeSend': function (request) {
+                        request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+                    }
+                },
+                'fnCreatedRow': function (row, data, index) {
+                    $(row).attr('id', data['id']);
+                },
+                'columns': [
+                    {'data': 'id',
+                        'render': function(data, type, row, meta) {
+                            return "<a href='javascript:;' data-role='remove_user' data-id='"+ row['id'] + "' data-title='"+ permission_id +"'>Remove</a>"
+                        }
+                    },
+                    {'data': 'full_name', 'className': 'text-center',
+                        'name': 'user.first_name, user.middle_name, user.last_name',
+                        'searchable': true,
+                        'render': function(data, type, row, meta) {
+                            return data;
+                        }
+                    },
+                    {'data': 'position', 'className': 'text-center', 'searchable': false },
+                ],
+            });
+        }
+
+    });
+</script>
+{% endblock %}

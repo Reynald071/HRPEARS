@@ -1,0 +1,89 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h1 class="bold">Payroll List</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                List
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+        <div class="title-action">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="year" value="{{ current_year }}" required autocomplete="off"> <span class="input-group-btn"> <button type="button" class="btn btn-info" id="filter-year" style="height: 34px;">Filter</button> </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="ibox">
+            <div class="ibox-content">
+                <div class="table-responsive">
+                <table class="table table-bordered" id="payroll-list-table">
+                    <thead>
+                        {% for row in columns %}
+                            {% if row.attribute != "Status" %}
+                            <th>{{ row.attribute }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot></tfoot>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+     $(document).ready(function(){
+        $('#payroll-list-table').DataTable({
+            "fixedHeader": true,
+            "pageLength": 25,
+            "responsive": true,
+            "scrollX": true,
+            "scrollY": true,
+            "processing": true,
+            "deferRender": true,
+            "autoFill": true,
+            "ordering": false,
+            "ajax": '{% url "get_payroll_list_all" current_year %}',
+            "dom": '<"html5buttons"B>lTfgitpr',
+            "buttons": [
+                { extend: 'csv'},
+            ],
+            "columns": [
+                {% for row in columns %}{% if row.attribute != "Status" %}{ "data": "{{ row.attribute }}" },{% endif %}{% endfor %}
+            ],
+        });
+
+        $.fn.dataTable.ext.errMode = 'none';
+
+        $('#filter-year').on('click', function(){
+            var table = $('#payroll-list-table').DataTable();
+            table.clear();
+            table.ajax.url('/backend/payroll/list/uploading/all/' + $('#year').val()).load();
+        });
+    });
+</script>
+{% endblock %}

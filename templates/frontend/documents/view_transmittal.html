@@ -1,0 +1,47 @@
+{% load tags %}
+<table class="table table-bordered">
+    <tr>
+        <th>Document Name</th>
+        <td>{{ transmittal.document_name.name }}</td>
+        <th>Document Date</th>
+        <td>{{ transmittal.document_date }}</td>
+    </tr>
+    <tr>
+        <th>Details</th>
+        <td colspan="3">{{ transmittal.details }}</td>
+    </tr>
+    <tr>
+        <th>Date Registered</th>
+        <td colspan="3">{{ transmittal.date_added }}</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <p class="bold capslock" style="margin-bottom:5px;">TRAIL</p>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>STATUS</th>
+                        <th class="text-center">Date Received / Forwarded</th>
+                        <th class="text-center">Date Approved / Disapproved</th>
+                        <th class="text-center">Forwarded To</th>
+                        <th class="text-center">Responsible Person</th>
+                        <th class="text-center">Remarks</th>
+                    </tr>
+                    {% get_transmittal_trail transmittal.id as transmittal_trail %}
+                    {% if transmittal_trail %}
+                        {% for row in transmittal_trail %}
+                        <tr>
+                            <td>{{ row.get_status|safe }}</td>
+                            <td class="text-center">{% if row.date %}{{ row.date }}{% endif %}</td>
+                            <td class="text-center">{% if row.date_approved %}{{ row.date_approved|date:"Y-m-d, H:i A" }}{% endif %}</td>
+                            <td class="text-center">{{ row.forwarded_to.div_name }}</td>
+                            <td class="text-center">{{ row.emp.pi.user.get_fullname }}</td>
+                            <td class="text-center">{% if row.remarks %}{{ row.remarks }}{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>

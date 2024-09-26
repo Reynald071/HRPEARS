@@ -1,0 +1,323 @@
+{% load static %}
+<div class="modal-body padding-bottom-0">
+    <div class="row">
+        <div class="col-lg-7" style="border-right: 1px solid #ced4da;">
+            {% if check_hold %}
+                <div class="alert alert-warning"><i class="fas fa-info-circle"></i> This payroll is hold by {{ check_hold.assignee.pi.user.get_fullname }}</div>
+            {% endif %}
+            <div class="p-5" style="height:500px; overflow-y: auto;">
+            {% if history %}
+            <ul class="timeline-with-icons">
+            {% for row in history %}
+                <li class="timeline-item mb-5">
+                    <div data-aos="zoom-out" data-aos-delay="{{ forloop.counter }}00">
+                        <span class="timeline-icon">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        <h6 class="card-title text-primary"><strong>{{ row.timeline.description }}</strong></h6>
+                        <table class="table table-borderless table-sm">
+                            {% if row.date_received or row.start_date %}
+                                {% if row.date_received %}
+                                    <tr>
+                                        <td>Date Received</td>
+                                        <td>{{ row.date_received }}</td>
+                                    </tr>
+                                {% endif %}
+                                {% if row.start_date %}
+                                <tr>
+                                    <td>Start Date</td>
+                                    <td>{{ row.start_date }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if row.end_date %}
+                                    <tr>
+                                        <td>End Date</td>
+                                        <td>{{ row.end_date }}</td>
+                                    </tr>
+                                {% endif %}
+                                {% if row.date_transmitted %}
+                                    <tr>
+                                        <td>Date Transmitted</td>
+                                        <td>{{ row.date_transmitted }}</td>
+                                    </tr>
+                                {% endif %}
+                                {% if row.date_returned %}
+                                    <tr>
+                                        <td>Date Returned</td>
+                                        <td>{{ row.date_returned }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="2">Not yet viewed</td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <td width="30%">Assignee</td>
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="avatar" id="chat-avatar" style="width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 10px;"></div>
+                                        <span class="employee_name fw-bold">{{ row.assignee.pi.user.get_fullname }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+            {% else %}
+                <p class="text-center">No data available yet.</p>
+            {% endif %}
+            {% if comments %}
+                <h6 class="fw-bold">COMMENTS</h6>
+                {% for row in comments %}
+                    <div style="display: flex; align-items: center;">
+                        <div class="avatar" id="chat-avatar" style="width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 10px;"></div>
+                        <span class="employee_name fw-bold">{{ row.commentby.pi.user.get_fullname }}</span>
+                    </div>
+                    <span class="float-end" style="margin-top: -25px;">{{ row.date_comment }}</span>
+                    <div style="margin-left: 50px;">
+                        {{ row.comment }}
+                    </div><br>
+                {% endfor %}
+            {% endif %}
+            </div>
+            <form id="addCommentForm">
+            {% csrf_token %}
+            <div class="p-3">
+                <div class="mb-3">
+                    <textarea class="form-control form-control-sm" name="comment" id="comment" rows="3" placeholder="Write a comment" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-light btn-sm">Add comment</button>
+            </div>
+            </form>
+        </div>
+        <div class="col-lg-5">
+            <div class="p-3">
+                {% if latest_status.assignee_id == request.session.emp_id %}
+                    <h6 class="fw-bold">ADD TRACKING</h6>
+                    <form id="addTrackingForm">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ latest_status.timeline_id }}" name="timeline_value" id="timeline_value">
+                    <div class="mb-3">
+                        <label>Date Received</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_date_received">Use Current Date</button>
+                        <input type="datetime-local" class="form-control form-control-sm" value="{{ latest_status.date_received|date:'Y-m-d\TH:i' }}" name="date_received" id="edit_date_received" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label>Start Date</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_start_date">Use Current Date</button>
+                                <input type="datetime-local" class="form-control form-control-sm" value="{{ latest_status.start_date|date:'Y-m-d\TH:i' }}" name="start_date" id="edit_start_date">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label>End Date</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_end_date">Use Current Date</button>
+                                <input type="datetime-local" class="form-control form-control-sm" value="{{ latest_status.end_date|date:'Y-m-d\TH:i' }}" name="end_date" id="edit_end_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label>Date Transmitted</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_date_transmitted">Use Current Date</button>
+                        <input type="datetime-local" class="form-control form-control-sm" value="{{ latest_status.date_transmitted|date:'Y-m-d\TH:i' }}" name="date_transmitted" id="edit_date_transmitted">
+                    </div>
+                    <div class="mb-3">
+                        <label>Forward Payroll</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_use_default">Use Default</button>
+                        <input type="text" class="form-control form-control-sm filter-employee" name="forward_payroll" id="forward_payroll" autocomplete="off">
+                    </div>
+                    <div class="float-end mb-3">
+                        {% if check_hold_permission %}
+                            {% if not check_hold %}
+                                <button type="button" class="btn btn-outline-warning btn-sm" id="btn-mark-as-hold">Mark as Hold</button>
+                            {% else %}
+                                <button type="button" class="btn btn-default btn-sm" id="btn-unmark-as-hold">Unmark as Hold</button>
+                            {% endif %}
+                        {% endif %}
+                        <button type="submit" class="btn btn-info btn-sm">Save changes</button>
+                    </div>
+                    </form>
+                {% else %}
+                    {% if your_status %}
+                    <h6 class="fw-bold">ADD TRACKING</h6>
+                    <form id="addTrackingForm">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ your_status.timeline_id }}" name="timeline_value" id="timeline_value">
+                    <div class="mb-3">
+                        <label>Date Received</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_date_received">Use Current Date</button>
+                        <input type="datetime-local" class="form-control form-control-sm" value="{{ your_status.date_received|date:'Y-m-d\TH:i' }}" name="date_received" id="edit_date_received" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label>Start Date</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_start_date">Use Current Date</button>
+                                <input type="datetime-local" class="form-control form-control-sm" value="{{ your_status.start_date|date:'Y-m-d\TH:i' }}" name="start_date" id="edit_start_date">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label>End Date</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_end_date">Use Current Date</button>
+                                <input type="datetime-local" class="form-control form-control-sm" value="{{ your_status.end_date|date:'Y-m-d\TH:i' }}" name="end_date" id="edit_end_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label>Date Transmitted</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_date_transmitted">Use Current Date</button>
+                        <input type="datetime-local" class="form-control form-control-sm" value="{{ your_status.date_transmitted|date:'Y-m-d\TH:i' }}" name="date_transmitted" id="edit_date_transmitted">
+                    </div>
+                    <div class="mb-3">
+                        <label>Forward Payroll</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_use_default">Use Default</button>
+                        <input type="text" class="form-control form-control-sm filter-employee" name="forward_payroll" id="forward_payroll" value="[{{ your_status.get_forward_status.assignee.id_number }}] {{ your_status.get_forward_status.assignee.pi.user.get_fullname|upper }}" autocomplete="off">
+                    </div>
+                    <div class="float-end mb-3">
+                        {% if check_hold_permission %}
+                            {% if not check_hold %}
+                                <button type="button" class="btn btn-outline-warning btn-sm" id="btn-mark-as-hold">Mark as Hold</button>
+                            {% else %}
+                                <button type="button" class="btn btn-default btn-sm" id="btn-unmark-as-hold">Unmark as Hold</button>
+                            {% endif %}
+                        {% endif %}
+                        <button type="submit" class="btn btn-info btn-sm">Save changes</button>
+                    </div>
+                    </form>
+                    {% else %}
+                        <p>You can only view this transaction.</p>
+                    {% endif %}
+                {% endif %}
+                <div style="margin-top: 200px;">
+                    <h6 class="fw-bold">LEGEND</h6>
+                    <button type="button" class="btn btn-light btn-sm" data-role="legend" data-title="CE:">CE - Correction on Entries</button>
+                    <button type="button" class="btn btn-light btn-sm" data-role="legend" data-title="LA:">LA - Lacking Attachments</button>
+                    <button type="button" class="btn btn-light btn-sm" data-role="legend" data-title="FC:">FC - For Consultation</button>
+                    <button type="button" class="btn btn-light btn-sm" data-role="legend" data-title="FR:">FR - Further Review</button>
+                    <button type="button" class="btn btn-light btn-sm" data-role="legend" data-title="Others:">Others</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    function getInitials(name) {
+        var initials = name.match(/\b\w/g) || [];
+        initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
+        return initials;
+    }
+
+    $(document).on('click', 'button[data-role]', function(){
+        var title = $(this).data('title');
+        $('#comment').val(title);
+    });
+
+    $('#btn-mark-as-hold').on('click', function(){
+        var comment = $('#comment').val();
+        var date_received = $('#edit_date_received').val();
+        var start_date = $('#edit_start_date').val();
+
+        $.ajax({
+            url: '{% url "payroll_mark_hold" dv_no %}',
+            data: {
+                comment: comment,
+                date_received: date_received,
+                start_date: start_date,
+            },
+            type: 'POST',
+            success: function() {
+                $('#payroll-tracker-content').empty();
+                $('#payroll-tracker-content').load('{% url "epay_view_payroll_tracker" dv_no %}');
+            }
+        })
+    });
+
+    $('#btn-unmark-as-hold').on('click', function(){
+        var comment = $('#comment').val();
+
+        $.ajax({
+            url: '{% url "payroll_unmark_hold" dv_no %}',
+            type: 'POST',
+            data: {
+                'comment': comment
+            },
+            success: function() {
+                $('#payroll-tracker-content').empty();
+                $('#payroll-tracker-content').load('{% url "epay_view_payroll_tracker" dv_no %}');
+            }
+        })
+    });
+
+    $('#addTrackingForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "epay_view_payroll_tracker" dv_no %}';
+        var title = "Are you sure";
+        var text = "You want to proceed to update payroll tracking";
+        var table_id = '#table-payroll-monitoring';
+        var loadContent = '#payroll-tracker-content';
+        var loadUrl = '{% url "epay_view_payroll_tracker" dv_no %}'
+
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, loadContent: loadContent, loadUrl: loadUrl});
+
+        e.preventDefault();
+    });
+
+    $('#addCommentForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "add_payroll_timeline_comments" dv_no %}';
+        var title = "Are you sure";
+        var text = "You want to add comment on this payroll";
+        var loadContent = '#payroll-tracker-content';
+        var loadUrl = '{% url "epay_view_payroll_tracker" dv_no %}'
+
+        submitFormWithConfirmation(form, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+
+        e.preventDefault();
+    });
+
+    $('.employee_name').each(function(){
+        var username = $(this).text();
+        $(this).siblings('.avatar').text(getInitials(username));
+
+        $(this).siblings('.avatar').css('background-color', '#BBDEFB');
+    });
+
+    $('#btn_edit_use_default').on('click', function() {
+        $('#forward_payroll').val('[16-11524] JC LEE D. CELESTE');
+    });
+
+    $('#btn_edit_start_date').on('click', function(){
+        $('#edit_start_date').val(getCurrentDate);
+    });
+
+    $('#btn_edit_end_date').on('click', function(){
+        $('#edit_end_date').val(getCurrentDate);
+    });
+
+    $('#btn_date_received').on('click', function(){
+        $('#edit_date_received').val(getCurrentDate);
+    });
+
+    $('#btn_edit_date_transmitted').on('click', function(){
+        $('#edit_date_transmitted').val(getCurrentDate);
+    });
+
+    $('#btn-forward-payroll').on('click', function(){
+        $('#forward-payroll-input').removeClass('display-none');
+    });
+
+    $(".filter-employee").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+</script>
+{% endblock %}

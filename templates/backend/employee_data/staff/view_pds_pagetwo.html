@@ -1,0 +1,252 @@
+{% load tags %}
+{% load frontend_tags %}
+{% load tags %}
+{% block style %}
+<style type="text/css">
+	.pds-two th{
+		font-family: Arial Narrow;
+	}
+
+	.pds-two td{
+		font-family: Arial Narrow;
+	}
+
+	.text-capital{
+		text-transform: uppercase;
+	}
+	
+	.padding-zero{
+		padding: 0px !important;
+	}
+	.font-small{
+		font-size: 13px;
+	}
+
+	.font-xsmall{
+		font-size:11px;
+	}
+
+	.magic{
+        border-top: 0px solid black !important; border-bottom: 0px solid black !important;
+    }
+
+    .magic-2{
+    	border-right:0px solid black !important;
+    }
+
+    .magic-3{
+    	border-left:0px solid black !important;
+    }
+
+</style>
+{% endblock %}
+<div class="col-sm-12" id="page-content">
+<br>
+{% check_pagefive pk as check_pagefive %}
+<div class="float-left">
+	<span><h3 class="bold">Page 2 of {% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}5{% else %}4{% endif %}</h3></span>
+</div>
+<div class="float-right">
+	{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin' %}
+	<button type="button" class="btn btn-info" id="btn-update-pds"><i class="fa fa-edit"></i> Update</button>
+	{% endif %}
+	<a target="_blank" href="{% url 'print_pds_pagetwo' pk %}" class="btn btn-info"><i class="fas fa-print"></i> Print Preview</a>
+	<div class="btn-group"> 
+		<a class="btn btn-default" id="btn-page-one">Previous</a>
+		<a id="btn-page-numberone" class="btn btn-default">1</a>
+		<a class="btn btn-default disabled">2</a>
+		<a id="btn-page-numberthree" class="btn btn-default">3</a>
+		<a id="btn-page-numberfour" class="btn btn-default">4</a>
+		{% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}
+		<a id="btn-page-numberfive" class="btn btn-default">5</a>
+		{% endif %}
+		<a id="btn-page-three" class="btn btn-default btn-outline">Next</a>
+	</div>
+</div>
+<br><br><br>
+<table class="table table-bordered pds-two" style="white-space: normal !important;">
+	<thead>
+		<th colspan="9" style="font-style: italic; font-size: 11px;">IV.  CIVIL SERVICE ELIGIBILITY</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td rowspan="2" class="font-small magic-2">27.</td>
+			<td rowspan="2" class="font-small magic-3 text-center" width="25%">CAREER SERVICE/ RA 1080 (BOARD/ BAR) UNDER SPECIAL LAWS/ CES/ BARANGAY ELIGIBILITY / DRIVER'S LICENSE</td>
+			<td rowspan="2" class="font-small text-center">RATING <br>(if applicable)</td>
+			<td rowspan="2" class="font-small text-center" width="10%">DATE OF <br>EXAMINATION / CONFERMENT</td>
+			<td rowspan="2" class="font-small text-center" width="30%">PLACE OF EXAMINATION / CONFERMENT</td>
+			<td colspan="3" class="font-small text-center">LICENSE (if applicable)</td>
+		</tr>
+		<tr>
+			<td class="font-small text-center" colspan="2">NUMBER</td>
+			<td class="font-small text-center padding-zero">Date of Validity</td>
+		</tr>
+		{% if civil %}
+		{% for row in civil %}
+		<tr>
+			<td colspan="2" class="font-small text-center"><strong>{{ row.el.el_name|upper }}</strong></td>
+			<td class="font-small text-center"><strong>{{ row.cs_rating }}</strong></td>
+			<td class="font-small text-center">{{ row.cs_dateexam }}</td>
+			<td class="font-small text-center">{{ row.cs_place|upper }}</td>
+			<td colspan="2" class="font-small text-center">{{ row.cs_number }}</td>
+			<td class="font-small text-center">{{ row.cs_date_val}}</td>
+		</tr>
+		{% endfor %}
+		{% getrange 7 civil.count as civil_range %}
+		{% for row in civil_range|times %}
+		<tr>
+			<td colspan="2" class="font-small text-center">&nbsp;</td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td colspan="2" class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+		</tr>
+		{% endfor %}
+		{% else %}
+		<tr>
+			<td colspan="2" class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td colspan="2" class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+		</tr>
+		{% getrange 7 1 as no_civil_range %}
+		{% for row in no_civil_range|times %}
+		<tr>
+			<td colspan="2" class="font-small text-center">&nbsp;</td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+			<td colspan="2" class="font-small text-center"></td>
+			<td class="font-small text-center"></td>
+		</tr>
+		{% endfor %}
+		{% endif %}
+		<tr>
+			<td colspan="8" class="text-center text-danger padding-zero font-small gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+		</tr>
+	</tbody>
+</table>
+<table class="table table-bordered pds-two" style="margin-top: -20px; white-space: normal !important;">
+	<thead>
+		<th colspan="9" style="font-style: italic; font-size: 11px;">V.  WORK EXPERIENCE <br>
+			<small>(Include private employment. Start from your recent work) Description of duties should be indicated in the attached Work Experience sheet.)</small>
+		</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="font-small magic-3" colspan="2" width="20%">28. &emsp; <div class="text-center" style="margin-top: -15px;">INCLUSIVE DATES <br>(mm/dd/yyyy)</div></td>
+			<td rowspan="2" class="font-small text-center" width="20%">POSITION TITLE <br>(Write in full/Do not abbreviate)</td>
+			<td rowspan="2" class="font-small text-center" width="30%">DEPARTMENT / AGENCY / OFFICE / COMPANY <br>(Write in full/Do not abbreviate)</td>
+			<td rowspan="2" class="font-small text-center">MONTHLY SALARY</td>
+			<td rowspan="2" class="font-xsmall text-center">SALARY/ JOB/ PAY GRADE</td>
+			<td rowspan="2" class="font-small text-center">STATUS OF APPOINTMENT</td>
+			<td rowspan="2" class="font-small text-center">GOVT SERVICE</td>
+		</tr>
+		<tr>
+			<td class="text-center font-small">FROM</td>
+			<td class="text-center font-small">TO</td>
+		</tr>
+		{% if work %}
+			{% for row in work %}
+			<tr>
+				<td class="font-small text-center"><strong>{{ row.we_from|date:"m/d/Y" }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.we_to|date:"m/d/Y" }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.position_name|upper }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.company|upper }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.salary_rate }}</strong></td>
+				<td class="font-small text-center"><strong>{{ row.sg_step }}</strong></td>
+				<td class="font-xsmall text-center"><strong>{% getappstatus row.empstatus_id as appstatus %}{{ appstatus.name|upper }}</strong></td>
+				<td class="font-small text-center"><strong>{% if row.govt_service == 1%}Y{% else %}N{% endif %}</strong></td>
+			</tr>
+			{% endfor %}
+			{% getrange 27 work.count as work_range %}
+			{% for row in work_range|times %}
+			<tr>
+				<td class="font-small text-center">&nbsp;</td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+			</tr>
+			{% endfor %}
+		{% else %}
+		<tr>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+			<td class="font-small text-center"><strong>N/A</strong></td>
+		</tr>
+		{% getrange 27 1 as work_range %}
+			{% for row in work_range|times %}
+			<tr>
+				<td class="font-small text-center">&nbsp;</td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+				<td class="font-small text-center"></td>
+			</tr>
+			{% endfor %}
+		{% endif %}
+		<tr>
+			<td colspan="9" class="text-center text-danger font-small padding-zero gray-bg"><i><strong>(Continue on separate sheet if necessary)</strong></i></td>
+		</tr>
+		<tr>
+			<th colspan="2" class="text-center gray-bg"><i>SIGNATURE</i></th>
+			<td colspan="2"></td>
+			<th colspan="2" class="text-center gray-bg"><i>DATE</i></th>
+			<td colspan="3"></td>
+		</tr>
+	</tbody>
+</table>
+<p class="font-small float-right" style="font-family: Arial Narrow;"><i>CS FORM 212 (Revised 2017), Page 2 of 4</i></p>
+</div>
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#btn-page-one').on('click', function(){
+    		callPage("{% url 'view_pds_pageone' pk %}");
+		});
+
+		$('#btn-page-three').on('click', function(){
+			callPage("{% url 'view_pds_pagethree' pk %}");
+		});
+
+		$('#btn-page-numberone').on('click', function(){
+			callPage("{% url 'view_pds_pageone' pk %}");
+		});
+
+		$('#btn-page-numberthree').on('click', function(){
+			callPage("{% url 'view_pds_pagethree' pk %}");
+		});
+
+		$('#btn-page-numberfour').on('click', function(){
+			callPage("{% url 'view_pds_pagefour' pk %}");
+		});
+
+		'{% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}'
+		$('#btn-page-numberfive').on('click', function(){
+			callPage("{% url 'view_pds_pagefive' pk %}");
+		});
+		'{% endif %}'
+
+		'{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin'%}'
+		$('#btn-update-pds').on('click', function(){
+			callPage("{% url 'update_personal_information' pk %}");
+		});
+		'{% endif %}'
+	});
+</script>
+{% endblock %}

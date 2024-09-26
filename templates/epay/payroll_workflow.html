@@ -1,0 +1,170 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% load tags %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item active">Payroll Workflow</li>
+            </ol>
+        </nav>
+        <div class="card">
+            <div class="card-body">
+                <button type="button" class="btn btn-info btn-sm float-end" data-bs-toggle="modal" data-bs-target="#prepare-payroll-modal">Prepare Payroll</button>
+                <br><br>
+                    <table class="table table-bordered table-hover w-100" id="table-payroll-timeline">
+                    <thead>
+                        <th>Action</th>
+                        <th>Type</th>
+                        <th>DV No.</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Date Transmitted</th>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="prepare-payroll-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>PREPARE PAYROLL</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="preparePayrollForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>Start Date</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_start_date">Use Current Date</button>
+                    <input type="datetime-local" class="form-control form-control-sm" name="start_date" id="start_date">
+                </div>
+                <div class="mb-3">
+                    <label>Payroll Type</label>
+                    <select class="form-control form-control-sm" name="type" required>
+                        <option value="Payroll">Payroll</option>
+                        <option value="Remittances">Remittances</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info btn-sm">Create Payroll</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="payroll-detail-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>PAYROLL DETAILS</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="payroll-detail-content"></div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="payroll-tracker-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>PAYROLL TRACKER <span id="dv_no_text"></span></strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="payroll-tracker-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#table-payroll-timeline').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 0, 'desc' ]],
+        'ajax': {
+            'url': '/api/epay/timeline-workflow/?format=datatables&pk={% generate_token employee.id as token %}{{ token }}&timeline=1',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {
+                'data': 'id',
+                'render': function (data, type, row, meta) {
+                    return '<a href="javascript:;" data-role="details" data-id="'+ data + '"> Details</a>'
+                },
+            },
+            {'data': 'type',
+                'className': 'text-center'
+            },
+            {'data': 'dv_no',
+                'className': 'text-center'
+            },
+            {'data': 'start_date', 'className': 'text-center' },
+            {'data': 'end_date', 'className': 'text-center' },
+            {'data': 'date_transmitted', 'className': 'text-center' },
+        ]
+    });
+
+    $(document).on('click', 'a[data-role=track-payroll]', function(){
+        var dv_no = $(this).data('id');
+        $('#payroll-tracker-content').load('/epay/manage/payroll/tracker/' + dv_no, function(){
+            $('#dv_no_text').text('- ' + dv_no);
+            $('#payroll-tracker-modal').modal('show');
+        });
+    });
+
+    $(document).on('click', 'a[data-role=details]', function(){
+        var id = $(this).data('id');
+        $('#payroll-detail-content').load('/epay/manage/payroll/workflow/detail/' + id, function(){
+            $('#payroll-detail-modal').modal('show');
+        });
+    });
+
+    $('#btn_start_date').on('click', function(){
+        $('#start_date').val(getCurrentDate);
+    });
+
+    $('#preparePayrollForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "payroll_workflow" %}';
+        var title = "Are you sure";
+        var text = "You want to proceed in creating this payroll";
+        var modal_id = '#prepare-payroll-modal';
+        var table_id = '#table-payroll-timeline';
+
+        submitFormWithConfirmation(form, url, title, text, {modal_id: modal_id, table_id: table_id});
+
+        e.preventDefault();
+    });
+
+    function getCurrentDate(){
+        var now = new Date();
+        var month = (now.getMonth() + 1);
+        var day = now.getDate();
+        if(month < 10)
+            month = "0" + month;
+        if(day < 10)
+            day = "0" + day;
+        var today = now.getFullYear() + '-' + month + '-' + day;
+        var time = now.getHours() + ":" + now.getMinutes();
+        if(now.getHours() < 10)
+            time = '0' + time;
+        if(now.getMinutes() < 10)
+            time = time.slice(0,3) + '0' + time.slice(3);
+        var dateTime = today + 'T' + time;
+
+        return dateTime;
+    }
+</script>
+{% endblock %}

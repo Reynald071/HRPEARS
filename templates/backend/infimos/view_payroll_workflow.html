@@ -1,0 +1,130 @@
+{% load static %}
+{% load tags %}
+<form id="submitPayrollWorkflowForm">
+{% csrf_token %}
+<div class="modal-body">
+    <h4 class="bold">{{ workflow.timeline.description|upper }}</h4>
+    <div class="form-group">
+        <label>Date Received (optional)</label> <button type="button" class="btn btn-info btn-xs pull-right" id="btn_date_received">Use Current Date</button>
+        <input type="datetime-local" class="form-control" value="{{ workflow.date_received|date:'Y-m-d\TH:i' }}" name="date_received" id="date_received">
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>Start Date</label> <button type="button" class="btn btn-info btn-xs pull-right" id="btn_start_date">Use Current Date</button>
+                <input type="datetime-local" value="{{ workflow.start_date|date:'Y-m-d\TH:i' }}" class="form-control" name="start_date" id="start_date">
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="form-group">
+                <label>End Date</label> <button type="button" class="btn btn-info btn-xs pull-right" id="btn_end_date">Use Current Date</button>
+                <input type="datetime-local" class="form-control" value="{{ workflow.end_date|date:'Y-m-d\TH:i' }}" name="end_date" id="end_date">
+            </div>
+        </div>
+    </div>
+    {% if workflow.timeline_id == 2 %}
+    <div class="form-group">
+        <label>Date Transmitted (optional)</label> <button type="button" class="btn btn-info btn-xs pull-right" id="btn_date_transmitted">Use Current Date</button>
+        <input type="datetime-local" class="form-control" value="{{ workflow.date_transmitted|date:'Y-m-d\TH:i' }}" name="date_transmitted" id="date_transmitted">
+    </div>
+    {% endif %}
+    <div class="form-group">
+        <label>Assignee</label>
+        <input type="text" class="form-control filter-employee-all"
+               value="[{{ workflow.assignee.id_number }}] {{ workflow.assignee.pi.user.get_fullname|upper }}"
+               name="employee"
+               required>
+    </div>
+    <div class="form-group display-none" id="date-returned-content">
+        <label>Date Returned</label> <button type="button" class="btn btn-info btn-xs pull-right" id="btn_date_returned">Use Current Date</button>
+        <input type="datetime-local" class="form-control" value="{{ workflow.date_returned|date:'Y-m-d\TH:i' }}" name="date_returned" id="date_returned">
+    </div>
+    <div class="form-group">
+        <label>Comments</label>
+        <textarea class="form-control" rows="3" name="comments">{% if workflow.comments %}{{ workflow.comments }}{% endif %}</textarea>
+    </div>
+</div>
+{% if request.session.emp_id == workflow.assignee_id or user|check_permission:'payroll_tracker' or user|check_permission:'superadmin' %}
+<div class="modal-footer">
+    {% if workflow.timeline_id != 1 %}
+    <button type="button" class="btn btn-outline btn-danger pull-left" id="btn-payroll-return">For Return</button>
+    {% endif %}
+    <button type="submit" class="btn btn-info">Update</button>
+    <button type="button" class="btn btn-default">Lock</button>
+</div>
+{% endif %}
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#btn-payroll-return').on('click', function(){
+        $('#date-returned-content').removeClass('display-none');
+    });
+
+    function getCurrentDate(){
+        var now = new Date();
+        var month = (now.getMonth() + 1);
+        var day = now.getDate();
+        if(month < 10)
+            month = "0" + month;
+        if(day < 10)
+            day = "0" + day;
+        var today = now.getFullYear() + '-' + month + '-' + day;
+        var time = now.getHours() + ":" + now.getMinutes();
+        if(now.getHours() < 10)
+            time = '0' + time;
+        if(now.getMinutes() < 10)
+            time = time.slice(0,3) + '0' + time.slice(3);
+        var dateTime = today + 'T' + time;
+
+        return dateTime;
+    }
+
+    $('#btn_date_received').on('click', function(){
+        $('#date_received').val(getCurrentDate());
+    });
+
+    $('#btn_start_date').on('click', function(){
+        $('#start_date').val(getCurrentDate());
+    });
+
+    $('#btn_end_date').on('click', function(){
+        $('#end_date').val(getCurrentDate());
+    });
+
+    $('#btn_date_transmitted').on('click', function(){
+        $('#date_transmitted').val(getCurrentDate());
+    });
+
+    $('#btn_date_returned').on('click', function(){
+        $('#date_returned').val(getCurrentDate());
+    });
+
+    $(".filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#submitPayrollWorkflowForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "view_payroll_workflow" workflow.timeline_id workflow.dv_no %}';
+        var title = "Are you sure";
+        var text = "You want to update this payroll status";
+        var modal_id = '#payroll-workflow-modal';
+        var table_id = '#table-infimos';
+
+        submitFormWithConfirmation(form, url, title, text, {modal_id: modal_id, table_id: table_id});
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

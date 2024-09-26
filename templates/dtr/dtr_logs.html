@@ -1,0 +1,392 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Time Record Logs</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employees
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Time Record Logs</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-md-4">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h3 class="bold no-margins">Employee Search</h3>
+                    <small>Please fill up the forms below.</small>
+                </div>
+                <form id="getEmployeeDTRForm">
+                {% csrf_token %}
+                <div class="ibox-content">
+                    <div class="form-group">
+                        <label>Employee Name</label>
+                        <input type="text" class="form-control typeahead_2 filter_employee" name="employee_name" id="employee_name" placeholder="e.g. [12-34567] Juan Dela Cruz" value="{{ request.POST.employee_name }}" autocomplete="off" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Period Covered From</label>
+                        <input type="date" class="form-control" name="period_from" id="period_from" max="{{ date|date:'Y-m-d'}}" value="{{ request.POST.period_from }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Period Covered To</label>
+                        <input type="date" class="form-control" name="period_to" id="period_to" max="{{ date|date:'Y-m-d'}}" value="{{ request.POST.period_to }}" required>
+                    </div>
+                </div>
+                <div class="ibox-footer">
+                    <button type="submit" class="btn btn-info" id="search-btn">
+                        <span class="loading open-circle" style="display:none;"></span> Search
+                    </button>
+                    <a id="reset-btn" type="button" class="btn btn-default" style="display:none;">Reset</a>
+                </div>
+                </form>
+            </div>
+        </div>
+		<div class="col-md-8">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="pull-left">
+                        <h3 class="bold">Time Record Logs</h3>
+                    </div>
+                    <div class="pull-right">
+                        <button class="btn btn-info" data-target="#add-time-modal" data-toggle="modal" id="add-time" style="display:none;"><i class="fas fa-plus"></i> Add Time Record</button>
+                    </div>
+                    <br><br><br>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dtr-table" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>ACTION</th>
+                                    <th>TYPE</th>
+                                    <th class="text-center">DATE</th>
+                                    <th class="text-center">TIME</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center">No data available.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-time-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">ADD TIME RECORD</h3>
+
+            </div>
+            <form id="addTimeRecordForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <input type="hidden" id="employee_id_number" name="id_number">
+                <div class="form-group">
+                    <label>Date/Time<span class="asteriskField">*</span></label>
+                    <input type="datetime-local" class="form-control" name="datetime" id="datetime" required>
+                </div>
+                <div class="form-group">
+                    <select class="form-control select" name="type" required>
+                        <option></option>
+                        {% for row in type %}
+                            <option value="{{ row.id }}">{{ row.type_desc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="edit-time-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">UPDATE TIME RECORD</h3>
+
+            </div>
+            <form id="updateTimeRecordForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <input type="hidden" name="id" id="update_id">
+                <b>Current Value: <span id="current_datetime"></span> Type: <span id="current_type"></span></b><br><br>
+                <div class="form-group">
+                    <label>Date/Time<span class="asteriskField">*</span></label>
+                    <input type="datetime-local" class="form-control" name="datetime" id="edit_datetime" required>
+                </div>
+                <div class="form-group">
+                    <label>Type<span class="asteriskField">*</span></label>
+                    <select class="form-control select" id="type" name="type" id="edit_type" required>
+                        <option></option>
+                        {% for row in type %}
+                            <option value="{{ row.id }}">{{ row.type_desc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $(".filter_employee").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+
+        $(document).on('click', 'a[data-role=update]',function(){
+            var id = $(this).data('id');
+            var date = $('#'+id).find('td:eq(2)').text();
+            var time = $('#'+id).find('td:eq(3)').text();
+            var type = $('#'+id).find('td:eq(1)').text();
+
+            $('#update_id').val(id);
+            $('#current_datetime').text(date + " " + time);
+            $('#current_type').text(type);
+
+            $('#edit-time-modal').modal('show');
+        });
+
+        $(document).on('click', 'a[data-role=delete]', function(){
+            var id = $(this).data('id');
+
+            Swal.fire({
+                title: "Are you sure?",
+                html: "You want to delete this time record log.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : { id: id },
+                        url         : '{% url "delete_dtr_logs" %}',
+                        type        : 'POST',
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully deleted time record for ID-Number: " + $('#employee_name').val().match(/[^[\]]+(?=])/g)[0] + ".",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#dtr-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+
+        function getAsDate(day, time){
+             var hours = Number(time.match(/^(\d+)/)[1]);
+             var minutes = Number(time.match(/:(\d+)/)[1]);
+             var AMPM = time.match(/\s(.*)$/)[1];
+             if(AMPM == "pm" && hours<12) hours = hours+12;
+             if(AMPM == "am" && hours==12) hours = hours-12;
+             var sHours = hours.toString();
+             var sMinutes = minutes.toString();
+             if(hours<10) sHours = "0" + sHours;
+             if(minutes<10) sMinutes = "0" + sMinutes;
+             time = sHours + ":" + sMinutes + ":00";
+             var d = new Date(day);
+             var n = d.toISOString().substring(0,10);
+             var newDate = new Date(n+"T"+time);
+             return newDate;
+        }
+
+        $('#addTimeRecordForm').on('submit', function(e){
+            var form = new FormData(this);
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to add this time record.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "dtr_logs" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully added time record for ID-Number: " + $('#employee_name').val().match(/[^[\]]+(?=])/g)[0] + ".",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#addTimeRecordForm').trigger('reset');
+                            $('#type').select2("val", "");
+                            $('#dtr-table').DataTable().ajax.reload();
+                            $('#add-time-modal').modal('hide');
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#updateTimeRecordForm').on('submit', function(e){
+            var form = new FormData(this);
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to updated this time record.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "update_dtr_logs" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully updated time record for ID-Number: " + $('#employee_name').val().match(/[^[\]]+(?=])/g)[0] + ".",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#updateTimeRecordForm').trigger('reset');
+                            $('#dtr-table').DataTable().ajax.reload();
+                            $('#edit-time-modal').modal('hide');
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#getEmployeeDTRForm').on('submit', function(e){
+            e.preventDefault();
+            $('#add-time').css('display', '');
+            $('#search-btn').css('display', 'none');
+            $('#reset-btn').css('display', '');
+            var employee_name = $('#employee_name').val();
+            $('#employee_id_number').val(employee_name.match(/[^[\]]+(?=])/g)[0]);
+            DTRTable(employee_name.match(/[^[\]]+(?=])/g)[0], $('#period_from').val(), $('#period_to').val());
+        });
+
+        $('#reset-btn').on('click', function(){
+            $('#search-btn').css('display', '');
+            $('#reset-btn').css('display', 'none');
+            $('#add-time').css('display', 'none');
+            $('#getEmployeeDTRForm').trigger('reset');
+            $('#dtr-table').dataTable().fnDestroy();
+            $('#dtr-table').empty();
+            $('#dtr-table').append("<thead><tr><th>ACTION</th><th>TYPE</th><th class='text-center'>DATE</th><th class='text-center'>TIME</th></tr></thead><tbody><tr><td colspan='4' class='text-center'>No data available.</td></tr></tbody>")
+        });
+
+        function DTRTable(employee_id, period_from, period_to){
+            $('#dtr-table').DataTable({
+                'serverSide': true,
+                'processing': true,
+                'order': [[ 2, 'desc' ]],
+                'lengthMenu': [25,50,100],
+                'ajax': {
+                    'url': '/api/dtr/time/logs/?format=datatables&employee_id=' + employee_id + '&period_from=' + period_from + '&period_to=' + period_to,
+                    'type': 'GET',
+                    'beforeSend': function (request) {
+                        request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+                    }
+                },
+                'fnCreatedRow': function (row, data, index) {
+                    $(row).attr('id', data['id']);
+                },
+                'columns': [
+                    {'data': 'id',
+                        'render': function(data, type, row, meta) {
+                            return "<a href='#' data-role='update' data-id='"+ row['id'] + "'>Edit</a> | <a href='#' data-role='delete' data-id='"+ row['id'] + "'>Delete</a>"
+                        }
+                    },
+                    {'data': 'type',
+                        'name': 'type.type_desc',
+                        'searchable': true,
+                        'render': function (data, type, row, meta) {
+                            if(row["type"] == "Check In") {
+                                return '<span class="label label-primary">'+ row["type"] +'</span>'
+                            }else if(row["type"] == "Break Out") {
+                                return '<span class="label label-warning">'+ row["type"] +'</span>'
+                            }else if(row["type"] == "Break In") {
+                                return '<span class="label label-info">'+ row["type"] +'</span>'
+                            }else if(row["type"] == "Check Out") {
+                                return '<span class="label label-success">'+ row["type"] +'</span>'
+                            }
+                        }
+                    },
+                    {'data': 'date', 'className': 'text-center', 'name': 'datetime'},
+                    {'data': 'time', 'className': 'text-center', 'name': 'datetime'},
+                ],
+            });
+        }
+    });
+</script>
+{% endblock %}

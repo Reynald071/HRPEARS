@@ -1,0 +1,68 @@
+<div class="ibox">
+    <div class="ibox-content">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="table-merge" width="100%">
+                <thead>
+                    <tr>
+                        <th class="text-left" width="10%">ACTION</th>
+                        <th width="10%">TRACKING NO.</th>
+                        <th width="10%">MERGE IN</th>
+                        <th style="width:35%;" width="30%">STAFF</th>
+                        <th class="text-center" width="15%">DATE FILED</th>
+                        <th class="text-right" width="25%">TR STATUS | TO STATUS | FILE</th>
+                        <th>REMARKS</th>
+                        <th class="display-none">STATUS</th>
+                        <th class="display-none">ID</th>
+                        <th class="display-none">JUSTIFICATION</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('#table-merge').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 4, 'desc' ]],
+        'lengthMenu': [ 25, 50, 100 ],
+        'ajax': {
+            'url': '/api/travel/admin/?format=datatables&status=merge&year='+ $('#year').val() +'&tracking-no={{ tracking_no }}',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'admin_action',
+                render: function(data, type, row, meta) {
+                    return "<span class='loading open-circle' style='display:none;'></span> <a href='javascript:;' class='text-green' data-role='unmerge' data-content='"+ row['tracking_no'] +"'>Unmerge</a>";
+                },
+                'searchable': false
+             },
+            {'data': 'tracking_no'},
+            {'data': 'tracking_merge' },
+            {'data': 'passengers', 'searchable': false },
+            {'data': 'date', 'className': 'text-center' },
+            {'data': 'travel_status', 'className': 'text-right', 'searchable': false },
+            {'data': 'travel_confirmation',
+                render: function(data, type, row, meta) {
+                    if(row['travel_justification']) {
+                        return data + row['travel_justification'];
+                    } else {
+                        return ''
+                    }
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'status', 'className': 'display-none' },
+            {'data': 'id', 'className': 'display-none' },
+            {'data': 'travel_justification', 'className': 'display-none' }
+        ],
+    });
+</script>

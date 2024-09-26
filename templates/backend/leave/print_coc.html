@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Regional Special Order | Intro Letter</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0px;
+				padding: 10px 50px 10px 50px !important;
+				border: 0.5px solid transparent;
+				height: 297mm !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		}
+
+        .padding-10 {
+            padding: 5px !important;
+        }
+    </style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Certification of COC Earned</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+                {% track_drn employee.id 'COC' as generated_drn %}
+                <li><button type="button" class="btn btn-success" data-toggle="modal" data-target="#update-drn-modal" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-file"></i> Update DRN</button>&emsp;</li>
+				<li><button type="button" class="btn btn-info print-button" id="floatprint" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+    <page size="A4" class="page" style="position: relative; padding: 50px; color: black !important;">
+		<div class="containerX">
+            <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="20%">&emsp;&emsp;&emsp;
+            <br>
+            <span style="font-family: Times New Roman; font-size: 10.7px;">{{ data.document_no|safe }}</span>
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -50px;">
+            <hr style="border: 1px solid black;">
+            <div style="padding-left: 20px; padding-right: 20px">
+                {{ data.template|safe }}
+                <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+                    <small style="margin-left: 50px !important; font-size: 9.33px;">(EMP STATUS) {{ employee.empstatus.acronym|upper }}</small>
+                    <br><br>
+                    <center>
+                        <small style="position: absolute; margin-left: 280px;">Page 1 of 1</small>
+                        <img loading="lazy"  src="{% static 'image/footer.png' %}" width="100%">
+                    </center>
+                </div>
+            </div>
+        </div>
+    </page>
+    <div class="modal" id="update-drn-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<button type="button" class="close text-white" data-dismiss="modal" style="color: white !important; opacity: 1;"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h3 class="modal-title">UPDATE DRN</h3>
+				</div>
+				<form id="updateDRNForm">
+				{% csrf_token %}
+				<div class="modal-body">
+                    <input type="hidden" value="COC" name="pk" required>
+                    <input type="hidden" value="{{ employee.id }}" name="emp_id" required>
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">DRN<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control" name="drn" id="drn" value="{{ generated_drn }}" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+	<script>
+		$(document).ready(function(){
+			$('#updateDRNForm').on('submit', function(e){
+                var form = this;
+
+                var url = '{% url "update_coc_drn" %}';
+                var title = "Are you sure";
+                var text = "You want to update this DRN";
+                var reload = true;
+
+                submitFormWithConfirmation(form, url, title, text, {reload: reload});
+
+                e.preventDefault();
+            });
+
+            $('#employee_name').text('{{ employee.pi.user.get_fullname|upper }}');
+            $('#employee_name').css({
+                'font-weight': 'bold'
+            });
+
+            $('#position').text('{{ employee.position.acronym|upper }}');
+            $('#section').text('{{ employee.section.sec_name }}');
+            $('#date').text('{{ today|date:"jS" }} day of {{ today|date:"F, Y" }}');
+
+            $('#drn').html('DRN: ' + '<span id="decorate_drn">{{ generated_drn }}</span>');
+            $('#drn').css({
+                'font-size': '10.67px',
+            });
+
+            $('#decorate_drn').css({
+                'text-decoration': 'underline',
+                'font-weight': 'bold'
+            });
+
+            {% for row in coc %}
+                $('#table-coc').find('tbody').append(
+                    `
+                    <tr>
+                        {% check_coc_utilization row.id as check_coc_utilization %}
+                        <td class="text-center">{% if check_coc_utilization %}{{ check_coc_utilization }}{% endif %} {{ row.cocbal.month_earned }}</td>
+                        <td class="text-center">{% if row.days > 0 %}{{ row.days|floatformat:"0" }} day{{ row.days|pluralize }}{% endif %}</td>
+                        <td class="text-center">{% if row.hours > 0 %}{{ row.hours|floatformat:"0" }} hour{{ row.hours|pluralize }}{% endif %}</td>
+                        <td class="text-center">{% if row.minutes > 0 %}{{ row.minutes|floatformat:"0" }} minute{{ row.minutes|pluralize }}{% endif %}</td>
+                        <td class="text-center">{{ row.cocbal.date_expiry }}</td>
+                    </tr>
+                    `
+                )
+            {% endfor %}
+
+            $('#table-coc').find('tbody').append(
+                `
+                <tr>
+                    <td class="text-center"><strong>Total Balance</strong></td>
+                    <td class="text-center">{{ total_days }}</td>
+                    <td class="text-center">{{ total_hours }}</td>
+                    <td class="text-center">{{ total_minutes }}</td>
+                    <td class="text-center"></td>
+                </tr>
+                `
+            );
+		});
+	</script>
+</body>
+</html>

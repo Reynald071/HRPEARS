@@ -1,0 +1,545 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/custom_checkbox.css' %}">
+<style>
+	{% for row in public_private %}
+		.container input:checked ~ .checkmark{{ row.id }} {
+			background-color: {{ row.color }};
+		}
+	{% endfor %}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">Events and Booking</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>Events and Booking</strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+				{% if user|check_permission:'announcements' or user|check_permission:'superadmin' %}
+					<button class="btn btn-info" data-toggle="modal" data-target="#add_event"><i class="fas fa-plus"></i> New Event / Booking</button>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-5 ml-0">
+	<div class="row">
+		<div class="col-md-9">
+			<div class="card card-info card-outline" id="calendar-content">
+				<div class="card-body">
+					<div id="calendar"></div>
+				</div>
+			</div>
+		</div>
+        <div class="col-md-3">
+			<div class="card" style="font-size: 13px;">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">FILTER</h5>
+				</div>
+				<div class="card-body border-bottom">
+					<h4>Public Calendars</h4>
+					{% for row in public_calendars %}
+						<label class="container">
+							<span class="font-weight-normal">{{ row.name }}</span>
+							{% if user_id in row.get_calendar_approvers %}&emsp;<i title="You are an administrator of this calendar" class="fas fa-star" style="font-size:90%; color:#FFD700;"></i>{% endif %}
+						  	<input class="checkbox" name="status{{ row.id }}" value="{{ row.id }}" id="checkbox{{ row.id }}" type="checkbox" checked="checked">
+						  	<span class="checkmark checkmark{{ row.id }}"></span>
+						</label>
+					{% endfor %}
+					<br>
+					<h4>My Calendars&nbsp;&nbsp;<button class="btn btn-info btn-xs" style="margin-top:-6px;" data-role="add_private_calendar" title="Add new calendar">ADD</button></h4>
+					{% for row in private_calendars %}
+						<div style="margin-top:5px;">
+						<label class="container pull-left" style="width:fit-content !important;">
+							<span class="font-weight-normal">{{ row.name }}</span>
+						  	<input class="checkbox" name="status{{ row.id }}" value="{{ row.id }}" id="checkbox{{ row.id }}" type="checkbox" checked="checked">
+						  	<span class="checkmark checkmark{{ row.id }}"></span>
+						</label>&emsp;
+						<a class="btn btn-default btn-xs" data-role="view_shared" data-id="{{ row.id }}" title="Manage who you share this calendar with">SHARE</a>
+						<a class="btn btn-default btn-xs" style="margin-left:3px;" data-role="update_calendar" data-id="{{ row.id }}" data-name="{{ row.name }}" data-color="{{ row.color }}" title="Update details for your private calendar">UPDATE</a>
+						</div>
+					{% endfor %}
+					<br>
+					<h4>Shared Calendars</h4>
+					{% for row in shared_calendars %}
+						<label class="container">
+							<span class="font-weight-normal" title="from {{ row.upload_by.get_fullname }}">{{ row.name }}</span>
+						  	<input class="checkbox" name="status{{ row.id }}" value="{{ row.id }}" id="checkbox{{ row.id }}" type="checkbox" checked="checked">
+						  	<span class="checkmark checkmark{{ row.id }}"></span>
+						</label>
+					{% endfor %}
+				</div>
+				<div class="card-footer bg-white">
+					<h4 class="mt-0">Legend</h4>
+					<i title="You are an administrator of this calendar" class="fas fa-star" style="font-size:90%; color:#FFD700;"></i> &emsp;You are an administrator of this calendar<br>
+					<i title="Grayed events need approval" class="fa fa-circle" style="color:#EAEAEA;"></i> &emsp;Grayed events need approval<br>
+                    <i title="Yellowish events is cancelled" class="fa fa-circle" style="color:#FFF9C4;"></i> &emsp;Yellowish events is cancelled<br>
+					<button type="button" class="btn btn-default btn-xs" title="Manage who you share this calendar with">SHARE</button>&emsp;Manage who you share this calendar with<br>
+					<button type="button" class="btn btn-default btn-xs" title="Update details for your private calendar">UPDATE</button>&emsp;Update details for your private calendar
+				</div>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="view_event" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					VIEW EVENT
+					<p><small>See event information and other relevant details</small></p>
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<div id="updateEvent">
+
+			</div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="add_event" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					ADD NEW EVENT
+					<p><small>Request for a new event in a public calendar or create a new one for your private calendars.</small></p>
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<form id="addEventForm">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Title<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control" name="title" id="title" autocomplete="off" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-6">
+		        		<label>Description</label>
+						<input type="text" class="form-control" name="description" id="description" autocomplete="off">
+		        	</div>
+		        	<div class="form-group col-md-6">
+		        		<label>Calendar<span class="asteriskField">*</span></label>
+						<select class="select form-control" name="type_id" id="type_id" required>
+							<option></option>
+							{% for row in public_private %}
+								<option value="{{ row.id }}">{{ row.name }}</option>
+							{% endfor %}
+						</select>
+		        	</div>
+	        	</div>
+				<div class="row">
+					<div class="form-group col-md-12">
+		        		<label>Date<span class="asteriskField">*</span></label>
+						<input type="date" class="form-control" name="date" id="date" required>
+		        	</div>
+				</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-6">
+		        		<label>Start Time<span class="asteriskField">*</span></label>
+						<input type="time" class="form-control" name="start_time" id="start_time" required>
+		        	</div>
+		        	<div class="form-group col-md-6">
+		        		<label>End Time<span class="asteriskField">*</span></label>
+						<input type="time" class="form-control" name="end_time" id="end_time" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12" style="margin-bottom:0px;">
+		        		<label>Remarks</label>
+						<textarea name="remarks" id="summernote" style="border:1px solid #e5e6e7;" autocomplete="off"></textarea>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+			</form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="add_calendar" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					ADD NEW CALENDAR
+					<p><small>Create a new private calendar.</small></p>
+				</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<form id="addCalendarForm">
+				<div class="modal-body">
+					{% csrf_token %}
+					{{ form.name|as_crispy_field }}
+					{{ form.color|as_crispy_field }}
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Submit</button>
+				</div>
+			</form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="update_calendar" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					UPDATE CALENDAR
+					<p><small>Update details for your private calendar.</small></p>
+				</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<form id="updateCalendarForm">
+				<div class="modal-body">
+					{% csrf_token %}
+					<input type="hidden" name="id_update" class="form-control" id="id_update">
+					<div id="div_id_name" class="form-group">
+						<label for="id_name_update" class="control-label  requiredField">
+							Name<span class="asteriskField">*</span>
+						</label>
+						<div class="controls">
+							<input type="text" name="name_update" autocomplete="off" class="form-control" required id="id_name_update">
+						</div>
+					</div>
+					<div id="div_id_color" class="form-group">
+						<label for="id_color_update" class="control-label  requiredField">
+							Color<span class="asteriskField">*</span>
+						</label>
+						<div class="controls">
+							<input type="text" id="id_color_update" class="form-control" name="color_update" data-jscolor="" required>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Submit</button>
+				</div>
+			</form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="view_shared" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					CALENDAR SHARING
+					<p><small>Manage who you share this calendar with.</small></p>
+				</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <div class="modal-body" id="view_shared_modal-body">
+
+	        </div>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+	$(document).ready(function(){
+		$('#calendar').fullCalendar({
+		    eventSources: [
+		    	{
+		    		url: '{% url "get_all_events" '1' %}',
+		    	},
+		    	{
+		    		url: '{% url "get_all_events" '0' %}',
+		    		color: '#EAEAEA',
+		    		textColor: 'black'
+		    	},
+                {
+		    		url: '{% url "get_all_events" '2' %}',
+		    		color: '#FFF9C4'
+		    	}
+		    ],
+		 	displayEventTime: false,
+		 	nextDayThreshold:'00:00',
+		    showNonCurrentDates: false,
+			fixedWeekCount: false,
+			aspectRatio: 2,
+			defaultView: 'month',
+			weekNumbers: true,
+			eventLimit: true,
+			weekNumbersWithinDays: true,
+			editable: true,
+  			loading: function (isLoading, view) {
+				if(isLoading) {
+					$('#calendar-content').find('.card-body').css('pointer-events', 'none');
+					$('#preloader').css('display', 'block');
+				}
+			},
+			eventAfterAllRender: function (view) {
+				$('#calendar-content').find('.card-body').css('pointer-events', '');
+				$('#preloader').css('display', 'none');
+			},
+			eventDrop: function(event) {
+				if(event.upload_by_id == "{{ request.session.emp_id }}"){
+					$('#title').val(event.title);
+					$('#description').val(event.description);
+					$('#type_id').select2('val', event.type_id);
+					$('#date').val(event.start.format('YYYY-MM-DD'));
+
+					$('#add_event').modal('show');
+					$('#calendar').fullCalendar('refetchEvents');
+				} else {
+					Swal.fire("Ooops!", "You cant drag event that is not yours.", "warning");
+					$('#calendar').fullCalendar('refetchEvents');
+				}
+  			},
+			eventRender: function eventRender(event, element, view) {
+				if(event.colors){
+					element.find(".fc-title").prepend("<i class='fa fa-circle' style='color:"+event.colors+";'></i> ");
+				}
+				var display = true;
+				var type = [];
+				$(".checkbox:checked").each(function(){
+					type.push(parseInt($(this).val()));
+				});
+
+				if (type.length) {
+					display = display && type.indexOf(event.type_id) >= 0;
+				}
+				return display;
+			},
+			dayClick: function(e) {
+				$('#add_event').modal('show');
+				$('#date').val(e.format('YYYY-MM-DD'));
+			},
+			views: {
+				month: {
+					titleFormat: 'MMMM YYYY'
+				}
+			},
+			eventClick: function(calEvent, jsEvent, view) {
+				$('#updateEvent').empty();
+				$('#updateEvent').load('/events/view/' + calEvent.id);
+				$('#view_event').modal('show');
+			}
+	    });
+
+	    $('.checkbox').change(function() {
+			$('#calendar').fullCalendar('rerenderEvents');
+		});
+
+	    $(document).on('click', 'a[data-role=view_shared]', function(){
+			var url = '{% url "calendar-sharing" 999999999 %}'.replace(999999999, $(this).data('id'));
+			$('#view_shared_modal-body').empty();
+			$('#view_shared_modal-body').load(url);
+
+			$('#view_shared').modal('show');
+		});
+
+		$(document).on('click', 'a[data-role=update_calendar]', function(){
+			$('#id_update').val($(this).data('id'));
+			$('#id_name_update').val($(this).data('name'));
+			$('#id_color_update').val($(this).data('color'));
+			document.querySelector('#id_color_update').jscolor.fromString($(this).data('color').replace('#',''));
+			$('#update_calendar').modal('show');
+		});
+
+		$(document).on('click', 'button[data-role=add_private_calendar]', function(){
+			$('#add_calendar').modal('show');
+		});
+
+        $('.fc-title').each(function () {
+            var rgb = $(this).css('backgroundColor');
+            var colors = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+
+            var r = colors[1];
+            var g = colors[2];
+            var b = colors[3];
+
+            var o = Math.round(((parseInt(r) * 299) + (parseInt(g) * 587) + (parseInt(b) * 114)) /1000);
+
+            if(o > 125) {
+                $(this).css('color', 'black');
+            }else{
+                $(this).css('color', 'white');
+            }
+        });
+
+        $('#summernote').summernote({
+			height: '150',
+			dialogsInBody: true,
+			fontSizeUnits: ['px', 'pt'],
+			dialogsFade: true,
+			codeviewFilterRegex: 'custom-regex',
+			disableDragAndDrop: true,
+			toolbar: [
+				['style', ['bold', 'italic', 'underline', 'clear']],
+				['font', ['strikethrough']],
+				['fontsize', ['fontsize']],
+				['color', ['color']],
+				['table', ['table']],
+				['para', ['ul', 'ol', 'paragraph']],
+			]
+		});
+		$('.note-editor').css('border', '1px solid #e5e6e7');
+	});
+</script>
+<script for="actions">
+	$('#addEventForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to add new event?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "add-events" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+        }).then(function (data){
+            if (data.value.data == "success"){
+				Swal.fire({
+				  title: "Good job!",
+				  text: "You have successfully created an event.",
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#addEventForm').trigger('reset');
+						$('#summernote').summernote('reset');
+						$('#type_id').val(null).trigger('change');
+						$('#add_event').modal('hide');
+						$('#calendar').fullCalendar('refetchEvents');
+					}
+				});
+			} else {
+				Swal.fire({
+				  title: "Unauthorized transaction",
+				  text: data.value.errors,
+				  icon: "error",
+				  confirmButtonColor: "#3498DB",
+				});
+			}
+        });
+        e.preventDefault();
+	});
+
+	$('#addCalendarForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to add new private calendar?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'add-private-calendar' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully created a new private calendar.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+								window.location = '{% url "events" %}';
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Unauthorized transaction",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+	});
+
+	$('#updateCalendarForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update your private calendar?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            closeOnConfirm: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : "{% url 'update-private-calendar' %}",
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    var success = data.data;
+                    if(success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully updated your private calendar.",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+								window.location = '{% url "events" %}';
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Unauthorized transaction",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+	});
+</script>
+{% endblock %}

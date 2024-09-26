@@ -1,0 +1,15 @@
+{% load tags %}
+{% for row in data %}
+    {% getemployeebyempid row.assigned_id as assigned_to %}
+    <strong>DTR MASTER <br>
+    <a href="javascript:;" data-role="delete-assignee" data-id="{{ row.assigned_id }}" class="btn btn-danger btn-xs"><i class="fas fa-trash"></i></a>&emsp; {{ assigned_to.pi.user.get_fullname|upper }}</strong> <br>
+    <br>
+    <strong>SUBORDINATES</strong> <br>
+    {% get_dtr_assigned row.assigned_id as employees %}
+    {% for row in employees %}
+        {% if row.emp.id != row.assigned_id %}
+            <a href="javascript:;" data-role="delete-assignee" data-id="{{ row.emp_id }}" class="btn btn-danger btn-xs"><i class="fas fa-trash"></i></a>&emsp;{{ row.emp.pi.user.get_fullname|upper }} <br>
+        {% endif %}
+    {% endfor %}
+    <hr>
+{% endfor %}

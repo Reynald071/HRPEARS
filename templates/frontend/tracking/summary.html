@@ -1,0 +1,142 @@
+{% if created_by_docorigin_count > 0 %}
+You have <strong>CREATED and SENT {{ created_by_docorigin_count }}</strong> documents, which can be broken down to: <br>
+<table class="table table-condensed table-bordered text-center" style="table-layout:fixed; margin-bottom:15px !important;">
+    <tr>
+        <th class="text-center">Document Origin</th>
+        <th class="text-center">Recipient Divisions</th>
+    </tr>
+    <tr>
+        <td><canvas id="created_by_docorigin"></canvas></td>
+        <td><canvas id="created_by_recipient_divisions"></canvas></td>
+    </tr>
+    <tr>
+        <th class="text-center">Document Types</th>
+        <th class="text-center">Document Status</th>
+    </tr>
+    <tr>
+        <td><canvas id="created_by_document_types"></canvas></td>
+        <td><canvas id="created_by_actions"></canvas></td>
+    </tr>
+</table>
+{% endif %}
+
+{% if received_by_actions_count > 0 %}
+You have <strong>RECEIVED {{ received_by_actions_count }}</strong> documents, which can be broken down to: <br>
+<table class="table table-condensed table-bordered text-center" style="table-layout:fixed; margin-bottom:15px !important;">
+    <tr>
+        <th class="text-center">Document Status</th>
+        <th class="text-center">Sending Divisions</th>
+    </tr>
+    <tr>
+        <td><canvas id="received_by_actions"></canvas></td>
+        <td><canvas id="received_by_sending_divisions"></canvas></td>
+    </tr>
+</table>
+
+You have an average processing time of <strong>{{ average_processing_time }}</strong> for each document received.<br>
+{% endif %}
+
+{% if received_by_actions_count <= 0 and created_by_docorigin_count <= 0 %}
+<table class="table table-condensed table-bordered text-center" style="table-layout:fixed; margin-bottom:0px !important;">
+    <tr><td>No data available.</td></tr>
+</table>
+{% else %}
+<script for="general_settings">
+    var generic_options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+            display: true,
+            position: 'right'
+        }
+    };
+</script>
+<script for="created_by_docorigin">
+    shuffle_array(background_colors);
+    cbd_bc = [].concat(background_colors);
+    created_by_docorigin_data = {
+        labels: {{ created_by_docorigin_output.0|safe }},
+        datasets: [{
+            data: {{ created_by_docorigin_output.1|safe }},
+            backgroundColor: cbd_bc,
+        }]
+    };
+</script>
+<script for="created_by_recipient_divisions">
+    shuffle_array(background_colors);
+    crd_bc = [].concat(background_colors);
+    created_by_recipient_divisions_data = {
+        labels: {{ created_by_recipient_divisions_output.0|safe }},
+        datasets: [{
+            data: {{ created_by_recipient_divisions_output.1|safe }},
+            backgroundColor: crd_bc,
+        }]
+    };
+</script>
+<script for="created_by_document_types">
+    shuffle_array(background_colors);
+    cdt_bc = [].concat(background_colors);
+    created_by_document_types_data = {
+        labels: {{ created_by_document_types_output.0|safe }},
+        datasets: [{
+            data: {{ created_by_document_types_output.1|safe }},
+            backgroundColor: cdt_bc,
+        }]
+    };
+</script>
+<script for="created_by_actions">
+    shuffle_array(background_colors);
+    cba_bc = [].concat(background_colors);
+    created_by_actions_data = {
+        labels: {{ created_by_actions_output.0|safe }},
+        datasets: [{
+            data: {{ created_by_actions_output.1|safe }},
+            backgroundColor: cba_bc,
+        }]
+    };
+</script>
+
+<script for="received_by_actions">
+    shuffle_array(background_colors);
+    rba_bc = [].concat(background_colors);
+    received_by_actions_data = {
+        labels: {{ received_by_actions_output.0|safe }},
+        datasets: [{
+            data: {{ received_by_actions_output.1|safe }},
+            backgroundColor: rba_bc,
+        }]
+    };
+</script>
+<script for="received_by_sending_divisions">
+    shuffle_array(background_colors);
+    rsd_bc = [].concat(background_colors);
+    received_by_sending_divisions_data = {
+        labels: {{ received_by_sending_divisions_output.0|safe }},
+        datasets: [{
+            data: {{ received_by_sending_divisions_output.1|safe }},
+            backgroundColor: rsd_bc,
+        }]
+    };
+</script>
+<script for="ready">
+    $(document).ready(function(){
+        var cbd = document.getElementById("created_by_docorigin").getContext("2d");
+        var chartInstance_cbd = new Chart(cbd, {type: 'doughnut', data: created_by_docorigin_data, options:generic_options});
+
+        var crd = document.getElementById("created_by_recipient_divisions").getContext("2d");
+        var chartInstance_crd = new Chart(crd, {type: 'doughnut', data: created_by_recipient_divisions_data, options:generic_options});
+
+        var cdt = document.getElementById("created_by_document_types").getContext("2d");
+        var chartInstance_cdt = new Chart(cdt, {type: 'doughnut', data: created_by_document_types_data, options:generic_options});
+
+        var cba = document.getElementById("created_by_actions").getContext("2d");
+        var chartInstance_cba = new Chart(cba, {type: 'doughnut', data: created_by_actions_data, options:generic_options});
+
+        var rsd = document.getElementById("received_by_sending_divisions").getContext("2d");
+        var chartInstance_rsd = new Chart(rsd, {type: 'doughnut', data: received_by_sending_divisions_data, options:generic_options});
+
+        var rba = document.getElementById("received_by_actions").getContext("2d");
+        var chartInstance_rba = new Chart(rba, {type: 'doughnut', data: received_by_actions_data, options:generic_options});
+    });
+</script>
+{% endif %}

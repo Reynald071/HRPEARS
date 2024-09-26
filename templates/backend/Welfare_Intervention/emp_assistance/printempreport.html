@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+
+{% load welfare_tags %}
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>DSWD My PORTAL | Employee Assistance Summary</title>
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <link href="{% static 'image/logo.ico' %}" rel="shortcut icon" type="image/png"/>
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/summernote/summernote.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adjustments.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/mod.css' %}" rel="stylesheet" type="text/css">
+
+    <style type="text/css">
+        @media print {
+      .containerX {
+        padding: 0px;
+        margin: 0px;
+        zoom: 100% !important;
+        height: 0% !important;
+        -webkit-print-color-adjust: exact; 
+      }
+      page {
+        margin: 0px;
+        border: 0.5px;
+        height: 204mm !important;
+
+      }
+      .vertical-right, .vertical-left {
+        margin: 0px !important;
+      }
+      body{-webkit-print-color-adjust: exact;}
+        ::-webkit-input-placeholder { /* WebKit browsers */
+          color: transparent;
+        }
+        :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+          color: transparent;
+        }
+        ::-moz-placeholder { /* Mozilla Firefox 19+ */
+          color: transparent;
+        }
+        :-ms-input-placeholder { /* Internet Explorer 10+ */
+          color: transparent;
+        }
+        }
+
+    .containerX {
+      zoom: 95%;
+    }
+
+    body{
+      font-size: 12px;
+      font-family: 'Inter';
+      color: black;
+    }
+    .bold{
+      font-weight: bold;
+    }
+    th{
+      font-size: 10px;
+    }
+    #table2{
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .text-center{
+      text-align: center;
+    }
+    page[size="long"][layout="landscape"] {
+        width: 400.2mm;
+        height: 230.9mm;
+    }
+    input {border:0;outline:0;}
+    input:focus {outline:none!important;}
+
+    #div1{
+      width: 20.33%;
+      float:right;
+      margin-top: -75px;
+
+    }
+    #div2{
+      width: 33.33%;
+      float:left;
+    }
+    #div3{
+      width: 33.33%;
+      margin: 0 auto;
+    }
+
+    </style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+    <div class="container">
+        <div class="navbar-header">
+            <button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar"
+                    data-toggle="collapse" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="javascript:;">Summary Of Employee Assistance</a>
+        </div>
+        <div class="navbar-collapse collapse" id="navbar">
+            {% if name.status == 0 %}
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="javascript:;" id="btn-edit-modal" style="font-size: 14px;" title="Edit"><i
+                        class="fas fa-pen"></i> Edit</a></li>
+            </ul>
+            {% endif %}
+            <ul class="nav navbar-nav navbar-right">
+                <li><a class="print-button" id="floatprint" style="font-size: 14px;" title="Print"><i
+                        class="fas fa-print"></i> Print</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<body>
+<page class="page" layout="landscape" size="long" style="padding: 45px; position: relative;">
+    <div class="containerX">
+        <img loading="lazy" width="20%" src="{% static 'image/insignia_and_dswd_logo.png' %}" width="200">
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <div class="text-center" style="margin-top: -120px;">
+            <h5>DEPARTMENT OF SOCIAL WELFARE & DEVELOPMENT <br>
+                Field Office Caraga, Butuan City
+            </h5>
+            <br>
+            <h5 class="bold">EMPLOYEE ASSISTANCE SHEET</h5>
+            <p>{{ date|date:'F d, Y' }}</p>
+        </div>
+        <div class="card-body">
+            <div>
+                <br>
+                <br>
+				<h5>Note that this is a system generated report. If you have any further inquiries, please refer to
+                HR Welfare.</h5>
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th style="width: 20px;">#</th>
+                        <th style="width: 150px;">Date Requested</th>
+                        <th style="width: 120px;">EMP ID</th>
+                        <th style="width: 180px;">Last Name</th>
+                        <th style="width: 180px;">First Name</th>
+                        <th style="width: 180px;">Middle Name</th>
+                        <th style="width: 180px;">Sex</th>
+                        <th style="width: 250px;">Position</th>
+                        <th style="width: 180px;">Employment Status </th>
+                        <th style="width: 650px;">Division</th>
+                        <th style="width: 180px;">Type of Assistance</th>
+                        <th style="width: 180px;">Specify</th>
+                        <th style="width: 180px;">Quantity</th>
+                        <th style="width: 180px;">Remarks</th>
+                        <th style="width: 180px;">Date Endorse to CIS</th>
+                        <th style="width: 180px;">Date Received</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td >{{ forloop.counter0|add:data.start_index }}</td>
+                        <td>{{row.rq_date}}</td>
+                        <td>{{row.emp.id_number}}</td>
+                        <td>{{row.emp.pi.user.last_name}}</td>
+                        <td>{{row.emp.pi.user.first_name}}</td>
+                        <td>{{row.emp.pi.user.middle_name}}</td>
+                        <td>{% if row.emp.pi.gender == 1 %} Male {% else %} Female {% endif %}</td>
+                        <td>{{row.emp.position.name}}</td>
+                        <td>{{row.emp.empstatus.name}}</td>
+                        <td>{{row.emp.section.div.div_name}}</td>
+                        <td>{% if row.cr_financial.name == None %}{% else %}{{row.cr_financial.name}}{% endif %} {% if row.cr_mental.name == None %}{% else %}{{row.cr_mental.name}}{% endif %}{% if row.cr_other.name == None %}{% else %}{{row.cr_other.name}}{% endif %}{% if row.cr_fa_others == None %}{% else %}{{row.cr_fa_others}}{% endif %}</td>
+                        <td>{{row.cr_financial_others}}</td>
+                        <td>{{row.unit_quantity}}</td>
+                        <td>{{row.remarks}}</td>
+                        <td>{{row.date_endorse_cis}}</td>
+                        <td>{{row.date_received}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <table style="width:100%">
+                <div id="div2">Prepared By: <br><br><br><input type="text" placeholder="Full Name"><br><input type="text" placeholder="Position"></div>
+                <div id="div3">Noted By: <br><br><br><input type="text" placeholder="Full Name"><br><input type="text" placeholder="Position"></div>
+            </table>
+
+        </div>
+    </div>
+    </div>
+    <br>
+    <br><br>
+    </div>
+</page>
+</body>
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+<script src="{% static 'js/functions.js' %}"></script>
+<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'js/plugins/summernote/summernote.min.js' %}"></script>
+<script type="text/javascript">
+    var page = $('.page').height();
+    var container = $('.containerX').height();
+
+    if (container > page) {
+      $('.page').css('height', container + 45);
+    }
+
+    $('#floatprint_mod').on('click', function(){
+      if ($('#name1').val() == "" | $('#name2').val() == "" | $('#designate1').val() == "" | $('#designate2').val() == ""){
+        Swal.fire("Print Warning",
+        "Please fill in the 'Requested by' field and 'Recommending approval' field before printing. Thank you.",
+        "warning");
+      } else {
+          window.setTimeout(function() { printObject(); }, 0);
+      }
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% load tags %}
+<table class="table table-bordered">
+    <tbody>
+        {% for date in start_date|dates_range:end_date %}
+            {% with "" as empty %}
+            {% for row in infimos %}
+                {% if date == row.dv_date %}
+                    {% ifchanged date %}
+                    <tr style="background: #E3F2FD;">
+                        <th>DATE</th>
+                        <th>IN</th>
+                        <th>OUT</th>
+                        <th>PURPOSE</th>
+                        <th>DV NUMBER</th>
+                    </tr>
+                    {% endifchanged %}
+                    <tr>
+                        <td>
+                            {% ifchanged %}
+                            {{ date|date:"Y-m-d" }}
+                            {% endifchanged %}
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            {% with row.modepayment|split:":" as segments %}
+                                {{ segments.0 }}
+                            {% endwith %}
+                        </td>
+                        <td>{{ row.dv_no }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            {% endwith %}
+        {% endfor %}
+    </tbody>
+</table>

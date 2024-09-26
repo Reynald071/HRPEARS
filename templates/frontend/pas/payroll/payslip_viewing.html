@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+{% load payroll_tags %}
+<html lang="en">
+<head>
+    <head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Payslip</title>
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				border: 0.5px solid transparent;
+			}
+
+			.default{
+			    width: 33.33%;
+			    height: 94% !important;
+			    zoom: 80%;
+			}
+
+			body{-webkit-print-color-adjust: exact;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+		  	}
+        }
+        
+        @page {
+			size: auto;
+		}
+
+        .default{
+            zoom: 80%;
+        }
+
+        #watermark{
+            top: 45%;
+            transform: rotate(45deg);
+            margin:0 auto;
+            font-size: 60px;
+            position: absolute;
+            opacity: 0.1;
+            overflow: hidden;
+            font-weight: bold;
+        }
+
+        #watermark2{
+            top: 30%;
+            z-index: -1;
+            opacity: 0.1;
+            position: absolute;
+            margin-left: 7%;
+        }
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;">Employee's Payslip</a>
+        <ul class="navbar-nav ml-auto">
+            <li><a href="javascript:;" class="btn btn-info print-button" id="floatprint" title="Print"><i class="fas fa-print"></i> Print</a></li>
+        </ul>
+	</div>
+</nav>
+<body>
+    {% if error %}
+    <page size="A4" layout="landscape" class="page" style="padding: 30px; position: relative; font-family: 'Inter'; z-index: -2;">
+        <h5>{{ error }}</h5>
+    </page>
+    {% else %}
+    <page size="A4flex" layout="landscape" class="page" style="padding: 10px; position: relative; font-family: 'Inter'; z-index: -2;">
+        <div class="col-md-4 default" style="font-size: 11px; border: 1px solid #aaa; background:transparent !important; height: 100%">
+            <p id="watermark">CONFIDENTIAL</p>
+            <img loading="lazy"  src="{% static 'image/dswd.png' %}" width="80%" id="watermark2">
+            <br>
+            <div class="row">
+                 <div class="col-sm-2">
+                    <img loading="lazy"  src="{% static 'image/dswd.png' %}" width="50px">
+                </div>
+                <div class="col-sm-10">
+                    <h6 class="m-0"><strong>DSWD FIELD OFFICE CARAGA</strong></h6>
+                    <h6 class="m-0">Capitol Site, Butuan City</h6>
+                </div>
+            </div>
+            <br>
+            <p class="text-center m-0">EMPLOYEE'S PAYSLIP</p>
+            <p class="text-center">For the period of <strong>{{ period }}</strong></p>
+            <hr class="m-0">
+            <br>
+            {% if type == "first_quencena" or type == "second_quencena" %}
+            <div style="border: 1px solid #aaa;">
+                <table width="100%">
+                    {% for key, value in data.0.items %}
+                        {% if key != "_id" and key != "Payroll Incharge" and key != "DV Number" and key != "Status" and key != "Purpose" and key != "Period From" and key != "Period To" and key != "Fund Charges" and key != "Responsibility Center" %}
+                            {% check_column key "details" loans as details %}
+                            {% if details %}
+                            <tr>
+                                <td>&emsp;{{ key }}: </td>
+                                <th>{{ value }}</th>
+                            </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+            <br>
+            <table width="100%">
+                <tr>
+                    <th style="border-bottom: 1px solid #aaa;">RECEIVED</th>
+                    <th class="text-right" style="border-bottom: 1px solid #aaa;"></th>
+                </tr>
+                {% for key, value in data.0.items %}
+                    {% if key != "_id" and key != "Payroll Incharge" and key != "DV Number" and key != "Status" and key != "Purpose" and key != "Period From" and key != "Period To" and key != "Fund Charges" and key != "Responsibility Center" %}
+                        {% check_column key "received" loans as details %}
+                        {% if details and value != "" and value != "0.00" %}
+                            {% if key == "Amount Accrued" %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td class="text-right">{{ value|floatformat:2|intcomma }}</td>
+                                <td class="text-right" id="amount_accrued" style="display:none">{{ value }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td>{{ key }} </td>
+                                <td class="text-right">{{ value|floatformat:2|intcomma }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </table>
+            <br>
+            <table width="100%">
+                <tr>
+                    <th style="border-bottom: 1px solid #aaa;">DEDUCTION</th>
+                    <th class="text-right" style="border-bottom: 1px solid #aaa;"></th>
+                </tr>
+                {% for key, value in data.0.items %}
+                    {% if key != "_id" and key != "Payroll Incharge" and key != "DV Number" and key != "Status" and key != "Purpose" and key != "Period From" and key != "Period To" and key != "Fund Charges" and key != "Responsibility Center" %}
+                        {% check_column key "deduction" loans as details %}
+                        {% if details and value != "" and value != "0.00" %}
+                        <tr>
+                            <td>{{ key }} </td>
+                            <td class="text-right">{{ value|floatformat:2|intcomma }}</td>
+                            <td class="text-right deduction_value" style="display:none">{{ value }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px; border-bottom: 1px solid #aaa;">TOTAL DEDUCTIONS</th>
+                    <td class="text-right" style="border-bottom: 1px solid #aaa;" id="total_deductions"></td>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px; border-right: 0px !important;">NET TAKE HOME PAY</th>
+                    <th style="border-left: 0px !important;" class="text-right" id="total_net"></th>
+                </tr>
+            </table>
+            <br>
+            <table width="100%" border="1">
+                <tbody>
+                    <tr>
+                        <th style="font-size: 10px; border-right: 0px !important;">TOTAL TAKE HOME PAY received for the month</th>
+                        <th style="border-left: 0px !important;" class="text-right" id="total_take_home"></th>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            {% else %}
+            <div style="border: 1px solid #aaa;">
+                <table width="100%">
+                    {% for key, value in salary.0.items %}
+                        {% if key != "_id" and key != "Payroll Incharge" and key != "DV Number" and key != "Status" and key != "Purpose" and key != "Period From" and key != "Period To" and key != "Fund Charges" and key != "Responsibility Center" %}
+                            {% check_column key "details" loans as details %}
+                            {% if details %}
+                            <tr>
+                                <td>&emsp;{{ key }}: </td>
+                                <th>{{ value }}</th>
+                            </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+            <br>
+            <table width="100%">
+                <tr>
+                    <td></td>
+                    <td class="text-center">01-15</td>
+                    <td class="text-center">{{ second_quencena }}</td>
+                </tr>
+                <tr>
+                    <th style="border-bottom: 1px solid #aaa;">RECEIVED</th>
+                    <th class="text-center" style="border-bottom: 1px solid #aaa;"></th>
+                    <th class="text-center" style="border-bottom: 1px solid #aaa;"></th>
+                </tr>
+                {% for row in keys %}
+                    {% check_column row "received" loans as details %}
+                    {% if details %}
+                    {% get_quencena_value "first_quencena" first_quencena month year id_number row as first_quencena_value %}
+                    {% get_quencena_value "second_quencena" second_quencena month year id_number row as second_quencena_value %}
+                        {% if first_quencena_value != "" or second_quencena_value != "" %}
+                            {% if row == "Amount Accrued" %}
+                            <tr>
+                                <td>{{ row }}</td>
+                                <td class="text-center">{% if first_quencena_value %}{{ first_quencena_value|floatformat:2|intcomma }}{% else %}0.00{% endif %}</td>
+                                <td class="text-center">{% if second_quencena_value %}{{ second_quencena_value|floatformat:2|intcomma }}{% else %}0.00{% endif %}</td>
+                                <td class="text-center amount_accrued_first" style="display:none;">{{ first_quencena_value }}</td>
+                                <td class="text-center amount_accrued_second" style="display:none;">{{ second_quencena_value }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td>{{ row }}</td>
+                                <td class="text-center">{% if first_quencena_value %}{{ first_quencena_value|floatformat:2 }}{% else %}0.00{% endif %}</td>
+                                <td class="text-center">{% if second_quencena_value %}{{ second_quencena_value|floatformat:2 }}{% else %}0.00{% endif %}</td>
+                            </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <th style="border-bottom: 1px solid #aaa;">DEDUCTION</th>
+                    <th class="text-center" style="border-bottom: 1px solid #aaa;"></th>
+                    <th class="text-center" style="border-bottom: 1px solid #aaa;"></th>
+                </tr>
+                {% for row in keys %}
+                    {% check_column row "deduction" loans as details %}
+                    {% if details %}
+                    {% get_quencena_value "first_quencena" first_quencena month year id_number row as first_quencena_value %}
+                    {% get_quencena_value "second_quencena" second_quencena month year id_number row as second_quencena_value %}
+                        {% if first_quencena_value != "" or second_quencena_value != "" %}
+                        <tr>
+                            <td>{{ row }}</td>
+                            <td class="text-center">{% if first_quencena_value %}{{ first_quencena_value|floatformat:2|intcomma }}{% else %}0.00{% endif %}</td>
+                            <td class="text-center">{% if second_quencena_value %}{{ second_quencena_value|floatformat:2|intcomma }}{% else %}0.00{% endif %}</td>
+                            <td class="text-center first_deduction_value" style="display:none">{{ first_quencena_value }}</td>
+                            <td class="text-center second_deduction_value" style="display:none">{{ second_quencena_value }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px; border-bottom: 1px solid #aaa;">TOTAL DEDUCTIONS</th>
+                    <td class="text-center" style="border-bottom: 1px solid #aaa;" id="total_deductions_first"></td>
+                    <td class="text-center" style="border-bottom: 1px solid #aaa;" id="total_deductions_second"></td>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px; border-right: 1px !important; border-bottom: 1px solid #aaa;">NET TAKE HOME PAY</th>
+                    <td style="border-bottom: 1px solid #aaa;" class="text-center" id="total_first_net"></td>
+                    <td style="border-bottom: 1px solid #aaa;" class="text-center" id="total_second_net"></td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px; border-right: 1px !important;">TOTAL NET TAKE HOME PAY</th>
+                    <td style="border-bottom: 0px solid #aaa;" class="text-center"></td>
+                    <td style="border-left: 0px !important;" class="text-center" id="total_net_take"></td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px;">BENEFITS</th>
+                    <td>&nbsp;</td>
+                    <td class="text-center"></td>
+                </tr>
+                {% for row in benefits %}
+                {% get_benefits_value month year second_quencena id_number row.name as benefits_value %}
+                    {% if benefits_value is not None %}
+                    <tr>
+                        <td>{{ row.name|upper }}</td>
+                        <td></td>
+                        <td class="text-center">{{ benefits_value|floatformat:2|intcomma }}</td>
+                        <td class="text-center benefits" style="display:none;">{{ benefits_value }}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr>
+                    <th style="font-size: 12px;">ADDITIONAL BENEFITS</th>
+                    <td>&nbsp;</td>
+                    <td class="text-center"></td>
+                </tr>
+                {% for row in additional_benefits %}
+                {% get_benefits_value month year second_quencena id_number row.name as additional_benefits_value %}
+                    {% if additional_benefits_value is not None %}
+                    <tr>
+                        <td>{{ row.name }}</td>
+                        <td></td>
+                        <td class="text-center">{{ additional_benefits_value|floatformat:2|intcomma }}</td>
+                        <td class="text-center additional_benefits" style="display:none;">{{ additional_benefits_value }}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+            <br>
+            <table width="100%" border="1">
+                <tbody>
+                    <tr>
+                        <th style="font-size: 10px; border-right: 0px !important;">TOTAL TAKE HOME PAY received for the month</th>
+                        <th style="border-left: 0px !important;" class="text-center" id="total_take_home"></th>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            {% endif %}
+            <div class="row">
+                <div class="col-sm-5">
+                    <small>Certified true and correct:</small>
+                    <br><br>
+                    <small>{{ config.key_acronym|upper }}</small> <br>
+                    <small>Personnel Officer</small>
+                </div>
+                <div class="col-sm-7" style="text-align: justify;">
+                    <small>Note: <br>
+                        {% if loans == 'yes' %}
+                        This is a system generated payslip. If you notice erroneous entries please report to the Personnel within 5 days upon receipt of this payslip.
+                        {% else %}
+                            Only mandatory deductions are reflected.
+                        {% endif %}
+                    </small> <br><br>
+                    <small>Date Issued: {{ date|date:"m/d/Y H:i:s A" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+	<script type="text/javascript">
+	    $(document).ready(function(){
+	        {% if type == "first_quencena" or type == "second_quencena" %}
+	            var total_deductions = 0
+                $('.deduction_value').each(function(){
+                    total_deductions = total_deductions + parseFloat($(this).text());
+                });
+
+                $('#total_deductions').text(numberWithCommas(total_deductions.toFixed(2)));
+                var total_net = parseFloat($('#amount_accrued').text()) - total_deductions.toFixed(2);
+
+                $('#total_net').text(numberWithCommas(total_net.toFixed(2)));
+                $('#total_take_home').text(numberWithCommas(total_net.toFixed(2)));
+            {% else %}
+                /* TOTAL DEDUCTIONS */
+                var total_deductions_first = 0
+                $('.first_deduction_value').each(function(){
+                    if($(this).text() != ""){
+                        total_deductions_first = total_deductions_first + parseFloat($(this).text());
+                    }
+                });
+
+                $('#total_deductions_first').text(numberWithCommas(total_deductions_first.toFixed(2)));
+
+                var total_deductions_second = 0
+                $('.second_deduction_value').each(function(){
+                    if($(this).text() != ""){
+                        total_deductions_second = total_deductions_second + parseFloat($(this).text());
+                    }
+                });
+
+                $('#total_deductions_second').text(numberWithCommas(total_deductions_second.toFixed(2)));
+
+                /* TOTAL TAKE HOME PAY */
+                var amount_accrude_first = 0
+                $('.amount_accrued_first').each(function(){
+                    amount_accrude_first = amount_accrude_first + parseFloat($(this).text());
+                });
+
+                var total_first_net = amount_accrude_first.toFixed(2) - total_deductions_first.toFixed(2);
+                $('#total_first_net').text(numberWithCommas(total_first_net.toFixed(2)));
+
+                var amount_accrued_second = 0
+                $('.amount_accrued_second').each(function(){
+                    var value = parseFloat($(this).text());
+                    amount_accrued_second = amount_accrued_second + isNaN(value) ? 0:value;
+                });
+
+                var total_second_net = (amount_accrued_second == 0) ? total_deductions_second: amount_accrued_second - total_deductions_second;
+                $('#total_second_net').text(numberWithCommas(total_second_net.toFixed(2)));
+
+                var total_net_take_home_pay = total_first_net + total_second_net;
+                $('#total_net_take').text(numberWithCommas(total_net_take_home_pay.toFixed(2)));
+
+                /* BENEFITS */
+                var total_benefits = 0
+                $('.benefits').each(function(){
+                    total_benefits = total_benefits + parseFloat($(this).text());
+                });
+
+                var total_additional_benefits = 0
+                $('.additional_benefits').each(function(){
+                    total_additional_benefits = total_additional_benefits + parseFloat($(this).text());
+                });
+
+                var total_take_home = total_net_take_home_pay + (total_additional_benefits + total_benefits);
+                $('#total_take_home').text(numberWithCommas(total_take_home.toFixed(2)));
+            {% endif %}
+
+            function numberWithCommas(x) {
+                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+	    });
+    </script>
+</body>
+</html>

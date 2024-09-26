@@ -1,0 +1,37 @@
+<div class="row">
+    <div class="col-md-4">
+        <div class="card card-info card-outline">
+            <div class="card-header">
+                <p class="card-title font-weight-bold">ISSUANCES TYPE</p>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for row in issuances_type %}
+                    <a class="list-group-item list-group-item-action type-{{ row.id }} type" data-role="open-documents" data-id="{{ row.id }}"><i class="far fa-folder"></i>&emsp;{{ row.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+         <div class="card card-success card-outline">
+             <div class="card-body documents">
+             </div>
+         </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $('.type-1').addClass('active');
+    $('.documents').load('/dashboard/issuances/view/' + 1);
+
+    $(document).on('click', 'a[data-role=open-documents]', function(){
+        var id = $(this).data('id');
+        $('.type').each(function(){
+            $(this).removeClass('active');
+        });
+        $('.type-'+id).addClass('active');
+        $('.documents').load('/dashboard/issuances/view/' + id);
+    });
+</script>
+{% endblock %}

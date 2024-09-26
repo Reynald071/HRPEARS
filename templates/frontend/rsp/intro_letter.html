@@ -1,0 +1,94 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h1 class="bold">Intro Letter</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Transactions
+            </li>
+            <li class="breadcrumb-item">
+                Recruitment Selection and Placement
+            </li>
+            <li class="breadcrumb-item">
+                Intro Letter
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+                    <h3 class="no-margins">GENERATE INTRO LETTER</h3>
+                    <small>Search the following employee to generate intro letter.</small>
+                </div>
+                <div class="ibox-content">
+                    <div class="form-group">
+                        <label>Employee Name<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control filter-employee-all" id="employee-name" name="employee-name" required autocomplete="off">
+                    </div>
+                    <button type="button" class="btn btn-info" id="btn-generate-intro-letter">Generate</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="ibox">
+                <div class="ibox-content" id="intro-letter-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function callIntroLetterPage(pageRefInput) {
+        $.ajax({
+            url: pageRefInput,
+            type: "GET",
+            dataType: 'text',
+            beforeSend: function() {
+                $('#intro-letter-content').empty();
+                $('#intro-letter-content').append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+            },
+            success: function(response) {
+                $('#intro-letter-content').html(response);
+            },
+            complete: function() {
+                $('#preloader').css('display', 'none');
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        $(".filter-employee-all").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee_all" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+
+        $('#btn-generate-intro-letter').on('click', function(){
+            var employee_id = $('#employee-name').val().match(/\[(.*?)\]/);
+            var id_number = employee_id[1];
+            callIntroLetterPage('/recruitment-selection-and-placement/intro-letter/data/' + id_number);
+        });
+    });
+</script>
+{% endblock %}

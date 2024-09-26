@@ -1,0 +1,248 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Track TEV</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Activities
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Track TEV</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-lg-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Welcome to the <strong>TEV Tracker!</strong> We are excited to announce that you can
+                now track your TEV up to the year 2019. We hope this new feature makes it easier for you to track your TEVs.
+                Thank you for being part of our journey! - The My PORTAL Team
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#tev-workflow"> Workflow</a></li>
+                            {% if user|check_permission:'tev_tracker' or user|check_permission:'superadmin' %}
+                            <li><a class="nav-link" data-toggle="tab" href="#section-tev-workflow">Section Workflow</a></li>
+                            {% endif %}
+                        </ul>
+						<div class="tab-content" style="border: 0px !important;">
+							<div id="tev-workflow" class="tab-pane active">
+								<div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" width="100%" id="table-tev-tracker">
+                                            <thead>
+                                                <th>DV Number</th>
+                                                <th>Purpose</th>
+                                                <th class="text-center">Amount</th>
+                                                <th class="text-center">Incoming Date</th>
+                                                <th class="text-center">Obligate</th>
+                                                <th class="text-center">Journal</th>
+                                                <th class="text-center">Certified</th>
+                                                <th class="text-center">Check Issued</th>
+                                                <th class="text-center">Check Released</th>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if user|check_permission:'tev_tracker' or user|check_permission:'superadmin' %}
+                            <div id="section-tev-workflow" class="tab-pane">
+                                <div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" width="100%" id="table-section-tev-tracker">
+                                            <thead>
+                                                <th>DV Number</th>
+                                                <th>Employee Name</th>
+                                                <th>Purpose</th>
+                                                <th class="text-center">Amount</th>
+                                                <th class="text-center">Incoming Date</th>
+                                                <th class="text-center">Obligate</th>
+                                                <th class="text-center">Journal</th>
+                                                <th class="text-center">Certified</th>
+                                                <th class="text-center">Check Issued</th>
+                                                <th class="text-center">Check Released</th>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+					<h5>FILTER</h5>
+				</div>
+                <div class="ibox-content">
+                    <h4>By year</h4>
+                    <div class="input-group">
+						<input type="text" class="form-control b-r-sm" id="year" value="{{ current_year }}" autocomplete="off"> <span class="input-group-btn">
+						<button type="button" class="btn btn-info" style="height: 34px;" id="filter-year">Filter</button> </span>
+					</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+		$('#table-tev-tracker').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 0, 'desc' ]],
+			'lengthMenu': [25,50,100],
+			'ajax': {
+				'url': '/api/tev/tracker/?format=datatables&year={{ current_year }}&pk={% generate_token id_number as pk %}{{ pk }}',
+				'type': 'GET',
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+                {'data': 'dv_no', 'name': 'transaction.transaction.dv_no' },
+                {'data': 'purpose', 'className': 'text-center' },
+                {'data': 'amount',
+                    'render': function(data, type, row, meta) {
+						return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					},
+                    'className': 'text-center'
+                },
+				{'data': 'dv_date', 'name': 'transaction.transaction.dv_date', 'className': 'text-center', 'searchable': false },
+				{'data': 'amt_budget',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'amt_journal',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'approval_date',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success" rel="tooltip" data-placement="top" title="Date: '+ data +'"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'check_issued',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success" rel="tooltip" data-placement="top" title="Date: '+ data +'"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'check_released',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success" rel="tooltip" data-placement="top" title="Date: '+ data +'"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+			],
+		});
+
+        {% if user|check_permission:'tev_tracker' or user|check_permission:'superadmin' %}
+        $('#table-section-tev-tracker').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 0, 'desc' ]],
+			'lengthMenu': [25,50,100],
+			'ajax': {
+				'url': '/api/tev/tracker/?format=datatables&year={{ current_year }}&section_pk={% generate_token 1 as pk %}{{ pk }}',
+				'type': 'GET',
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+                {'data': 'dv_no', 'name': 'transaction.transaction.dv_no' },
+                {'data': 'name',
+                    'render': function(data, type, row, meta){
+                        return data.replace(/\w\S*/g, function(word) {
+                            return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+                        });
+                    }
+                },
+                {'data': 'purpose', 'className': 'text-center' },
+                {'data': 'amount',
+                    'render': function(data, type, row, meta) {
+						return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					},
+                    'className': 'text-center'
+                },
+				{'data': 'dv_date', 'name': 'transaction.transaction.dv_date', 'className': 'text-center', 'searchable': false },
+				{'data': 'amt_budget',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'amt_journal',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'approval_date',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success" rel="tooltip" data-placement="top" title="Date: '+ data +'"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'check_issued',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success" rel="tooltip" data-placement="top" title="Date: '+ data +'"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+				{'data': 'check_released',
+					'render': function(data, type, row, meta) {
+						return (data) ? '<i class="fas fa-check-circle text-success" rel="tooltip" data-placement="top" title="Date: '+ data +'"></i>' : "";
+					},
+					'className': 'text-center',
+					'searchable': false,
+				},
+			],
+		});
+        {% endif %}
+
+        $('#filter-year').on('click', function(){
+            var table = $('#table-tev-tracker').DataTable();
+            table.clear();
+            table.ajax.url('/api/tev/tracker/?format=datatables&year=' + $('#year').val() + '&pk={% generate_token id_number as pk %}{{ pk }}').load();
+        });
+    });
+</script>
+{% endblock %}

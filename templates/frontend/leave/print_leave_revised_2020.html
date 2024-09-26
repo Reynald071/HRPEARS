@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Leave Application</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+        @media print {
+			.containerX {
+				padding: 0px;
+				margin: 0px;
+				zoom: 65% !important;
+				height: 0% !important;
+			}
+			page [size="long"]{
+				margin: 0px;
+				border: 0.5px solid transparent;
+			}
+			.vertical-right, .vertical-left {
+				margin: 0px !important;
+			}
+        }
+
+		.containerX {
+			zoom: 65%;
+		}
+
+		body{
+			font-family: inter;
+			font-size: 15px;
+			color: black;
+		}
+
+		.no-padding{
+			padding: 2px !important;
+		}
+
+		.no-margins {
+		  margin: 0 !important;
+		}
+
+		.vertical-right {
+			position: absolute;
+			top: 0;
+			margin-top: 12mm;
+			left: 50%;
+        }
+
+		.vertical-left {
+			position: absolute;
+			top: 0;
+			margin-top: 12mm;
+			right: 50%;
+        }
+
+        .bold{
+        	font-weight: bold;
+        }
+
+        input{
+        	text-align: center;
+        }
+
+        input[type=checkbox]{
+        	transform: scale(1.5);
+        }
+	</style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;"><strong>Leave Application ({{ leave.leaveapp.tracking_no }}) <em><small>Note: Print in A4</small></em></strong></a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><button class="btn btn-success" data-toggle="modal" data-target="#signatory-modal" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-signature"></i> Signatories</button>&emsp;</li>
+				<li><button class="btn btn-info print-button" id="floatprint" title="Print" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+	{% if classes == 1 %}
+		{% getemployeebyempid first_level as first_lvl %}
+		{% getemployeebyempid second_level as second_lvl %}
+	{% elif classes == 2 %}
+		{% if first_level == "" %}
+			{% getemployeebyempid second_level.emp_id as second_lvl %}
+		{% else %}
+			{% getemployeebyempid first_level as first_lvl %}
+			{% getemployeebyempid second_level.emp_id as second_lvl %}
+		{% endif %}
+	{% endif %}
+	<page size="longflex" layout="landscape" style="padding-right: 35px; padding-left: 35px; padding-top: 20px; position: relative; page-break-after: always;">
+		<div class="containerX">
+		{% for row in 2|times %}
+			<div style="width:50%; {% if row == 0 %}float:left;padding-right:35px;{% endif %} {% if row == 1 %}margin-left:50%;padding-left:35px;{% endif %}">
+				<p class="bold text-center no-margins">Republic of the Philippines</p>
+				<p class="bold text-center no-margins">DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT</p>
+				<p class="bold text-center no-margins">Caraga Region</p>
+				<p class="bold text-center">R. Palma St, Butuan City</p>
+				<div class="pull-left" style="margin-top: -90px;">
+					<img loading="lazy"  src="{% static 'image/dswd_logo.png' %}" width="130px;" style="mix-blend-mode: multiply;">
+				</div>
+				<div class="pull-right" style="margin-top: -90px;">
+					<table class="table table-bordered" style="font-size: 12px;">
+						<tr>
+							<th class="text-center">CS Form No. 6 <br> Revised 2020</th>
+						</tr>
+					</table>
+				</div>
+				<br>
+				<table class="table table-bordered" style="font-size: 15px; margin-top: -15px;">
+					<tr>
+						<th colspan="4" class="no-padding text-center">APPLICATION FOR LEAVE</th>
+					</tr>
+					<tr>
+						<th class="no-padding" width="20%">1. OFFICE/AGENCY</th>
+						<th class="no-padding" width="30%">&nbsp;2. NAME (LAST)</th>
+						<th class="no-padding" width="25%" style="border-right: 0px;">(FIRST)</th>
+						<th class="no-padding">(M.I.)</th>
+					</tr>
+					<tr>
+						<th class="no-padding text-center" style="font-weight: normal;">DSWD Caraga</th>
+						<td class="no-padding">&nbsp;{{ leave.leaveapp.emp.pi.user.last_name|title }}</td>
+						<td class="no-padding" style="border-left: 0px;">{{ leave.leaveapp.emp.pi.user.first_name|title }}</td>
+						<td class="no-padding">{{ leave.leaveapp.emp.pi.user.middle_name|to_middleinitial|title }}</td>
+					</tr>
+					<tr>
+						<th class="no-padding">3. DATE OF FILING</th>
+						<th class="no-padding text-center" colspan="2">4. POSITION</th>
+						<th class="no-padding">5. SALARY (MONTHLY)</th>
+					</tr>
+					<tr>
+						<td class="no-padding text-center">{{ leave.leaveapp.date_of_filing|date:"m/d/Y" }}</td>
+						<td class="no-padding text-center" colspan="2">{{ leave.leaveapp.emp.position.name }}</td>
+						<td class="no-padding text-center">{{ leave.leaveapp.emp.salary_rate }}</td>
+					</tr>
+					<tr>
+						<th colspan="4" class="no-padding text-center">6. DETAILS OF APPLICATION</th>
+					</tr>
+				</table>
+				{% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}
+				<div class="row" style="height:208.524px; margin-top: -10px;">
+					<div class="col-sm-7">
+						<label>6.A TYPE OF LEAVE TO BE AVAILED OF</label><br>
+						{% for row in leavesubtype %}
+							{% if row.is_others != 1 %}
+								{% if row.name == leave.leaveapp.leavesubtype.name %}
+                                &nbsp;<input class="icheck" type="checkbox" checked> &nbsp; {{ row.name }} <small>({{ row.description }})</small> <br style="line-height: 10px;">
+									{% if leave.leaveapp.reasons %}
+											&emsp;&emsp;&emsp;Reason for Leave: <u>{{ leave.leaveapp.reasons }}</u><br>
+									{% else %}
+										{% if leave.specify %}
+											&emsp;&emsp;&emsp;Reason for Leave: <u>{{ leave.specify }}</u><br>
+										{% elif leave.leaveapp.remarks %}
+											&emsp;&emsp;&emsp;Type of Calamity: <u>{{ leave.leaveapp.remarks }}</u><br>
+										{% endif %}
+									{% endif %}
+								{% else %}
+								&nbsp;<input class="icheck" type="checkbox"> &nbsp; {{ row.name }} <small>({{ row.description }})</small> <br style="line-height: 10px;">
+								{% endif %}
+							{% endif %}
+						{% endfor %}
+						&nbsp;<input class="icheck" type="checkbox" {% if leave.leaveapp.leavesubtype.is_others == 1 %}checked{% endif %}> &nbsp; Others (specify) <br>
+						<label style="border-bottom: 1px solid black; width: 100%">
+							{% if leave.leaveapp.leavesubtype.is_others == 1 %}
+								{{ leave.leaveapp.leavesubtype.name }}
+								{% if leave.leavespent.name %}
+								- {{ leave.leavespent.name }} ({{ leave.specify }})
+								{% else %}
+									{% if leave.specify %}
+										({{ leave.specify }})
+									{% else %}
+										({{ leave.leaveapp.reasons }})
+									{% endif %}
+								{% endif %}
+							{% else %}
+								<br>
+							{% endif %}
+						</label>
+					</div>
+					<div class="col-sm-5">
+						<label>6.B WHERE LEAVE WILL BE SPENT</label><br>
+						<label>(1) In case of Vacation Leave</label><br>
+						<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'Within the Philippines' %}checked{% endif %}> &nbsp; Within the Philippines <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'Within the Philippines' %}{{ leave.specify }}{% endif %}" size="25"><br>
+						<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'Abroad' %}checked{% endif %}> &nbsp; Abroad (specify)
+						<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'Abroad' %}{{ leave.specify }}{% endif %}" size="30"><br>
+						<label>(2) In case of Sick Leave</label><br>
+						<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'In Hospital' %}checked{% endif %}> &nbsp; In Hospital (specify)
+						<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'In Hospital' %}{{ leave.specify }}{% endif %}" size="27"><br>
+						<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'Out Patient' %}checked{% endif %}> &nbsp; Out Patient (specify)
+						<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'Out Patient' %}{{ leave.specify }}{% endif %}" size="26"> <br>
+                        <label>(3) In case of Special Leave Benefits for Women</label><br>
+						(specify)
+						<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leaveapp.leavesubtype.name == 'Special Leave Benefits for Women' %}{{ leave.specify }}{% endif %}" size="37"><br>
+                        <label>(4) In case of Study Leave</label><br>
+						<input class="icheck" type="checkbox" {% if leave.leavespent.name == "Completion of Master's Degree" %}checked{% endif %}> &nbsp; Completion of Master's Degree <br>
+                        <input class="icheck" type="checkbox" {% if leave.leavespent.name == 'BAR/Board Examination Review' %}checked{% endif %}> &nbsp; BAR/Board Examination Review <br>
+                        <label>(5) Other purpose: </label><br>
+						<input class="icheck" type="checkbox" {% if leave.leaveapp.leavesubtype.name == 'Monetization' %}checked{% endif %}> &nbsp; Monetization of Leave Credits <br>
+                        <input class="icheck" type="checkbox" {% if leave.leaveapp.leavesubtype.name == 'Terminal Leave' %}checked{% endif %}> &nbsp; Terminal Leave <br>
+					</div>
+				</div>
+				{% endif %}
+                <div class="row" style="height:100.955px">
+					<div class="col-sm-7">
+						<label>6.C NUMBER OF WORKING DAYS APPLIED FOR:</label>
+						{% if leave.leaveapp.start_date and leave.leaveapp.end_date %}
+							{% days_until leave.leaveapp.start_date|date:"Y-m-d" leave.leaveapp.end_date|date:"Y-m-d" as days_until %}
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ days_until }}" class="working_days" size="35"><br><br>
+						{% else %}
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; width: 100%;" value="{% get_leave_total_days leave.leaveapp_id %}" class="working_days"><br><br>
+						{% endif %}
+						<label>INCLUSIVE DATES</label><br>
+						<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; width: 100%;" value="{% if leave.leaveapp.start_date is None %}{% get_leave_dates leave.leaveapp_id %}{% else %}{% if leave.leaveapp.start_date == leave.leaveapp.end_date %}{{ leave.leaveapp.start_date }}{% else %}{{ leave.leaveapp.start_date }} - {{ leave.leaveapp.end_date }}{% endif %}{% endif %}" size="50">
+					</div>
+					{% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}
+					<div class="col-sm-5">
+						<label>6.D COMMUTATION</label><br>
+						<input type="checkbox"> &nbsp; Requested <br>
+						<input type="checkbox"> &nbsp; Not Requested <br><br>
+						<div class="text-center">
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="" size="20"><br>
+							<label>Signature of Applicant</label>
+						</div>
+					</div>
+					{% else %}
+					<div class="col-sm-6">
+						<label>PURPOSE</label><br>
+						<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ leave.leaveapp.reasons }}" size="45">
+					</div>
+					{% endif %}
+				</div>
+				<br>
+				<div class="row">
+					<div class="col-sm-12">
+						<table class="table table-bordered">
+							<tr>
+								<th class="no-padding text-center">7. DETAILS OF ACTION APPLICATION</th>
+							</tr>
+						</table>
+						<div class="row" style="margin-top: -20px;">
+							<div class="col-sm-8">
+								<label>7.A {% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}CERTIFICATION OF LEAVE CREDITS{% else %}SOLO PARENT LEAVE BALANCE{% endif %}</label><br>
+								<label>AS OF ___________________</label>
+								{% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}
+								<table class="table table-bordered">
+									<thead>
+										<tr>
+                                            <th></th>
+											<th class="no-padding text-center" width="16%">Vacation</th>
+											<th class="no-padding text-center" width="16%">Sick</th>
+											<th class="no-padding text-center" width="16%">SPL</th>
+											<th class="no-padding text-center" width="16%">CTDO</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+                                            <td class="text-center"><i>Total Earned</i></td>
+											<td class="text-center bold">&nbsp;</td>
+											<td class="text-center bold"></td>
+											<td class="text-center bold"></td>
+											<td class="text-center bold"></td>
+										</tr>
+										</tr>
+										<tr>
+                                            <td class="text-center"><i>Less this application</i></td>
+											<td class="text-center no-padding bold">&nbsp;</td>
+											<td class="text-center no-padding bold"></td>
+											<td class="text-center no-padding bold"></td>
+											<td class="text-center no-padding bold"></td>
+										</tr>
+                                      	<tr>
+                                            <td class="text-center"><i>Balance</i></td>
+											<td class="text-center no-padding bold">&nbsp;</td>
+											<td class="text-center no-padding bold"></td>
+											<td class="text-center no-padding bold"></td>
+											<td class="text-center no-padding bold"></td>
+										</tr>
+										<tr>
+                                            <td class="text-center"><i>Remaining Credits</i></td>
+											<td class="text-center no-padding bold" colspan="2">&nbsp;</td>
+										</tr>
+									</tbody>
+								</table>
+								{% else %}
+								<table class="table-bordered" width="50%">
+									<thead>
+										<tr>
+											<th class="no-padding text-center" width="16%">Solo Parent Leave</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td class="text-center bold"><br><br><br></td>
+										</tr>
+										<tr>
+											<td class="text-center no-padding bold">&nbsp;</td>
+										</tr>
+									</tbody>
+								</table>
+								{% endif %}
+							</div>
+							<div class="col-sm-4">
+								<label>7.B RECOMMENDATION</label><br>
+								<input type="checkbox"> &nbsp; Approved <br>
+								<input type="checkbox"> &nbsp; Disapproved due to<br>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="25">
+							</div>
+						</div>
+						<br>
+						<div class="row">
+							<div class="col-sm-6 text-center">
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; text-align: center;" value="{{ personnel_officer.key_acronym|upper }}" size="30"><br>
+								<input type="text" style="outline: 0; border: 0; font-weight: bold; text-align: center; font-size: 13px;" value="{{ personnel_officer.key_name }}" size="30"><br>
+							</div>
+							<div class="col-sm-6 text-center">
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; text-align: center; text-transform: uppercase;" class="set_recommended_by" value="{% if classes == 1 or classes == 2 %}{{ first_lvl.pi.user.first_name }} {{ first_lvl.pi.user.middle_name|to_middleinitial }} {{ first_lvl.pi.user.last_name }}{% elif classes == 3 %}{{ first_level.key_acronym }}{% endif %}" size="30"><br>
+								<input class="no-margins set_recommended_by_pos" style="outline: 0; border: 0; font-weight: bold; text-align: center; font-size: 13px;" value="{% if classes == 1 %}Chief, {{ first_level_pos.div_acronym }}{% elif classes == 2 %}{{ first_level_pos.name }}{% elif classes == 3 %}{{ first_level_pos }}{% endif %}" size="30"><br>
+								<p class="no-margins" style="margin-top: -20px; font-size: 12px;">(Authorized Official)</p>
+							</div>
+						</div>
+						<hr style="margin-bottom:5px; margin-top:5px; border: 0.1px solid black;">
+						<div class="row">
+							<div class="col-sm-8">
+								<label>7.C APPROVED FOR</label><br>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="10"> <label>Days with pay</label><br>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="10"> <label>Days w/o pay</label><br>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="10"> <label>Others (Specify)</label>
+							</div>
+							<div class="col-sm-4">
+								<label>7.D DISAPPROVED DUE TO:</label><br>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="25"><br>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="25"><br>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="25">
+							</div>
+						</div>
+						<br>
+						<div class="row">
+							<div class="col-sm-12 text-center">
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; text-align: center; text-transform: uppercase;" class="set_approved_by" value="{% if classes == 1 or classes == 2 %}{{ second_lvl.pi.user.first_name }} {{ second_lvl.pi.user.middle_name|to_middleinitial }} {{ second_lvl.pi.user.last_name }}{% elif classes == 3 %}{{ second_level.key_acronym }}{% endif %}" size="30"><br>
+								<input type="text" class="no-margins set_approved_by_pos" style="outline: 0; border: 0; font-weight: bold; text-align: center; font-size: 13px;" value="{% if classes == 1 %}{{ second_level_pos.name }}{% elif classes == 2 or classes == 3 %}{{ second_level_pos }}{% endif %}" size="30"><br>
+								<p style="font-size: 12px;">(Authorized Official)</p>
+								<br><br>
+                                <div class="pull-left" style="margin-top: -30px;">
+									<table class="table table-bordered" style="font-size: 12px">
+                                        <tr>
+                                            <th class="text-center">Stamp of Date of Receipt</th>
+                                        </tr>
+                                    </table>
+								</div>
+								<div class="pull-right" style="margin-top: -30px;">
+									<small><b>TRACKING NO. {{ leave.leaveapp.tracking_no }}</b></small><br>
+									<small>Note: Print in A4. Please see instructions at the back</small>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+		<div class="vertical-right">
+			<img loading="lazy"  src="{% static 'image/cut_right.png' %}" style="mix-blend-mode: multiply;">
+		</div>
+		<div class="vertical-left">
+			<img loading="lazy"  src="{% static 'image/cut_left.png' %}" style="mix-blend-mode: multiply;">
+		</div>
+		</div>
+	</page>
+
+	<page size="longflex" layout="landscape" style="padding: 35px; position: relative;">
+		<div class="containerX">
+		{% for row in 2|times %}
+			<div class="box text-center" style="width:50%; {% if row == 0 %}float:left;padding-right:35px;{% endif %} {% if row == 1 %}margin-top:50px; margin-left:50%;padding-left:35px;{% endif %}">
+				<img loading="lazy"  src="{% static 'image/leave_application/instructions.PNG' %}" width="800px;" style="mix-blend-mode: multiply;">
+			</div>
+		{% endfor %}
+		<div class="vertical-right">
+			<img loading="lazy"  src="{% static 'image/cut_right.png' %}" style="mix-blend-mode: multiply;">
+		</div>
+		<div class="vertical-left">
+			<img loading="lazy"  src="{% static 'image/cut_left.png' %}" style="mix-blend-mode: multiply;">
+		</div>
+		</div>
+	</page>
+
+	<div class="modal" id="signatory-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h3 class="modal-title">SET SIGNATORIES</h3>
+				</div>
+				<form id="setSignatureForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">Recommended By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="recommended_by" id="recommended_by" value="[{{ first_lvl.id_number }}] {{ first_lvl.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">Approved By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="approved_by" id="approved_by" value="[{{ second_lvl.id_number }}] {{ second_lvl.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+	<script>
+		$(document).ready(function(){
+			{% if classes != 3 %}
+				$('#signatory-modal').modal('show');
+			{% endif %}
+
+			$(".filter_employee_leave").typeahead({
+				source: function(query, process){
+					return $.get({
+						url: '{% url "filter_employee" %}',
+						data: { query: query },
+						datatype: 'json',
+						success: function (data) {
+							return process(data);
+						}
+					});
+				},
+				highlight: true,
+			});
+
+			$('#setSignatureForm').on('submit', function(e){
+				e.preventDefault();
+				var form = new FormData(this);
+				$.ajax({
+					data: form,
+					url: '{% url "set_signature_leave" %}',
+					type: 'POST',
+					success: function(response) {
+						$('.set_recommended_by').val(response.first_level);
+						$('.set_recommended_by_pos').val(response.first_level_pos);
+
+						$('.set_approved_by').val(response.second_level);
+						$('.set_approved_by_pos').val(response.second_level_pos);
+						$('#signatory-modal').modal('hide');
+					},
+					cache       : false,
+                    contentType : false,
+                    processData : false,
+				});
+			});
+
+			window.onafterprint = function() {
+				$.ajax({
+					url: '{% url "leave_after_print" %}',
+					data: {
+						'pk': {{ leave.leaveapp_id }}
+					},
+					type: "POST",
+				});
+			}
+		});
+	</script>
+</body>
+</html>

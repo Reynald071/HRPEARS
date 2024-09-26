@@ -1,0 +1,117 @@
+{% load static %}
+{% load tags %}
+<form id="addTrackingForm">
+{% csrf_token %}
+<div class="modal-body">
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th>Tracking Number</th>
+                <td>
+                    <input type="text" class="form-control form-control-sm" name="tracking_no" value="{{ tracking.tracking_no }}" required>
+                </td>
+            </tr>
+            <tr>
+                <th>Date Request</th>
+                <td>{{ tracking.date }}</td>
+            </tr>
+            <tr>
+                <th>Date Received</th>
+                <td>
+                    {% if tracking.date_received %}
+                        <input type="datetime-local" class="form-control form-control-sm" name="date_received" value="{{ tracking.date_received|date:'Y-m-d\TH:i' }}" required>
+                    {% else %}
+                    <button type="button" class="btn btn-info btn-sm" data-role="date_received" data-id="{{ tracking.tracking_no }}">Mark as received</button>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Days Interval</th>
+                <td>
+                    {% if approved_rito %}
+                        {% get_date_interval_in_days tracking.date_administered approved_rito as days_interval %}
+                        {% if days_interval > 0 %}{{ days_interval }} day{{ days_interval|pluralize }}{% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Remarks (OPTIONAL)</th>
+                <td>
+                    <textarea class="form-control form-control-sm" name="remarks">{% if tracking.remarks %}{{ tracking.remarks }}{% endif %}</textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>Date Administered</th>
+                <td>
+                    <input type="datetime-local" class="form-control form-control-sm" name="date_administered" value="{{ tracking.date_administered|date:'Y-m-d\TH:i' }}">
+                </td>
+            </tr>
+            <tr>
+                <th>Date Forwarded to Approving Authority</th>
+                <td>
+                    <input type="datetime-local" class="form-control form-control-sm" name="date_forwarded" value="{{ tracking.date_forwarded|date:'Y-m-d\TH:i' }}">
+                </td>
+            </tr>
+            <tr>
+                <th>Date Returned</th>
+                <td>
+                    <input type="datetime-local" class="form-control form-control-sm" name="date_returned" value="{{ tracking.date_returned|date:'Y-m-d\TH:i' }}">
+                </td>
+            </tr>
+            <tr>
+                <th>Date of Receipt from Approving Authority</th>
+                <td>
+                    {% get_to_approved_and_uploaded_date tracking.tracking_no as travel_order %}
+                    {% if travel_order.0 %}
+                        {{ travel_order.0 }}
+                    {% else %}
+                        Travel order is not generated yet.
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Uploaded Date</th>
+                <td>
+                    {{ travel_order.1 }}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Update</button>
+</div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(document).on('click', 'button[data-role=date_received]', function(){
+        var list = {
+            'tracking_no': '{{ tracking.tracking_no }}',
+        }
+
+        var url = '{% url "mark_as_received_tr" %}';
+        var title = "Are you sure";
+        var text = "You want to marked as received this travel request";
+        var loadContent = '#tracking-content';
+        var loadUrl = '/backend/tracking/travel-request/{{ tracking.tracking_no }}';
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+    });
+
+    $('#addTrackingForm').on('submit', function(e){
+        var form = this;
+
+        var url = '/backend/tracking/travel-request/{{ tracking.id }}';
+        var title = "Are you sure";
+        var text = "You want to update the tracking details";
+        var loadContent = '#tracking-content';
+        var loadUrl = '/backend/tracking/travel-request/{{ tracking.id }}';
+        var table_id = '#table-workflow';
+
+        submitFormWithConfirmation(form, url, title, text, {loadContent: loadContent, loadUrl: loadUrl, table_id: table_id});
+
+        e.preventDefault();
+    })
+</script>
+{% endblock %}

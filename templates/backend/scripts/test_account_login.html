@@ -1,0 +1,49 @@
+<form id="testAccountForm">
+{% csrf_token %}
+<div class="modal-body">
+    <div id="alertDiv"></div>
+    <div class="mb-3">
+        <label>Username</label>
+        <input type="text" class="form-control" name="username" id="username" required>
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <input type="password" class="form-control" name="password" id="password" required>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info btn-sm" id="btn-test-login">Test Login</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('#testAccountForm').on('submit', function(e){
+        $.ajax({
+            data: new FormData(this),
+            url: '{% url "test_user_login" %}',
+            type: 'POST',
+            beforeSend: function() {
+                $('#btn-test-login').prop('disabled', true);
+                $('#btn-test-login').html('Testing Login');
+            },
+            success: function(response) {
+                if(response.data == "success") {
+                    $('#alertDiv').html(`
+                        <div class="alert alert-`+ response.alert +`">
+                            <i class="fas fa-info-circle"></i> `+ response.msg +`
+                        </div>
+                    `)
+                }
+            },
+            complete: function() {
+                $('#btn-test-login').prop('disabled', false);
+                $('#btn-test-login').html('Test Login');
+            },
+            cache: false,
+            contentType: false,
+            processData: false,
+        })
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

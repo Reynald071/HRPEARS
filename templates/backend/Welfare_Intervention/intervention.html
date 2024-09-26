@@ -1,0 +1,135 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<style type="text/css">
+	.select2-container--default .select2-selection--single {
+		text-align: left !important;
+    }
+
+    .font-xs{
+    	font-size: 15px !important;
+    }
+    
+   	.modal{
+	  background: rgba(0,0,0,0.3);
+	  height: 100vh;
+	  position: fixed;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Intervention</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">
+                Intervention Database
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>List</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="ibox">
+		<div class="ibox-content">
+			<div class="table-responsive">
+				<table class="table table-bordered table-hover" id="employee_table" width="100%">
+					<thead>
+						<th class="capslock">Action</th>
+						<th class="text-center display-none">Personal Information ID</th>
+						<th class="text-center">ID NUMBER</th>
+						<th class="text-center">PICTURE</th>
+						<th class="capslock">Last Name</th>
+						<th class="capslock">First Name</th>
+						<th class="capslock">Middle Name</th>
+						<th class="capslock">Ext</th>
+						<th class="text-center capslock">Gender</th>
+						<th class="text-center capslock">Employment Status</th>
+						<th class="text-center capslock">Position</th>
+						<th class="text-center capslock">Section</th>
+						<th class="text-center capslock">Division</th>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    EmployeeTable();
+	function EmployeeTable(){
+		$('#employee_table').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 4, 'asc' ]],
+			'lengthMenu': [25,50,100],
+			'ajax': {
+				'url': '/api/hrws/intervention_database/?format=datatables',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return "<a href='#' data-role='view' data-id='["+ data + "," + row['pi_id'] + "]'>Details</a>"
+					}
+				},
+				{'data': 'pi_id', 'className': 'display-none', 'searchable': false },
+				{'data': 'id_number',
+					'render': function(data, type, row, meta) {
+						template = "";
+						{% if user|check_permission:'superadmin' or user|check_permission:'edit_employee' %}
+						template += "<a href='javascript:;' data-role='update' data-id='" + data +"'>"+ data +"</a>";
+						{% else %}
+						template += data;
+						{% endif %}
+						return template;
+					},
+					'className': 'text-center'
+				},
+				{'data': 'picture',
+					'render': function(data, type, row, meta) {
+						return `<center><img loading="lazy" class="img-circle" data-toggle="popover"
+							data-html="true"
+							loading="lazy"
+							style="object-fit:cover; width: 40px; height: 40px;"
+							data-placement="right"
+							data-content="<center><img loading='lazy' src='`+ data + `' style='width: 250px; height: 250px; object-fit:cover;'></center>" src="` + data + `">
+						</center>`;
+					},
+					className: 'text-center'
+				},
+				{'data': 'last_name', 'name': 'pi.user.last_name' },
+				{'data': 'first_name', 'name': 'pi.user.first_name' },
+				{'data': 'middle_name', 'name': 'pi.user.middle_name' },
+				{'data': 'ext', 'className': 'text-center', 'name': 'pi.ext.name' },
+				{'data': 'gender', 'className': 'text-center', 'searchable': 'false' },
+				{'data': 'employment_status', 'className': 'text-center', 'name': 'empstatus.name' },
+				{'data': 'position', 'className': 'text-center', 'name': 'position.name' },
+				{'data': 'section', 'className': 'text-center', 'name': 'section.sec_name' },
+				{'data': 'division', 'className': 'text-center', 'name': 'section.div.div_name' },
+			],
+			drawCallback: function() {
+				$('[data-toggle="popover"]').popover({
+					container: "body"
+				});
+			}
+		});
+	}
+</script>
+{% endblock %}

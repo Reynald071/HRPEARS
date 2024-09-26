@@ -1,0 +1,273 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Convocation</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employee
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Convocation</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#generate-report-modal"><i class="fas fa-chart-bar"></i> Generate Report</button>
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#create-event-modal"><i class="fas fa-plus"></i> Create Event</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#event-view"> Event</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#generate-qr-code-view">Generate QR Code</a></li>
+                        </ul>
+                        <div class="tab-content" style="border: 0px !important;">
+                            <div id="event-view" class="tab-pane active">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <table class="table table-bordered" id="table-event" width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Action</th>
+                                                        <th>Date</th>
+                                                        <th>Time</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="generate-qr-code-view" class="tab-pane">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-5">
+                                            <div class="form-group">
+                                                <label>Section<span class="asteriskField">*</span></label>
+                                                <select class="form-control select" name="section" id="section" required>
+                                                    <option></option>
+                                                    {% for division in divisions %}
+                                                        <optgroup label="{{ division.div_name }}">
+                                                        {% for section in sections %}
+                                                            {% if division.id == section.div_id %}
+                                                                <option value="{% generate_token section.id as section_id %}{{ section_id }}">{{ section.sec_name }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        </optgroup>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-5">
+                                            <div class="form-group">
+                                                <label>Area of Assignment<span class="asteriskField">*</span></label>
+                                                <select class="form-control select" name="aoa" id="aoa" required>
+                                                    <option></option>
+                                                    {% for row in aoa %}
+                                                        <option value="{% generate_token row.id as aoa_id %}{{ aoa_id }}">{{ row.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <button type="button" class="btn btn-info btn-block" id="filter-button" style="margin-top: 23px;">Filter</button>
+                                        </div>
+                                    </div>
+                                    <table class="table table-bordered" id="employee-list-content">
+                                        <thead>
+                                            <tr>
+                                                <th>Full Name</th>
+                                                <th class="text-center">Position</th>
+                                                <th class="text-center">Area of Assignment</th>
+                                                <th class="text-center">QR Code Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="4">No data available</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <br>
+                                    <button type="button" class="btn btn-info display-none" id="print-qr-code">Print QR Code</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="generate-report-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">GENERATE REPORT CONVOCATION</h3>
+            </div>
+            <form action="{% url 'generate_convocation_report' %}" target="_blank" method="POST">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Select Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="date" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Generate</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="create-event-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">CREATE EVENT</h3>
+            </div>
+            <form id="createEventForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Select Date<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label>Select Time<span class="asteriskField">*</span></label>
+                    <input type="time" class="form-control" name="time" required>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-control select" name="status" required>
+                        <option value="0">Time In</option>
+                        <option value="1">Time Out</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Generate</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#createEventForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "convocation" %}';
+        var title = "Are you sure";
+        var text = "You want to create this convocation event";
+        var table_id = '#table-event';
+        var modal_id = '#create-event-modal';
+
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, modal_id: modal_id});
+        e.preventDefault();
+    });
+
+    $('#table-event').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 1, 'desc' ]],
+        'ajax': {
+            'url': '/api/convocation/event/?format=datatables',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return '<a href="/convocation/attendance/qr-code/'+ data +'" target="_blank"> Get QR Code</a>';
+                }
+            },
+            {'data': 'date', 'className': 'text-center' },
+            {'data': 'time', 'className': 'text-center' },
+            {'data': 'status',
+                'render': function(data, type, row, meta) {
+                    if(data == 0) {
+                        return '<span class="label label-success">Time In</span>';
+                    } else if(data == 1) {
+                        return '<span class="label label-default">Time Out</span>';
+                    }
+                },
+                'className': 'text-center'
+            },
+        ]
+    });
+
+    $('#print-qr-code').on('click', function(){
+        var section_id = $('#section').val();
+        var aoa_id = $('#aoa').val();
+        let a = document.createElement('a');
+        a.target= '_blank';
+        a.href= "/convocation/print/qr-code/" + section_id + '/' + aoa_id;
+        a.click();
+    });
+
+    $('#filter-button').on('click', function(){
+        var section_id = $('#section').val();
+        var aoa_id = $('#aoa').val();
+        $('#print-qr-code').removeClass('display-none');
+
+        $.post({
+            url: "{% url 'convocation_generate_employee_list' %}",
+            data: {
+                section_id: section_id,
+                aoa_id: aoa_id
+            },
+            success: function(response){
+                employee = response.data;
+
+                $('#employee-list-content tbody').empty();
+
+                var template = "";
+                for (var i=0; i < employee.length; i++){
+                    template += `<tr>
+                        <td>` + employee[i]['full_name'] + `</td>
+                        <td class="text-center">` + employee[i]['position'] + `</td>
+                        <td class="text-center">` + employee[i]['area_of_assignment'] + `</td>
+                        <td class="text-center">` + employee[i]['crypto'] + `</td>
+                    </tr>`
+                }
+
+                $('#employee-list-content tbody').append(template);
+            }
+        })
+    });
+</script>
+{% endblock %}

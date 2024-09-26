@@ -1,0 +1,23 @@
+<div class="form-group">
+    <label>City<span class="asteriskField">*</span></label>
+    <select class="form-control select-city b-r-sm" id="city" name="city" autocomplete="off" required>
+        <option></option>
+        {% for row in city %}
+        <option value="{{ row.id }}" data-role="city" data-id="{{ row.code }}">{{ row.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<script>
+    $('.select-city').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#city').on('change', function() {
+		var id = $(this).find(':selected').data('id');
+		if (id !== '') {
+            $('#brgy-content').load('/application/show-brgy/' + id);
+        }
+    });
+</script>

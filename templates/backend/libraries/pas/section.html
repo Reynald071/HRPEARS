@@ -1,0 +1,124 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="wrapper wrapper-content">
+	<div class="ibox">
+		<div class="ibox-title">
+			<h5>Add Area of Assignment</h5>
+		</div>
+		<div class="ibox-content">
+			<form id="submitForm" novalidate="">
+				{% csrf_token %}
+				{{ form.name|as_crispy_field }}
+				{{ form.status|as_crispy_field }}
+				<button class="btn btn-info">Submit</button>
+			</form>
+		</div>
+	</div>
+	<div class="ibox">
+		<div class="ibox-title">
+			<h5>Area of Assignment List</h5>
+		</div>
+		<div class="ibox-content">
+			{% if messages %}
+			    {% for message in messages %}
+			        <div class="alert alert-{{ message.tags }}" style="width: 100%;">
+			            <i class="fas fa-check-circle"></i> {{ message }}
+			        </div>
+			    {% endfor %}
+			{% endif %}
+			<form method="get">
+				<div class="input-group form-group">
+					<span class="input-group-addon"><i class="fas fa-search"></i></span>
+					<input type="text" class="form-control" placeholder="Search Area of Assignment.." name="search">
+				</div>
+			</form>
+			<form role="form" class="form-inline">
+				Show
+				<select class="form-control input-sm" id="rows" onchange="window.location = '{% url 'aoa' %}?rows=' + document.getElementById('rows').value;">
+					<option value="10" {% if rows == "10" %}selected="selected"{% endif %}>10</option>
+					<option value="25" {% if rows == "25" %}selected="selected"{% endif %}>25</option>
+					<option value="50" {% if rows == "50" %}selected="selected"{% endif %}>50</option>
+				</select>
+				Rows
+				<div class="pull-right">
+				Showing <strong>{{ aoa.start_index }} - {{ aoa.end_index }}</strong> of <strong>{{ aoa.paginator.count }}</strong>&emsp;
+				<div class="btn-group">
+					{% if aoa.has_other_pages %}
+					  {% if aoa.has_previous %}
+						<a class="btn btn-default btn-sm" href="?page={{ aoa.previous_page_number }}"><i class="fa fa-angle-left"></i></a>
+					  {% else %}
+						<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-left"></i></a>
+					  {% endif %}
+					  {% if aoa.has_next %}
+						<a class="btn btn-default btn-sm" href="?page={{ aoa.next_page_number }}"><i class="fa fa-angle-right"></i></a>
+					  {% else %}
+						<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-right"></i></a>
+					  {% endif %}
+					{% endif %}
+					<a class="btn btn-white btn-sm" href="{% url 'aoa' %}"><i class="fas fa-sync-alt"></i></a>
+				</div>
+				</div>
+			</form>
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th width="5%">Action</th>
+						<th>Name</th>
+						<th>Status</th>
+						<th>Upload by</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for row in aoa %}
+					<tr>
+						<td>
+							<center>
+								<a href="{% url 'aoa-update' row.id %}"><i class="fas fa-pen"></i></a>
+							</center>
+						</td>
+						<td width="70%">{{ row.name }}</td>
+						<td>{% if row.status %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+						<td>{{ row.upload_by.get_fullname }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$('#submitForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		$.ajax({
+			url: "{% url 'section' %}",
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				$('.error').remove();
+
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else {
+                    window.location.reload()
+                }
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+</script>
+{% endblock %}

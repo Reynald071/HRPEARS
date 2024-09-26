@@ -1,0 +1,158 @@
+<form id="submitEditForm">
+<div class="modal-body">
+    {% csrf_token %}
+    <div id="alertEditDiv"></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Number<span class="asteriskField">*</span></label>
+                <input type="text" name="number" class="form-control b-r-sm" value="{{ position.number }}" required>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Item Number<span class="asteriskField">*</span></label>
+                <input type="text" name="item_number" class="form-control b-r-sm" value="{{ position.item_number }}" required>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Position<span class="asteriskField">*</span></label>
+                <select class="form-control select b-r-sm" id="position" name="position" required>
+                    <option></option>
+                    {% for row in position_choices %}
+                    {% if row.id == position.position_id %}
+                    <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.id }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Employment Status<span class="asteriskField">*</span></label>
+                <select class="form-control select b-r-sm" id="empstatus" name="empstatus" required>
+                    <option></option>
+                    {% for row in empstatus %}
+                    {% if row.id == position.empstatus_id %}
+                    <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.id }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Area of Assignment<span class="asteriskField">*</span></label>
+                <select class="form-control select b-r-sm" id="aoa" name="aoa" required>
+                    <option></option>
+                    {% for row in aoa %}
+                    {% if row.id == position.aoa_id %}
+                    <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.id }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Quantity<span class="asteriskField">*</span></label>
+                <input type="number" name="quantity" class="form-control b-r-sm" value="{{ position.quantity }}" required>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Salary Rate<span class="asteriskField">*</span></label>
+                <input type="number" name="rate" class="form-control b-r-sm" value="{{ position.salary_rate }}" required>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Salary Grade<span class="asteriskField">*</span></label>
+                <select class="form-control select b-r-sm" id="grade" name="grade" required>
+                    <option></option>
+                    {% for row in salary_grade %}
+                    {% if row.id == position.salary_grade_id %}
+                    <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.id }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Deadline</label>
+                <input type="date" name="deadline" class="form-control b-r-sm" value="{{ position.deadline|date:'Y-m-d' }}">
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label>Job Description</label>
+                <textarea name="job_description" class="form-control" rows="8">{{ position.job_description }}</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info" id="btnSaveForm">Save</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#submitEditForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this record?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "edit_position" position.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == 'success'){
+                Swal.fire({
+                    title: "Good job!",
+                    text: "Vacancy successfully updated.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#edit-position-modal').modal('show').find('#edit-content-position').empty();
+			            $('#edit-position-modal').modal('show').find('#edit-content-position').load("{% url 'edit_position' position.id %}");
+                        $('#table-drafts').DataTable().ajax.reload();
+                        $('#table-vacancy').DataTable().ajax.reload();
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

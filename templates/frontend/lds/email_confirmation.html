@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <title>DSWD My PORTAL | Email Confirmation</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/font-awesome.css' %}" rel="stylesheet">
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+
+<body class="white-bg">
+    <div class="container">
+        <div class="row" style="margin-top: 150px;">
+            <div class="col-lg-6">
+                <img loading="lazy"  src="{% static 'image/l&d.png' %}" width="100%">
+            </div>
+            <div class="col-lg-6">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <img loading="lazy"  src="{% static 'image/portal_logo.png' %}" width="50%">
+                        <br><br><br>
+                        <p>Title:</p>
+                        <h2><strong>{{ data.rso.training.tt_name }}</strong></h2><br>
+                        <p>Venue / Online Platform:</p>
+                        <h2><strong>{{ data.rso.venue }}</strong></h2><br>
+                        <p>Date:</p>
+                        <h2><strong>{{ data.rso.get_inclusive_dates }}</strong></h2>
+                        <br><br>
+                        <p style="font-size: 17px;">
+                            Thank you for confirming your attendance. We will be looking forward
+                            to meeting you there. For any issues and concerns regarding
+                            the training or an event, please visit us in the Learning and Development Section. Thank you
+                            <br><br>
+                            <em>- The Learning and Development Team</em>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h1 class="bold">MOVs</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                MOVs
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+        <div class="title-action">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="year" value="{{ current_year }}" required autocomplete="off"> <span class="input-group-btn"> <button type="button" class="btn btn-info" id="filter-year" style="height: 34px;">Filter</button> </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <p class="bold">PAYROLL</p>
+                </div>
+                <div class="ibox-content" style="padding:0px !important">
+                    <div class="list-group">
+                        {% for row in mov_type %}
+                            {% if row.type == 0 %}
+                            <a class="list-group-item type" id="mov-id-{{ row.id }}" data-id="{{ row.id }}" data-role="type">&emsp;{{ row.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="ibox">
+                <div class="ibox-title">
+                    <p class="bold">REMITTANCES</p>
+                </div>
+                <div class="ibox-content" style="padding:0px !important">
+                    <div class="list-group">
+                        {% for row in mov_type %}
+                            {% if row.type == 1 %}
+                            <a class="list-group-item type" id="mov-id-{{ row.id }}" data-id="{{ row.id }}" data-role="type">&emsp;{{ row.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="ibox">
+                <div class="ibox-content" id="mov-content">
+                    <center>
+                        <img loading="lazy"  src="{% static 'image/filter.png' %}" width="40%">
+                        <p class="no-margins"><strong>No data available.</strong></p>
+                        <small>You can use the navigation to select the payroll movs type.</small>
+                    </center>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).on('click', 'a[data-role=type]', function(){
+        $('.type').each(function(){
+            $(this).removeClass('active');
+        });
+
+        var id = $(this).data('id');
+        $("#mov-id-" + id).addClass('active');
+        callPage("/backend/payroll/movs/view/" + id);
+    });
+
+    function callPage(pageRefInput) {
+        $.ajax({
+            url: pageRefInput,
+            type: "GET",
+            dataType: 'text',
+            beforeSend: function() {
+                $('#mov-content').empty();
+                $('#mov-content').append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+            },
+            success: function(response) {
+                $('#mov-content').html(response);
+            },
+            complete: function() {
+                $('#preloader').css('display', 'none');
+            }
+        });
+    }
+</script>
+{% endblock %}

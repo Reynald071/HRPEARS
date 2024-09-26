@@ -1,0 +1,88 @@
+{% extends 'landing/layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<style>
+    .text-underline {
+        text-decoration: underline;
+    }
+    @media only screen and (min-width: 992px) {
+        #content-wrapper {
+            width: 60%;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div id="content-wrapper" class="p-4 ml-0 mx-auto">
+    <h1 class="text-center font-weight-bold mt-3">Vacancies <span class="badge badge-info">&nbsp;{{ vacancy_count }}&nbsp;</span></h1>
+    <div class="row mb-5">
+        <div class="col-lg-4 offset-lg-8">
+            <form method="GET">
+                <div class="input-group mt-5">
+                    <input type="search" name="search" class="form-control" placeholder="Search..." value="{{ search }}">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-info" type="submit"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        {% if vacancy %}
+            {% for row in vacancy %}
+            <div class="col-xl-6">
+                <div class="card card-info card-outline">
+                    <div class="card-body" style="font-size: 15px;">
+                        <h3 class="mb-3" style="font-size: 18px;">{{ row.position.name }} - {{ row.empstatus.name }}</h3>
+                        <p>Salary Rate: <span class="text-underline">{{ row.salary_rate }}</span></p>
+                        <p>Salary Grade: <span class="text-underline">{{ row.salary_grade.name }}</span></p>
+                        <p>Area of Assignment: <span class="text-underline">{{ row.aoa.name }}</span></p>
+                        <p>Quantity: <span class="text-underline">{{ row.quantity }}</span></p>
+                        <p>Deadline: <span class="text-underline">{{ row.deadline }}</span></p>
+                    </div>
+                    <div class="card-footer">
+                        {% generate_token row.id as token %}
+                        <button class="btn btn-info float-right" data-role="details" data-id="{{ token }}">Details</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-xl-12">
+                <div class="card card-info card-outline">
+                    <div class="card-body text-center">
+                        <br><br>
+                        <img src="{% static 'image/no-results.png' %}" >
+                        <h3>There is no vacancy to show you right now.</h3>
+                        <br><br>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+<div class="modal" id="vacancy-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog vacancy-modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					JOB VACANCY DETAILS
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<div id="vacancy-details"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(document).on('click', 'button[data-role=details]', function () {
+            $('#vacancy-modal').modal('show').find('#vacancy-details').load('/vacancy/details/' + $(this).data('id'));
+        });
+    });
+</script>
+{% endblock %}

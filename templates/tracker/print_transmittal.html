@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Transmittal</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'tracker/img/tracker-logo.png' %}"/>
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0px !important;
+				border: 0.5px solid transparent;
+			}
+            body{-webkit-print-color-adjust: exact !important;}
+		}
+
+        .padding-10 {
+            padding: 5px !important;
+        }
+    </style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Tracking No. <strong>{{ package.tracking_no }}</strong></a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><button type="button" class="btn btn-info print-button" id="floatprint" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+	<page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+		<div class="containerX">
+            <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="25%">&emsp;&emsp;&emsp;
+			<br>
+			<span style="font-family: Times New Roman; font-size: 10.7px;" contenteditable="true"><em>DSWD-GF-010</em> | <em>REV 01 / 17 AUG 2022</em></span>
+            <br><br>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td class="padding-10">FOR</td>
+                        <td class="padding-10">:</td>
+                        <td class="padding-10" contenteditable="true">
+                            <strong>
+                                PERSONNEL ADMINISTRATION SECTION
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="padding-10">FROM</td>
+                        <td class="padding-10">:</td>
+                        <td class="padding-10">
+                            <strong>
+                                {{ package.createdby.section.sec_name|upper }}
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="padding-10">DATE</td>
+                        <td class="padding-10">:</td>
+                        <td class="padding-10">
+                            <strong>
+                                {{ package.date_created|date:'F d, Y'|upper }}
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="padding-10">SUBJECT</td>
+                        <td class="padding-10">:</td>
+                        <td class="padding-10">
+                            <strong>
+                                {{ package.doctype.name|upper }}
+                            </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="padding-10">TRACKING NUMBER</td>
+                        <td class="padding-10">:</td>
+                        <td class="padding-10">
+                            <strong>
+                                {{ package.tracking_no }}
+                            </strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr>
+            Please find enclosed the <strong>{{ package.doctype.name }}</strong> of the following employees, along with the relevant details and information provided below.
+            <br><br>
+            <table border="1" width="100%">
+                <tbody>
+                    {% for row in first_page %}
+                    {% if row.other_info == 1 %}
+                    <tr>
+                        <td class="padding-10 text-center" colspan="3"><strong>{{ row.full_name }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>Code</strong></td>
+                        <td class="padding-10"><strong>No.</strong></td>
+                        <td class="padding-10"><strong>Employee Name</strong></td>
+                        <td class="text-center padding-10"><strong>Document Information</strong></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td class="text-center">
+                            <div id="color-coding" style="display: inline-block; height: 15px; width: 15px; background-color: {{ row.color }} !important;"></div>
+                            <p id="color-text" style="display: inline-block; margin-left: 5px; vertical-align: top; margin-bottom: 0px !important;">{{ row.color|slice:":1"|upper }}</p>
+                        </td>
+                        <td class="padding-10">{{ row.id }}</td>
+                        <td class="padding-10">{{ row.full_name }}</td>
+                        <td class="text-center padding-10">{{ row.other_info }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if pagination == 1 %}
+            <br>
+            Kindly acknowledge upon receipt.
+            <br><br><br>
+            Thank you.
+            <br><br>
+            <strong>{{ package.createdby.pi.user.get_fullname|upper }}</strong>
+            {% else %}
+			<br><br>
+			<center>
+				<small>
+					----------------------------------------------- continuation on next page -----------------------------------------------
+				</small>
+			</center>
+			{% endif %}
+            <div style="position: absolute; left: 0; bottom: 0; overflow:hidden;">
+				<br><br>
+				<center>
+					<small style="position: absolute; margin-left: 270px;">Page 1 of {{ pagination }}</small>
+					<img class="img-fluid" src="{% static 'image/footer.png' %}" width="100%">
+				</center>
+            </div>
+        </div>
+    </page>
+    {% for page in actual_pagination|times %}
+    {% if forloop.first %}
+        <page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+            <div class="containerX">
+                <table border="1" width="100%">
+                    <tbody>
+                        {% for row in pages|slice:":27" %}
+                        {% if row.other_info == 1 %}
+                        <tr>
+                            <td class="padding-10 text-center" colspan="3"><strong>{{ row.full_name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-center"><strong>Code</strong></td>
+                            <td class="padding-10"><strong>No.</strong></td>
+                            <td class="padding-10"><strong>Employee Name</strong></td>
+                            <td class="text-center padding-10"><strong>Document Information</strong></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="text-center">
+                                <div id="color-coding" style="display: inline-block; height: 15px; width: 15px; background-color: {{ row.color }} !important;"></div>
+                                <p id="color-text" style="display: inline-block; margin-left: 5px; vertical-align: top; margin-bottom: 0px !important;">{{ row.color|slice:":1"|upper }}</p>
+                            </td>
+                            <td class="padding-10">{{ row.id }}</td>
+                            <td class="padding-10">{{ row.full_name }}</td>
+                            <td class="text-center padding-10">{{ row.other_info }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if actual_pagination == 1 %}
+                <br>
+                Kindly acknowledge upon receipt.
+                <br><br><br>
+                Thank you.
+                <br><br>
+                <strong>{{ package.createdby.pi.user.get_fullname|upper }}</strong>
+                {% else %}
+                <br><br>
+                <center>
+                    <small>
+                        ----------------------------------------------- continuation on next page -----------------------------------------------
+                    </small>
+                </center>
+                {% endif %}
+                <br><br>
+                <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+                    <br>
+                    <center>
+                        <small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+                        <img class="img-fluid" src="{% static 'image/footer-2.png' %}" width="100%">
+                    </center>
+                </div>
+            </div>
+        </page>
+    {% elif forloop.last %}
+        <page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+            <div class="containerX">
+                <table border="1" width="100%">
+                    <tbody>
+                        {% get_page_range page 27 as page_range %}
+					    {% for row in pages|slice:page_range.0 %}
+                        {% if row.other_info == 1 %}
+                        <tr>
+                            <td class="padding-10 text-center" colspan="3"><strong>{{ row.full_name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-center"><strong>Code</strong></td>
+                            <td class="padding-10"><strong>No.</strong></td>
+                            <td class="padding-10"><strong>Employee Name</strong></td>
+                            <td class="text-center padding-10"><strong>Document Information</strong></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="text-center">
+                                <div id="color-coding" style="display: inline-block; height: 15px; width: 15px; background-color: {{ row.color }} !important;"></div>
+                                <p id="color-text" style="display: inline-block; margin-left: 5px; vertical-align: top; margin-bottom: 0px !important;">{{ row.color|slice:":1"|upper }}</p>
+                            </td>
+                            <td class="padding-10">{{ row.id }}</td>
+                            <td class="padding-10">{{ row.full_name }}</td>
+                            <td class="text-center padding-10">{{ row.other_info }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <br>
+                Kindly acknowledge upon receipt.
+                <br><br><br>
+                Thank you.
+                <br><br>
+                <strong>{{ package.createdby.pi.user.get_fullname|upper }}</strong>
+                <br><br>
+                <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+                    <br>
+                    <center>
+                        <small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+                        <img class="img-fluid" src="{% static 'image/footer-2.png' %}" width="100%">
+                    </center>
+                </div>
+            </div>
+        </page>
+    {% else %}
+        <page size="A4" class="page" style="position: relative; padding: 40px 65px 65px 65px;">
+            <div class="containerX">
+                <table border="1" width="100%">
+                    <thead>
+                        <tr>
+                            <td class="text-center"><strong>Code</strong></td>
+                            <td class="padding-10"><strong>No.</strong></td>
+                            <th class="padding-10">Employee Name</th>
+                            <th class="text-center padding-10">Document Information</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% get_page_range page 27 as page_range %}
+					    {% for row in pages|slice:page_range.0 %}
+                        <tr>
+                            <td class="text-center">
+                                <div id="color-coding" style="display: inline-block; height: 15px; width: 15px; background-color: {{ row.color }} !important;"></div>
+                                <p id="color-text" style="display: inline-block; margin-left: 5px; vertical-align: top; margin-bottom: 0px !important;">{{ row.color|slice:":1"|upper }}</p>
+                            </td>
+                            <td class="padding-10">{{ row.id }}</td>
+                            <td class="padding-10">{{ row.full_name }}</td>
+                            <td class="text-center padding-10">{{ row.other_info }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <br><br>
+                <center>
+                    <small>
+                        ----------------------------------------------- continuation on next page -----------------------------------------------
+                    </small>
+                </center>
+                <br><br>
+                <div style="position: absolute; left: 0; bottom: 0; width: 100%; overflow:hidden;">
+                    <br>
+                    <center>
+                        <small style="position: absolute; margin-left: 330px;">Page {{ page|add:2 }} of {{ pagination }}</small>
+                        <img class="img-fluid" src="{% static 'image/footer-2.png' %}" width="100%">
+                    </center>
+                </div>
+            </div>
+        </page>
+    {% endif %}
+    {% endfor %}
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

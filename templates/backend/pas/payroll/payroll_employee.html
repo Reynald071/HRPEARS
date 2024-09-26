@@ -1,0 +1,328 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Employee Management</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                <strong>Employee Management</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    {% if request.GET.search and employee.paginator.count == 0 %}
+                        <div class="col-xs-12">
+                            <a href="{% url 'payroll_employee' %}" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+                        </div>
+                        <br>
+                        <hr>
+                    {% else %}
+                        <div class="pull-left">
+                            <a class="btn btn-info" data-role="create_empgroup"><i class="fas fa-plus"></i> Create Employee Group</a>
+                            <div class="btn-group">
+                                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><i class="fas fa-file-export"></i> Process to <span class="caret"></span></button>
+                                <ul class="dropdown-menu">
+                                    {% if employee_group %}
+                                    {% for row in employee_group %}
+                                    <li><a class="dropdown-item move_selected" href="javascript:;" data-id="{{ row.id }}">{{ row.name }}</a></li>
+                                    {% endfor %}
+                                    <li class="divider"></li>
+                                    <li><a class="dropdown-item" href="javascript:;" id="delete_selected">Delete</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="pull-right" style="padding-right:5px">
+                            Showing {{ employee.start_index }} - {{ employee.end_index }} of {{ employee.paginator.count }} entries&emsp;
+                            <div class="btn-group">
+                                {% if employee.has_other_pages %}
+                                    {% if employee.has_previous %}
+                                        <a class="btn btn-default" href="?page={{ employee.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                                    {% else %}
+                                        <a class="btn btn-default disabled">Previous</a>
+                                    {% endif %}
+                                    {% for row in employee.paginator.page_range %}
+                                        {% if employee.number == row %}
+                                            <a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                        {% elif row > employee.number|add:-3 and row < employee.number|add:3 %}
+                                            <a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if employee.has_next %}
+                                        <a class="btn btn-default" href="?page={{ employee.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                                    {% else %}
+                                        <a class="btn btn-default disabled">Next</a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <a class="btn btn-default" href="{% url 'payroll_employee' %}">Refresh</a>
+                        </div>
+                        <form id="submitForm">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group col-md-10">
+                                <label>&nbsp;</label>
+                                <input type="text" class="form-control typeahead_2 filter_employee" name="employee_name" id="employee_name" placeholder="e.g. [16-12345] JUAN DELA CRUZ" autocomplete="off">
+                                <span class="form-text m-b-none text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>&nbsp;</label>
+                                <div class="btn-group btn-group-justified">
+                                    <div class="btn-group">
+                                        <button type="submit" class="btn btn-info" id="submit">Add</button>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a type="button" class="btn btn-white" href="{% url 'payroll_employee' %}">Reset</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </form>
+                    {% endif %}
+                    {% if request.GET.search and employee.paginator.count == 0 %}
+                        <div style="padding:0px 15px !important; text-align:center;">
+                            <div class="row" style="padding-bottom:15px">
+                                <div class="" style="text-align:center;">
+                                    <img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="height:250px; width:auto; margin: 0 auto; object-fit:cover;">
+                                </div>
+                                <div class="row col-md-6 col-md-offset-3">
+                                    <form method="get">
+                                        <div class="input-group form-group">
+                                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" placeholder="Search employee.." name="search" value="{{ request.GET.search }}">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="row col-md-6 col-md-offset-3">
+                                    <p>
+                                        Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.search %}{{ request.GET.search }}{% endif %}'</i>. Please try another keyword.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                    <form method="get">
+                        <div class="input-group form-group">
+                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search Employee.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th class="text-left">ACTION</th>
+                                <th><input type="checkbox" name="selectAll"></th>
+                                <th class="text-center">STATUS</th>
+                                <th>ID NUMBER</th>
+                                <th>NAME (SURNAME, FIRST NAME M.I., EXT.)</th>
+                                <th>POSITION</th>
+                                <th>EMPLOYMENT STATUS</th>
+                                <th class="text-center">IS PER DAY</th>
+                                <th>SALARY RATE</th>
+                                <th>SALARY GRADE</th>
+                                <th>AREA OF ASSIGNMENT</th>
+                                <th>FUND CHARGE</th>
+                                <th>EMPLOYEE GROUP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in employee %}
+                            <tr id="{{ row.id }}">
+                                <td class="text-left">
+                                    <a href="javascript:;" data-id="{{ row.emp_id }}" data-role="edit">Edit</a>
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="checkBox" name="checkBox[]" value="{{ row.id }}">
+                                </td>
+                                <td class="text-center">
+                                    {% if row.status == 1 %}
+                                    <span class="label label-primary">Incumbent</span>
+                                    {% elif row.status == 2 %}
+                                    <span class="label label-danger">Separated</span>
+                                    {% elif row.status == 3 %}
+                                    <span class="label label-warning">On-Hold</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.emp.id_number }}</td>
+                                <td>{{ row.emp.pi.user.last_name|upper }}, {{ row.emp.pi.user.first_name|upper }} {{ row.emp.pi.user.middle_name|to_middleinitial }} {{ row.emp.pi.ext.name|upper }}</td>
+                                <td>{{ row.emp.position.acronym }}</td>
+                                <td>{{ row.emp.empstatus.acronym }}</td>
+                                <td class="text-center">
+                                    {% if row.is_per_day %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.emp.salary_rate }}</td>
+                                <td>{{ row.emp.salary_grade }}</td>
+                                <td>{{ row.emp.aoa.name }}</td>
+                                <td>{{ row.emp.fundsource.name }}</td>
+                                <td>{% if row.empgroup.name %}{{ row.empgroup.name }}{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="edit" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">EMPLOYEE INFORMATION</h3>
+
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="employee-group" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">CREATE EMPLOYEE GROUP</h3>
+
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(':checkbox[name=selectAll]').click (function () {
+        $('.checkBox').prop('checked', this.checked);
+    });
+
+    $('.move_selected').click (function() {
+        var empgroup = $(this).data('id');
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if (counter > 0) {
+            if (confirm('Are you sure you want to process selected data?')) {
+                processSelected(data, type="move", empgroup);
+            }
+        } else {
+            alert('There are currently no selected entry to process.');
+        }
+    });
+
+    $('#delete_selected').click (function() {
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if (counter > 0) {
+            if (confirm('Are you sure you want to process selected data?')) {
+                processSelected(data, type="delete", "");
+            }
+        } else {
+            alert('There are currently no selected entry to process.');
+        }
+    });
+
+    function processSelected(data, type, empgroup){
+        $.ajax({
+            data        : {
+                data: data,
+                type: type,
+                empgroup: empgroup
+            },
+            url         : "{% url 'process_employee' %}",
+            type        : 'POST',
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                window.location.href = "{% url 'payroll_employee' %}";
+            } else {
+                $('.form-text').text(data.msg);
+            }
+        });
+    }
+
+    $(document).on('click', 'a[data-role=create_empgroup]', function(){
+        $('#employee-group').modal('show').find('.modal-body').empty();
+        $('#employee-group').modal('show').find('.modal-body').load('{% url "employee_group" %}');
+    });
+
+    $(".filter_employee").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $('#submitForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : "{% url 'payroll_employee' %}",
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                window.location.href = "{% url 'payroll_employee' %}";
+            } else {
+                $('.form-text').text(data.msg);
+            }
+        });
+    });
+
+    $(document).on('click', 'a[data-role=edit]', function(){
+        var employee_id = $(this).data('id');
+        $('#edit').modal('show').find('.modal-body').load('/backend/payroll/employee/edit/' + employee_id);
+    });
+
+    $('#edit').on('hidden.bs.modal', function () {
+        window.location.href = "{% url 'payroll_employee' %}";
+    });
+    $('#employee-group').on('hidden.bs.modal', function () {
+        window.location.href = "{% url 'payroll_employee' %}";
+    });
+</script>
+{% endblock %}

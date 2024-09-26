@@ -1,0 +1,43 @@
+<button type="button" class="btn btn-info pull-right" id="btn-generate-intro-letter-layout">Generate</button>
+<br><br><br>
+<table class="table table-bordered" width="100%" id="intro-letter-data-table">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>DRN</th>
+            <th>Date Created</th>
+            <th>Created by</th>
+        </tr>
+    </thead>
+</table>
+{% block script %}
+<script>
+    $('#btn-generate-intro-letter-layout').on('click', function(){
+        callIntroLetterPage('{% url "intro_letter_layout" employee.id_number %}');
+    });
+
+    $('#intro-letter-data-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 2, 'desc' ]],
+        'ajax': {
+            'url': '/api/recruitment-selection-and-placement/intro-letter/?format=datatables&pk='+'{{ employee.id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    return '<a href="/recruitment-selection-and-placement/intro-letter/print/'+ data +'" target="_blank">View</a>'
+                }
+            },
+            {'data': 'generated_drn' },
+            {'data': 'date_created', 'className': 'text-center' },
+            {'data': 'created_by', 'className': 'text-right' },
+        ],
+    });
+</script>
+{% endblock %}

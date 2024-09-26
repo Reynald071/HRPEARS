@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Attendance Sheet</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			page {
+				margin: 0 !important;
+				padding: 20px 30px 30px 30px !important;
+				border: 0.5px solid transparent;
+				height: 205mm !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		}
+
+		@page {
+			size: auto;
+		}
+
+		td{
+			padding: 5px !important;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;"><strong>Attendance Sheet&emsp;<small><em>Note: Set margin to None</em></small></strong></a>
+		<ul class="navbar-nav ml-auto">
+			<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	{% for date in dates %}
+	{% for page in pagination|times %}
+    {% getemployeebyempid training.created_by_id as office_unit %}
+	{% if forloop.first %}
+	<page size="A4" layout="landscape" class="page" style="padding: 30px; color: black;">
+		<div class="containerX" style="page-break-after: always !important;">
+			<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="10%">&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="4%" style="margin-top: -10px;">
+			<br>
+			<span style="margin-top: -50px; margin-right: 100px !important;" class="float-right text-center">
+				<span style="font-family: Times New Roman; font-size: 10.7px;"><strong>DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT</strong></span><br>
+				<span style="font-family: Times New Roman; font-size: 9.3px;">
+                    {% if office_unit %}
+                        <strong>{{ office_unit.section.sec_name|upper }}</strong>
+                    {% else %}
+                        <strong>FIELD OFFICE X</strong>
+                    {% endif %}
+                </span><br>
+				<span style="font-family: Times New Roman; font-size: 8px;"><em>DSWD-GF-001</em> | <em>REV 02 / 17 AUG 2022</em></span>
+			</span>
+            <hr>
+			<div style="margin-top: -10px">
+			<p class="text-center mb-1" style="font-size: 10.7px;">
+				<strong>ATTENDANCE SHEET</strong>
+			</p>
+			<p class="text-center m-0" style="font-size: 9.3px;">
+				<strong>{{ training.training.tt_name|upper }}</strong><br>
+				<strong>{{ date }}</strong><br>
+				<strong>{{ training.venue }}</strong>
+			</p>
+			<table border="1" width="100%" style="font-size: 8px;">
+				<thead>
+					<tr>
+						<th class="text-center" rowspan="2" rowspan="2" width="3%">NO.</th>
+						<th class="text-center" rowspan="2" width="20%">NAME</th>
+						<th class="text-center" rowspan="2" width="5%">OFFICE/SERVICE/ DIVISION/UNIT</th>
+						<th class="text-center" rowspan="2" width="6%">POSITION</th>
+						<th class="text-center" rowspan="2" width="5%">GENDER</th>
+						<th class="text-center" rowspan="2" width="20%">EMAIL</th>
+						<th class="text-center" rowspan="2" width="10%">CONTACT NO.</th>
+						<th class="text-center" colspan="2" width="5%">AM</th>
+						<th class="text-center" colspan="2" width="5%">PM</th>
+						<th class="text-center" rowspan="2" width="10%">SIGNATURE</th>
+						<th class="text-center" rowspan="2" width="10%">REMARKS/OTHER INFORMATION</th>
+					</tr>
+					<tr>
+						<th class="text-center" width="2.5%">IN</th>
+						<th class="text-center">OUT</th>
+						<th class="text-center" width="2.5%">IN</th>
+						<th class="text-center">OUT</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for row in participants_and_facilitators|slice:":20" %}
+					<tr>
+						<td class="text-center">{{ forloop.counter }}</td>
+						<td class="text-center">{{ row.employee_name|upper }}</td>
+						<td class="text-center">{{ row.section }}</td>
+						<td class="text-center">{{ row.position }}</td>
+						<td class="text-center">{{ row.sex }}</td>
+						<td class="text-center">{{ row.email }}</td>
+						<td class="text-center">{{ row.contact_number }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<p style="font-size: 9.3px">
+				This document is intended to meet the requirements set forth by the ISO QMS addressing certified records of regularly conducted activity.
+				 I do solemly swear that the activity was conducted in accordance to set standards and guidelines to the best of my knowledge and belief.
+			</p>
+			<p style="font-size: 9.3px; margin-top: -10px;" class="text-center">
+				{% getemployeebyempid training.created_by.section.sec_head_id as ld_head_obj %}
+				<strong>{{ ld_head_obj.pi.user.get_fullname|upper }}</strong>
+			</p>
+			<hr style="margin-top: -10px;">
+			<p style="font-size: 9.3px; margin-top: -15px;" class="text-center">
+				{{ training.created_by.section.sec_acronym }}, Head / {{ ld_head_obj.position.acronym }}
+			</p>
+			<div>
+				<p style="font-size: 8px; margin-top: 15px;" class="text-center">
+					Page {{ page|add:1 }} of {{ pagination }}
+				</p>
+				<hr width="50%" style="margin-top: -10px;">
+				<p style="font-size: 9.3px; margin-top: -15px; font-family: Times New Roman;" class="text-center">
+					DSWD Field Office X, Masterson Ave, Upper Carmen, 9000 Cagayan de Oro City, Philippines<br>
+					Website: www.fo10.dswd.gov.ph&emsp;&emsp;Telefax (63)(88)858-6333
+				</p>
+			</div>
+			<div class="float-right" style="margin-top: -60px;">
+				<img loading="lazy"  src="{% static 'image/socotec.png' %}" width="80px">
+			</div>
+			</div>
+        </div>
+    </page>
+	{% else %}
+	<page size="A4" layout="landscape" class="page" style="padding: 10px 30px 30px 30px; color: black;">
+		<div class="containerX" style="page-break-after: always !important;">
+			<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="10%">&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="4%" style="margin-top: -10px;">
+			<br>
+			<span style="margin-top: -50px; margin-right: 100px !important;" class="float-right text-center">
+				<span style="font-family: Times New Roman; font-size: 10.7px;"><strong>DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT</strong></span><br>
+				<span style="font-family: Times New Roman; font-size: 9.3px;">
+                    {% if office_unit %}
+                        <strong>{{ office_unit.section.sec_name|upper }}</strong>
+                    {% else %}
+                        <strong>FIELD OFFICE X</strong>
+                    {% endif %}
+                </span><br>
+				<span style="font-family: Times New Roman; font-size: 8px;"><em>DSWD-GF-001</em> | <em>REV 00 / 17 AUG 2022</em></span>
+			</span>
+            <hr>
+			<div style="margin-top: -10px">
+			<p class="text-center" style="font-size: 10.7px;">
+				<strong>ATTENDANCE SHEET</strong>
+			</p>
+			<p class="text-center" style="font-size: 9.3px;">
+				<strong>{{ training.training.tt_name|upper }}</strong><br>
+				<strong>{{ date }}</strong><br>
+				<strong>{{ training.venue }}</strong>
+			</p>
+			<table border="1" width="100%" style="font-size: 8px;">
+				<thead>
+					<tr>
+						<th class="text-center" rowspan="2" rowspan="2" width="3%">NO.</th>
+						<th class="text-center" rowspan="2" width="20%">NAME</th>
+						<th class="text-center" rowspan="2" width="5%">OFFICE/SERVICE/ DIVISION/UNIT</th>
+						<th class="text-center" rowspan="2" width="6%">POSITION</th>
+						<th class="text-center" rowspan="2" width="5%">GENDER</th>
+						<th class="text-center" rowspan="2" width="20%">EMAIL</th>
+						<th class="text-center" rowspan="2" width="10%">CONTACT NO.</th>
+						<th class="text-center" colspan="2" width="5%">AM</th>
+						<th class="text-center" colspan="2" width="5%">PM</th>
+						<th class="text-center" rowspan="2" width="10%">SIGNATURE</th>
+						<th class="text-center" rowspan="2" width="10%">REMARKS/OTHER INFORMATION</th>
+					</tr>
+					<tr>
+						<th class="text-center" width="2.5%">IN</th>
+						<th class="text-center">OUT</th>
+						<th class="text-center" width="2.5%">IN</th>
+						<th class="text-center">OUT</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% get_page_range page 20 as page_range %}
+					{% for row in participants_and_facilitators|slice:page_range.0 %}
+					<tr>
+						<td class="text-center">{{ forloop.counter|add:page_range.1 }}</td>
+						<td class="text-center">{{ row.employee_name|upper }}</td>
+						<td class="text-center">{{ row.section }}</td>
+						<td class="text-center">{{ row.position }}</td>
+						<td class="text-center">{{ row.sex }}</td>
+						<td class="text-center">{{ row.email }}</td>
+						<td class="text-center">{{ row.contact_number }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			<p style="font-size: 9.3px">
+				This document is intended to meet the requirements set forth by the ISO QMS addressing certified records of regularly conducted activity.
+				 I do solemly swear that the activity was conducted in accordance to set standards and guidelines to the best of my knowledge and belief.
+			</p>
+			<p style="font-size: 9.3px; margin-top: -10px;" class="text-center">
+				{% getemployeebyempid training.created_by.section.sec_head_id as ld_head_obj %}
+				<strong>{{ ld_head_obj.pi.user.get_fullname|upper }}</strong>
+			</p>
+			<hr style="margin-top: -10px; !important">
+			<p style="font-size: 9.3px; margin-top: -15px;" class="text-center">
+				{{ training.created_by.section.sec_acronym }}, Head / {{ ld_head_obj.position.acronym }}
+			</p>
+			<div>
+				<p style="font-size: 8px; margin-top: 15px;" class="text-center">
+					Page {{ page|add:1 }} of {{ pagination }}
+				</p>
+				<hr width="50%" style="margin-top: -10px;">
+				<p style="font-size: 9.3px; margin-top: -15px; font-family: Times New Roman;" class="text-center">
+					DSWD Field Office X, Masterson Ave, Upper Carmen, 9000 Cagayan de Oro City, Philippines<br>
+					Website: www.fo10.dswd.gov.ph&emsp;&emsp;Telefax (63)(88)858-6333
+				</p>
+			</div>
+			</div>
+        </div>
+    </page>
+	{% endif %}
+	{% endfor %}
+	{% endfor %}
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

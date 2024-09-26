@@ -1,0 +1,252 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<form id="submitForm">
+{% csrf_token %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Individual Development Plan</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:;">Learning and Development</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'idp' %}">Individual Development Plan</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Update</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                <button type="submit" class="btn btn-info"><i class="fas fa-check"></i> Save changes</button>
+                <a href="{% url 'print_idp' idp.id %}" class="btn btn-default" target="_blank"><i class="fas fa-print"></i> Print</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-5 ml-0">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card card-info card-outline">
+                <div class="card-body" id="load-idp-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+{% for row in type %}
+<div class="modal" id="zoom-idp-contents-{{ row.id }}" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    INDIVIDUAL DEVELOPMENT PLAN / {{ row.name|upper }}
+                </h3>
+                <button type="button" class="close text-white" id="close-zoom-{{ row.id }}" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Once you close this popup, this content will be automatically added on the fields.
+                </div>
+                <br>
+                <input type="hidden" id="idp-content-{{ row.id }}">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" class="form-control" id="m-title-{{ row.id }}">
+                </div>
+                <div class="form-group">
+                    <label>Current Status / Competency Level</label>
+                    <textarea rows="5" class="form-control" id="m-cc_level-{{ row.id }}"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Target Status / Competency Level / Level of Accomplishment</label>
+                    <textarea rows="5" class="form-control" id="m-target_level-{{ row.id }}"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Proposed Interventions to be Undertaken</label>
+                    <textarea rows="5" class="form-control" id="m-intervention-{{ row.id }}"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Target Date</label>
+                    <input type="month" class="form-control" id="m-target_date-{{ row.id }}">
+                </div>
+                <div class="form-group">
+                    <label>Results of Target</label>
+                    <textarea rows="5" class="form-control" id="m-results-{{ row.id }}"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Remarks / Next Steps</label>
+                    <textarea rows="5" class="form-control" id="m-remarks-{{ row.id }}"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+{% block script %}
+<script>
+    function callIDPPage(pageRefInput) {
+        $.ajax({
+            url: pageRefInput,
+            type: "GET",
+            dataType: 'text',
+            beforeSend: function() {
+                $('#load-idp-content').empty();
+                $('#load-idp-content').append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+            },
+            success: function(response) {
+                $('#load-idp-content').html(response);
+            },
+            complete: function() {
+                $('#preloader').css('display', 'none');
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        callIDPPage('{% url "view_idp_contents" idp.id %}');
+    });
+
+    $(document).on('click', 'button[data-role=zoom]', function(){
+        var id = $(this).data('id');
+
+        $('#m-title-1').val($('#title-'+id).val());
+        $('#m-cc_level-1').val($('#cc_level-'+id).val());
+        $('#m-target_level-1').val($('#target_level-'+id).val());
+        $('#m-intervention-1').val($('#intervention-'+id).val());
+        $('#m-target_date-1').val($('#target_date-'+id).val());
+        $('#m-results-1').val($('#results-'+id).val());
+        $('#m-remarks-1').val($('#remarks-'+id).val());
+        $('#idp-content-1').val(id);
+        $('#zoom-idp-contents-1').modal('show');
+    });
+
+    $(document).on('click','button[data-role="remove"]', function(){
+        var id = $(this).data('id');
+
+        if(id){
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to remove this contents",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        url: '{% url "remove_idp" %}',
+                        data: {
+                            pk: id
+                        },
+                        type: 'POST'
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            callIDPPage('{% url "view_idp_contents" idp.id %}');
+                        }
+                    });
+                }
+            });
+        } else {
+            $(this).closest('tr').remove();
+        }
+    });
+
+    $('#close-zoom-1').on('click', function(){
+        var id = $('#idp-content-1').val();
+
+        $('#title-'+id).val($('#m-title-1').val());
+        $('#cc_level-'+id).val($('#m-cc_level-1').val());
+        $('#target_level-'+id).val($('#m-target_level-1').val());
+        $('#intervention-'+id).val($('#m-intervention-1').val());
+        $('#target_date-'+id).val($('#m-target_date-1').val());
+        $('#results-'+id).val($('#m-results-1').val());
+        $('#remarks-'+id).val($('#m-remarks-1').val());
+    });
+
+    $('#close-zoom-2').on('click', function(){
+        var id = $('#idp-content-2').val();
+
+        $('#cmc-title-'+id).val($('#m-title-2').val());
+        $('#cmc-cc_level-'+id).val($('#m-cc_level-2').val());
+        $('#cmc-target_level-'+id).val($('#m-target_level-2').val());
+        $('#cmc-intervention-'+id).val($('#m-intervention-2').val());
+        $('#cmc-target_date-'+id).val($('#m-target_date-2').val());
+        $('#cmc-results-'+id).val($('#m-results-2').val());
+        $('#cmc-remarks-'+id).val($('#m-remarks-2').val());
+    });
+
+    $('#close-zoom-3').on('click', function(){
+        var id = $('#idp-content-3').val();
+
+        $('#ft-title-'+id).val($('#m-title-3').val());
+        $('#ft-cc_level-'+id).val($('#m-cc_level-3').val());
+        $('#ft-target_level-'+id).val($('#m-target_level-3').val());
+        $('#ft-intervention-'+id).val($('#m-intervention-3').val());
+        $('#ft-target_date-'+id).val($('#m-target_date-3').val());
+        $('#ft-results-'+id).val($('#m-results-3').val());
+        $('#ft-remarks-'+id).val($('#m-remarks-3').val());
+    });
+
+    $('#submitForm').on('submit', function(e){
+        var form = new FormData(this);
+	    Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to update the contents of your Individual Development Plan for the year {{ year }}",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "update_idp_contents" idp.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (response){
+		    if (response.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        callIDPPage('{% url "view_idp_contents" idp.id %}');
+                    }
+                });
+            }
+		});
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

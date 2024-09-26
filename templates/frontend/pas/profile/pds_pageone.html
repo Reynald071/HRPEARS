@@ -1,0 +1,719 @@
+{% load tags %}
+{% load frontend_tags %}
+{% block style %}
+<style type="text/css">
+	.pds th{
+		font-family: Arial Narrow;
+		text-transform: uppercase;
+	}
+
+	.pds td{
+		font-family: Arial Narrow;
+		padding: 6px 8px !important;
+	}
+
+	.text-capital{
+		text-transform: uppercase;
+	}
+	
+	.padding-zero{
+		padding: 0px !important;
+	}
+	.font-small{
+		font-size: 13px;
+	}
+
+	.font-xsmall{
+		font-size: 11px;
+	}
+
+	.font-xxsmall{
+		font-size: 10px;
+	}
+
+	.magic{
+        border-top: 0px solid black !important; border-bottom: 0px solid black !important;
+    }
+
+    .magic-2{
+    	border-right:0px solid black !important;
+    }
+
+    .magic-3{
+    	border-left:0px solid black !important;
+    }
+
+    .pds thead th {
+    	font-size: 13px;
+    	font-style: italic;
+    }
+
+    #page-content {
+		padding: 0px !important;
+    }
+
+    .gray-bg {
+    	background-color: rgb(245, 245, 246);
+    }
+</style>
+{% endblock %}
+<div class="col-xs-12" id="page-content">
+	<div class="card card-outline mb-0">
+		<div class="card-header">
+			<div class="row my-2">
+				<div class="col-sm-12">
+					{% check_pagefive pds.id as check_pagefive %}
+					<div class="pull-left">
+						<h4 class="bold">Page 1 of {% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}5{% else %}4{% endif %}</h4>
+					</div>
+					<div class="pull-right">
+						<a target="_blank" href="{% url 'print_pds_pageone' pds.id %}" class="btn btn-sm btn-info mr-2"><i class="fas fa-print"></i> Print Preview</a>
+						<div class="btn-group">
+							<a class="btn btn-sm btn-default disabled">Previous</a>
+							<a class="btn btn-sm btn-default disabled">1</a>
+							<a id="btn-page-numbertwo" class="btn btn-sm btn-default">2</a>
+							<a id="btn-page-numberthree" class="btn btn-sm btn-default">3</a>
+							<a id="btn-page-numberfour" class="btn btn-sm btn-default">4</a>
+							{% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}
+							<a id="btn-page-numberfive" class="btn btn-sm btn-default">5</a>
+							{% endif %}
+							<a id="btn-page-two" class="btn btn-sm btn-default btn-outline">Next</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-bordered pds" style="white-space: normal !important;">
+					<thead>
+						<th colspan="9">I. PERSONAL INFORMATION</th>
+					</thead>
+					<tbody>
+						<tr>
+							<th width="25%" class="magic font-xxsmall gray-bg">2. &nbsp;SURNAME</th>
+							<td colspan="8" class="font-small"><strong>{{ pds.user.last_name|upper }}</strong></td>
+						</tr>
+						<tr>
+							<td class="magic font-xxsmall gray-bg">&emsp;FIRST NAME</td>
+							<td colspan="5" class="font-small"><strong>{{ pds.user.first_name|upper }}</strong></td>
+							<td colspan="3" class="gray-bg">
+								<p style="font-size: 9px; margin: -5px 0px;">NAME EXTENSION (JR., SR)</p>
+								<span class="font-small">
+									<strong>
+										{% if pds.ext.name %}
+											{{ pds.ext.name|upper }}
+										{% else %}
+											N/A
+										{% endif %}
+									</strong>
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<td class="magic font-xxsmall gray-bg">&emsp;MIDDLE NAME</td>
+							<td colspan="8" class="font-small"><strong>{{ pds.user.middle_name|upper }}</strong></td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">3. &nbsp;DATE OF BIRTH <br>&emsp;(mm/dd/yyyy)</td>
+							<td class="font-small" width="15%"><strong>{{ pds.dob|date:"m/d/Y" }}</strong></td>
+							<td class="magic font-xxsmall gray-bg" colspan="2">16. &nbsp;CITIZENSHIP<br>
+							</td>
+							<td colspan="2" style="margin: 0px !important;" class="magic-2 magic font-small">
+								&emsp;<input class="icheck" type="checkbox" {% if pds.isfilipino == 1 %}checked{% endif %} disabled> Filipino
+							</td>
+							<td colspan="3" class="magic-3 magic font-small">
+								&emsp;<input class="icheck" type="checkbox" {% if pds.isdualcitizenship == 1 %}checked{% endif %} disabled> Dual Citizenship <br style="line-height: 0px;">
+								&emsp;&emsp;&emsp;<input class="icheck" type="checkbox" {% if pds.dc_bybirth == 1 %}checked{% endif %} disabled> by birth
+								&emsp;<input class="icheck" type="checkbox" {% if pds.dc_bynaturalization == 1 %}checked{% endif %} disabled> by naturalization<br style="line-height: 0px;">
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">4. &nbsp;PLACE OF BIRTH</td>
+							<td class="font-small" width="20%"><strong>{{ pds.pob|upper }}</strong></td>
+							<td class="magic text-center font-small gray-bg" colspan="2">If holder of  dual citizenship,</td>
+							<td class="magic-2 magic-3" style="border-top:0px !important;"></td>
+							<td class="magic-2 magic-3" style="border-top:0px !important;"></td>
+							<td colspan="3" class="magic-3 font-small" style="border-top:0px !important;">&emsp;&emsp;Pls. indicate country:</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">5. &nbsp;SEX</td>
+							<td class="font-small">
+								<input class="icheck" type="checkbox" {% if pds.gender == 1 %}checked{% endif %} disabled> Male &emsp;&emsp;&emsp;&nbsp;&nbsp;
+								<input class="icheck" type="checkbox" {% if pds.gender == 2 %}checked{% endif %} disabled> Female <br>
+							</td>
+							<td colspan="2" class="magic text-center font-small gray-bg">please indicate the details.</td>
+							<td colspan="5"></td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" rowspan="2">6. &nbsp;CIVIL STATUS</td>
+							<td class="font-small magic">
+								<input class="icheck" type="checkbox" {% if pds.cs_id == 1 %}checked{% endif %} disabled> Single &emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<input class="icheck" type="checkbox" {% if pds.cs_id == 2 %}checked{% endif %} disabled> Married
+							</td>
+							<td class="font-xxsmall gray-bg" style="border-bottom: 0px !important;" width="15%">17. &nbsp;RESIDENTIAL ADDRESS</td>
+							<td colspan="3" class="magic text-center font-small">
+								<strong>{% if address.ra_house_no %}
+								<i>{{ address.ra_house_no|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>House/Block/Lot No.</i>
+							</td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.ra_street %}
+								<i>{{ address.ra_street|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Street</i>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-small magic">
+								<div style="margin-top: -30px !important;">
+									<input class="icheck" type="checkbox" {% if pds.cs_id == 3 %}checked{% endif %} disabled> Widowed &emsp;&emsp;&emsp;
+									<input class="icheck" type="checkbox" {% if pds.cs_id == 4 %}checked{% endif %} disabled> Separated<br>
+									<input class="icheck" type="checkbox" disabled> Others:</div>
+							</td>
+							<td class="magic gray-bg"></td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.ra_village %}
+								<i>{{ address.ra_village|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Subdivision/Village</i>
+							</td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.ra_brgy %}
+								{% getbrgy address.ra_brgy as ra_brgy %}
+								<i>{{ ra_brgy.name|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Barangay</i>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">7. &nbsp;HEIGHT (m)</td>
+							<td class="font-small">
+								{% if pds.height %}
+								<strong>{{ pds.height }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td class="magic gray-bg"></td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.ra_city %}
+								{% getcity address.ra_city as ra_city %}
+								<i>{{ ra_city.name|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>City / Municipality</i>
+							</td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.ra_prov_code %}
+								{% getprovince address.ra_prov_code as ra_prov_code %}
+								<i>{{ ra_prov_code.name|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Province</i>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">7. &nbsp;WEIGHT (kg)</td>
+							<td class="font-small">
+								{% if pds.weight %}
+								<strong>{{ pds.weight }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td style="border-top: 0px !important;" class="text-center font-xsmall gray-bg">ZIP CODE</td>
+							<td colspan="7" class="font-small">
+								<strong>{% if address.ra_zipcode %}
+								<i>{{ address.ra_zipcode }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">9. &nbsp;BLOOD TYPE</td>
+							<td class="font-small">
+								{% if pds.bt_id %}
+								{% getbloodtype pds.bt_id as bloodtype %}
+								<strong>{{ bloodtype.name }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td style="border-bottom: 0px !important;" class="magic font-xxsmall gray-bg">18. &nbsp;PERMANENT ADDRESS</td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.pa_house_no %}
+								<i>{{ address.pa_house_no|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>House/Block/Lot No.</i>
+							</td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.pa_street %}
+								<i>{{ address.pa_street|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Street</i>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">10. &nbsp;GSIS ID NO.</td>
+							<td class="font-small">
+								{% if numbers.gsis_no %}
+								<strong>{{ numbers.gsis_no }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td class="magic gray-bg"></td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.pa_village %}
+								<i>{{ address.pa_village|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Subdivision/Village</i>
+							</td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.pa_brgy %}
+								{% getbrgy address.pa_brgy as pa_brgy %}
+								<i>{{ pa_brgy.name|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Barangay</i>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">11. &nbsp;PAG-IBIG ID NO.</td>
+							<td class="font-small">
+								{% if numbers.pagibig_no %}
+								<strong>{{ numbers.pagibig_no }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td class="magic gray-bg"></td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.pa_city %}
+								{% getcity address.pa_city as pa_city %}
+								<i>{{ pa_city.name|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>City / Municipality</i>
+							</td>
+							<td colspan="3" class="text-center font-small">
+								<strong>{% if address.pa_prov_code %}
+								{% getprovince address.pa_prov_code as pa_prov_code %}
+								<i>{{ pa_prov_code.name|upper }}</i>
+								{% else %}
+								<i>N/A</i>
+								{% endif %}</strong>
+								<br><i>Province</i>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">12. &nbsp;PHILHEALTH NO.</td>
+							<td class="font-small">
+								{% if numbers.philhealth_no %}
+								<strong>{{ numbers.philhealth_no }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td style="border-top: 0px !important;" class="text-center font-xxsmall gray-bg">ZIP CODE</td>
+							<td colspan="7" class="font-small">
+								<strong>{% if address.pa_zipcode %}
+								<i>{{ address.pa_zipcode }}</i>
+								{% else %}
+								<i>N/A</i></strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">13. &nbsp;SSS NO.</td>
+							<td class="font-small">
+								{% if numbers.sss_no %}
+								<strong>{{ numbers.sss_no }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td class="font-xxsmall gray-bg">19. &nbsp;TELEPHONE NO.</td>
+							<td colspan="7" class="font-small">
+								<strong>
+								{% if pds.telephone_no %}
+								{{ pds.telephone_no }}
+								{% else %}
+								N/A
+								{% endif %}</strong>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">14. &nbsp;TIN NO.</td>
+							<td class="font-small">
+								{% if numbers.tin_no %}
+								<strong>{{ numbers.tin_no }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td class="font-xxsmall gray-bg">20. &nbsp;MOBILE NO.</td>
+							<td colspan="7" class="font-small">
+								<strong>
+								{% if pds.mobile_no %}
+								{{ pds.mobile_no }}
+								{% else %}
+								N/A
+								{% endif %}</strong>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">15. &nbsp;AGENCY EMPLOYEE NO.</td>
+							<td class="font-small">
+								{% if employee.id_number %}
+								<strong>{{ employee.id_number }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td class="font-xxsmall gray-bg">21. &nbsp;EMAIL ADDRESS (if any)</td>
+							<td colspan="7" class="font-small">
+								<strong>
+								{% if pds.user.email %}
+								<u>{{ pds.user.email }}</u>
+								{% else %}
+								N/A
+								{% endif %}
+								</strong>
+							</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr>
+							<th colspan="9">II. FAMILY BACKGROUND</th>
+						</tr>
+					</thead>
+					<tbody class="familybackground">
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-bottom: 0px solid black !important;">22. SPOUSE'S SURNAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.sp_surname %}
+								<strong>{{ family.sp_surname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td colspan="4" class="font-xxsmall gray-bg" style="vertical-align:middle;">23. NAME of CHILDREN (Write full name and list all)</td>
+							<td colspan="4" class="font-xxsmall gray-bg text-center" style="vertical-align:middle;">DATE OF BIRTH<br style="line-height: 9px;">(mm/dd/yyyy)</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-top: 0px solid black !important; border-bottom: 0px solid black !important;">&emsp;&nbsp;FIRST NAME</td>
+							<td class="font-small">
+								{% if family.sp_fname %}
+								<strong>{{ family.sp_fname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td>
+								<p style="font-size: 9px; margin: -5px 0px;">NAME EXTENSION (JR., SR)</p>
+								<span class="font-small">
+									<strong>
+										{% if family.sp_ext %}
+											{{ family.sp_ext.name|upper }}
+										{% else %}
+											N/A
+										{% endif %}
+									</strong>
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-top: 0px solid black !important;">&emsp;&nbsp;MIDDLE NAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.sp_mname %}
+								<strong>{{ family.sp_mname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">&emsp;&nbsp;OCCUPATION</td>
+							<td colspan="2" class="font-small">
+								{% if family.sp_occupation %}
+								<strong>{{ family.sp_occupation|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">&emsp;&nbsp;EMPLOYER/BUSINESS NAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.sp_employer %}
+								<strong>{{ family.sp_employer|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">&emsp;&nbsp;BUSINESS ADDRESS</td>
+							<td colspan="2" class="font-small">
+								{% if family.sp_business %}
+								<strong>{{ family.sp_business|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg">&emsp;&nbsp;TELEPHONE NO.</td>
+							<td colspan="2" class="font-small">
+								{% if family.sp_telephone %}
+								<strong>{{ family.sp_telephone|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-bottom: 0px !important;">24. FATHER'S SURNAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.f_surname %}
+								<strong>{{ family.f_surname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-top: 0px !important; border-bottom: 0px !important;">&emsp;&nbsp;FIRST NAME</td>
+							<td class="font-small">
+								{% if family.f_fname %}
+									<strong>{{ family.f_fname|upper }}</strong>
+								{% else %}
+									<strong>N/A</strong>
+								{% endif %}
+							</td>
+							<td>
+								<p style="font-size: 9px; margin: -5px 0px;">NAME EXTENSION (JR., SR)</p>
+								<span class="font-small">
+									<strong>
+										{% if family.f_ext %}
+											{{ family.f_ext.name|upper }}
+										{% else %}
+											N/A
+										{% endif %}
+									</strong>
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-top: 0px !important;">&emsp;&nbsp;MIDDLE NAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.f_mname %}
+								<strong>{{ family.f_mname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-bottom: 0px !important;">25. MOTHER'S MAIDEN NAME</td>
+							<td colspan="2" class="font-small">
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-top: 0px !important; border-bottom: 0px !important;">&emsp;&nbsp;SURNAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.m_surname %}
+								<strong>{{ family.m_surname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-top: 0px !important; border-bottom: 0px !important;">&emsp;&nbsp;FIRST NAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.m_fname %}
+								<strong>{{ family.m_fname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td class="font-xxsmall gray-bg" style="border-top: 0px !important;">&emsp;&nbsp;MIDDLE NAME</td>
+							<td colspan="2" class="font-small">
+								{% if family.m_mname %}
+								<strong>{{ family.m_mname|upper }}</strong>
+								{% else %}
+								<strong>N/A</strong>
+								{% endif %}
+							</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr>
+							<th colspan="9">III. EDUCATIONAL BACKGROUND</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="font-xsmall gray-bg" rowspan="2">26. <p class="text-center">LEVEL</p></td>
+							<td class="font-xxsmall gray-bg" rowspan="2" width="30%"><p class="text-center">NAME OF SCHOOL<br>(Write in full)</p></td>
+							<td colspan="2" rowspan="2" class="font-xxsmall gray-bg" width="30%"><p class="text-center">BASIC EDUCATION/DEGREE/COURSE<br>(Write in full)</p></td>
+							<td colspan="2" class="font-xsmall text-center gray-bg" width="20%"><br style="line-height: 5px;">PERIOD OF ATTENDANCE</td>
+							<td rowspan="2" class="font-xsmall text-center gray-bg">HIGHEST LEVEL/UNITS EARNED</td>
+							<td rowspan="2" class="font-xsmall text-center gray-bg">YEAR GRADUATED</td>
+							<td rowspan="2" class="font-xsmall text-center gray-bg" width="5%">SCHOLARSHIP/ ACADEMIC HONORS RECEIVED</td>
+						</tr>
+						<tr>
+							<td class="text-center font-xsmall gray-bg">From</td>
+							<td class="text-center font-xsmall gray-bg" width="11%">To</td>
+						</tr>
+							{% if eb %}
+								{% for row in eb %}
+								<tr>
+									<td class="font-xsmall gray-bg">&emsp;&emsp;{{ row.level.lev_name|upper }}</td>
+									<td class="font-small"><strong>{{ row.school.school_name|upper }}</strong></td>
+									<td colspan="2" class="font-small"><strong>{{ row.degree.degree_name|upper }}</strong></td>
+									<td class="font-small text-center"><strong>{{ row.period_from }}</strong></td>
+									<td class="font-small text-center"><strong>{{ row.period_to }}</strong></td>
+									<td class="font-small text-center">
+										<strong>
+										{% if row.units_earned %}{{ row.units_earned|upper }}{% else %}N/A{% endif %}
+										</strong>
+									</td>
+									<td class="font-small text-center"><strong>{{ row.year_graduated|upper }}</strong></td>
+									<td class="font-small text-center" style="padding: 3px;"><strong>{{ row.hon.hon_name|upper }}</strong></td>
+								</tr>
+								{% endfor %}
+							{% endif %}
+						<tr>
+							<td colspan="9" class="text-center text-danger font-small gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+						</tr>
+						<tr>
+							<td class="text-center gray-bg font-small"><strong><i>SIGNATURE</i></strong></td>
+							<td colspan="3"></td>
+							<td colspan="2" class="text-center gray-bg font-small"><strong><i>DATE</i></strong></td>
+							{% get_latest_workexperience request.session.pi_id as latest_work_experience %}
+							<td colspan="3" class="text-center font-small"><strong>{{ latest_work_experience|date:"m/d/Y" }}</strong></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<p class="font-small pull-right" style="font-family: Arial Narrow;">
+				<i>CS FORM 212 (Revised 2017), Page 1 of 4</i>
+			</p>
+			<br>
+		</div>
+	</div>
+</div>
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		showChildren();
+		function showChildren(){
+			$.ajax({
+				url: "{% url 'show-children' pds.id %}",
+				type: 'GET'
+			})
+			.done(function(data){
+				var data = data.data;
+				var max = 13;
+				var count = 1;
+				if (data.length > 0){
+					for(var i = 0; i < data.length; i++){
+						var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"><strong>'+ data[i]['child_fullname']+'</strong></td>\
+							<td colspan="2" class="font-small text-center"><strong>'+ formatDate(data[i]['child_dob']) +'</strong></td>';
+						count++;
+						$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+					}
+
+					for(var i = data.length; i < max; i++){
+						if (count == 13){
+							var fieldHTML = '<td colspan="6" class="font-small text-center text-danger gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>';
+							count++;
+							$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+						} else {
+							var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"></td>\
+							<td colspan="2" class="font-small text-center"></td>';
+							count++;
+							$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+						}
+					}
+				} else {
+					for(var i = data.length; i < max; i++){
+						if (count == 1){
+							var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"><strong>N/A</strong></td>\
+							<td colspan="2" class="font-small text-center"><strong>N/A</strong></td>';
+							count++;
+							$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+						} else if (count == 13){
+							var fieldHTML = '<td colspan="6" class="font-small text-center text-danger gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>';
+							count++;
+							$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+						} else {
+							var fieldHTML = '<td colspan="4" class="font-small text-center text-capital"></td>\
+							<td colspan="2" class="font-small text-center"></td>';
+							count++;
+							$('.pds .familybackground tr:nth-child('+ count +')').append(fieldHTML);
+						}
+					}
+				}
+				icheckInit();
+			});
+		}
+
+		function formatDate(date){
+			var date = new Date(date);
+			var newdate= ("0" + (date.getMonth() + 1)).slice(-2) + '/' + ("0" + date.getDate()).slice(-2) + '/' +  date.getFullYear();
+			return newdate;
+		}
+
+		$('#btn-page-two').on('click', function(){
+			callPage("{% url 'pds_pagetwo' pds.id %}");
+		});
+
+		$('#btn-page-numbertwo').on('click', function(){
+			callPage("{% url 'pds_pagetwo' pds.id %}");
+		});
+
+		$('#btn-page-numberthree').on('click', function(){
+			callPage("{% url 'pds_pagethree' pds.id %}");
+		});
+
+		$('#btn-page-numberfour').on('click', function(){
+			callPage("{% url 'pds_pagefour' pds.id %}");
+		});
+
+		'{% if check_pagefive.0 > 0 or check_pagefive.1 > 0 %}'
+		$('#btn-page-numberfive').on('click', function(){
+			callPage("{% url 'pds_pagefive' pds.id %}");
+		});
+		'{% endif %}'
+	});
+</script>
+{% endblock %}
+
+				

@@ -1,0 +1,241 @@
+<form id="submitEditForm">
+    {% csrf_token %}
+    <input type="hidden" name="action" id="action" value="1">
+    <input type="hidden" name="id" id="id" value="{{ data.id }}">
+    <div id="alertDiv"></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Last Name<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ data.last_name }}" required>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>First Name<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="first_name" value="{{ data.first_name }}" name="first_name" required>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Middle Name</label>
+                <input type="text" class="form-control" id="middle_name" value="{{ data.middle_name }}" name="middle_name">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label>Name Ext.</label>
+                <select class="form-control select_directory" name="ext" id="ext">
+                    <option></option>
+                    {% for row in ext %}
+                    {% if row.id == data.ext_id %}
+                    <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                    {% else %}
+                    <option value="{{ row.id }}">{{ row.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
+                <label>Position / Job Title<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="job_title" value="{{ data.job_title }}" name="job_title" required>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="form-group">
+                <label>Company / Organization<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="company" value="{{ data.company }}" name="company" required>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Org Type<span class="text-danger">*</span></label>
+                <select class="form-control select_directory" name="orgtype" id="orgtype" required>
+                    <option></option>
+                    {% for row in orgtype %}
+                    {% if row.id == data.orgtype_id %}
+                    <option value="{{ row.id }}" selected>{{ row.acronym }}</option>
+                    {% else %}
+                    <option value="{{ row.id }}">{{ row.acronym }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label>Additional Details / Notes</label>
+                <textarea class="form-control" name="notes" id="notes" style="resize:vertical; min-height:50px;">{{ data.notes }}</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12" id="parentDiv">
+            <table class="table table-bordered tbltypeanddetails">
+                <thead style="font-size: 13px;">
+                    <tr>
+                        <th style="width:40%; text-transform:capitalize !important;" class="center nopadding">Type<span class="text-danger">*</span></th>
+                        <th style="width:57%; text-transform:capitalize !important;" class="center nopadding">Description<span class="text-danger">*</span></th>
+                        <th style="width:3%;" class="center"><button type="button" class="btn btn-info btn-xs addu"><i class="fas fa-plus"></i></button></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for directory in directory_details %}
+                    <tr class="fieldwrapper">
+                        <td class="nopadding">
+                            <select class="form-control select_directory input-sm dl" name="dtype[]" style="border:none;" required>
+                                <option></option>
+                                {% for row in detail_types %}
+                                {% if row.id == directory.dtype_id %}
+                                <option value="{{ row.id }}" selected>{{ row.type }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.type }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="nopadding"><input type="text" name="description[]" class="form-control" style="border:none; font-size:11px;" value="{{ directory.description }}" required></td>
+                        <td class="nopadding" style="text-align:center !important;">
+                            <button type="button" class="btn btn-danger btn-xs" data-id="{{ directory.id }}" data-content="{{ data.id }}" data-role="delete"><i class="fa fa-minus"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br>
+    <div class="form-group" style="margin-bottom: 0px;">
+        <button type="submit" class="btn btn-info">Save changes</button>
+    </div>
+</form>
+{% block script %}
+<script>
+    $('.select_directory').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#submitEditForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to save this new contact?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+             allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    data        : form,
+                    url         : '{% url "directory-list-requests" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                })
+                .done(function(data){
+                    if (data.data == "success"){
+                        Swal.fire({
+                            title: "Good job!",
+                            text: "Contact was edited successfully.",
+                            icon: "success",
+                            confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#submitEditForm').trigger('reset');
+                                $('#edit').modal('hide');
+                                $('#directory-table').DataTable().ajax.reload();
+                            }
+                        });
+                    } else {
+                        $('#alertDiv').empty();
+                        $('#alertDiv').append('<p class="text-danger"><strong>* ' + data.error + '<strong></p>');
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+
+    $(document).on('click', 'button[data-role=delete]', function(){
+        var id = $(this).data('id');
+        var content = $(this).data('content');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this detail?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "{% url 'delete-detail' %}",
+                    data: {
+                        id: id
+                    },
+                    type: "POST"
+                })
+                .done(function(data){
+                    $('tr#'+id).remove();
+                    if (data.data == "success"){
+                        Swal.fire({
+                            title: "Success!",
+                            text: "Your record was successfully deleted. Farewell.",
+                            icon: "success",
+                            confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#edit').find('.modal-body').empty();
+                                $('#edit').find('.modal-body').load('/directory/list/edit/' + content);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    var fieldHTML= '<tr class="fieldwrapper">\
+                        <td class="nopadding">\
+                            <select class="form-control select_directory input-sm dl" name="dtype[]" style="border:none;" required>\
+                                <option></option>'+
+                                {% for row in detail_types %}
+                                '<option value="{{ row.id }}">{{ row.type }}</option>'+
+                                {% endfor %}
+                            '</select>\
+                        </td>\
+                        <td class="nopadding">\
+                            <input type="text" name="description[]" class="form-control" style="border:none; font-size:11px;" required>\
+                        </td>\
+                        <td class="nopadding" style="text-align:center !important;">\
+                            <button type="button" class="btn btn-danger btn-xs" data-role="remove">\
+                                <i class="fa fa-minus"></i>\
+                            </button>\
+                        </td>\
+                    </tr>';
+
+    $('.addu').on('click', function(){
+        $('.tbltypeanddetails > tbody:last-child').append(fieldHTML);
+        $('.dl').select2({
+            allowClear: true,
+            width: '100%',
+            placeholder: 'Choose'
+        });
+    });
+
+</script>
+{% endblock %}

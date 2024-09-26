@@ -1,0 +1,104 @@
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+{% endblock %}
+<div class="row" id="page-work-experience">
+    <div class="col-sm-12">
+		<div class="card card-info card-outline">
+			<div class="card-header mt-2">
+				<div class="pull-right">
+					<a href="{% url 'print_wes' %}" target="_blank" class="btn btn-info"><i class="fas fa-print"></i> Print Preview</a>
+				</div>
+	            <h3 class="card-title font-weight-bold">Work Experience</h3>
+				<br><br>
+				<div class="alert alert-info mt-3">
+					<i class="fas fa-info-circle"></i>
+					For your work experience to be reflected, kindly indicate company as <strong>'DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT, FIELD OFFICE CDO'</strong>
+					in Page 2 of your PDS. You can then reflect your accomplishments, contributions, and/or summary of actual duties in the table below.
+				</div>
+			</div>
+			<div class="card-body">
+				<table class="table table-bordered table-hover" id="table-wes" width="100%">
+					<thead>
+						<tr>
+							<th class="capslock" style="width:10%;">Action</th>
+							<th class="capslock">Position</th>
+							<th class="capslock text-center">Employment Status</th>
+							<th class="capslock text-center">Area of Assignment</th>
+							<th class="capslock text-center">Salary Rate</th>
+							<th class="capslock text-center">Salary Grade - Step Increment</th>
+							<th class="capslock text-center">Inclusive Dates</th>
+							<th class="capslock text-center display-none">Date To</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="write-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content animated bounceInDown" style="padding-bottom: 0px !important;">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">WORK EXPERIENCE SHEET</h3>
+				<small>Please write your accomplishments, contributions and summary of actual duties.</small>
+	        </div>
+	        <div class="modal-body"></div>
+	    </div>
+	</div>
+</div>
+{% block script %}
+<script type="text/javascript">
+	WESTable();
+
+    $('#write-modal').on('hidden.bs.modal', function () {
+        setTimeout(function(){$('body').removeClass('modal-open')}, 200);
+        $('.modal-backdrop').remove();
+    });
+
+	function WESTable(){
+		$('#table-wes').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 7, 'desc' ]],
+			'lengthMenu': [ 25, 50, 100 ],
+			'ajax': {
+				'url': '/api/employees/work-experience-sheet/?format=datatables&employee_id='+'{% getHash request.session.emp_id as employee_id %}{{ employee_id }}',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{ 'data': 'id',
+					'render': function(data, type, row, meta) {
+						return "<a data-role='write-workexperience' data-id='"+ row['id'] + "'>Details</a>"
+					}
+				},
+				{ 'data': 'position', 'name': 'we.position.name'},
+				{ 'data': 'employment_status', 'className': 'text-center', 'name': 'we.empstatus.name' },
+				{ 'data': 'aoa', 'className': 'text-center', 'name': 'aoa.name' },
+				{ 'data': 'salary_rate',
+					'render': function(data, type, row, meta) {
+						return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					}, 'className': 'text-center', 'name': 'we.salary_rate' },
+				{ 'data': 'sg_step', 'className': 'text-center', 'name': 'we.sg_step' },
+				{ 'data': 'we_inclusive', 'className': 'text-center', 'name': 'we.we_from, we.we_to'},
+				{ 'data': 'we_to', 'className': 'text-center display-none'},
+			],
+		});
+	}
+
+	$(document).on('click', 'a[data-role=write-workexperience]', function(){
+		$('#write-modal').find('.modal-body').empty().load('/work-experience/sheet/write/' + $(this).data('id'));
+		$('#write-modal').modal('show');
+	});
+</script>
+{% endblock %}

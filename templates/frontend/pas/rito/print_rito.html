@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Travel Request</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+	<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+	<link href="{% static 'css/print_new.css' %}" rel="stylesheet">
+	<link href="{% static 'css/style_new.css' %}" rel="stylesheet">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+		@media print {
+			.containerX {
+				margin: 0px;
+				height: 0% !important;
+			}
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+			}
+			.vertical-right, .vertical-left {
+				margin: 0px !important;
+			}
+            .alert {
+                display: none !important;
+            }
+
+			body{-webkit-print-color-adjust: exact;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+		  	}
+        }
+
+        @page {
+			size: auto;
+		}
+
+		.containerX {
+			zoom: 100%;
+		}
+
+		body{
+			font-size: 12px;
+			font-family: 'Inter';
+			color: black;
+		}
+		.bold{
+			font-weight: bold;
+		}
+		#table2{
+			border-collapse: collapse;
+			width: 100%;
+		}
+		.text-center{
+			text-align: center;
+		}
+		.asteriskField {
+			color: red;
+		}
+	</style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">
+            <strong>Travel Request ({{ name.tracking_no }}) &emsp; <em><small>Note: Print in A4</small></em></strong>
+        </a>
+		<ul class="navbar-nav ml-auto">
+			<li><button class="btn btn-success" data-toggle="modal" data-target="#signatory-modal"><i class="fas fa-signature"></i> Signatories</button>&emsp;</li>
+			{% if name.status != 3 and name.status != 5 %}
+			<li>
+				<button class="btn btn-info" id="btn-edit"><i class="fas fa-pen"></i> Edit</button>&emsp;
+			</li>
+			{% endif %}
+			<li>
+				<button class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button>
+			</li>
+		</ul>
+	</div>
+</nav>
+<body>
+	<page size="long" layout="landscape" class="page" style="padding: 45px; position: relative;">
+		<div class="containerX">
+            {% if name.get_total_confirmation_of_travel > 0 %}
+            <div class="alert alert-info"><i class="fas fa-info-circle"></i> Please attach request for confirmation of travel.</div>
+            <br>
+            {% endif %}
+			{% if name.count_justification_travel != '' %}
+            <div class="alert alert-info"><i class="fas fa-info-circle"></i> Please attach request for justification of travel.</div>
+            <br>
+            {% endif %}
+            <table>
+				<thead>
+					<tr>
+						<td style="padding: 3px 0px" class="bold" width="30%"><p style="margin-top: -15px;">FOR</p></td>
+						<td style="padding: 3px 0px" class="bold">:&emsp;{{ officer_in_charge.0 }} <br> &emsp;&nbsp;{{ officer_in_charge.1 }}<br>&emsp;&nbsp;DSWD FIELD OFFICE CARAGA</td>
+					</tr>
+					<tr>
+						<td style="padding: 3px 0px" class="bold"></td>
+						<td style="padding: 3px 0px" class="bold"></td>
+					</tr>
+					<tr>
+						<td style="padding: 3px 0px" class="bold">SUBJECT</td>
+						<td style="padding: 3px 0px" class="bold">:&emsp;
+                            {% if name.get_total_confirmation_of_travel > 0 %}
+                                REQUEST FOR THE ISSUANCE OF CONFIRMATION OF TRAVEL ORDER
+                            {% else %}
+                                REQUEST FOR THE ISSUANCE OF TRAVEL ORDER
+                            {% endif %}
+                        </td>
+					</tr>
+					<tr>
+						<td style="padding: 3px 0px" class="bold"></td>
+						<td style="padding: 3px 0px" class="bold"></td>
+					</tr>
+					<tr>
+						<td style="padding: 3px 0px" class="bold">DATE</td>
+						<td style="padding: 3px 0px" class="bold">:&emsp;{{ name.date|date:"F d, Y"|upper }}</td>
+					</tr>
+					<tr>
+						<td style="padding: 3px 0px" class="bold"></td>
+						<td style="padding: 3px 0px" class="bold"></td>
+					</tr>
+					<tr>
+						<td style="padding: 3px 0px" class="bold">TRACKING NO.</td>
+						<td style="padding: 3px 0px" class="bold">:&emsp;{{ name.tracking_no }}</td>
+					</tr>
+				</thead>
+			</table>
+			<hr>
+			{% get_to_people name.id as total_people %}
+			Respectfully requesting for the issuance of Travel Order of DSWD Staff whose {% if total_people > 1 %}names are{% else %}name is{% endif %} written below with the purpose of travel, places and dates indicated and opposite their names. <br><br>
+			<table id="table2" border=1>
+				<tr>
+					<td style="padding:10px;" class="bold text-center"><small class="bold">Names - Position / Area of Assignment</small><br><small style="margin-top:-5px; font-weight:lighter;">R(SN, FN M. II)</small></td>
+					<td style="padding:10px;" class="bold text-center"><small class="bold">Place/s of Visit</small></td>
+					<td style="padding:10px;" class="bold text-center"><small class="bold">Duration of Travel</small></td>
+					<td style="padding:10px;" class="bold text-center"><small class="bold">Purpose</small></td>
+					<td style="padding:10px;" class="bold text-center"><small class="bold">Expected Output</small></td>
+					<td style="padding:10px;" class="bold text-center"><small class="bold">Means of <br>Transportation</small><br><small style="margin-top:-5px; font-weight:lighter; font-size:9px;"><b>1</b> PUV Vice-Versa <br> <b>2</b> RP Vice-Versa <br> <b>3</b> RP-one-way PUV one-way <br> <b>4</b> Hired Van</small></td>
+					<td style="padding:10px;" class="bold text-center"><small class="bold">Claims</small><br><small style="margin-top:-5px; font-weight:lighter; font-size: 9px;"><b>1</b> without per deim <br> <b>2</b> with per deim <br><b>3</b> Official Time Only <br><b>4</b> Compensatory Day off</small></td>
+
+				</tr>
+				{% for row in rito %}
+				<tr id="{{ row.id }}">
+					<td style="padding:10px;" width="30%">
+						<ol style="margin-bottom:0px;">
+						{% ritopeople row.id as people %}
+							{% for emp in people %}
+								<li>{{ emp.name.pi.user.get_fullname }} - {{ emp.name.position.acronym }} / {{ emp.name.aoa.name }}</li>
+							{% endfor %}
+						</ol>
+					</td>
+					<td style="padding:10px;" class="text-center">{{ row.place }}</td>
+					<td style="padding:10px;" class="text-center" width="10%">
+						{% if row.inclusive_from == row.inclusive_to %}
+						{{ row.inclusive_from }}
+						{% else %}
+						{{ row.inclusive_from }} - {{ row.inclusive_to }}
+						{% endif %}
+					</td>
+					<td style="padding:10px;" class="text-center">{{ row.purpose }}</td>
+					<td style="padding:10px;" class="text-center">{{ row.expected_output }}</td>
+					<td style="padding:10px;" class="text-center">
+						{{ row.mot.name }}
+					</td>
+					<td style="padding:10px;" class="text-center" contenteditable="false" data-target="claims" width="10%">
+						{{ row.claims.name }}
+					</td>
+				</tr>
+				{% endfor %}
+			</table>
+			<br>
+			&emsp;<small>It is understood that report shall be submitted upon completion of the Travel together with certificate of appearance from each place/s visited and other documentary evidences of travel.</small>
+			<br><br><br><br>
+			<table width="70%">
+				<tr>
+					<td width="30%">Requested by:</td>
+					<td width="20%">Recommending Approval:</td>
+				</tr>
+				<tr>
+					{% if name.emp.section.sec_head_id %}
+						{% getemployeebyempid name.emp.section.sec_head_id as section_head %}
+						{% getemployeebyempid name.emp.section.div.div_chief_id as division_chief %}
+					{% endif %}
+					<td><br><br><br><input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" placeholder="Name of Section Head" size="40" id="first_level" value=""><br>
+					<input type="text" style="border: 0px !important;" placeholder="Section" size="40" id="first_level_pos" value=""></td>
+					<td>
+						<br><br><br><input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" placeholder="Name of Division Chief" size="40" id="second_level" value=""><br>
+						<input type="text" style="border: 0px !important;" placeholder="Division" size="40" id="second_level_pos" value="">
+					</td>
+				</tr>
+			</table>
+		</div>
+	</page>
+	<div class="modal" id="signatory-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<h3 class="modal-title">
+						SET SIGNATORIES
+					</h3>
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				</div>
+				<form id="setSignatureForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">Requested By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="recommended_by" id="recommended_by" value="[{{ section_head.id_number }}] {{ section_head.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">Recommending Approval<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="approved_by" id="approved_by" value="[{{ section_head.id_number }}] {{ section_head.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="modal" id="edit-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<h3 class="modal-title">TRAVEL REQUEST DETAILS</h3>
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				</div>
+				<div class="modal-body"></div>
+			</div>
+		</div>
+	</div>
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+	<script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+	<script type="text/javascript">
+		$('#signatory-modal').modal('show');
+
+		$(".filter_employee_leave").typeahead({
+			source: function(query, process){
+				return $.get({
+					url: '{% url "filter_employee" %}',
+					data: { query: query },
+					datatype: 'json',
+					success: function (data) {
+						return process(data);
+					}
+				});
+			},
+			highlight: true,
+		});
+
+		$('#setSignatureForm').on('submit', function(e){
+			e.preventDefault();
+			var form = new FormData(this);
+			$.ajax({
+				data: form,
+				url: '{% url "set_signature_leave" %}',
+				type: 'POST',
+				success: function(response) {
+					$('#first_level').val(response.first_level);
+					$('#first_level_pos').val(response.first_level_pos);
+					$('#second_level').val(response.second_level);
+					$('#second_level_pos').val(response.second_level_pos);
+					$('#signatory-modal').modal('hide');
+				},
+				cache       : false,
+				contentType : false,
+				processData : false,
+			});
+		});
+
+		var page = $('.page').height();
+		var container = $('.containerX').height();
+
+		if (container > page) {
+			$('.page').css('height', container + 45);
+		}
+
+		$('#floatprint_mod').on('click', function(){
+			if ($('#name1').val() == "" | $('#name2').val() == "" | $('#designate1').val() == "" | $('#designate2').val() == ""){
+				Swal.fire("Print Warning",
+				"Please fill in the 'Requested by' field and 'Recommending approval' field before printing. Thank you.",
+				"warning");
+			} else {
+			    window.setTimeout(function() { printObject(); }, 0);
+			}
+		});
+
+		$('#edit-modal').on('hidden.bs.modal', function () {
+			window.location.reload();
+		});
+
+		$('#btn-edit').on('click', function(){
+			$('#edit-modal').modal('toggle');
+			$('#edit-modal').modal('show').find('.modal-body').empty();
+			$('#edit-modal').modal('show').find('.modal-body').load("{% if name.tracking_merge %}{% url 'view_rito_details' name.tracking_merge %}{% else %}{% url 'view_rito_details' name.tracking_no %}{% endif %}");
+		});
+
+		/* $('#btn_request_vehicle').on('click', function(){
+			$.post({
+				url: '{% url "get_vehicle_request_token" %}',
+				data: {
+					'id': '{{ name.tracking_no }}'
+				},
+                success: function(response) {
+                	window.open(
+					'https://crg-finance-svr.entdswd.local/gstracking/print_request_multiple?id={{ name.tracking_no }}&token=' + response.data,
+					'_blank'
+					);
+                }
+			});
+		});*/
+	</script>
+</body>
+</h

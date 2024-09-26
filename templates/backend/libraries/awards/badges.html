@@ -1,0 +1,195 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/libraries.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Badges</h1>
+		<ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Libraries
+            </li>
+			<li class="breadcrumb-item">
+                Awards
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Badges</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-4">
+			<div class="ibox">
+				<form id="submitForm" novalidate="" enctype="multipart/form-data">
+					<div class="ibox-content">
+						{% csrf_token %}
+						{{ form.name|as_crispy_field }}
+						<div class="form-group">
+							<label>Badge Icon<span class="asteriskField">*</span></label>
+							<div class="custom-file">
+								<input type="file" name="url" id="url" class="form-control custom-file-input-single" required>
+								<label for="url" class="custom-file-label">Choose a file..</label>
+							</div>
+						</div>
+					</div>
+					<div class="ibox-footer">
+						<button class="btn btn-info">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-md-8">
+			<div class="ibox">
+				<div class="ibox-title">
+					{% if request.GET.search and data.paginator.count == 0 %}
+						<div class="col-xs-12">
+							<a href="{% url 'badges' %}" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+						</div>
+					{% else %}
+						<div class="row">
+							<div class="col-xs-12">
+								<div class="pull-right">
+								Showing {{ data.start_index }} - {{ data.end_index }} of {{ data.paginator.count }} entries&emsp;
+									<div class="btn-group">
+									{% if data.has_other_pages %}
+										{% if data.has_previous %}
+											<a class="btn btn-default" href="?page={{ data.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+										{% else %}
+											<a class="btn btn-default disabled">Previous</a>
+										{% endif %}
+										{% for row in data.paginator.page_range %}
+											{% if data.number == row %}
+												<a class="btn btn-info" href="javascript:;">{{ row }}</a>
+											{% elif row > data.number|add:-3 and row < data.number|add:3 %}
+												<a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+											{% endif %}
+										{% endfor %}
+										{% if data.has_next %}
+											<a class="btn btn-default" href="?page={{ data.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+										{% else %}
+											<a class="btn btn-default disabled">Next</a>
+										{% endif %}
+									{% endif %}
+									</div>
+									<a class="btn btn-default" href="{% url 'badges' %}">Refresh</a>
+								</div>
+							</div>
+						</div>
+					{% endif %}
+				</div>
+				<div class="ibox-content">
+					{% if request.GET.search and data.paginator.count == 0 %}
+						<div style="padding:0px 15px !important; text-align:center;">
+							<div class="row" style="padding-bottom:15px">
+								<div class="" style="text-align:center;">
+									<img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="margin: 0 auto; object-fit: cover;">
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<form method="get">
+										<div class="input-group form-group">
+											<span class="input-group-addon"><i class="fas fa-search"></i></span>
+											<input type="text" class="form-control" placeholder="Search for a keyword.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+										</div>
+									</form>
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<p>
+										Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.status and request.GET.search %}{{ request.GET.search }}{% else %}{% if request.GET.status %}{{ request.GET.status }}{% endif %}{% if request.GET.search %}{{ request.GET.search }}{% endif %}{% endif %}'</i>. Please try another keyword.
+									</p>
+								</div>
+							</div>
+						</div>
+					{% else %}
+						<form method="get">
+							<div class="input-group form-group">
+								<span class="input-group-addon"><i class="fas fa-search"></i></span>
+								<input type="text" class="form-control" placeholder="Search for a keyword.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+							</div>
+						</form>
+						<div class="table-responsive">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th class="text-right" style="width:4%">#</th>
+									<th class="capslock">Name</th>
+									<th class="text-center capslock">Badge</th>
+									<th class="text-center capslock">Upload by</th>
+									<th class="text-right capslock">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% if data %}
+								{% for row in data %}
+								<tr>
+									<td class="text-right">{{ forloop.counter0|add:data.start_index }}</td>
+									<td>{{ row.name }}</td>
+									<td class="text-center">
+										<img loading="lazy"  class="img-circle shimmer"
+										    data-html="true"
+											data-placement="right"
+											data-content="<center><img loading='lazy' class='shimmer' src='{{ row.url.url }}' style='width: 250px; height: 250px; object-fit:cover;'></center>"
+											data-toggle="popover" src="{{ row.url.url }}" style="object-fit:cover; height:33px; width:33px;">
+									<td class="text-center">
+										{{ row.uploaded_by.pi.user.get_fullname }}
+									</td>
+									<td class="text-right">
+										<a href="{% url 'badges-update' row.id %}">Update</a>
+									</td>
+								</tr>
+								{% endfor %}
+								{% else %}
+								<tr>
+									<td class="text-center" colspan="5"><img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" width="250px;" style="margin: 0 auto;"><p class="text-center">There is no data to show you right now. </p></td>
+								</tr>
+								{% endif %}
+							</tbody>
+						</table>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$('#submitForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		$.ajax({
+			url: "{% url 'badges' %}",
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				$('.error').remove();
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else {
+                    window.location = "{% url 'badges' %}"
+                }
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+</script>
+{% endblock %}

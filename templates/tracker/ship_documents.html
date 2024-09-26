@@ -1,0 +1,52 @@
+{% extends 'tracker/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'tracker' %}">Home</a></li>
+                <li class="breadcrumb-item active">Ship Documents</li>
+            </ol>
+        </nav>
+        <div class="row">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Fear not about power outages. The system will ensure all your modifications are recovered.
+            </div>
+            <div class="col-lg-3">
+                <div class="card">
+                    <a href="{% url 'ctdo_tracker' %}" class="card-body text-center stretched-link">
+                        <div class="p-3">
+                            <img src="{% static 'tracker/img/ctdo.png' %}" width="80%">
+                            <br><br>
+                            <h3 class="text-green"><strong>CTDO</strong></h3>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card">
+                    <a href="{% url 'dtr_tracker' %}" class="card-body text-center stretched-link">
+                        <div class="p-3">
+                            <img src="{% static 'tracker/img/dtr.png' %}" width="80%">
+                            <br><br>
+                            <h3 class="text-green"><strong>DTR</strong></h3>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card">
+                    <a href="{% url 'leave_tracker' %}" class="card-body text-center stretched-link">
+                        <div class="p-3">
+                            <img src="{% static 'tracker/img/leave.png' %}" width="80%">
+                            <br><br>
+                            <h3 class="text-green"><strong>LEAVE</strong></h3>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

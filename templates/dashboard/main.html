@@ -1,0 +1,598 @@
+{% load static %}
+{% load tags %}
+{% load qr_code %}
+{% load frontend_tags %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<style type="text/css" for="valentines">
+    #card .heart {
+        width: 260px;
+        height: 260px;
+        float: left;
+    }
+    #card .heart #circle {
+        height: 130px;
+        width: 130px;
+        border-radius: 50%;
+        background-color: #d32f2f;
+    }
+    #card .heart #rec,
+    #card .heart #rec2 {
+        margin-top: -60px;
+        width: 130px;
+        height: 130px;
+        background-color: #d32f2f;
+        border-radius: 35% 0 0 0;
+    }
+    #card .heart #half2 {
+        -ms-transform: rotate(-90deg);
+        /* IE 9 */
+        -webkit-transform: rotate(-90deg);
+        /* Chrome, Safari, Opera */
+        transform: rotate(-90deg);
+        margin-top: -330px;
+        margin-left: -200px;
+    }
+    #card #heart2 {
+        margin-top: -60px;
+        margin-left: -130px;
+    }
+    #card #heart2 #circle,
+    #card #heart2 #rec {
+        background-color: #d75252;
+    }
+    #card #heart2 #half2 #rec {
+        margin-top: -61px;
+    }
+    #card #message {
+        float: left;
+        width: 200px;
+        height: 200px;
+        margin-left: -130px;
+        background-color: #333;
+        border-radius: 35% 0 35% 0;
+        text-align: center;
+    }
+    #card #message h2 {
+        font-size: 16px;
+        color: #fff;
+        width: 160px;
+        margin-top: 40px;
+        margin-left: 16px;
+    }
+    #card #heart1 {
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        transform: rotate(180deg);
+        -webkit-animation: closeLeft 2s ease-in-out forwards;
+        -moz-animation: closeLeft 2s ease-in-out forwards;
+        -ms-animation: closeLeft 2s ease-in-out forwards;
+        animation: closeLeft 2s ease-in-out forwards;
+    }
+    #card #heart2 {
+        -webkit-animation: closeRight 2s ease-in-out forwards;
+        -moz-animation: closeRight 2s ease-in-out forwards;
+        -ms-animation: closeRight 2s ease-in-out forwards;
+        animation: closeRight 2s ease-in-out forwards;
+    }
+
+    #card:hover #heart1 {
+        -webkit-animation: openLeft 2s ease-in-out forwards;
+        -moz-animation: openLeft 2s ease-in-out forwards;
+        -ms-animation: openLeft 2 ease-in-out forwards;
+        animation: openLeft 2s ease-in-out forwards;
+    }
+    #card:hover #heart2 {
+        -webkit-animation: openRight 2s ease-in-out forwards;
+        -moz-animation: openRight 2s ease-in-out forwards;
+        -ms-animation: openRight 2 ease-in-out forwards;
+    }
+
+    @-webkit-keyframes closeLeft {
+        from {
+            -webkit-transform: rotateY(0deg);
+        }
+        to {
+            -webkit-transform: rotateY(180deg);
+        }
+    }
+    @-moz-keyframes closeLeft {
+        from {
+            -moz-transform: rotateY(0deg);
+        }
+        to {
+            -moz-transform: rotateY(180deg);
+        }
+    }
+    @-ms-keyframes closeLeft {
+        from {
+            -ms-transform: rotateY(0deg);
+        }
+        to {
+            -ms-transform: rotateY(180deg);
+        }
+    }
+    @keyframes closeLeft {
+        from {
+            transform: rotateY(0deg);
+        }
+        to {
+            transform: rotateY(180deg);
+        }
+    }
+    @-moz-keyframes openLeft {
+        from {
+            -moz-transform: rotateY(180deg);
+        }
+        to {
+            -moz-transform: rotateY(0deg);
+        }
+    }
+    @-webkit-keyframes openLeft {
+        from {
+            -webkit-transform: rotateY(180deg);
+        }
+        to {
+            -webkit-transform: rotateY(0deg);
+        }
+    }
+    @-ms-keyframes openLeft {
+        from {
+            -ms-transform: rotateY(180deg);
+        }
+        to {
+            -ms-transform: rotateY(0deg);
+        }
+    }
+    @keyframes openLeft {
+        from {
+            transform: rotateY(180deg);
+        }
+        to {
+            transform: rotateY(0deg);
+        }
+    }
+    @-moz-keyframes openRight {
+        0% {
+            -moz-transform: rotateX(180deg);
+        }
+        100% {
+            -moz-transform: rotateX(0deg) rotateZ(180deg);
+        }
+    }
+    @-webkit-keyframes openRight {
+        0% {
+            -webkit-transform: rotateX(180deg);
+        }
+        100% {
+            -webkit-transform: rotateX(0deg) rotateZ(180deg);
+        }
+    }
+    @-ms-keyframes openRight {
+        0% {
+            -ms-transform: rotateX(180deg);
+        }
+        100% {
+            -ms-transform: rotateX(0deg) rotateZ(180deg);
+        }
+    }
+    @keyframes openRight {
+        0% {
+            transform: rotateX(180deg);
+        }
+        100% {
+            transform: rotateX(0deg) rotateZ(180deg);
+        }
+    }
+    @-webkit-keyframes closeRight {
+        from {
+            -webkit-transform: rotateX(0deg) rotate(180deg);
+        }
+        to {
+            -webkit-transform: rotateX(180deg);
+        }
+    }
+    @-moz-keyframes closeRight {
+        from {
+            -moz-transform: rotateX(0deg) rotate(180deg);
+        }
+        to {
+            -moz-transform: rotateX(180deg);
+        }
+    }
+    @-ms-keyframes closeRight {
+        from {
+            -ms-transform: rotateX(0deg) rotate(180deg);
+        }
+        to {
+            -ms-transform: rotateX(180deg);
+        }
+    }
+    @keyframes closeRight {
+        from {
+            transform: rotateX(0deg) rotate(180deg);
+        }
+        to {
+            transform: rotateX(180deg);
+        }
+    }
+</style>
+<div class="row">
+    <div class="col-lg-7">
+        {% if check_password or update or eligibility %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="callout callout-danger">
+                    <div class="card-header">
+                        <h3 class="card-title font-weight-bold text-danger">Must Update</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if eligibility %}
+                        <div class="row">
+                            <div class="col-lg-2 d-flex justify-content-center">
+                                <i class="fas fa-certificate fa-4x text-info"></i>
+                            </div>
+                            <div class="col-lg-10">
+                                <h4 class="bold">Specify Course on RA 1080</h4>
+                                <a href="{% url 'civil-service' %}">Please click here to update.</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if check_password %}
+                        <div class="row">
+                            <div class="col-lg-2 d-flex justify-content-center">
+                                <i class="fas fa-shield-alt fa-4x text-danger"></i>
+                            </div>
+                            <div class="col-lg-10">
+                                <h4 class="bold">CDO PORTAL has detected that your password is still set to the default</h4>
+                                <p class="no-margins text-muted">Change your password now to secure your account. <a href="{% url 'my-profile' %}#settings">Please click here to change your password.</a></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if update %}
+                        <div class="row">
+                            <div class="col-lg-2 d-flex justify-content-center">
+                                <i class="far fa-address-card fa-4x text-warning"></i>
+                            </div>
+                            <div class="col-lg-10">
+                                <h4 class="bold">A basic information is required</h4>
+                                <p class="no-margins text-muted">You may consider updating your email, phone number and incase of emergency.</p>
+                                <a href="javascript:;" data-toggle="modal" data-target="#trigger-modal">Please click here to update.</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if announcements %}
+        <div class="card card-warning card-outline">
+            <div class="card-header">
+                <h3 class="card-title font-weight-bold text-success">Read and be Informed</h3>
+                <p>Here are some important announcements and memorandum from the different sections and divisions in the field office.</p>
+            </div>
+            <div class="card-body pt-0">
+                <div class="your-class">
+                    {% for ann in announcements %}
+                        <div class="item">
+                        {% get_extension ann.attachment.url as extension %}
+                        {% if extension.1 == '.pdf' %}
+                            <iframe src="{{ ann.attachment.url }}" width="100%" height="750" frameBorder="0" style="border:1px solid #CCC;"></iframe>
+                            <div class="text-center">
+                                <h3>{{ ann.title }}</h3>
+                                <h4>({{ ann.uploaded_by.section.div.div_acronym }} - {{ ann.uploaded_by.section.sec_name }})</h4>
+                                <p>{{ ann.caption }}</p>
+                            </div>
+                        {% else %}
+                            <a data-toggle="modal" data-target="#preview-announcement-modal" onclick='$("#preview-announcement").attr("src","{{ ann.attachment.url }}"); $("#preview-announcement-modal").find(".modal-title").html("{{ ann.title }}<small class="sub-title"></small>"); $("#preview-announcement-modal").find(".sub-title").html("{{ ann.caption }}"); return false;' title="{{ ann.title }}">
+                            <img loading="lazy"  class="nooutline" style="width:100%;" src="{{ ann.attachment.url }}" alt="{{ ann.title }}" />
+                            </a>
+                            <div class="text-center">
+                                <h3>{{ ann.title }}</h3>
+                                <h4>({{ ann.uploaded_by.section.div.div_acronym }} - {{ ann.uploaded_by.section.sec_name }})</h4>
+                                <p>{{ ann.caption }}</p>
+                            </div>
+                        {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="card card-success card-outline">
+            <div class="card-header border-0 pb-0">
+                <div class="row">
+                    <div class="col-lg-12 mt-2">
+                        <h3 class="card-title font-weight-bold pull-left">Vacancies</h3>
+                        <span class="pull-right">
+                            <a href="{% url 'vacancies' %}" target="_blank" class="text-info">See All</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% if vacancy %}
+                <div class="application-on-process-content" style="margin-bottom: 10px !important;">
+                    {% for row in vacancy %}
+                        <div class="card-body">
+                            <h3 class="text-success"><strong>{{ row.position.name }} - {{ row.empstatus.name }}</strong></h3>
+                            <table class="table table-borderless table-sm" style="font-size: 15px;">
+                                <tr>
+                                    <td>Salary rate: </td>
+                                    <th>{{ row.salary_rate }} SG-{{ row.salary_grade.name }}</th>
+                                    <td>Quantity needed: </td>
+                                    <th>{{ row.quantity }}</th>
+                                </tr>
+                                <tr>
+                                    <td>Total applicants applied: </td>
+                                    <th>{{ row.get_total_app }}</th>
+                                    <td>Deadline at: </td>
+                                    <th>{{ row.deadline }}</th>
+                                </tr>
+                            </table>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card-body">
+                    <p style="font-size: 15px;">There is no vacancy to show you right now.</p>
+                    <br><br><br><br>
+                    <img loading="lazy"  src="{% static 'image/no-results.png' %}" width="150px;" style="margin-top: -130px;" class="pull-right">
+                </div>
+            {% endif %}
+        </div>
+        <div class="card card-success card-outline">
+            <div class="card-header border-0">
+                <h3 class="card-title font-weight-bold pull-left mt-2">Birthday Celebrants for {{ month|date:"F Y" }}</h3>
+                <div class="pull-right">
+                    <a href="{% url 'birthday_celebrants' %}" class="text-info">See All</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% for row in birthday_celebrants %}
+                <img loading="lazy"  alt="{{ row.pi.user.last_name|upper }}, {{ row.pi.user.first_name|upper }}"  class="img-circle" rel="tooltip" data-placement="top" data-html="true" title="{{ row.pi.user.last_name|upper }}, {{ row.pi.user.first_name|upper }}<br>{{ row.pi.dob|date:'F d' }}" src="{{ row.picture.url }}" style="width: 50px; height: 50px; object-fit: cover;">
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        {% for msg in messages %}
+            {% if 'portal_login' in msg.extra_tags %}
+            <div class="alert alert-warning"><i class="fas fa-info-circle"></i> {{ msg|safe }}</div>
+            {% endif %}
+        {% endfor %}
+        <div id="passwordExpiresAlert"></div>
+        {% now "md" as curr_date %}
+        {% if curr_date == '0214' or curr_date == '0215' %}
+        <div class="card bg-gradient-light">
+            <div class="card-header border-0">
+                <h3 class="card-title font-weight-bold">Happy Valentine's Day!</h3>
+            </div>
+            <div class="card-body">
+                <p>
+                    No matter how you’re celebrating Valentine’s Day 2022—perhaps with a romantic home-cooked meal or a fun car date idea—as long as it’s filled with lots of love and feel-good energy, then you’re doing February 14<sup>th</sup> right.
+                </p>
+                <div id="card">
+                    <div class="heart" id="heart1">
+                        <div id="half1">
+                            <div id="circle"></div>
+                            <div id="rec"></div>
+                        </div>
+                        <div id="half2">
+                            <div id="circle"></div>
+                            <div id="rec"></div>
+                        </div>
+                    </div>
+                    <div id="message">
+                        <h2>
+                            Happy Valentine's Day, <strong>{{ request.user.first_name }}</strong>!
+                            <br><br>
+                            <font style="font-size:13px;">
+                                {{ vquotes }}
+                            </font>
+                        </h2>
+                    </div>
+                    <div class="heart" id="heart2">
+                        <div id="half1">
+                            <div id="circle"></div>
+                            <div id="rec"></div>
+                        </div>
+                        <div id="half2">
+                            <div id="circle"></div>
+                            <div id="rec"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if my_bday %}
+            <div class="card bg-gradient-light">
+                <div class="card-header border-0">
+                    <h3 class="card-title font-weight-bold">Happy <span class="text-danger">Birthday!</span></h3>
+                </div>
+                <div class="card-body">
+                    <p>Dear <span class="text-success bold">{% getemployeebyempid request.session.emp_id as employee %}{{ employee.pi.user.get_first_name_title }},</span></p>
+                    <p align="justify">I hope all your <span class="text-success font-bold">birthday wishes and desires</span> come true. We wish you a year full of minutes of love, happiness and joy.</p>
+                    <br>
+                    <p>Sincerely,</p>
+                    <p>The My PORTAL Team</p>
+                    <br>
+                    <img loading="lazy"  src="{% static 'image/birthday_bg.png' %}" class="img-responsive img-bot" width="200px;" style="position: absolute; margin-top: -140px; margin-left: 200px;">
+                </div>
+            </div>
+        {% endif %}
+            <div class="card card-info card-outline">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-xl-3">
+                        <img src="{% static 'icons8/new-96.png' %}" alt="headline" width="96" height="96" style="margin-left: -10px;">
+                        <br>
+                    </div>
+                    <div class="col-xl-9">
+                        <div class="pull-left">
+                            <h1 class="font-weight-bold">WHAT'S NEW?</h1>
+                            <h3 class="bold"><span class="text-info">{{ version_latest.title }} {{ version_latest.release_date|date:'Y' }}</span></h3>
+                            <br>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#patch-note-modal">See more</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card card-info card-outline">
+            <div class="card-header border-0 pb-0">
+                <div class="row">
+                    <div class="col-lg-12 mt-2">
+                        <h3 class="card-title font-weight-bold pull-left">Shortcuts</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body pt-0">
+                <div class="row">
+                    <div class="col-lg-4 shortcuts">
+                        <br>
+                        <center>
+                            <img src="{% static 'icons8/employee-96.png' %}" width="75px" height="75px" style="object-fit: cover;"><br>
+                            <small><a href="javascript:;" class="stretched-link text-info" data-toggle="modal" data-target="#assistance_modal">Employee Assistance</a></small>
+                        </center>
+                        <br>
+                    </div>
+                    <div class="col-lg-4 shortcuts">
+                        <br>
+                        <center>
+                            <img src="{% static 'icons8/heart-health-96.png' %}" width="75px" height="75px" style="object-fit: cover;"><br>
+                            <small><a href="javascript:;" class="stretched-link text-info" data-toggle="modal" data-target="#checklist">Health Checklist</a></small>
+                        </center>
+                        <br>
+                    </div>
+                    <div class="col-lg-4 shortcuts">
+                        <br>
+                        <center>
+                            <img src="{% static 'icons8/feedback-96.png' %}" width="75px" height="75px" style="object-fit: cover;"><br>
+                            <small><a href="javascript:;" class="stretched-link text-info" data-toggle="modal" data-target="#feedback-modal">Give Feedback</a></small>
+                        </center>
+                        <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="patch-note-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    DEVELOPER UPDATE <br>
+                    <small>{{ version_latest.title }} {{ version_latest.release_date|date:'Y' }}</small>
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body p-5">
+                {% for row in version %}
+                {% if forloop.first %}
+                <p>
+                    <a href="#collapse-{{ row.id }}" class="text-default" data-toggle="collapse">
+                        <em class="text-info"><span class="bold">{{ row.title }}</span> - Release Date ({{ row.release_date }})</em>
+                    </a>
+                </p>
+                <div id="collapse-{{ row.id }}" class="collapse show">
+                    <div class="ibox-content">
+                        {{ row.description|safe }}
+                    </div>
+                </div>
+                {% else %}
+                <p>
+                    <a href="#collapse-{{ row.id }}" class="text-default" data-toggle="collapse">
+                        <em class="text-info"><span class="bold">{{ row.title }}</span> - Release Date ({{ row.release_date }})</em>
+                    </a>
+                </p>
+                <div id="collapse-{{ row.id }}" class="collapse">
+                    <div class="ibox-content">
+                        {{ row.description|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                {% if not forloop.last %}<hr>{% endif %}
+                {% endfor %}
+                <br>
+                <a href="{% url 'developer_update' %}" class="text-info" style="margin-left: 20px;">See All Versions</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $('.application-on-process-content').slick({
+            infinite: true,
+			speed: 700,
+			autoplay: true,
+            autoplaySpeed: 2500,
+			slidesToShow: 1,
+			adaptiveHeight: true
+        });
+
+
+        $('#links-table').DataTable({
+            'lengthChange': false,
+            'searching': false,
+            'paging': true,
+            'info': false,
+            'pagingType': 'numbers',
+            'pageLength': 5
+        });
+
+        $.ajax({
+            url: "{% url 'get_password_countdown' request.session.username %}",
+            type: "GET"
+        }).done(function(response){
+            $('#passwordExpiresAlert').html(response.countdown_message);
+        });
+
+        $('#submitFeedbackForm').on('submit', function(e){
+            $.ajax({
+                url: "{% url 'submit_feedback' %}",
+                data: new FormData(this),
+                type: "POST",
+                beforeSend: function () {
+                    $('.btn').prop("disabled", true);
+					$('#btnFeedBack').html('<span class="loading open-circle"></span> Submitting');
+                	$('#preloader').css('display', '');
+                },
+                success: function (response) {
+                    if(response.data){
+                        $('#submitFeedbackForm').trigger('reset');
+                        $('#feedback-modal').modal('toggle');
+                        Swal.fire("Success!", "Thanks for taking the time to give us feedback. We do use feedback like yours to improve the CDO PORTAL experience for everyone.", "success");
+                    }
+                },
+                complete: function() {
+                    $('#btnFeedBack').text('Submit');
+                	$('.btn').prop("disabled", false);
+
+                	$('#preloader').css('display', 'none');
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+			e.preventDefault();
+		});
+
+		$('.your-class').slick({
+			dots: true,
+			infinite: true,
+			speed: 700,
+			autoplay: true,
+            autoplaySpeed: 2500,
+			slidesToShow: 1,
+			adaptiveHeight: true
+		});
+    });
+</script>
+{% endblock %}

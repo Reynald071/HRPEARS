@@ -1,0 +1,22 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% block content %}
+    <div class="px-4 pt-5 my-5 text-center border-bottom">
+        <h1 class="display-4 fw-bold">
+            E-Pay
+        </h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">
+                Discover the revolutionary payroll management feature offered exclusively by My PORTAL! Simplify salary processing, streamline HR operations, and enhance productivity with our state-of-the-art solution. Say goodbye to the complexities of manual payroll calculation and hello to the future of smart financial management. Experience a whole new level of efficiency and accuracy in payroll management today!
+            </p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+                <a href="{% url 'manage_payroll_employee' %}" class="btn btn-info btn-lg px-4 me-sm-3">Get Started</a>
+            </div>
+        </div>
+        <div class="overflow-hidden" style="max-height: 30vh;">
+            <div class="container px-5">
+                <img src="{% static 'image/epay/background.png' %}" class="img-fluid border rounded-3 shadow-lg mb-4" alt="Example image" width="700" height="500" loading="lazy">
+            </div>
+        </div>
+    </div>
+{% endblock %}

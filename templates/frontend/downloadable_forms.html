@@ -1,0 +1,200 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% load frontend_tags %}
+{% load crispy_forms_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Downloadables</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Downloadables</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                {% if user|check_permission:'superadmin' %}
+                <button class="btn btn-info" data-toggle="modal" data-target="#add"><i class="fas fa-plus"></i> Upload New File</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-5 ml-0">
+	<div class="row">
+        <div class="col-md-9">
+            <ul class="nav nav-tabs" onclick="setTimeout(resetmasonry, 200);">
+                {% for fileclass in class %}
+                    <li class="nav-item"><a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#fileclass-{{ fileclass.id }}">{{ fileclass.acronym }}</a></li>
+                {% endfor %}
+            </ul>
+            <div class="tab-content bg-white">
+                {% if downloadable %}
+                    {% for fileclass in class %}
+                        <div id="fileclass-{{ fileclass.id }}" class="tab-pane fade{% if forloop.counter == 1 %} show active{% endif %}">
+                            {% get_number_of_downloadables_in_class downloadable fileclass.id as gnodic %}
+                            {% if gnodic > 0 %}
+                                <div class="grid-xx text-center" id="grid-xx" style="padding:30px 40px 5px 40px !important;">
+                                    {% for row in downloadable %}
+                                        {% if row.classes_id == fileclass.id %}
+                                            <div class="grid-item-xx" style="margin-bottom:30px;">
+                                                <div class="file-box" style="width: 183px; border:1px solid #e7eaec;">
+                                                    <div class="file" style="margin:0px;">
+                                                        <span class="corner"></span>
+                                                        {% get_extension row.filename.url as get_extension %}
+                                                        <a href="javascript:;" data-role="preview" data-url="{{ row.filename.url }}" data-id="{{ row.id }}" data-title="{{ row.title }}">
+                                                            <div class="icon" style="margin-top:25px; margin-bottom:25px;">
+                                                                {% if get_extension.1 == '.jpg' or get_extension.1 == '.jpeg' or get_extension.1 == '.png' %}
+                                                                <i class="fa fa-file-image text-info" style="color:#23c6c8;"></i>
+                                                                {% elif get_extension.1 == '.pdf' %}
+                                                                <i class="fa fa-file-pdf" style="color:#ed5565;"></i>
+                                                                {% elif get_extension.1 == '.docx' or get_extension.1 == '.doc' %}
+                                                                <i class="fa fa-file-word" style="color:#23527c;"></i>
+                                                                {% elif get_extension.1 == '.xlsx' or get_extension.1 == '.xls' %}
+                                                                <i class="fa fa-file-excel" style="color:#00bfa5;"></i>
+                                                                {% elif get_extension.1 == '.rar' or get_extension.1 == '.zip' or get_extension.1 == '.7zip' %}
+                                                                <i class="fa fa-file-archive" style="color:#990169;"></i>
+                                                                {% else %}
+                                                                <i class="far fa-file" style="color:#f8ac59;"></i>
+                                                                {% endif %}
+                                                            </div>
+                                                        </a>
+                                                        <div>
+                                                            <a href="javascript:;" data-role="preview" data-url="{{ row.filename.url }}" data-id="{{ row.id }}" class="bold" rel="tooltip" title="{{ row.title }}" data-title="{{ row.title }}">{{ row.title }}</a>
+                                                            <br/>
+                                                            <small>Date Added: {{ row.date }}</small>
+                                                        </div>
+                                                        <div class="file-name">
+                                                            <a href="{{ row.filename.url }}" class="btn btn-info btn-sm" download>Download</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center" style="padding:0px 40px 40px 40px !important;">
+                                    <br>
+                                    <img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" style="margin: 0 auto;">
+                                    <p>There is no data to show you right now.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center" style="padding:0px 40px 40px 40px !important;">
+                        <br>
+                        <img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" style="margin: 0 auto;">
+                        <p>There is no data to show you right now.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-info">
+                    <h5 class="card-title font-weight-bold">FILTER</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="srcform" style="margin-bottom:10px">
+                        <div class="form-group">
+                            <h4>By Keyword</h4>
+                            <input type="text" class="form-control" name="search" value="{{ request.GET.search }}">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+<div class="modal" id="preview_modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info" style="border-bottom: 0px !important;">
+                <h3 class="modal-title" id="preview-title"></h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body" id="preview-content">
+                <iframe id="preview-pdf" width="100%" height="768px" frameBorder="0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+                    NEW FILE
+                    <p><small>Upload new file to publish.</small></p>
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form.title|as_crispy_field }}
+				<div class="form-group">
+					<label>Classes<span class="asteriskField">*</span></label>
+					<select class="form-control select" name="classes" required>
+                        <option></option>
+						{% for row in class %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12" style="margin-bottom:0;">
+		        		<label>Filename</label>
+						<div class="custom-file">
+							<input type="file" name="filename" id="id_filename" class="form-control custom-file-input-single" required>
+							<label for="id_filename" class="custom-file-label">Choose file..</label>
+						</div>
+		        	</div>
+	        	</div>
+                {{ form.status|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Upload</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function resetmasonry(){
+        $(".grid-xx").masonry({
+            itemSelector: ".grid-item-xx",
+            gutter: 50,
+        });
+    }
+
+    $(document).ready(function(){
+        $('.file-box').each(function() {
+            animationHover(this, 'pulse');
+        });
+        resetmasonry();
+
+		$(document).on('click', 'a[data-role=preview]', function(){
+            $("#preview-content").css("padding",'0px');
+            $("#preview-content").css("margin",'0px');
+            $('#preview-title').html($(this).data('title'));
+            $('#preview_modal').modal('show');
+            $('#preview-pdf').attr('src', $(this).data('url'));
+        });
+    });
+</script>
+{% endblock %}

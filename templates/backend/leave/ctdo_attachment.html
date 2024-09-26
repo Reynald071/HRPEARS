@@ -1,0 +1,30 @@
+{% load crispy_forms_tags %}
+{% load static %}
+<form id="uploadCTDOAttachmentForm" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="modal-body">
+    <div class="form-group">
+        {{ form.file|as_crispy_field }}
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info"> Save changes</button>
+</div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#uploadCTDOAttachmentForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "ctdo_attachment" pk %}';
+        var title = "Are you sure";
+        var text = "You want to upload this CTDO attachment?";
+        var loadContent = "#upload-ctdo-content";
+        var loadUrl = "/backend/ctdo/attachment/{{ pk }}"
+
+        submitFormWithConfirmation(form, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+		e.preventDefault();
+    });
+</script>
+{% endblock %}

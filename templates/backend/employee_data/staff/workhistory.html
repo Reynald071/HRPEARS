@@ -1,0 +1,127 @@
+{% load tags %}
+{% load frontend_tags %}
+{% load humanize %}
+<div class="ibox" id="page-workhistory" style="margin-top: -15px;">
+	<div class="ibox-title mb-3">
+		<h3 class="bold m-0">Work History</h3>
+		<small>This work history only validates DSWD work experience.</small>
+	</div>
+	<div class="ibox-content">
+		<div class="table-responsive">
+			<table class="table table-bordered table-hover" id="table-wes" width="100%">
+				<thead>
+					<tr>
+						<th class="capslock" style="width:10%;" rowspan="2">Action</th>
+						<th class="capslock" rowspan="2">Position</th>
+						<th class="capslock text-center" rowspan="2">Employment Status</th>
+						<th class="capslock text-center" rowspan="2">Area of Assignment</th>
+						<th class="capslock text-center" rowspan="2">Salary Rate</th>
+						<th class="capslock text-center" rowspan="2" width="10%">Salary Grade - Step Increment</th>
+						<th class="capslock text-center" colspan="2">Inclusive Dates</th>
+					</tr>
+					<tr>
+						<th class="capslock">FROM</th>
+						<th class="capslock">TO</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% block script %}
+<script>
+	$(document).ready(function(){
+		$(document).on('click', 'a[data-role=edit-workhistory]', function(){
+			id = $(this).data('id');
+			$('#edit-workhistory-modal').modal('show').find('.modal-body').load(`/backend/edit-workhistory/${id}`, function() {
+                $.get('{% url "filter-incumbent" %}', function(data){
+                    $(".filter_employee").typeahead({
+                        source:data,
+                        highlight: true
+                    });
+                },'json');
+
+                $('.edit-select').select2({
+                    width: "100%",
+                    allowClear: true,
+                    placeholder: 'Choose',
+                    dropdownParent: $('#edit-workhistory-modal')
+                });
+
+                $('#submitEditWorkForm').on('submit', function(e){
+                    e.preventDefault();
+                    $form = $(this);
+                    $.ajax({
+                        url: `/backend/edit-workhistory/${id}`,
+                        type: "POST",
+                        data: new FormData(this),
+                        success: function (response) {
+                            if (response.data == 'success'){
+                                $('#edit-workhistory-modal').modal('toggle');
+                                Swal.fire({
+                                    title: "Good job!",
+                                    html: "Work History was updated successfully",
+                                    icon: "success",
+                                    confirmButtonColor: "#3498DB",
+                                }).then((result) => {
+                                    if (result.isConfirmed){
+                                        $('#table-wes').DataTable().ajax.reload();
+                                    }
+                                });
+                            }
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false
+                    });
+                });
+            });
+		});
+    });
+
+	$('#table-wes').DataTable({
+		'serverSide': true,
+		'processing': true,
+		'deferRender': true,
+		'lengthMenu': [ 25, 50, 100 ],
+		'order': [[ 7, 'desc' ]],
+		'ajax': {
+			'url': '/api/employees/work-experience-sheet/?format=datatables&employee_id='+'{% getHash employee_id as emp_id %}{{ emp_id }}',
+			'type': 'GET',
+			'beforeSend': function (request) {
+				request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+			}
+		},
+		'fnCreatedRow': function (row, data, index) {
+			$(row).attr('id', data['id']);
+		},
+		'columns': [
+			{ 'data': 'we_id',
+				'render': function(data, type, row, meta) {
+					return "<a href='javascript:void(0);' data-role='edit-workhistory' data-id='"+ data + "'>Details</a>"
+				}
+			},
+			{ 'data': 'position',
+                'render': function(data, type, row, meta) {
+                    return (data) ? data: '';
+                },
+                'name': 'we.position',
+                'className': 'capslock'
+            },
+			{ 'data': 'employment_status', 'className': 'text-center', 'name': 'we.empstatus.name' },
+			{ 'data': 'aoa',
+                'render': function(data, type, row, meta) {
+                    return (data) ? data: '';
+                },
+                'className': 'text-center',
+                'name': 'aoa.name'
+            },
+			{ 'data': 'salary_rate', 'className': 'text-center', 'name': 'we.salary_rate' },
+			{ 'data': 'sg_step', 'className': 'text-center', 'name': 'we.sg_step' },
+			{ 'data': 'we_from', 'className': 'text-center', 'name': 'we.we_from'},
+			{ 'data': 'we_to', 'className': 'text-center', 'name': 'we.we_to'},
+		],
+	});
+</script>
+{% endblock %}

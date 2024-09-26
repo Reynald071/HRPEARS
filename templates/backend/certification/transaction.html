@@ -1,0 +1,85 @@
+<div class="pull-right">
+    <div class="btn-group">
+        <button type="button" class="btn btn-info btn-generate-lc-transaction dropdown-toggle" data-toggle="dropdown">
+            Create Template
+        </button>
+        <ul class="dropdown-menu" style="margin-left: -250px;">
+            {% for row in template %}
+            <li><a href="javascript:;" data-role="template" data-id="{{ row.id }}">{{ row.name|upper }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<br><br><br>
+<table class="table table-bordered" id="c-transaction-table" width="100%">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>Certificate Type</th>
+            <th>Created By</th>
+            <th>Date Created</th>
+        </tr>
+    </thead>
+</table>
+<div class="modal" id="forward_to_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">GENERATE DRN</h3>
+
+            </div>
+            <form id="generateDRNForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Employee Name<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control get-filter-employee-all" name="get-employee-name" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-info">Generate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).on('click', 'a[data-role=template]', function(){
+        var id = $(this).data('id');
+        callCertificateLayoutPage('/certification/template/' + id + '/{{ employee.id_number }}');
+    });
+
+    $('#c-transaction-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 3, 'desc' ]],
+        'ajax': {
+            'url': '/api/certificates/transaction/?format=datatables&employee_id={{ employee.id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    var template = '<a href="/certification/print/'+ data + '" target="_blank">Print</a>';
+                    template += ' | <a href="javascript:;" data-role="edit" data-id="'+ data +'">Edit</a>'
+                    return template;
+                }
+            },
+            {'data': 'cert_type', 'name': 'certtemp.name' },
+            {'data': 'created_by' },
+            {'data': 'date_created' },
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        callCertificateLayoutPage('/certification/template/edit/' + id);
+    });
+</script>
+{% endblock %}

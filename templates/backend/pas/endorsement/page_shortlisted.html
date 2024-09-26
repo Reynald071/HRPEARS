@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Shortlisted</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employee
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Shortlisted</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        {% for uc in unique_vacancies %}
+            <div class="col-lg-12">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <h4>{{ uc }}</h4>
+                        {% for row in shortlisted %}
+                            {% if uc == row.vacancies %}
+                            <p>{{ row.first_name }} {% if row.middle_name %}{{ row.middle_name }}{% endif %} {{ row.last_name }} {% if row.extension %}{{ row.extension }}{% endif %}</p>
+                            <small>{{ row.date_workflow_added }}</small>
+                            <hr>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

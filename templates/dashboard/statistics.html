@@ -1,0 +1,313 @@
+{% load tags %}
+{% load static %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<div class="row">
+    <div class="col-lg-6">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="small-box bg-info">
+                    <div class="inner pl-3">
+                        <p>Total employees</p>
+                        <h1><strong>{{ total_employee }}</strong></h1>
+                    </div>
+                    <div class="small-box-footer">
+                        {{ total_active_employee }} active and {{ total_inactive_employee }} inactive
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="small-box bg-success">
+                    <div class="inner pl-3">
+                        <p>Clients served on Help Desk</p>
+                        <h1><strong>{{ helpdesk_resolved }}</strong></h1>
+                    </div>
+                    <div class="small-box-footer">
+                        {{ helpdesk_pending }} pending, {{ helpdesk_for_referral }} referral{{ helpdesk_for_referral|pluralize }}, and {{ helpdesk_declined }} declined
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card card-teal card-outline">
+                    <div class="card-body">
+                        <canvas id="doughnutChart" height="140"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-purple card-outline">
+            <div class="card-body">
+                <canvas id="barChart" height="204"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-teal">
+                <div class="card-title">
+                    Head Count on Position
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover table-bordered" id="table-position-head-count" width="100%">
+                    <thead>
+                        <tr>
+                            {% if user|check_permission:'superadmin' or user|check_permission:'employee_list' %}
+                            <th width="5%">Action</th>
+                            {% endif %}
+                            <th>Position</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-purple">
+                <div class="card-title">
+                    Head Count on Section
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover table-bordered text-wrap" id="table-section-head-count" width="100%">
+                    <thead>
+                        <tr>
+                            {% if user|check_permission:'superadmin' or user|check_permission:'employee_list' %}
+                            <th width="5%">Action</th>
+                            {% endif %}
+                            <th>Section</th>
+                            <th>Division</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% if user|check_permission:'superadmin' or user|check_permission:'employee_list' %}
+<div class="modal" id="employees-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content animated bounceInDown">
+			<div class="modal-header bg-info">
+				<h3 id="employees-modal-title" class="font-weight-bold"></h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			</div>
+            <div class="modal-body">
+                <div class="dropdown float-right mb-2">
+                    <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="loading open-circle" style="display:none;"></span> <i class="fas fa-file-export"></i> Export As</button>
+                    <div class="dropdown-menu" style="margin-left: -28px !important;">
+                        <a class="dropdown-item" data-role="export" data-type="excel">Excel</a>
+                        <a class="dropdown-item" data-role="export" data-type="csv">CSV</a>
+                    </div>
+                </div>
+                <div class="card card-body table-responsive">
+                    <table class="table table-bordered table-hover" id="employee_table">
+                        <thead>
+                            <th class="text-center">ID NUMBER</th>
+                            <th class="d-none">PI ID</th>
+                            <th class="capslock">Last Name</th>
+                            <th class="capslock">First Name</th>
+                            <th class="capslock">Middle Name</th>
+                            <th class="capslock">Ext</th>
+                            <th class="text-center capslock">Gender</th>
+                            <th class="text-center capslock">Employment Status</th>
+                            <th class="text-center capslock">Position</th>
+                            <th class="text-center capslock">Section</th>
+                            <th class="text-center capslock">Division</th>
+                            <th class="text-right capslock">Status</th>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+		</div>
+	</div>
+</div>
+{% endif %}
+{% block script %}
+<script>
+    Chart.defaults.global.defaultFontFamily = 'Inter, sans-serif';
+    var doughnutData = {
+        labels: ["Male","Female"],
+        datasets: [{
+            data: ['{{ male }}','{{ female }}'],
+            backgroundColor: ["#00bfa5","#ed5565"]
+        }],
+    } ;
+
+    var doughnutOptions = {
+        responsive: true
+    };
+
+    var ctx4 = document.getElementById("doughnutChart").getContext("2d");
+    new Chart(ctx4, {type: 'doughnut', data: doughnutData, options:doughnutOptions});
+
+    var barData = {
+        labels: [{% for row in empstatus %}'{{ row.name }}', {% endfor %}],
+        datasets: [
+            {
+                label: "Total employees by employment status",
+                backgroundColor: [{% for row in empstatus.count|times %}'{{ colors|random }}',{% endfor %}],
+                pointBorderColor: "#fff",
+                data: [{% for row in empstatus %}{% count_empstatus row.id as count_empstatus %}'{{ count_empstatus }}',{% endfor %}]
+            }
+        ]
+    };
+
+    var barOptions = {
+        responsive: true
+    };
+
+    $('#table-position-head-count').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'asc' ]],
+        'lengthMenu': [ 10, 25, 50, 100 ],
+        'ajax': {
+            'url': '/api/position/list/?format=datatables',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'columns': [
+            {% if user|check_permission:'superadmin' or user|check_permission:'employee_list' %}
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return "<a href='javascript:void(0)' data-role='position-emp' data-id='"+ data +"' data-title='"+ row.name +"'>Details</a>"
+                }
+            },
+            {% endif %}
+            {'data': 'name' },
+            {'data': 'head_count', 'searchable': false, 'className': 'text-center' },
+        ],
+    });
+
+    $('#table-section-head-count').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'asc' ]],
+        'lengthMenu': [ 10, 25, 50, 100 ],
+        'ajax': {
+            'url': '/api/employees/section/list/?format=datatables',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'columns': [
+            {% if user|check_permission:'superadmin' or user|check_permission:'employee_list' %}
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return "<a href='javascript:void(0)' data-role='section-emp' data-id='"+ data +"' data-title='"+ row.sec_name +"'>Details</a>"
+                }
+            },
+            {% endif %}
+            {'data': 'sec_name' },
+            {'data': 'division', 'name': 'div.div_name' },
+            {'data': 'head_count', 'searchable': false, 'className': 'text-center' },
+        ],
+    });
+
+    var ctx2 = document.getElementById("barChart").getContext("2d");
+    new Chart(ctx2, {type: 'bar', data: barData, options:barOptions});
+
+    {% if user|check_permission:'superadmin' or user|check_permission:'employee_list' %}
+    $(document).on('click', '[data-role=position-emp]', function() {
+        $('#employees-modal-title').text('EMPLOYEES ON POSITION - ' + $(this).data('title'));
+        employeeTable('position_id=' + $(this).data('id'));
+        $('a[data-role=export]').data('id', 'position_id=' + $(this).data('id'));
+        $('#employees-modal').modal('show');
+    });
+
+    $(document).on('click', '[data-role=section-emp]', function() {
+        $('#employees-modal-title').text('EMPLOYEES ON SECTION - ' + $(this).data('title'));
+        employeeTable('section_id=' + $(this).data('id'));
+        $('a[data-role=export]').data('id', 'section_id=' + $(this).data('id'));
+        $('#employees-modal').modal('show');
+    });
+
+    $(document).on('click', '[data-role=export]', function() {
+        $('.loading').css('display', '');
+        $('button').prop("disabled", true);
+        event.preventDefault();
+        const xhr = new XMLHttpRequest();
+        const url = "{% url 'export_data' %}?" + $(this).data('id') + '&type=' + $(this).data('type');
+        const extension =  $(this).data('type') === 'excel' ? '.xlsx' : '.csv'
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                a = document.createElement('a');
+                a.href = window.URL.createObjectURL(xhr.response);
+                const today = new Date();
+                a.download = "Staffing_" + today.toDateString().split(" ").join("_") + extension;
+                Swal.fire("Good job!", "You have successfully exported employee's details.", "success");
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                $('.loading').css('display', 'none');
+			    $('button').prop("disabled", false);
+                return a.click();
+            }
+        }
+
+        xhr.responseType = 'blob';
+        xhr.send();
+    });
+
+    function employeeTable(filter_id){
+        if ( $.fn.DataTable.isDataTable('#employee_table') ) {
+            $('#employee_table').DataTable().destroy();
+        }
+        $('#employee_table').DataTable({
+            'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 2, 'asc' ]],
+			'lengthMenu': [10,25,50,100],
+            'ajax': {
+				'url': '/api/employees/view/all?format=datatables&' + filter_id,
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+            'columns': [
+                {'data': 'id_number', 'className': 'text-center' },
+                {'data': 'pi_id', 'className': 'd-none', 'searchable': false },
+                {'data': 'last_name', 'name': 'pi.user.last_name' },
+                {'data': 'first_name', 'name': 'pi.user.first_name' },
+				{'data': 'middle_name', 'name': 'pi.user.middle_name' },
+				{'data': 'ext', 'className': 'text-center', 'name': 'pi.ext.name' },
+				{'data': 'gender', 'className': 'text-center', 'searchable': 'false' },
+				{'data': 'employment_status', 'className': 'text-center', 'name': 'empstatus.name' },
+				{'data': 'position', 'className': 'text-center', 'name': 'position.name' },
+				{'data': 'section', 'className': 'text-center', 'name': 'section.sec_name' },
+				{'data': 'division', 'className': 'text-center', 'name': 'section.div.div_name' },
+				{'data': 'status',
+					'render': function(data, type, row, meta) {
+						if(data == 1) {
+							return "<span class='badge badge-success'>Active</span>";
+						} else {
+							return "<span class='badge badge-danger'>Inactive</span>";
+						}
+					},
+					'className': 'text-center',
+					'searchable': false
+				},
+            ],
+        });
+        {% endif %}
+    }
+</script>
+{% endblock %}

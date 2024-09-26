@@ -1,0 +1,642 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<style>
+    .note-editor.note-frame .note-editing-area .note-editable {
+        border: 1px solid #ddd !important;
+    }
+
+    .note-popover.popover .popover-content a {
+        z-index: 9999 !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">{{ tab_title }}</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+				<li class="breadcrumb-item">
+					{{ tab_parent }}
+				</li>
+                <li class="breadcrumb-item active">
+                    <strong>{{ tab_title }}</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#new-request-modal"><i class="fas fa-plus"></i> New Request</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card card-info card-tabs">
+                <div class="card-header p-0 pt-1">
+                    <ul class="nav nav-tabs" id="tabUL">
+                        {% if user|check_permission:'hd_assistant' or user|check_permission:'superadmin' %}
+                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#all-requests">All Requests <span class="badge badge-pill badge-secondary" id="total_all"></span></a></li>
+                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#requests-assigned-to-me">Requests Assigned To Me <span class="badge badge-pill badge-warning" id="total_all_assigned_to_me"></span></a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#my-requests"> My Requests <span class="badge badge-pill badge-success" id="total_request"></span></a></li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        {% if user|check_permission:'hd_assistant' or user|check_permission:'superadmin' %}
+                        <div id="all-requests" class="tab-pane">
+                            <div class="border p-3">
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <table class="table table-bordered" style="zoom: 95% !important;" id="help-desk-table-all" width="100%">
+                                           <thead>
+                                                <th>ACTION</th>
+                                                <th>TRACKING NUMBER</th>
+                                                <th>REQUESTED BY</th>
+                                                <th class="text-center">SERVICES TYPE</th>
+                                                <th class="text-center">PURPOSE</th>
+                                                <th class="text-center">DATE REQUESTED</th>
+                                                <th class="text-center">ASSIGNED BY</th>
+                                                <th class="text-right">STATUS</th>
+                                           </thead>
+                                       </table>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4>By status</h4>
+                                        <div class="list-group">
+                                            <a class="list-group-item active" id="all-status" href="javascript:;" data-role="status" data-filter="all">All</a>
+                                            <a class="list-group-item" id="all-status-0" href="javascript:;" data-role="status" data-filter="0">Pending <span class="badge badge-secondary pull-right" id="total_pending_all"></span></a>
+                                            <a class="list-group-item" id="all-status-1" href="javascript:;" data-role="status" data-filter="1">Resolved <span class="badge badge-primary pull-right" id="total_resolved_all"></span></a>
+                                            <a class="list-group-item" id="all-status-4" href="javascript:;" data-role="status" data-filter="4">Referred <span class="badge badge-warning pull-right" id="total_referred_all"></span></a>
+                                            <a class="list-group-item" id="all-status-3" href="javascript:;" data-role="status" data-filter="3">Declined <span class="badge badge-danger pull-right" id="total_declined_all"></span></a>
+                                        </div>
+                                    </div>
+                                </div>
+                           </div>
+                        </div>
+                        <div id="requests-assigned-to-me" class="tab-pane">
+                            <div class="border p-3">
+                                 <table class="table table-bordered" style="zoom: 95% !important;"s id="help-desk-table-atm" width="100%">
+                                     <thead>
+                                        <th>ACTION</th>
+                                        <th>TRACKING NUMBER</th>
+                                        <th>REQUESTED BY</th>
+                                        <th class="text-center">SERVICES TYPE</th>
+                                        <th class="text-center">PURPOSE</th>
+                                        <th class="text-center">DATE REQUESTED</th>
+                                        <th class="text-right">STATUS</th>
+                                    </thead>
+                                </table>
+                           </div>
+                        </div>
+                        {% endif %}
+                        <div id="my-requests" class="tab-pane active">
+                            <div class="border p-3">
+                                <table class="table table-bordered" style="zoom: 95% !important;" id="help-desk-table" width="100%">
+                                    <thead>
+                                        <th>ACTION</th>
+                                        <th>TRACKING NUMBER</th>
+                                        <th class="text-center">SERVICES TYPE</th>
+                                        <th class="text-center">PURPOSE</th>
+                                        <th class="text-center">DATE REQUESTED</th>
+                                        <th class="text-center">ASSIGNED BY</th>
+                                        <th class="text-right">STATUS</th>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="new-request-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">NEW REQUEST</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form id="ticketRequestForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <span><label>In Behalf Of</label> (Leave blank if you're the requester)</span>
+                    <input type="text" class="form-control filter_employee_hd" name="in_behalf_of" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Services<span class="asteriskField">*</span></label>
+                    <select class="form-control select" name="services" required>
+                        <option></option>
+                        {% for row in classifications %}
+                        <option value="{{ row.id }}">{{ row.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Purpose<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="purpose" autocomplete="off" required>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label>Year (Optional)</label>
+                        <input type="number" class="form-control" name="year" autocomplete="off">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Semester (Optional)</label>
+                        <select class="form-control select" name="semester">
+                            <option></option>
+                            <option value="1">1st</option>
+                            <option value="2">2nd</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description<span class="asteriskField">*</span></label>
+                    <textarea class="summernote" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Attachment (Optional)</label>
+                    <input type="file" class="form-control file-control" name="attachment" multiple>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit Request</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="view-request-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title"></h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="view-content"></div>
+        </div>
+    </div>
+</div>
+{% if user|check_permission:'hd_assistant' or user|check_permission:'superadmin' %}
+<div class="modal" id="assign-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    ASSIGN A PERSONNEL
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form id="assignForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="services_id" id="services_id">
+                    <div class="form-group mb-0">
+                        <label>Assign Request To<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control filter_employee_to" name="assigned_to" autocomplete="off" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-info">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+<div class="modal fade" id="preview-attachment-modal" role="dialog" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title"></h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+			<div class="modal-body" style="padding:0px !important;">
+                <iframe id="preview-attachment-pdf" width="100%" height="750" frameBorder="0" style="border:1px solid #CCC; display:none;"></iframe>
+				<img loading="lazy"  style="object-fit:contain; width:100%;" src="" id="preview-attachment-image" style="display:none;">
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    initializeTotals();
+    function initializeTotals(){
+        $.get({
+            url: '{% url "get_help_desk_total" %}',
+            type: "GET",
+            success: function(response) {
+                $('#total_all').html(parseInt(response.total_all));
+                $('#total_all_assigned_to_me').html(response.total_all_assigned_to_me);
+                $('#total_request').html(response.total_request);
+
+                $('#total_pending_all').html(response.total_pending_all)
+                $('#total_resolved_all').html(response.total_resolved_all)
+                $('#total_referred_all').html(response.total_referred_all)
+                $('#total_declined_all').html(response.total_declined_all)
+            }
+        });
+    }
+
+    function update_counts(table, count_label, status=null){
+        table.clear();
+        let url = '/api/help-desk/transaction/?format=datatables'
+        url = (status != null) ? url + '&status=' + status : url
+        table.ajax.url(url).load(function(){
+            $(count_label).html(parseInt(table.page.info().recordsTotal));
+        });
+    }
+
+    $(document).on('click', 'a[data-role=status]', function(){
+        $('.list-group-item').removeClass('active');
+        $('#all-status-'+$(this).data('filter')).addClass('active');
+        if($(this).data('filter') == 'all'){
+            $('#all-status').addClass('active');
+            update_counts($('#help-desk-table-all').DataTable(), '#total_all');
+        }else{
+            update_counts($('#help-desk-table-all').DataTable(), '#total_all', $(this).data('filter'));
+        }
+    });
+
+    $('.summernote').summernote({
+        height: $(window).height() * 0.2,
+        dialogsInBody: true,
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+
+    $(".filter_employee_hd").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    {% if user|check_permission:'hd_assistant' or user|check_permission:'superadmin' %}
+    $.get('{% url "filter_employee_by_permission" "hd_assistant" "false" %}', function(data){
+        $(".filter_employee_to").typeahead({
+            source: data,
+            highlight: true
+        });
+    },'json');
+
+    $(document).on('click', 'a[data-role=assign]', function(){
+        $('#services_id').val($(this).data('id'));
+        $('#assign-modal').modal('show');
+    });
+
+    $('#assignForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to assign this personnel?",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "assigned_employee" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (response){
+		    if (response.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#assignForm').trigger('reset');
+                        $('#assign-modal').modal('hide');
+                        initializeTotals();
+                        $('#help-desk-table').DataTable().ajax.reload();
+                        $('#help-desk-table-atm').DataTable().ajax.reload();
+                        $('#help-desk-table-all').DataTable().ajax.reload();
+                    }
+                });
+            }
+		});
+        e.preventDefault();
+    });
+
+    $('#help-desk-table-all').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 1, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/help-desk/transaction/?format=datatables',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    var template = '<a href="javascript:;" data-role="view" data-id="'+ data +'"> View </a>';
+                    template += '| <a href="javascript:;" data-role="delete" data-id="'+ data +'"> Delete </a>';
+                    return template;
+                },
+                'sortable': false
+            },
+            {'data': 'tracking_no' },
+            {'data': 'requested_by', 'name': 'requested_by.pi.user.first_name, requested_by.pi.user.last_name', 'sortable': false,},
+            {'data': 'services_name', 'name': 'classification.name', 'sortable': false, 'className': 'text-center' },
+            {'data': 'purpose','sortable': false, 'className': 'text-center' },
+            {'data': 'date_requested', 'sortable': false, 'className': 'text-center', 'searchable': false },
+            {'data': 'assigned_by',
+                'render': function(data, type, row, meta) {
+                    if (data === null) {
+                        return '<a href="javascript:;" data-role="assign" data-id="' + row['id'] +'">Unassigned</a>';
+                    } else {
+                        return data;
+                    }
+                },
+                'sortable': false,
+                'name': 'assigned_emp.pi.user.first_name, assigned_emp.pi.user.last_name',
+                'className': 'text-center'
+            },
+            {'data': 'latest_transaction',
+                'render': function (data, type, row, meta) {
+                    if (data == 0) {
+                        return "<span class='badge badge-secondary'> Pending</span>"
+                    } else if (data == 1) {
+                        return "<span class='badge badge-primary'> Resolved</span>"
+                    } else if (data == 3) {
+                        return "<span class='badge badge-danger'> Declined</span>"
+                    } else if (data == 4) {
+                        return "<span class='badge badge-info'> Referred</span>"
+                    }
+                },
+                'sortable': false,
+                'searchable': false,
+                'className': 'text-right'
+            },
+            {'data': 'others', 'name': 'others', 'searchable': true, visible: false},
+        ],
+    });
+
+    $('#help-desk-table-atm').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 1, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/help-desk/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&atm=all',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    return '<a href="javascript:;" data-role="view" data-id="'+ data +'"> View </a>'
+                },
+                'sortable': false
+            },
+            {'data': 'tracking_no' },
+            {'data': 'requested_by', 'name': 'requested_by.pi.user.first_name, requested_by.pi.user.last_name', 'sortable': false,},
+            {'data': 'services_name', 'name': 'classification.name', 'sortable': false, 'className': 'text-center' },
+            {'data': 'purpose', 'searchable': false, 'sortable': false, 'className': 'text-center' },
+            {'data': 'date_requested', 'searchable': false, 'sortable': false, 'className': 'text-center' },
+            {'data': 'latest_transaction',
+                'render': function (data, type, row, meta) {
+                    if (data == 0) {
+                        return "<span class='badge badge-secondary'> Pending</span>"
+                    } else if (data == 1) {
+                        return "<span class='badge badge-primary'> Resolved</span>"
+                    } else if (data == 3) {
+                        return "<span class='badge badge-danger'> Declined</span>"
+                    } else if (data == 4) {
+                        return "<span class='badge badge-info'> Referred</span>"
+                    }
+                },
+                'sortable': false,
+                'searchable': false,
+                'className': 'text-right'
+            },
+            {'data': 'others', 'name': 'others', 'searchable': true, visible: false},
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+        id = $(this).data('id');
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to delete this request?",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : {
+                        id: id,
+                    },
+                    url         : '{% url "delete_ticket_request" %}',
+                    type        : 'POST',
+                });
+		    },
+		}).then(function (response) {
+            if (response.value.data == "success") {
+                Swal.fire({
+                    title: response.value.tracking_no,
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#help-desk-table-all').DataTable().ajax.reload();
+                        initializeTotals();
+                    }
+                });
+            }
+        });
+    });
+    {% endif %}
+
+    $('#help-desk-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 1, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/help-desk/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&my_request=all',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['services_id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    return '<a href="javascript:;" data-role="view" data-id="'+ data +'"> View </a>'
+                },
+                'sortable': false
+            },
+            {'data': 'tracking_no' },
+            {'data': 'services_name', 'name': 'classification.name', 'sortable': false, 'className': 'text-center' },
+            {'data': 'purpose', 'sortable': false, 'className': 'text-center' },
+            {'data': 'date_requested', 'searchable': false, 'sortable': false, 'className': 'text-center' },
+            {'data': 'assigned_by',
+                'render': function(data, type, row, meta) {
+                    if (data === null) {
+                        return 'Unassigned';
+                    } else {
+                        return data;
+                    }
+                },
+                'sortable': false,
+                'searchable': false,
+                'className': 'text-center'
+            },
+            {'data': 'latest_transaction',
+                'render': function (data, type, row, meta) {
+                    if (data == 0) {
+                        return "<span class='badge badge-secondary'> Pending</span>"
+                    } else if (data == 1) {
+                        return "<span class='badge badge-primary'> Resolved</span>"
+                    } else if (data == 3) {
+                        return "<span class='badge badge-danger'> Declined</span>"
+                    } else if (data == 4) {
+                        return "<span class='badge badge-info'> Referred</span>"
+                    }
+                },
+                'searchable': false,
+                'sortable': false,
+                'className': 'text-right'
+            },
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=view]', function(){
+        id = $(this).data('id');
+        var tracking_number = $('#'+id).find('td:eq(1)').text();
+        $('#view-request-modal').find('.modal-title').text("Tracking Number: " + tracking_number);
+        callPage("/help-desk/view/" + id);
+        $('#view-request-modal').modal('show');
+    });
+
+    function callPage(pageRefInput) {
+        $.ajax({
+            url: pageRefInput,
+            type: "GET",
+            dataType: 'text',
+            beforeSend: function() {
+                $('#view-request-modal').find('.view-content').empty();
+                $('#view-request-modal').find('.view-content').append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+            },
+            success: function(response) {
+                $('#view-request-modal').find('.view-content').html(response);
+            },
+            complete: function() {
+                $('#preloader').css('display', 'none');
+            }
+        });
+    }
+
+    $('#ticketRequestForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to submit this request?",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "ticket_request" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (response){
+		    if (response.value.data == "success"){
+                Swal.fire({
+                    title: response.value.tracking_no,
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#ticketRequestForm').trigger('reset');
+                        $('.select').val("").change();
+                        $('.summernote').summernote('reset');
+                        $('#new-request-modal').modal('hide');
+                        $('#all-status').click();
+                        {#$('#help-desk-table').DataTable().ajax.reload();#}
+                        {#$('#help-desk-table-all').DataTable().ajax.reload();#}
+                        {#initializeTotals();#}
+
+                    }
+                });
+            }
+		});
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

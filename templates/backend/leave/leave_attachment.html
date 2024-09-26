@@ -1,0 +1,55 @@
+{% load crispy_forms_tags %}
+<form id="uploadLeaveAttachmentForm" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="modal-body">
+    <div class="form-group">
+        {{ form.file|as_crispy_field }}
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info"> Save changes</button>
+</div>
+</form>
+{% block script %}
+<script>
+$('#uploadLeaveAttachmentForm').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "You want to upload this leave attachment?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        allowOutsideClick: false,
+        showLoaderOnConfirm: true,
+        preConfirm: function (){
+            return $.ajax({
+                data        : form,
+                url         : "{% url 'leave_attachment' pk %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            });
+        },
+    }).then(function (response){
+        if (response.value.data == "success"){
+            Swal.fire({
+              title: "Good job!",
+              text: response.value.msg,
+              icon: "success",
+              confirmButtonColor: "#3498DB",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#leave-attachment-content').load("/backend/leave-request/attachment/" + {{ pk }}, function(){
+                        $('#leave-attachment-modal').modal('show');
+                    });
+                }
+            });
+        }
+    });
+    e.preventDefault();
+});
+</script>
+{% endblock %}

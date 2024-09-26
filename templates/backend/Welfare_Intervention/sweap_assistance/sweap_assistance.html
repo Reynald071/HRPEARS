@@ -1,0 +1,547 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+	<div class="col-lg-8">
+		<h1 class="bold">Sweap Database</h1>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="{% url 'backend-dashboard' %}">Administrator</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>Sweap Assistance</strong>
+			</li>
+		</ol>
+	</div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-left">
+						<div class="btn-group">
+							<button type="button" class="btn btn-default" data-toggle="modal" data-target="#exampleModal">Add</button>
+							<a class="btn btn-default" data-role="summary" href='#'>Print</a>
+						</div>
+					</div>
+					<div class="pull-right">
+						 <a class="btn btn-default" href='{% url "sweapassistance" %}'>Refresh</a>
+					</div>
+					<br><br><br>
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-hover" id="sweap_db" width="100%">
+							<thead>
+								<tr>
+									<th>Update</th>
+									<th style="display:none;">ID</th>
+									<th class="capslock">Emp ID</th>
+									<th class="capslock">Full Name</th>
+									<th class="capslock">Employment Status</th>
+									<th class="capslock">Division</th>
+									<th class="capslock">Type of Assistance</th>
+									<th class="capslock">Particular</th>
+									<th class="capslock">Amount of Excess</th>
+									<th class="capslock">Amount Extended</th>
+									<th class="capslock">Relationship to the Deceased</th>
+									<th class="capslock">Share Contribution</th>
+									<th class="capslock">Period Applied</th>
+									<th class="capslock">Duplicate</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="ibox">
+						<div class="ibox-title bg-primary">
+							<h5>FILTER</h5>
+						</div>
+						<div class="ibox-content">
+							<h4>By status</h4>
+							<div class="list-group">
+								<a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+								<a class="list-group-item"  id="status-Mortuary" href="javascript:;" data-role="status" data-filter="Mortuary">Mortuary</a>
+								<a class="list-group-item"  id="status-Medical" href="javascript:;" data-role="status" data-filter="Medical">Medical</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+	<div class="modal-content">
+	  <div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+		<h3 class="modal-title" id="exampleModalLabel">Insert Sweap Assistance</h3>
+		<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+		  <span aria-hidden="true">&times;</span>
+		</button>
+	  </div>
+	  <div class="modal-body">
+		<form id="insertsweap">
+		<div class="ibox-content">
+			<div class="list-group">
+				<div class="form-group">
+					<label class="bmd-label-floating">Employee Info<span class="asteriskField">*</span></label>
+					<input type="text" class="form-control typeahead2" id="emp_idnumber"  name="idnumber" required="true" autocomplete="off">
+				</div>
+				<div class="form-group">
+					<label>Type Of Assistance<span class="asteriskField">*</span></label>
+					<select class="form-control select" style="width:100%;" id="typeofassistant" name="typeofassistant" required="true" autocomplete="off">
+						<option></option>
+						<option value="Mortuary">Mortuary</option>
+						<option value="Medical">Medical</option>
+					</select>
+					<br>
+				</div>
+				<div class="form-group" id="mortuary">
+					<label class="bmd-label-floating">Particular<span class="asteriskField">*</span> </label>
+					<input type="text" class="form-control" id="particular" name="particular" autocomplete="off">
+					<label class="bmd-label-floating">Amount Of Excess<span class="asteriskField">*</span> </label>
+					<input type="text" class="form-control" id="amountexcess" name="amountexcess" autocomplete="off">
+					<label class="bmd-label-floating">Amount Extended<span class="asteriskField">*</span> </label>
+					<input type="text" class="form-control" id="amountextended" name="amountextended" autocomplete="off">
+				</div>
+				<div class="form-group" id="med">
+					<label class="bmd-label-floating">Relation to the deceased<span class="asteriskField">*</span> </label>
+					<input type="text" class="form-control" id="relation" name="relation" autocomplete="off">
+				</div>
+				<div class="form-group">
+					<label class="bmd-label-floating">Share Contribution<span class="asteriskField">*</span> </label>
+					<input type="text" class="form-control" name="sharecontribution" autocomplete="off">
+				</div>
+				<div class="form-group">
+					<label class="bmd-label-floating">Period Applied<span class="asteriskField">*</span> </label>
+					<input type="date" class="form-control" name="date" required="true" required="true" autocomplete="off">
+				</div>
+				<button class="btn-info btn pull-right" type="submit">Submit</button><br><br>
+			</div>
+		</div>
+		</form>
+	  </div>
+	</div>
+  </div>
+</div>
+<div id="mySummary" class="modal fade" role="dialog" aria-labelledby="myExtraLargeModalLabel" data-backdrop="static"  aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+	<div class="modal-content">
+		<div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+			<h3 class="modal-title">Print Report</h3>
+		  <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		  <div class="modal-body" id="load_data">
+			<center>
+			<div class="table-responsive">
+			<form method="GET" action="{% url 'printsweapreport' %}" target="blank" style="margin-bottom:10px">
+				<div class="form-group">
+					<div class="form-group">
+						<select class="form-control select" style="width:100%;" id="month" name="mth" required="true">
+						  <option></option>
+						  <option value="Mortuary">Mortuary</option>
+						  <option value="Medical">Medical</option>
+						  <option value="ALL">ALL</option>
+						  <option value="2021">2021</option>
+						  <option value="2022">2022</option>
+						  <option value="2023">2023</option>
+						  <option value="01">January</option>
+						  <option value="02">February</option>
+						  <option value="03">March</option>
+						  <option value="04">Arpil</option>
+						  <option value="05">May</option>
+						  <option value="06">June</option>
+						  <option value="07">July</option>
+						  <option value="08">August</option>
+						  <option value="09">September</option>
+						  <option value="10">October</option>
+						  <option value="11">November</option>
+						  <option value="12">December</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			</center>
+		  </div>
+		<div class="modal-footer">
+			<button class="btn btn-light" data-dismiss="modal">Close</button>
+			<button class="btn-info btn pull-right" type="submit">Print</button>
+			</form>
+		</div>
+	</div>
+  </div>
+</div>
+<div aria-hidden="true" aria-labelledby="myExtraLargeModalLabel" class="modal fade" data-backdrop="static" id="myModal"
+	 role="dialog">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+				<h3 class="modal-title">Sweap Data</h3>
+				<button aria-label="Close" class="close text-white" data-dismiss="modal" onClick="window.location.reload();"
+						type="button">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" id="load_data">
+				<form id="updatesweap">
+					<div class="table-responsive">
+						<table cellspacing="0" class="table table-bordered notboldandbig" id="input_fields_wrap"
+							   width="100%">
+							<tr>
+								<td style="display:none;">
+									<input id="id" name="empid" type="text">
+								</td>
+								<td>
+									<label class="col-form-label" for="recipient-name">ID NUMBER</label>
+									<input autocomplete="off" class="form-control" id="emp_id" name="fname"
+										   style="width:100%;" type="text">
+								</td>
+								<td>
+									<label class="col-form-label" for="recipient-name">FULL NAME</label>
+									<input class="form-control" id="full_name" name="case" style="width:100%;"
+										   type="text">
+								</td>
+								<td>
+									<label class="col-form-label" for="recipient-name">TYPE OF ASSISTANCE</label>
+									<input class="form-control" id="type_assistance" name="item" style="width:100%;" type="text">
+								</td>
+								<td>
+									<label class="col-form-label" for="recipient-name">Date</label>
+									<input class="form-control" id="Date" name="total" style="width:100%;"
+										   type="date">
+								</td>
+								<td>
+									<label class="col-form-label" for="recipient-name">Share Contribution</label>
+									<input autocomplete="off" class="form-control" id="share_contrib" name="share_contrib" style="width:100%;"
+										   type="text" required>
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-info" type="submit">Save</button>
+						<button class="btn btn-light" data-dismiss="modal">Close</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+
+
+<script>
+		datatable_stocks();
+		function datatable_stocks(){
+			$('#sweap_db').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'order': [[ 0, 'desc' ]],
+				'lengthMenu': [25,50,100],
+				'ajax': {
+					'url': '/api/hrws/sweap_view?format=datatables',
+					'type': 'GET',
+					'beforeSend': function (request) {
+						request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+					}
+				},
+				'fnCreatedRow': function (row, data, index) {
+					$(row).attr('id', data['id']);
+				},
+				'columns': [
+					{'data': 'id',
+						'render': function(data,type,row,meta){
+							if(row['share_contrib'] == null){
+								return "<a href='#' data-role='view' data-id="+ data + ">Update</a> | \
+								 				<a href='#' data-role='Delete' data-id="+ data + ">Delete</a>"
+							}else{
+								return "<a href='#' data-role='Delete' data-id="+ data + ">Delete</a>"
+							}
+						}
+					},
+					{'data': 'emp_id', 'className': 'text-center', 'name':'emp.id_number'},
+					{'data': 'full_name','className':'text-center','name':'emp.pi.user.first_name','name':'emp.pi.user.last_name'},
+					{'data': 'emp_status','className':'text-center','name': 'emp.empstatus.name'},
+					{'data':'division','className':'text-center','name':'emp.section.div.div_name'},
+					{'data':'typeofassistant','className':'text-center','name':'typeofassistant'},
+					{'data': 'particular', 'className': 'text-center', 'name':'particular',
+						'render': function(data,type,row,meta){
+							if(row['particular'] == ""){
+								return '<td>N/A</td>'
+							}else{
+								return row['particular']
+							}
+						}
+					},
+					{'data': 'amount_excess', 'className': 'text-center', 'name':'amount_excess',
+						'render': function(data,type,row,meta){
+							if(row['amount_excess'] == ""){
+								return '<td>N/A</td>'
+							}else{
+								return row['amount_excess']
+							}
+						}
+					},
+					{'data': 'amount_extended', 'className': 'text-center', 'name':'amount_extended',
+						'render': function(data,type,row,meta){
+							if(row['amount_extended'] == ""){
+								return '<td>N/A</td>'
+							}else{
+								return row['amount_excess']
+							}
+						}
+					},
+					{'data': 'relationship', 'className': 'text-center', 'name':'relationship',
+						'render': function(data,type,row,meta){
+							if(row['relationship'] == ""){
+								return '<td>N/A</td>'
+							}else{
+								return row['relationship']
+							}
+						}
+					},
+					{'data':'share_contrib','className':'text-center','name':'share_contrib'},
+					{'data':'period_applied','className':'text-center','name':'period_applied'},
+					{'data': 'entry', 'className': 'text-center', 'name':'entry',
+						'render': function(data,type,row,meta){
+							if(row['entry'] == 1){
+								return "<span class='label label-danger'>Duplicate</span>";
+							}else{
+								return "<span class='label label-primary'>No Duplicate</span>";
+							}
+						}
+					},
+				],
+			});
+		}
+   $(document).on('click', 'a[data-role=status]', function(){
+		$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+		if($(this).data('filter') == 'all'){
+			$('#sweap_db').DataTable().ajax.url('/api/hrws/sweap_view?format=datatables').load();
+		}else{
+			$('#sweap_db').DataTable().ajax.url('/api/hrws/sweap_view?format=datatables&status='+$(this).data('filter')).load();
+		}
+	});
+
+	$(document).on('click','a[data-role=view]', function(){ // FOR MODAL PASS TO DIFFERENT MODAL
+	  var id = $(this).data('id');
+	  var ei = $('#'+id).children('td:eq(1)').text();
+	  var fn = $('#'+id).children('td:eq(2)').text();
+	  var ta = $('#'+id).children('td:eq(5)').text();
+	  var Dte = $('#'+id).children('td:eq(11)').text();
+
+	  var formattedDate = moment(Dte).format('YYYY-MM-DD');
+
+	  $('#id').val(id);
+	  $('#emp_id').val(ei);
+	  $('#full_name').val(fn);
+	  $('#type_assistance').val(ta);
+	  $('#Date').val(formattedDate);
+
+	  $('#myModal').modal('show')
+	});
+
+	$(document).on('click','a[data-role=summary]', function(){ // FOR MODAL SUMMARY
+	  $('#mySummary').modal('show')
+	});
+
+	 $("#mortuary").hide()
+	$(function(){
+		$("#typeofassistant").on("keyup change", function(e) {
+			if($(this).val() =="Mortuary"){
+			  $("#mortuary").hide();
+
+			  $('#particular').val("")
+			  $('#amountexcess').val("");
+			  $('#amountextended').val("");
+
+			  $("#med").show();
+			}else{
+			  $("#med").hide();
+			  $('#relation').val("");
+
+			  $("#mortuary").show();
+			}
+		})
+
+	});
+	$("#intervention, #add").keyup(function () { 
+	  $("#total").val(+$("#intervention").val() + +$("#add").val());
+	});
+	$(".typeahead, .typeahead2, .typeahead3, .typeahead4").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+	$('#insertsweap').on('submit', function(e){
+	var form = new FormData(this);
+	Swal.fire({
+		title: "Are you sure",
+		text: "Did you review it before inserting?",
+		icon: "info",
+		showCancelButton: true,
+		confirmButtonColor: "#3498DB",
+		confirmButtonText: "Yes",
+		closeOnConfirm: false,
+		allowOutsideClick: false,
+	}).then((result) => {
+		if (result.isConfirmed) {
+			Swal.showLoading()
+			$.ajax({
+				data        : form,
+				url         : "{% url 'sweapassistance' %}",
+				type        : 'POST',
+				cache       : false,
+				contentType : false,
+				processData : false
+			})
+			.done(function(data){
+				var data = data.data;
+				if(data == 'success'){
+					Swal.fire({
+					  title: "Good job!",
+					  text: "You successfully Inserted Sweap Assistance",
+					  icon: "info",
+					  confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed) {
+							$('#sweap_db').DataTable().ajax.reload();
+							$("input:text").val("");
+						}
+					});
+				}else{
+					Swal.fire({
+					  title: "Insert Failed!",
+					  text: "Something Went Wrong",
+					  icon: "error",
+					  confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed) {
+							window.location.href = "{% url 'sweapassistance' %}";
+						}
+					});
+				}
+			});
+		}
+		});
+		e.preventDefault();
+	});
+   $(document).on('click', 'a[data-role=Delete]', function(){
+     	var id = $(this).data('id');
+     	Swal.fire({
+         title: "Are you sure",
+         text: "You want to delete this information?",
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonColor: "#3498DB",
+         confirmButtonText: "Yes",
+         allowOutsideClick: false,
+         }).then((result) => {
+             if (result.isConfirmed) {
+                 Swal.showLoading()
+         		$.ajax({
+         			url: "{% url 'delete_sweap' %}",
+         			data: {
+         				id: id
+         			},
+         			type: "POST"
+         		})
+         		.done(function(data){
+         			if (data.data == 'success'){
+         				Swal.fire({
+         				  title: "Good job!",
+         				  text: "You successfully Deleted the data" ,
+         				  icon: "success",
+         				  confirmButtonColor: "#3498DB",
+         				  allowOutsideClick: false,
+         				}).then((result) => {
+             				if (result.isConfirmed) {
+         				  		$('#sweap_db').DataTable().ajax.reload();
+         				  	}
+         				});
+         			}
+         		});
+         	}
+         });
+     });
+	$('#updatesweap').on('submit', function(e){
+	var form = new FormData(this);
+	Swal.fire({
+		title: "Are you sure",
+		text: "Did you review it before updating?",
+		icon: "info",
+		showCancelButton: true,
+		confirmButtonColor: "#3498DB",
+		confirmButtonText: "Yes",
+		closeOnConfirm: false,
+		allowOutsideClick: false,
+	}).then((result) => {
+		if (result.isConfirmed) {
+			Swal.showLoading()
+			$.ajax({
+				data        : form,
+				url         : "{% url 'update_sweap' %}",
+				type        : 'POST',
+				cache       : false,
+				contentType : false,
+				processData : false
+			})
+			.done(function(data){
+				var data = data.data;
+				if(data == 'success'){
+					Swal.fire({
+					  title: "Good job!",
+					  text: "You successfully Updated Employee Share Contribution ",
+					  icon: "info",
+					  confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed) {
+							window.location.href = "{% url 'sweapassistance' %}";
+						}
+					});
+				}else{
+					Swal.fire({
+					  title: "Insert Failed!",
+					  text: "Something Went Wrong",
+					  icon: "error",
+					  confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed) {
+							window.location.href = "{% url 'sweapassistance' %}";
+						}
+					});
+				}
+			});
+		}
+		});
+		e.preventDefault();
+	});
+</script>
+{% endblock %}

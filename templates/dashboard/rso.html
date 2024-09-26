@@ -1,0 +1,40 @@
+{% load tags %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card card-info card-outline">
+            <div class="card-header">
+                <div class="pull-left">
+                    <p class="card-title font-weight-bold">RSO TYPE</p>
+                </div>
+            </div>
+            <div class="card-body" style="padding: 0px !important;">
+                <div class="list-group list-group-flush">
+                    {% for row in rso_type %}
+                    {% generate_token row.id as pk %}
+                    <a class="list-group-item list-group-item-action type-{{ pk }} type" data-role="open-documents" data-id="{{ pk }}"><i class="far fa-copy"></i>&emsp;{{ row.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card card-success card-outline">
+            <div class="card-body rso-documents"></div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $('.type-Nw').addClass('active');
+    $('.rso-documents').load('/rso/attachment/view/' + 'Nw');
+
+    $(document).on('click', 'a[data-role=open-documents]', function(){
+        var id = $(this).data('id');
+        $('.type').each(function(){
+            $(this).removeClass('active');
+        });
+        $('.type-'+id).addClass('active');
+        $('.rso-documents').load('/rso/attachment/view/' + id);
+    });
+</script>
+{% endblock %}

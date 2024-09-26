@@ -1,0 +1,69 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">{{ tab_title }}</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    {{ tab_parent }}
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>{{ tab_title }}</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card card-info">
+                <div class="card-header bg-info">
+                    <p class="card-title font-weight-bold">DOCUMENT TYPES</p>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group" style="max-height: 350px; overflow-y: scroll; -webkit-overflow-scrolling: touch;">
+                        {% for row in type %}
+                        <a class="list-group-item list-group-item-action type-{% getHash row.id as hash_type %}{{ hash_type }} type" data-role="open-documents" data-id="{% getHash row.id as hash_type %}{{ hash_type }}"><i class="far fa-folder"></i>&emsp;{{ row.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+             <div class="card card-info card-outline">
+                 <div class="card-body documents">
+                 </div>
+             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $('.type-356a192b7913b04c54574d18c28d46e6395428ab').addClass('active');
+        $('.documents').empty();
+        $('.documents').load('/documents/display-201-files/356a192b7913b04c54574d18c28d46e6395428ab');
+    });
+
+    $(document).on('click', 'a[data-role=open-documents]', function(){
+        var hash_type = $(this).data('id');
+        $('.type').each(function(){
+            $(this).removeClass('active');
+        });
+        $('.type-'+hash_type).addClass('active');
+        $('.documents').empty();
+        $('.documents').load('/documents/display-201-files/' + hash_type);
+    });
+</script>
+{% endblock %}

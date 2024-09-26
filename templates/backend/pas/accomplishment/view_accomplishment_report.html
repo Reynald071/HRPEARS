@@ -1,0 +1,239 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/material.css' %}">
+<style type="text/css">
+	.dropdown-menu {
+	    width: 100%;
+	}
+	input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      border-bottom: 0px solid black;
+      width: 150px;
+    }
+	.form-control[readonly] {
+		background-color: transparent !important;
+		opacity: 1;
+		cursor: not-allowed;
+	}
+	.note {
+		position: relative;
+		cursor: not-allowed;
+	}
+	.note:after {
+		content: "";
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 0;
+		height: 0;
+		display: block;
+		border-left: 10px solid transparent;
+		border-bottom: 10px solid transparent;
+		border-top: 10px solid #009688;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Accomplishment Report</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employees
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Accomplishment Report</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-xs-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <form id="generateform">
+                    <div class="row">
+                        <div class="form-group col-md-4">
+                            <label>Section</label>
+                            <select class="form-control select" id="section" name="section" required>
+                                <option value=""></option>
+                                {% for div in division %}
+                                <optgroup label="{{ div.div_name }}">
+                                    {% for row in section %}
+                                    {% if row.div_id == div.id %}
+                                        {% if row.id == employee.section_id %}
+                                        <option value="{{ row.id }}" selected="selected">{{ row.sec_name }}</option>
+                                        {% else %}
+                                        <option value="{{ row.id }}">{{ row.sec_name }}</option>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Area of Assignment</label>
+                            <select class="form-control select" id="aoa" name="aoa" required>
+                                <option value=""></option>
+                                {% for row in aoa %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-sm-2">
+                            <label>Period Covered From</label>
+                            <input type="date" class="form-control" name="period_from" id="period_from" max="{{ date|date:'Y-m-d'}}" required>
+                        </div>
+	        			<div class="form-group col-md-2">
+			        		<label>Period Covered To</label>
+			        		<input type="date" class="form-control" name="period_to" id="period_to" max="{{ date|date:'Y-m-d'}}" required>
+			        	</div>
+                        <div id="show_filter_dates"></div>
+                        <div class="form-group col-md-2">
+                            <label>&nbsp;</label>
+                            <div class="btn-group btn-group-justified" role="group" aria-label="..">
+                                <div class="btn-group" role="group">
+                                    <button type="submit" class="btn btn-info">
+                                        <span class="loading open-circle" style="display:none;"></span> Load
+                                    </button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'view_accomplishment_report' %}" type="button" class="btn btn-default">Reset</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+                <div class="ibox-content" id="ibox-content" style="padding: 0px 20px !important;">
+                    <form id="submitform" target="_blank" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="period_from_hidden" name="period_from_hidden">
+					<input type="hidden" id="period_to_hidden" name="period_to_hidden">
+                    <input type="hidden" id="month_year_hidden" name="month_year_hidden">
+                    <div id="generatedform"></div>
+                    </form>
+                </div>
+                <div class="ibox-footer" id="ibox-footer" style="padding: 15px 20px !important; display:none;">
+					<button class="btn btn-info" id="btnSubmitform" type="button">Generate</button>
+				</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function processCbChange(el, id) {
+		if ($(el).is(':checked')){
+			$('#'+id).val('checked');
+		} else {
+			$('#'+id).val('');
+		}
+	}
+
+	function createTableRow(data) {
+		var url_mask = "{% url 'get_employee_by_emp_id' 'sanaall' %}".replace("sanaall", data);
+		var returneddata = '';
+		$.ajax({
+		  	url: url_mask,
+		  	async: false,
+		  	dataType: 'json',
+		  	success: function (data) {
+				returneddata = data.data;
+		  	}
+		});
+
+		return '\
+			<tr>\
+				<td class="text-center" style="min-width:30px !important;">\
+					<input type="checkbox" style="width:13px;" name="to_include[]" onchange="processCbChange(this, `chk'+data+'`);" title="" checked>\
+					<input type="hidden" class="form-control borderless" id="chk'+data+'" value="checked" name="checked[]">\
+					<input type="hidden" class="form-control borderless" value="'+returneddata.empid+'" name="empid[]">\
+				</td>\
+				<td class="nopadding" style="text-align:left !important; padding-left: 8px !important;">' + returneddata.fullname.toUpperCase() + '</td>\
+				<td class="nopadding">' + returneddata.position.toUpperCase() + '</td>\
+				<td class="nopadding">' + returneddata.divsec.toUpperCase() + '</td>\
+				<td class="nopadding">' + returneddata.empstatus.toUpperCase() + '</td>\
+			</tr>\
+		';
+	}
+
+	function createTable(data) {
+		$('#generatedform').empty();
+		$('#generatedform').append('\
+			<table class="table table-bordered" id="generatedtable" style="margin-bottom:0px !important; table-layout:fixed;">\
+				<tr>\
+					<th class="text-center" style="width:5%; overflow:hidden; text-overflow:ellipsis; vertical-align:middle;">TO INCLUDE</th>\
+					<th class="text-center" style="width:35%; vertical-align:middle;">EMPLOYEE NAME</th>\
+					<th class="text-center" style="width:15%; vertical-align:middle;">POSITION</th>\
+					<th class="text-center" style="width:30%; vertical-align:middle;">DIVISION / SECTION</th>\
+					<th class="text-center" style="width:15%; vertical-align:middle;">EMPLOYMENT STATUS</th>\
+				</tr>\
+			</table>\
+			<input type="checkbox" name="ifcheck" style="margin-left: -65px;" id="ifcheck">\
+			<span class="remove-text" style="margin-left: -65px;">Check if to be noted by Division Chief on print, else by the Section Head.</span>\
+		');
+		data.forEach(item => $('#generatedtable tr:last').after(createTableRow(item)));
+	}
+
+	$('#generateform').on('submit', function(e){
+    	e.preventDefault();
+		var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : '{% url "load_employees" %}',
+            type        : 'POST',
+            beforeSend: function(){
+                $('.loading').css('display', '');
+                $('.btn').prop("disabled", true);
+            },
+            success: function(data){
+                var info = data.data;
+                createTable(info);
+                $('#ibox-content').css('padding-bottom', '20px');
+                $('#ibox-footer').css('display', 'block');
+            },
+            complete: function(){
+                $('.loading').css('display', 'none');
+                $('.btn').prop("disabled", false);
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+	});
+
+	$('#btnSubmitform').click(function(){
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to generate the selected employees' accomplishment report from "+$('#period_from').val()+" to "+$('#period_to').val()+"?",
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  }).then((result) => {
+		    if (result.isConfirmed) {
+		        $('#submitform').submit();
+		    }
+		});
+	});
+
+	$('#period_from').on('change', function(){ $('#period_from_hidden').val($(this).val()); });
+	$('#period_to').on('change', function(){ $('#period_to_hidden').val($(this).val()); });
+</script>
+{% endblock %}

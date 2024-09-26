@@ -1,0 +1,478 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Infimos</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Infimos
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Infimos</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button class="btn btn-info" data-toggle="modal" data-target="#incoming-modal"><i class="fas fa-plus"></i> Incoming Voucher</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="table table-responsive">
+                        <table class="table table-bordered table-hover" id="table-infimos" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>DV No.</th>
+                                    <th width="20%">Accountable / Payee / Mode of Payment</th>
+                                    <th>Amount Certified</th>
+                                    <th>Incoming Date</th>
+                                    <th class="text-center">Obligate</th>
+                                    <th class="text-center">Journal</th>
+                                    <th class="text-center">Certified</th>
+                                    <th class="text-center">Check Issued</th>
+                                    <th class="text-center">Check Released</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+                    <h5>FILTER</h5>
+                </div>
+                <div class="ibox-content">
+                    <form method="GET">
+                        <label>Year:</label><input type="number" class="form-control" value="{{ year }}" name="year">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="incoming-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">INCOMING DISBURSEMENT VOUCHER</h3>
+	        </div>
+	        <form id="submitForm">
+	        {% csrf_token %}
+			<div class="modal-body">
+                <input type="hidden" value="{{ year }}" name="year">
+				<input type="hidden" value="{{ date_month }}" name="dv_month">
+	        	<div class="pull-right">
+	        		<div class="btn-group">
+		        		<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="btn-repeat"><i class="fas fa-redo"></i> Repeat Previous Transactions</button>
+		        		<ul class="dropdown-menu" style="height: 200px; width: 235px; overflow-y: auto;">
+		        			{% for row in accountable %}
+		        			<li><a class="dropdown-item" href="javascript:;" data-role="repeat" data-id="{{ row.name }}"><i class="far fa-user"></i> {{ row.name }}</a></li>
+	                        {% endfor %}
+	                    </ul>
+                    </div>
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-sm-12">
+	        			<div class="form-group">
+        					<label>Payee</label>
+			        		<input type="text" placeholder="Type Something.." name="payee" id="payee" class="payee form-control" autocomplete="off" required/>
+				        </div>
+	        		</div>
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-sm-4">
+	        			<div class="form-group">
+			        		<label>Project Source</label>
+			        		<select class="form-control select" name="projectsrc" id="projectsrc" required>
+			        			<option value=""></option>
+			        			{% for row in ps %}
+				        		<option value="{{ row.projectsrc_id }}">{{ row.name }}</option>
+			        			{% endfor %}
+				        	</select>
+			        	</div>
+	        		</div>
+	        		<div class="col-sm-4">
+	        			<div class="form-group">
+			        		<label>Employment Status</label>
+			        		<select class="form-control select" name="empstatus" id="empstatus" required>
+				        		<option value=""></option>
+				        		{% for row in empstatus %}
+				        		<option value="{{ row.acronym }}">{{ row.acronym }}</option>
+			        			{% endfor %}
+				        	</select>
+			        	</div>
+	        		</div>
+	        		<div class="col-sm-4">
+	        			<div class="form-group">
+			        		<label>Project/Program</label>
+			        		<select class="form-control select" name="project" id="project">
+				        		<option value=""></option>
+				        		{% for row in project %}
+				        		<option value="{{ row.name }}">{{ row.name }}</option>
+			        			{% endfor %}
+				        	</select>
+			        	</div>
+	        		</div>
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-sm-12">
+	        			<div class="form-group">
+			        		<label>Purpose</label>
+			        		<select class="form-control select" name="purpose[]" id="purpose" multiple="multiple" required>
+			        			{% for ct in category %}
+			        			<optgroup label="{{ ct.name }}">
+			        				{% for row in purpose %}
+			        				{% if row.category_id == ct.id %}
+			        				<option value="{{ row.name }}">{{ row.name }}</option>
+			        				{% endif %}
+			        				{% endfor %}
+			        			</optgroup>
+			        			{% endfor %}
+				        	</select>
+			        	</div>
+	        		</div>
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-sm-4">
+	        			<div class="form-group">
+			        		<label>Filter</label>
+			        		<select class="form-control select" name="filter_dates" id="filter_dates">
+			        			<option></option>
+			        			<option value="1">In Between</option>
+			        			<option value="2">Month/Year</option>
+			        		</select>
+			        	</div>
+	        		</div>
+	        		<div id="show_filter_dates"></div>
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-sm-12">
+	        			<div class="form-group">
+			        		<label>Description</label>
+			        		<textarea class="form-control" name="description" id="description" required></textarea>
+			        	</div>
+	        		</div>
+	        	</div>
+	        	<div class="row">
+	        		<div class="col-sm-6">
+	        			<div class="form-group">
+			        		<label>Amount Certified</label>
+			        		<input type="text" class="form-control" name="amt_certified" required>
+			        	</div>
+	        		</div>
+	        		<div class="col-sm-6">
+	        			<div class="form-group">
+	        				<label>Accountable</label>
+			        		<select class="form-control select" name="accountable" id="accountable" required>
+			        			<option value=""></option>
+				        		{% for row in accountable %}
+		        				<option value="{{ row.id }}">{{ row.name }}</option>
+		        				{% endfor %}
+				        	</select>
+				        </div>
+	        		</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+	        	<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="payroll-tracker-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">PAYROLL DETAILS</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <div id="payroll-tracker-content"></div>
+        </div>
+	</div>
+</div>
+<div class="modal" id="payroll-workflow-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title"></h3>
+
+	        </div>
+	        <div id="payroll-workflow-content"></div>
+        </div>
+	</div>
+</div>
+<div class="modal" id="edit-incoming-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">DETAILS INCOMING DISBURSEMENT VOUCHER</h3>
+	        </div>
+	        <div id="edit-incoming-content"></div>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+     $(document).ajaxComplete(function() {
+        $('[rel="tooltip"]').tooltip({
+            "html": true,
+        });
+    });
+
+    $(document).ready(function () {
+        var table = $('#table-infimos').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'order': [[ 0, 'desc' ]],
+            'lengthMenu': [25,50,100],
+            "dom": '<"html5buttons"B>lTfgitpr',
+            "buttons": [
+                { extend: 'csv'},
+            ],
+            'ajax': {
+                'url': '/api/infimos/?format=datatables&year={{ year }}',
+                'type': 'GET',
+                'beforeSend': function (request) {
+                    request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+                }
+            },
+            'fnCreatedRow': function (row, data, index) {
+                $(row).attr('id', data['id']);
+            },
+            'columns': [
+                {'data': 'transaction_id',
+                    'render': function(data, type, row, meta) {
+                        return "<a href='javascript:void(0)' data-role='view' data-id='"+ row['dv_no'] +"'>Details</a>"
+                    },
+                    'searchable': false,
+                },
+                {'data': 'dv_no', 'name': 'transaction.dv_no'},
+                {
+                    'data': null,
+                    'render': function (data, type, row) {
+                        return row['accountable'] + ' <br><br> ' + row['payee'] + ' <br><br> ' + row['modepayment'];
+                    },
+                    searchable: false
+                },
+                {'data': 'amt_certified',
+                    'render': function(data, type, row, meta) {
+                        var amt_certified = data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        return amt_certified;
+                    },
+                    'className': 'text-center',
+                    'searchable': false
+                },
+                {'data': 'dv_date', 'name': 'transaction.dv_date', 'className': 'text-center', 'searchable': false },
+                {
+                    'data': null,
+                    'render': function(data, type, row) {
+                        var template = "<center>"
+                        template += (row['amt_budget']) ? '<i class="fas fa-check-circle fa-2x text-success"></i>' : "";
+                        template += "</center>"
+                        return template;
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function(data, type, row) {
+                        var template = "<center>"
+                        template += (row['amt_journal']) ? '<i class="fas fa-check-circle fa-2x text-success"></i>' : "";
+                        template += "</center>"
+                        return template;
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function(data, type, row) {
+                        var template = "<center>"
+                        template += (row['approval_date']) ? '<i class="fas fa-check-circle fa-2x text-success"></i>' : "";
+                        template += "</center>"
+                        return template;
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function(data, type, row) {
+                        var template = "<center>"
+                        template += (row['check_issued']) ? '<i class="fas fa-check-circle fa-2x text-success" rel="tooltip" data-placement="top" data-html="true" title="Check issued: <br> '+ row['check_issued'] +'"></i>' : "";
+                        template += "</center>"
+                        return template;
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function(data, type, row) {
+                        var template = "<center>"
+                        template += (row['check_released']) ? '<i class="fas fa-check-circle fa-2x text-success" rel="tooltip" data-placement="top" data-html="true" title="Check released: <br> '+ row['check_released'] +'"></i>' : "";
+                        template += "</center>"
+                        return template;
+                    }
+                },
+                {'data': 'amt_budget', 'visible': false, 'searchable': false},
+                {'data': 'amt_journal', 'visible': false, 'searchable': false},
+                {'data': 'approval_date', 'visible': false, 'searchable': false},
+                {'data': 'check_issued', 'visible': false, 'searchable': false},
+                {'data': 'check_released', 'visible': false, 'searchable': false},
+                {'data': 'accountable', 'visible': false, 'name': 'transaction.accountable'},
+                {'data': 'payee', 'visible': false, 'name': 'transaction.payee'},
+                {'data': 'modepayment', 'visible': false, 'name': 'transaction.modepayment',},
+            ],
+        });
+
+        $(document).on('click', 'a[data-role=update-payroll-workflow]', function(){
+            var timeline = $(this).data('title');
+            var dv_no = $(this).data('id');
+            $('#payroll-workflow-content').load('/infimos/beta/view/payroll/workflow/' + timeline + '/' + dv_no, function(){
+                $('#payroll-workflow-modal').find('.modal-title').text('PAYROLL WORKFLOW [DV NO. '+ dv_no +']');
+                $('#payroll-workflow-modal').modal('show');
+            });
+        });
+
+
+        $(document).on('click', 'a[data-role=track-payroll]', function(){
+            var dv_no = $(this).data('id');
+            $('#payroll-tracker-content').load('/infimos/beta/view/payroll/' + dv_no, function(){
+               $('#payroll-tracker-modal').modal('show');
+            });
+        });
+
+        $(document).on('click', 'a[data-role=view]',function(){
+            var dv_no = $(this).data('id');
+            $('#edit-incoming-content').load('/infimos/beta/edit/{{ year }}/' + dv_no, function(){
+                $('#edit-incoming-modal').modal('show')
+            });
+		});
+
+        $('#filter_dates').on('change', function(){
+			in_between = '<div class="col-sm-4">\
+							<div class="form-group">\
+								<label>Period Covered From</label>\
+								<input type="date" class="form-control" name="period_from" id="period_from">\
+							</div>\
+						</div>\
+						<div class="col-sm-4">\
+							<div class="form-group">\
+								<label>Period Covered To</label>\
+								<input type="date" class="form-control" name="period_to" id="period_to">\
+							</div>\
+						</div>';
+
+			month_year = '<div class="col-sm-5">\
+							<div class="form-group">\
+								<label>Month/Year</label>\
+								<input type="month" class="form-control" name="period_from" id="month_year">\
+							</div>\
+						</div>';
+
+			if ($(this).val() == "1"){
+				$('#show_filter_dates').empty();
+				$('#show_filter_dates').append(in_between);
+				$('#period_to').on('change', function(){
+					const monthNames = ["January", "February", "March", "April", "May", "June",
+					  "July", "August", "September", "October", "November", "December"
+					];
+
+					period_from = new Date($('#period_from').val());
+					period_to = new Date($('#period_to').val());
+
+					$('#description').val($('#purpose').val() + ": " + monthNames[period_from.getMonth()] + " " + period_from.getDate() + "-" + period_to.getDate() + "," + period_to.getFullYear() + " (" + $('#empstatus').val() + " " + $('#project').val() + ")");
+
+				});
+			} else if ($(this).val() == "2"){
+				$('#show_filter_dates').empty();
+				$('#show_filter_dates').append(month_year);
+
+				$('#month_year').on('change', function(){
+					month_year = new Date($(this).val());
+					const monthNames = ["January", "February", "March", "April", "May", "June",
+					  "July", "August", "September", "October", "November", "December"
+					];
+
+
+					$('#description').val($('#purpose').val() + ": " + monthNames[month_year.getMonth()] + " " + month_year.getFullYear() + " (" + $('#empstatus').val() + " " + $('#project').val() + ")");
+				});
+			}
+		});
+
+        $('#submitForm').on('submit', function(e){
+			e.preventDefault();
+			var form = new FormData(this)
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to submit this incoming disbursement voucher?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonColor: "#3498DB",
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        : form,
+						url         : "{% url 'infimos_beta' %}",
+						type        : 'POST',
+						cache       : false,
+						contentType : false,
+						processData : false
+					});
+				},
+			}).then(function (response){
+				if (response.value.data == "success") {
+					$('#submitForm').trigger('reset');
+					$(".select").val(null).trigger('change');
+					$('#table-infimos').DataTable().ajax.reload();
+					$('#incoming-modal').modal('hide');
+				}
+			});
+		});
+
+        $.get('{% url "filter_payee" %}', function(data){
+			$(".payee").typeahead({
+				source:data,
+			});
+		},'json');
+
+		$(document).on('click', 'a[data-role=repeat]', function(){
+			$.ajax({
+				url: "{% url 'repeat_last_infimos_transaction' %}",
+				data:{
+					accountable: $(this).data('id')
+				},
+				type: "POST"
+			}).done(function(data){
+				var data = data.data;
+				if (data){
+					$('#payee').val(data[0]['payee']);
+					$('#projectsrc').select2('val', data[0]['projectsrc_id']);
+					$('#empstatus').select2('val', data[0]['empstatus']);
+					$('#project').select2('val', data[0]['project']);
+					$('#accountable').select2('val', data[0]['accountable']);
+				}
+			});
+		});
+    });
+</script>
+{% endblock %}

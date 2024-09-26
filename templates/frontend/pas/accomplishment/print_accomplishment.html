@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Accomplishment Reports</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+	<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+        @media print {
+			.containerX {
+				padding: 0px;
+				margin: 5px;
+				zoom: 80% !important;
+				height: 0% !important;
+			}
+			
+			page {
+				border: 0.5px solid transparent;
+			}
+
+			body{-webkit-print-color-adjust: exact;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+		  	}
+        }
+
+        .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td{
+			padding: 2px !important;
+		}
+
+		.containerX {
+			zoom: 80%;
+		}
+
+		body{
+			font-size: 12px;
+			color: black;
+		}
+
+		.no-margins{
+			margin: 0 !important;
+		}
+
+		.bold{
+			font-weight: bold;
+		}
+		#table2{
+			border-collapse: collapse;
+			width: 100%;
+		}
+		.text-center{
+			text-align: center;
+		}
+
+		.table-display.table-bordered{
+			border:1px solid black;
+			margin-top:20px;
+		}
+
+		.table-display.table-bordered > thead > tr > th{
+			background-color: white;
+			border:1px solid black;
+		}
+
+		.table-display.table-bordered > tbody > tr > td{
+			border:1px solid black;
+		}
+
+		hr{
+			border-top: 1px solid black;
+		}
+
+		.magic{
+			border:1px solid black !important;
+		}
+
+		.col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+			  float: left!important;
+			}
+			.col-sm-12 {
+			  width: 100%;
+			}
+			.col-sm-11 {
+			  width: 91.66666666666666%;
+			}
+			.col-sm-10 {
+			  width: 83.33333333333334%;
+			}
+			.col-sm-9 {
+			  width: 75%;
+			}
+			.col-sm-8 {
+			  width: 66.66666666666666%;
+			}
+			.col-sm-7 {
+			  width: 58.333333333333336%;
+			}
+			.col-sm-6 {
+			  width: 50%;
+			}
+			.col-sm-5 {
+			  width: 41.66666666666667%;
+			}
+			.col-sm-4 {
+			  width: 33.33333333333333%;
+			}
+			.col-sm-3 {
+			  width: 25%;
+			}
+			.col-sm-2 {
+			  width: 16.666666666666664%;
+			}
+			.col-sm-1 {
+			  width: 8.333333333333332%;
+			}
+	</style>
+</head>
+<body oncontextmenu="return false;">
+	<nav class="navbar navbar-default" style="font-family: 'Inter';">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<i class="fas fa-bars"></i>
+				</button>
+				<a class="navbar-brand" href="javascript:;">Accomplishment Report</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatory-modal" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-signature"></i> Signatories</button>&emsp;</li>
+					<li><button type="button" class="btn btn-info" class="print-button" id="floatprint" title="Print" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<page size="longflex" layout="landscape" class="page" style="padding: 45px; position: relative; font-family: 'Inter';">
+		<div class="containerX">
+			<div class="row">
+			<div class="col-sm-12">
+			<center>
+			<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="12%">&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="5%" style="margin-top: -10px;">
+			</center>
+            <br><br>
+			<div class="text-center">
+	            <h5 class="no-margins"><strong>ACCOMPLISHMENT REPORT</strong></h5>
+	            <p>({{ start_date|date:"F d" }} {{ end_date|date:"- d, Y" }})</p>
+	        </div>
+	        <div class="row" style="font-size: 14px; margin-left: 10px; margin-top: 20px">
+	        	<table>
+					<thead>
+						<tr>
+							<td width="30%">Name</td>
+							<td class="bold"> &emsp;&emsp;:&emsp;{{ user.pi.user.first_name|upper }} {{ user.pi.user.middle_name|to_middleinitial }} {{ user.pi.user.last_name|upper }}</td>
+						</tr>
+						<tr>
+							<td>Position</td>
+							<td class="bold"> &emsp;&emsp;:&emsp;{{ user.position.name }}</td>
+						</tr>
+						<tr>
+							<td class="bold"></td>
+							<td class="bold"></td>
+						</tr>
+						<tr>
+							<td>Division / Unit / Project</td>
+							<td class="bold"> &emsp;&emsp;:&emsp;{{ user.section.div.div_name }}</td>
+						</tr>
+						<tr>
+							<td>Area of Assignment</td>
+							<td class="bold"> &emsp;&emsp;:&emsp;{{ user.aoa.name }}</td>
+						</tr>
+					</thead>
+				</table>
+			</div>
+	        <hr>
+			<table class="table table-display table-bordered" style="font-size: 14px;">
+	            <thead>
+					<tr>
+						<th class="text-center" width="15%" style="padding:2px;">DATE / PERIOD</th>
+						<th class="text-center" width="18%" style="padding:2px;">PLACE/S VISITED</th>
+						<th class="text-center" style="padding:2px;">ACCOMPLISHMENTS / OUTPUT</th>
+					</tr>	
+				</thead>
+	            <tbody>
+		            {% for row in data %}
+                        {% if row.place_visited %}
+						<tr>
+							<td class="text-center" style="padding:2px;">{{ row.date_period|date:"F d" }}</td>
+                            <td class="text-center" style="padding:2px;">{{ row.place_visited }}</td>
+                            <td style="padding:2px;">{{ row.output }}</td>
+						</tr>
+                        {% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+			<div class="row col-sm-12" style="font-size: 14px;">
+				<div class="pull-left">
+					<p class="bold">Prepared by:</p>
+					<br>
+					<input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" size="40" value="{{ user.pi.user.get_fullname|upper }}"><br>
+					<input type="text" style="border: 0px !important;" size="40" value="{{ user.position.name }}">
+				</div>
+				<div class="pull-right" style="margin-right: 200px;">
+					<p class="bold">Noted by:</p>
+					<br>
+					<input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" size="40" value="{{ signatory_sl|upper }}" id="set_noted_by" placeholder="Name of Signatory"><br>
+					<input type="text" style="border: 0px !important;" size="40" value="{{ signatory_sl_pos }}" id="set_noted_by_pos" placeholder="Position of Signatory">
+				</div>
+			</div>
+			</div>
+			</div>
+		</div>
+	</page>
+
+	<div class="modal" id="signatory-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<button type="button" class="close text-white" data-dismiss="modal" style="color: white !important; opacity: 1;"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h3 class="modal-title">SET SIGNATORIES</h3>
+				</div>
+				<form id="setSignatureForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+						{% getemployeebyempid user.section.div.div_chief_id as chief_obj %}
+						<label style="font-size: 13px; color: #1b2a33;">Approved By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="approved_by" id="approved_by" value="[{{ chief_obj.id_number }}] {{ chief_obj.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+					<div class="form-group">
+						{% getemployeebyempid user.section.sec_head_id as obs_obj %}
+						<label style="font-size: 13px; color: #1b2a33;">Noted By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="noted_by" id="noted_by" value="[{{ obs_obj.id_number }}] {{ obs_obj.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+	<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#signatory-modal').modal('show');
+
+			$(".filter_employee_leave").typeahead({
+				source: function(query, process){
+					return $.get({
+						url: '{% url "filter_employee" %}',
+						data: { query: query },
+						datatype: 'json',
+						success: function (data) {
+							return process(data);
+						}
+					});
+				},
+				highlight: true,
+			});
+
+			$('#setSignatureForm').on('submit', function(e){
+				e.preventDefault();
+				var form = new FormData(this);
+				$.ajax({
+					data: form,
+					url: '{% url "set_signature_accomplishment" %}',
+					type: 'POST',
+					success: function(response) {
+						$('#set_approve_by').val(response.first_signature);
+						$('#set_approve_by_pos').val(response.first_signature_pos);
+
+						$('#set_noted_by').val(response.second_signature);
+						$('#set_noted_by_pos').val(response.second_signature_pos);
+						$('#signatory-modal').modal('hide');
+					},
+					cache       : false,
+                    contentType : false,
+                    processData : false,
+				});
+			});
+
+			var page = $('.page').height();
+			var container = $('.containerX').height();
+
+			if (container > page) {
+				$('.page').css('height', container + 45);
+			}
+
+			$('#floatprint_mod').on('click', function(){
+				window.setTimeout(function() { printObject(); }, 0);
+			});
+
+			$(document).keydown(function (event) {
+				if (event.keyCode == 123) {
+					return false;
+				} else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+					return false;
+				}
+			});
+		});
+
+	</script>
+</body>
+</html>

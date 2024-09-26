@@ -1,0 +1,149 @@
+{% load crispy_forms_tags %}
+{% if form %}
+    <form id="uploadAttachmentForm" enctype="multipart/form-data">
+        <div class="modal-body">
+            {% csrf_token %}
+            {{ form.file|as_crispy_field }}
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-info">Upload</button>
+        </div>
+    </form>
+{% else %}
+    <form id="selectAttachmentForm" enctype="multipart/form-data">
+        <div class="modal-body">
+            {% csrf_token %}
+            <table class="table table-bordered">
+                <tr>
+                    <th>EMPLOYEE NAME</th>
+                    <td colspan="3">{{ data.emp.pi.user.get_fullname }}</td>
+                </tr>
+                <tr>
+                    <th>YEAR</th>
+                    <td colspan="3">{{ data.year }}</td>
+                </tr>
+                <tr>
+                    <th>SEMESTER</th>
+                    <td colspan="3">{% if data == 1%}1st Semester{% else %}2nd Semester{% endif %}</td>
+                </tr>
+                <tr>
+                    <th>DATE ADDED</th>
+                    <td colspan="3">{{ data.date_added }}</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        IPCRs Uploaded in 201 Files
+                        <table class="table table-bordered">
+                            <tr>
+                                <th></th>
+                                <th>FILE</th>
+                                <th class="text-center">YEAR</th>
+                                <th class="text-right">UPLOADED ON</th>
+                            </tr>
+                            {% for row in attachment %}
+                            <tr>
+                                <td>
+                                    <center><input type="radio" name="file" value="{{ row.id }}" required></center>
+                                </td>
+                                <td>
+                                    <a>{{ row.name }}</a>
+                                </td>
+                                <td class="text-center">{{ row.year }}</td>
+                                <td class="text-right">{{ row.uploaded_on }}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-info">Save changes</button>
+        </div>
+    </form>
+{% endif %}
+{% block script %}
+<script>
+    {% if form %}
+    $('#uploadAttachmentForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+		  title: "Are you sure",
+          text: "You want to upload this attachment?",
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  	    data        : form,
+		  		url         : "{% url 'ipcr_file' pk %}",
+		  		type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false,
+		  	});
+		  }
+		}).then(function (response){
+		    if (response.value.data == 'success'){
+		    	Swal.fire({
+				  title: "Good job!",
+				  text: response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+                        $('#upload-ipcr-modal').modal('hide');
+                        $('#ipcr-table').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+    {% else %}
+    $('#selectAttachmentForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+		  title: "Are you sure",
+          text: "You want to select this attachment to attached on the rating?",
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  	    data        : form,
+		  		url         : "{% url 'select_ipcr_file' pk %}",
+		  		type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false,
+		  	});
+		  }
+		}).then(function (response){
+		    if (response.value.data == 'success'){
+		    	Swal.fire({
+				  title: "Good job!",
+				  text: response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+                        $('#upload-ipcr-modal').modal('hide');
+                        $('#ipcr-table').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+    {% endif %}
+</script>
+{% endblock %}

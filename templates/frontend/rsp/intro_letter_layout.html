@@ -1,0 +1,135 @@
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/summernote/summernote.css' %}" rel="stylesheet">
+{% endblock %}
+{% if not data.generated_drn %}
+    <button type="button" class="btn btn-info pull-right" id="generate-drn">Generate DRN</button>
+    <br><br><br>
+{% else %}
+    <p>DRN: <strong>{{ data.generated_drn }}</strong></p>
+{% endif %}
+<form id="saveIntroLetterForm">
+{% csrf_token %}
+<textarea name="content" id="summernote-intro-letter" style="border:1px solid #e5e6e7;">
+    <p style="font-size: 14.67px"><strong>August 23, 2022</strong></p>
+    <br>
+    <p style="font-size: 14.67px" class="no-margins"><strong>HON. SANTIAGO B. CANE, JR.</strong></p>
+    <p style="font-size: 14.67px" class="no-margins"><strong>Governor</strong></p>
+    <p style="font-size: 14.67px"><strong>Agusan del Sur</strong></p>
+    <br>
+    <p style="font-size: 14.67px" class="no-margins">ATTENTION: <strong>RAZEL O. MONTEMOR</strong></p>
+    <p style="font-size: 14.67px; margin-left: 150px;">PSWDO</p>
+    <br>
+    <p style="font-size: 14.67px;"><em>Dear <strong>Governor Cane:</strong></em></p>
+    <p style="font-size: 14.67px;">We would like to introduce to you <strong>{% if employee.pi.gender == 1 %}Mr.{% else %}Ms.{% endif %} {{ employee.pi.user.get_fullname }}</strong>, the {{ employee.position.name }}
+    assigned in your province for the Social Pension Program. He is the replacement of Ms.
+    Johairiya A. Abulkhair who has resigned from the agency.</p>
+    <br>
+    <p style="font-size: 14.67px;">
+    Relative thereto, we would like to seek your usual support to ensure successful
+    implementation of the program. Rest assured that they will abide by the LGU’s COVID-19
+    policies and protocols.</p>
+    <br>
+    <p style="font-size: 14.67px;">Thank you.</p>
+    <br><br>
+    <p style="font-size: 14.67px;" class="no-margins"><strong>MARI-FLOR A. DOLLAGA-LIBANG</strong></p>
+    <p style="font-size: 14.67px;">Regional Director</p>
+</textarea>
+<br><br>
+<button type="submit" class="btn btn-info">Save changes</button>
+</form>
+{% block script %}
+<script src="{% static 'js/plugins/summernote/summernote.min.js' %}"></script>
+<script>
+    $('#summernote-intro-letter').summernote({
+        height: 768,
+        dialogsInBody: true,
+        fontSizeUnits: ['px', 'pt'],
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['table', ['table']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+
+    $('#generate-drn').on('click', function(){
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to generate drn to this service record?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    url         : '{% url "generate_drn_for_intro_letter" data.id %}',
+                    type        : 'POST',
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                  title: response.value.drn,
+                  text: "New DRN has been created. Please copy the generated DRN to your designated document",
+                  icon: "success",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        callIntroLetterPage('{% url "intro_letter_layout" employee.id_number %}');
+                    }
+                });
+            }
+        });
+    });
+
+    $('#saveIntroLetterForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to save this intro letter?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "intro_letter_layout" employee.id_number %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                  title: "Good job!",
+                  text: response.value.msg,
+                  icon: "success",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        callIntroLetterPage('{% url "intro_letter_data" employee.id_number %}');
+                    }
+                });
+            } else {
+                Swal.fire('Ooops!', response.value.msg, 'warning');
+            }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

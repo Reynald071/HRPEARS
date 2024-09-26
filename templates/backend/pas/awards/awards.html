@@ -1,0 +1,595 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% load tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Awards</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    Admin
+                </li>
+                <li class="breadcrumb-item">
+                    Rewards & Recognition
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Awards</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-md-4">
+			<div class="card card-info card-outline">
+				<div class="card-header">
+					<h5 class="card-title font-weight-bold">Add Award</h5>
+				</div>
+				<form id="submitForm">
+				{% csrf_token %}
+				<div class="card-body">
+						<div class="row">
+							<div class="col-sm-12">
+								<div class="form-group">
+									<label>Award Name*</label>
+									<input type="text" name="award_name" class="form-control b-r-sm" required>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-6">
+								<label>Category*</label>
+								<select class="select" name="category" required>
+									<option></option>
+									{% for row in category %}
+									<option value="{{ row.id }}">{{ row.name }}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>Level*</label>
+									<select class="select" name="level" required>
+										<option></option>
+										{% for row in level %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label>Year*</label>
+									<input type="number" name="year" class="form-control b-r-sm" value="{{ yr }}" required>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label>Classification*</label>
+									<select class="select" name="classification" required>
+										<option></option>
+										{% for row in classification %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label>Badge*</label>
+									<select class="select" name="badge" required>
+										<option></option>
+										{% for row in badge %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12" id="wrappernomination" style="border-radius: 2px; border: 1px solid #e5e6e7; padding:10px 20px 0px 20px; margin-bottom:15px;">
+						<div class="row">
+							<div class="col-sm-12">
+								<div class="form-group">
+									<label>Needs Nomination*</label>
+									<select id="nom" class="select" name="nomination" required>
+										<option value="1">Yes</option>
+										<option value="0">No</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>Start of Nomination*</label>
+									<input id="nom_s" type="date" class="form-control" name="nomination_start" required>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>End of Nomination*</label>
+									<input id="nom_e" type="date" class="form-control" name="nomination_end" required>
+								</div>
+							</div>
+						</div>
+						</div>
+						<div class="col-md-12" id="wrapperattachment" style="border-radius: 4px; border: 1px solid #e5e6e7; padding:10px 20px 0px 20px; margin-bottom:15px;">
+							<div class="row">
+								<div class="col-5 nopadding-left">
+									<div id="div_id_file" class="form-group">
+										<label class="control-label  requiredField">
+											Attachment<span class="asteriskField">*</span>
+										</label>
+										<div class="controls">
+											<input type="file" name="file[]" class="clearablefileinput" style="font-size: 10px;" required>
+						                </div>
+									</div>
+								</div>
+								<div class="col-7" style="padding-left:15px !important;">
+									<div id="div_id_name2" class="form-group">
+										<label class="control-label  requiredField">
+											Description<span class="asteriskField">*</span>
+										</label>
+                						<div class="controls">
+											<div class="input-group">
+							                    <input type="text" name="description[]" class="textinput form-control" required>
+												<span class="input-group-append">
+													<button type="button" class="btn btn-info" id="btn-addattachment"><i class="fas fa-plus"></i></button>
+											  	</span>
+											</div>
+						                </div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12" id="wrappercontent" style="border-radius: 4px; border: 1px solid #e5e6e7; padding:10px 20px 0px 20px; margin-bottom:15px;">
+							<div class="row">
+								<div class="col-5">
+									<div id="div_id_name" class="form-group">
+								        <label class="control-label  requiredField">
+								        	Prize
+								        </label>
+                						<div class="controls">
+                    						<input type="text" name="prize[]" class="textinput form-control">
+							    		</div>
+            						</div>
+    							</div>
+								<div class="col-3">
+									<div id="div_id_unit" class="form-group">
+							            <label class="control-label  requiredField">
+							                Unit
+							            </label>
+						                <div class="controls ">
+						                    <input type="text" name="unit[]" maxlength="150" class="textinput form-control">
+						                </div>
+								    </div>
+								</div>
+								<div class="col-4">
+									<div id="div_id_quantity" class="form-group">
+							            <label class="control-label  requiredField">
+							                Qty
+							            </label>
+						                <div class="controls ">
+											<div class="input-group">
+							                    <input type="number" name="quantity[]" step="0.01" class="numberinput form-control">
+												<span class="input-group-append">
+													<button type="button" class="btn btn-info" id="btn-addprize"><i class="fas fa-plus"></i></button>
+											  	</span>
+											</div>
+										</div>
+									</div>
+    							</div>
+							</div>
+						</div>
+					<button type="submit" class="btn btn-info">Submit</button>
+				</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header">
+					{% if request.GET.search and badges.paginator.count == 0 %}
+						<div class="col-xs-12">
+							<a href="{% url 'awards' %}" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+						</div>
+						<br>
+						<hr>
+					{% else %}
+						<div class="pull-right">
+							Showing {{ badges.start_index }} - {{ badges.end_index }} of {{ badges.paginator.count }} entries&emsp;
+							<div class="btn-group">
+								{% if badges.has_other_pages %}
+								  {% if badges.has_previous %}
+									<a class="btn btn-default btn-sm" href="?page={{ badges.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"><i class="fa fa-angle-left"></i></a>
+								  {% else %}
+									<a class="btn btn-default btn-sm disabled"><i class="fa fa-angle-left"></i></a>
+								  {% endif %}
+								  {% if badges.has_next %}
+									<a class="btn btn-default btn-sm" href="?page={{ badges.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"><i class="fa fa-angle-right"></i></a>
+								  {% else %}
+									<a class="btn btn-default btn-sm disabled"><i class="fa fa-angle-right"></i></a>
+								  {% endif %}
+								{% endif %}
+							</div>
+							<a class="btn btn-white btn-sm" href="{% url 'awards' %}"><i class="fas fa-sync-alt"></i></a>
+						</div>
+					{% endif %}
+				</div>
+				<div class="card-body">
+					{% if request.GET.search and badges.paginator.count == 0 %}
+						<div style="padding:0px 15px !important; text-align:center;">
+							<div class="row" style="padding-bottom:15px">
+								<div class="" style="text-align:center;">
+									<img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="margin: 0 auto; object-fit: cover;">
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<form method="get">
+										<div class="input-group form-group">
+											<span class="input-group-addon"><i class="fas fa-search"></i></span>
+											<input type="text" class="form-control" placeholder="Search award.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+										</div>
+									</form>
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<p>
+										Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.status and request.GET.search %}{{ request.GET.search }}{% else %}{% if request.GET.status %}{{ request.GET.status }}{% endif %}{% if request.GET.search %}{{ request.GET.search }}{% endif %}{% endif %}'</i>. Please try another keyword.
+									</p>
+								</div>
+							</div>
+						</div>
+					{% else %}
+						<form method="get">
+							<div class="input-group form-group">
+								<div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                </div>
+								<input type="text" class="form-control" placeholder="Search award.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+							</div>
+						</form>
+						<div class="table-responsive">
+						<table class="table table-bordered table-sm" style="font-size: 12px !important;">
+							<thead>
+								<tr>
+									<th width="15%">ACTION</th>
+									<th class="text-center">BADGE</th>
+									<th style="width:30%;">NAME</th>
+									<th class="text-center">LEVEL</th>
+									<th class="text-center">CLASSIFICATION</th>
+									<th class="text-center">CATEGORY</th>
+									<th class="text-center">STATUS</th>
+									<th class="text-center">CREATED BY</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% if badges %}
+								{% for row in badges %}
+								<tr>
+									<td>
+										<a href="javascript:;" class="btn-edit-modal" data-id="{{ row.id }}">Details</a>
+										{% if row.status == 1 %}|&nbsp;<a href="{% url 'update_awards' row.id %}">Update</a>{% endif %}
+										{% if user|check_permission:'superadmin' %}
+											|&nbsp;<a href="javascript:toggle_awards('{{ row.id }}');">Toggle</a>
+										{% endif %}
+									</td>
+									<td class="text-center"><img loading="lazy"  class="img-circle" src="{{ row.badge.url.url }}" style="height:33px; width:33px;"></td>
+									<td>{{ row.name }}</td>
+									<td class="text-center">{{ row.level.name }}</td>
+									<td class="text-center">{{ row.classification.shortname }} {{ row.year }}</td>
+									<td class="text-center"><i class="fas fa-{{ row.category.icon }}" style="font-size:18px" title="{{ row.category.name}}"></i></td>
+									<td class="text-center">{% if row.status %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+									<td class="text-center">
+										{{ row.uploaded_by.pi.user.get_fullname }}
+									</td>
+								</tr>
+								{% endfor %}
+								{% else %}
+								<tr>
+									<td class="text-center" colspan="10"><img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" width="250px;" style="margin: 0 auto;"><p class="text-center">There is no data to show you right now. </p></td>
+								</tr>
+								{% endif %}
+							</tbody>
+						</table>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<input type="hidden" id="action-type">
+<input type="hidden" id="awards-id">
+<input type="hidden" id="nominee-id">
+
+<div class="modal" id="edit-modal" style="z-index:4000 !important" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content animated bounceInDown">
+			<div id="detail-content"></div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="password-modal" style="z-index:5000 !important" role="dialog" aria-hidden="true" data-backdrop="false">
+	<div style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; background-color: #000; opacity:0.5;"></div>
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content animated bounceInDown" style="margin-top:50%">
+			<div class="modal-header bg-info">
+				<button type="button" id="close-password" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h4 class="modal-title"><i class="fas fa-key"></i> Verify by Inputting your Password</h4>
+	        </div>
+	        <div class="modal-body">
+				<div class="row">
+					<div class="col-sm-12">
+						<form id="nosubmit">
+							<label>Password*</label>
+							<div class="input-group">
+								<input type="hidden" name="session_emp_id" id="session_emp_id" value="{{ request.session.emp_id }}" class="form-control b-r-sm" required>
+								<input type="password" name="password" id="password" class="form-control b-r-sm" required>
+								<span class="input-group-btn">
+									<button type="submit" class="btn btn-info" id="btn-submitpassword" style="height: 34px;"><i class="fas fa-key"></i></button>
+								</span>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+	function toggle_awards(id){
+		$.post("{% url 'toggle-awards' %}",
+		{
+			csrfmiddlewaretoken: '{{ csrf_token }}',
+			id: id,
+		},
+		function(data, status){
+			if (data.error) {
+				alert(data.errors);
+			} else {
+				window.location = window.location.href;
+			}
+		});
+	}
+
+	$(document).ready(function(){
+		var fieldHTML_criteria = '<div class="row">\
+							<div class="col-xs-5 nopadding-left" style="padding-left:10px !important;">\
+								<div id="div_id_name_c" class="form-group">\
+									<input type="hidden" name="criteria-id[]">\
+									<div class="controls">\
+										<input type="text" name="name[]" class="textinput form-control">\
+									</div>\
+								</div>\
+							</div>\
+							<div class="col-xs-5 nopadding-left">\
+								<div id="div_id_desc_c" class="form-group">\
+									<div class="controls ">\
+										<input type="text" name="desc[]" maxlength="150" class="textinput form-control">\
+									</div>\
+								</div>\
+							</div>\
+							<div class="col-xs-2 nopadding-left">\
+								<div id="div_id_percentage_c" class="form-group">\
+									<div class="controls ">\
+										<div class="input-group">\
+											<input type="number" name="percentage[]" step="1" class="numberinput form-control">\
+											<span class="input-group-btn">\
+												<button type="button" class="btn btn-danger removefield" style="height: 34px;"><i class="fas fa-minus"></i></button>\
+											</span>\
+										</div>\
+									</div>\
+								</div>\
+							</div>\
+						</div>';
+
+		$('.btn-edit-modal').on('click', function(){
+			$('#awards-id').val($(this).data('id'));
+            console.log($(this).data('id'));
+			$('#edit-modal').modal('toggle');
+			$('#edit-modal').modal('show').find('#detail-content').empty();
+			$('#edit-modal').modal('show').find('#detail-content').load("/backend/validate-nominees/" + $(this).data('id'));
+		});
+
+		$('.btn-criteria-modal').on('click', function(){
+			$('#awards-id').val($(this).data('id'));
+			$('#criteria-modal').modal('toggle');
+		});
+
+		$('#password-modal').on('hide.bs.modal', function(){
+			$('#password').val('');
+			$('#action-type').val('');
+			setTimeout(function(){$('body').addClass('modal-open')}, 100);
+		});
+
+		$('#btn-addprize-criteria').on('click', function(){
+			$('#wrapcont-criteria').append(fieldHTML_criteria);
+		});
+
+		$('#wrapcont-criteria').on('click', '.removefield', function(e){
+			e.preventDefault();
+			$(this).parent().parent().parent().parent().parent().parent().remove();
+		});
+
+		$('#nosubmit').submit(function(e){
+			e.preventDefault();
+
+			var passvalid = $('#password')[0].checkValidity();
+			if (passvalid) {
+				$.ajax({
+					type: "POST",
+					data: $(this).serialize(),
+					url: "/backend/check-password/",
+					success: function(result){
+						if (result.data){
+							if ($('#action-type').val() == 1) {
+								$.ajax({
+									url: "/backend/reset-results/"+$('#awards-id').val(),
+									success: function(result){
+										$('#edit-modal').modal('show').find('.modal-body').load("/backend/validate-nominees/" + $('#awards-id').val());
+									}
+								});
+							} else if ($('#action-type').val() == 2) {
+								$.ajax({
+									url: "/backend/mark-as-winner/"+$('#nominee-id').val(),
+									success: function(result){
+										$('#edit-modal').modal('show').find('.modal-body').load("/backend/validate-nominees/" + $('#awards-id').val());
+									}
+								});
+							} else if ($('#action-type').val() == 3) {
+								$.ajax({
+									url: "/backend/verified-nominee/"+$('#nominee-id').val(),
+									success: function(result){
+										$('#edit-modal').modal('show').find('.modal-body').load("/backend/validate-nominees/" + $('#awards-id').val());
+									}
+								});
+							}
+							$('#close-password').click();
+						} else {
+							alert('You have inputted a wrong password. Please try again.');
+							$('#password').val('');
+						}
+					}
+				});
+			}
+		});
+
+		$("#edit-modal").on('hide.bs.modal', function(){
+			$.ajax({
+				url: "/nominee-count/"+$('#awards-id').val(),
+				success: function(result){
+					$('#numberofnominees'+$('#awards-id').val()).html(result.data[0]);
+				}
+			});
+		});
+
+		var fieldHTML = '<div class="row">\
+							<div class="col-5 nopadding-left">\
+								<div id="div_id_name" class="form-group">\
+									<div class="controls ">\
+										<input type="text" name="prize[]" class="textinput form-control" required>\
+									</div>\
+								</div>\
+							</div>\
+							<div class="col-3 nopadding-left">\
+								<div id="div_id_unit" class="form-group">\
+									<div class="controls ">\
+										<input type="text" name="unit[]" maxlength="150" class="textinput form-control" required>\
+									</div>\
+								</div>\
+							</div>\
+							<div class="col-4 nopadding-left">\
+								<div id="div_id_quantity" class="form-group">\
+									<div class="controls ">\
+										<div class="input-group">\
+											<input type="number" name="quantity[]" step="0.01" class="numberinput form-control" required>\
+											<span class="input-group-append">\
+												<button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>\
+											</span>\
+										</div>\
+									</div>\
+								</div>\
+							</div>\
+						</div>';
+
+		var fieldAttachment = '<div class="row">\
+									<div class="col-5 nopadding-left">\
+										<div id="div_id_file" class="form-group">\
+											<div class="controls ">\
+												<input type="file" name="file[]"  style="font-size: 10px;" class="clearablefileinput" required>\
+											</div>\
+										</div>\
+									</div>\
+									<div class="col-7" style="padding-left:15px !important;">\
+										<div id="div_id_name2" class="form-group">\
+											<div class="controls ">\
+												<div class="input-group">\
+													<input type="text" name="description[]" class="textinput form-control" required>\
+													<span class="input-group-append">\
+														<button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>\
+													</span>\
+												</div>\
+											</div>\
+										</div>\
+									</div>\
+								</div>';
+
+		$('#btn-addprize').on('click', function(){
+			$('#wrappercontent').append(fieldHTML);
+		});
+
+		$('#btn-addattachment').on('click', function(){
+			$('#wrapperattachment').append(fieldAttachment);
+		});
+
+		$('#submitForm').on('submit', function(e){
+			$.ajax({
+				url: window.location.pathname,
+				data: new FormData(this),
+				type: "POST",
+				cache       : false,
+				contentType : false,
+				processData : false
+			})
+			.done(function(data){
+				window.location.reload();
+			});
+			e.preventDefault();
+		});
+
+		$('#wrappercontent').on('click', '.removefield', function(e){
+			e.preventDefault();
+			$(this).parent().parent().parent().parent().parent().parent().remove();
+		});
+
+		$('#wrapperattachment').on('click', '.removefield', function(e){
+			e.preventDefault();
+			$(this).parent().parent().parent().parent().parent().parent().remove();
+		});
+
+		$('#nom').on('change', function(){
+			if ($(this).val() == 1){
+				$('#nom_s').prop('disabled', false);
+				$('#nom_e').prop('disabled', false);
+				$('#nom_s').prop('required',true);
+				$('#nom_e').prop('required',true);
+			} else {
+				$('#nom_s').prop('disabled', true);
+				$('#nom_e').prop('disabled', true);
+				$('#nom_s').val('');
+				$('#nom_e').val('');
+				$('#nom_s').removeAttr('required');
+				$('#nom_e').removeAttr('required');
+			}
+		});
+
+		$('#nom_s').on('change', function(){
+			document.getElementById("nom_s").setAttribute("max", $(this).val());
+			document.getElementById("nom_e").setAttribute("min", $(this).val());
+		});
+
+		$('#nom_e').on('change', function(){
+			document.getElementById("nom_s").setAttribute("max", $(this).val());
+			document.getElementById("nom_e").setAttribute("min", $(this).val());
+		});
+	});
+
+</script>
+{% endblock %}

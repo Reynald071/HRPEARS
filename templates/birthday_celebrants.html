@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<style type="text/css">
+	canvas {
+		position: absolute;
+		background: transparent;
+	  	overflow-y: hidden;
+	  	overflow-x: hidden;
+	  	width: 100%;
+	  	height: 100vh;
+	  	margin-top: -280px;
+	  	z-index: 100;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper p-5 ml-0">
+    <h1 class="font-weight-bold text-center">
+        <img src="{% static 'icons8/birthday-96.png' %}" class="loader" height="48" width="48">
+        <span class="text-info">Birthday</span> <span class="text-danger">Celebrants</span> of {{ month|date:"F Y" }}
+        <img src="{% static 'icons8/gift-96.png' %}" class="loader" height="48" width="48">
+    </h1>
+    <br>
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4">
+            <div class="form-group">
+                <select class="form-control select" name="months" id="months" required>
+                    <option></option>
+                    {% for key, value in list_month %}
+                        {% if key == month_num %}
+                            <option value="{{ key }}"} selected>{{ value }}</option>
+                        {% else %}
+                            <option value="{{ key }}"}>{{ value }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <br>
+	<div id="birthday_layout"></div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/confetti.browser.min.js' %}"></script>
+<script>
+    $('#months').on('change', function(){
+        var month = $(this).val();
+        callBirthdayPage('/birthday-celebrants/view/' + month);
+    });
+
+    callBirthdayPage('{% url "birthday_celebrants_view" month_num %}');
+
+    function callBirthdayPage(pageRefInput) {
+        $.ajax({
+            url: pageRefInput,
+            type: "GET",
+            dataType: 'text',
+            beforeSend: function() {
+                $('#birthday_layout').empty();
+                $('#birthday_layout').html('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+            },
+            success: function(response) {
+                $('#birthday_layout').html(response);
+            },
+            complete: function() {
+                $('#preloader').css('display', 'none');
+            }
+        });
+    }
+
+    $(document).on('click', 'a[data-role=pagination]', function(e){
+        callBirthdayPage('/birthday-celebrants/view/' + $(this).data('id') + $(this).data('title'));
+    });
+
+    window.onload = frame();
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Vacancies</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Vacancies</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-5 ml-0">
+    <div class="row">
+        <div class="col-lg-12">
+            {% if vacancy %}
+                <div class="row">
+                    {% for row in vacancy %}
+                        <div class="col-lg-6">
+                            <div class="callout callout-info">
+                                <div>
+                                    <a href="javascript:;"
+                                        target="_blank"
+                                       class="text-info text-decoration-none"
+                                    >
+                                        <h3><strong>{{ row.position.name }} - {{ row.empstatus.name }}</strong></h3>
+                                    </a>
+                                    <p>Salary rate: <strong>{{ row.salary_rate }} SG-{{ row.salary_grade.name }}</strong></p>
+                                    <p>Quantity needed: <strong>{{ row.quantity }}</strong></p>
+                                    <p>Total applicants applied: <strong>{{ row.get_total_app }}</strong></p>
+                                    <p>Deadline at: <strong>{{ row.deadline }}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+            <div class="card card-danger card-outline">
+                <div class="card-body">
+                    <center>
+                        <img loading="lazy"  src="{% static 'image//no-results.png' %}" width="400px;">
+                        <h3>There is no vacancy to show you right now.</h3>
+                    </center>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/jquery.matchHeight.js' %}"></script>
+<script>
+    $(function() {
+        $('.ibox').matchHeight();
+    });
+</script>
+{% endblock %}

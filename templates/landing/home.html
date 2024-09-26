@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <title>Welcome to DSWD My PORTAL</title>
+        <meta content="" name="description">
+        <meta content="" name="keywords">
+        <link href="{% static 'image/logo.ico' %}" rel="icon">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+
+        <link href="{% static 'bizland/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+        <link href="{% static 'bizland/vendor/icofont/icofont.min.css' %}" rel="stylesheet">
+        <link href="{% static 'bizland/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+        <link href="{% static 'bizland/vendor/owl.carousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+        <link href="{% static 'bizland/vendor/venobox/venobox.css' %}" rel="stylesheet">
+        <link href="{% static 'bizland/vendor/aos/aos.css' %}" rel="stylesheet">
+        <link href="{% static 'bizland/css/style.css' %}" rel="stylesheet">
+        <style>
+        </style>
+    </head>
+    <body>
+        <div id="topbar" class="d-none d-lg-flex align-items-center fixed-top">
+            <div class="container d-flex">
+                <div class="contact-info mr-auto">
+                    Have any questions? We'd love to hear from you. <a href="javascript:;" onclick="$('#contact_us').click();">Contact us</a>.
+                </div>
+                {% if always_false %}
+                <div class="social-links">
+                    <i class="icofont-phone"></i> +639287167193
+                    <i class="icofont-phone"></i> +639464131587
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <header id="header" class="fixed-top">
+            <div class="container d-flex align-items-center">
+                <h1 class="logo mr-auto"><a href="{% url 'home' %}">Caraga <span>PORTAL</span></a></h1>
+                <nav class="nav-menu d-none d-lg-block">
+                    <ul>
+                        <li class="active"><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'landing_issuances' %}">Issuances</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#pillars">Pillars</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#contact" id="contact_us">Contact</a></li>
+                        <li><a href="#faq">FAQs</a></li>
+                        <li><a href="#testimonials">Partners</a></li>
+                        {% if not request.user.is_authenticated %}
+                        <li><a href="{% url 'oidc_authentication_init' %}">Sign In</a></li>
+                        {% else %}
+                        <li>Hi {{ request.session.fname }}!</li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </header>
+        <section id="hero" class="d-flex align-items-center">
+            <div class="container" data-aos="zoom-out" data-aos-delay="100">
+                <img loading="lazy"  src="{% static 'image/branding.png' %}" width="400px" class="img-fluid">
+                <h1>Welcome to Caraga <span>PORTAL</span>
+                </h1>
+                <h2>Personnel Operations and Human Resource Transactions Administration Library</h2>
+                <p>Login with</p>
+                {% if not request.user.is_authenticated %}
+                <div class="d-flex">
+                    <a href="{% url 'oidc_authentication_init' %}" class="btn-get-started"><i class='bx bxl-windows'></i> ISSSO</a>
+                </div>
+                {% else %}
+                <div class="d-flex">
+                    <a href="{% url 'backend-dashboard' %}" class="btn-get-started scrollto">Get Started</a>
+                </div>
+                {% endif %}
+                <br>
+                <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+            </div>
+        </section>
+        <main id="main">
+            <section id="about" class="about">
+                <div class="container" data-aos="fade-up">
+                    <div class="section-title">
+                        <h2>About</h2>
+                        <h3>Find Out More <span>About Us</span></h3>
+                        <p>The DSWD My PORTAL is a combination of systems and processes that connect personnel administration, human resource management and information technology through an innovative software design.</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6" data-aos="zoom-out" data-aos-delay="100">
+                            <img loading="lazy"  src="{% static 'bizland/img/about.png' %}" class="img-fluid" alt="">
+                        </div>
+                        <div class="col-lg-6 pt-4 pt-lg-0 content d-flex flex-column justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                            <h3>The Future for DSWD My PORTAL</h3>
+                            <p class="font-italic">
+                                PORTAL is designed and being developed to address the growing needs of the DSWD Field Office Caraga, its staff and its clientele. The new system will be more efficient and effective
+                            </p>
+                            <ul>
+                                <li>
+                                    <i class="bx bx-timer"></i>
+                                    <div>
+                                        <h5>In Terms of Speed</h5>
+                                        <p>Django is ridiculously fast and was designed to help developers take applications from concept to completion as quickly as possible.</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <i class="bx bx-line-chart"></i>
+                                    <div>
+                                        <h5>Performance</h5>
+                                        <p>Django takes security seriously and helps developers avoid many common security mistakes. Some
+                                            of the busiest sites on the Web leverage Django's ability to quickly and flexibly scale.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <i class="bx bx-data"></i>
+                                    <div>
+                                        <h5>Data Management</h5>
+                                        <p>The main benefits of using Django ORM (Object-Relational Mapper) instead of SQL is a huge improvement in development speed,
+                                            code maintenance, security and ease of development in general.</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <i class="bx bxs-message-alt-check"></i>
+                                    <div>
+                                        <h5>Better Service Delivery to its users.</h5>
+                                        <p>DSWD My PORTAL provides a lot of services like Issuances, Downloadable Forms, Personal Data Sheet, Announcements, Travel Management, Payroll Management and more.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                            <p>
+                                The system will also be using the Single Sign-On technology for security and authentication. PORTAL is being developed using the Django Framework, a high-level Python Web Framework that encourages rapid development and clean, pragmatic design. It is expected to be ridiculously fast, secure and exceedingly scalable.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="pillars" class="pillars section-bg">
+                <div class="container" data-aos="fade-up">
+                    <div class="section-title">
+                        <h2>Pillars</h2>
+                        <h3>The <span>4 Pillars</span> of Human Resource</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member">
+                                <div class="member-img">
+                                    <img loading="lazy"  src="{% static 'image/pillars/rsp.jpg' %}" class="img-fluid" alt="">
+                                </div>
+                                <div class="member-info">
+                                    <h4 class="text-center">Recruitment, Selection and Placement</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member">
+                                <div class="member-img">
+                                    <img loading="lazy"  src="{% static 'image/pillars/ld.jpg' %}" class="img-fluid" alt="">
+                                </div>
+                                <div class="member-info">
+                                    <h4 class="text-center">Learning and Development</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member">
+                                <div class="member-img">
+                                    <img loading="lazy"  src="{% static 'image/pillars/pms.jpg' %}" class="img-fluid" alt="">
+                                </div>
+                                <div class="member-info">
+                                    <h4 class="text-center">Performance Management</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member">
+                                <div class="member-img">
+                                    <img loading="lazy"  src="{% static 'image/pillars/rar.jpg' %}" class="img-fluid" alt="">
+                                </div>
+                                <div class="member-info">
+                                    <h4 class="text-center">Rewards and Recognition</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="services" class="services">
+                <div class="container" data-aos="fade-up">
+                    <div class="section-title">
+                        <h2>Services</h2>
+                        <h3>Check our <span>Services</span></h3>
+                        <p>PORTAL provides us</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch" data-aos="zoom-in" data-aos-delay="100">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bxs-user-account"></i></div>
+                                <h4><a href="">Profiling and Staffing</a></h4>
+                                <p>This includes personal data sheet, employee separation, employee accomplishment, daily time records, and health checklist.</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-md-0" data-aos="zoom-in" data-aos-delay="200">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bx-money"></i></div>
+                                <h4><a href="">Payroll Management</a></h4>
+                                <p>Administration of the financial record of employee's salaries, wages, bonuses, net pay, and deductions.</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-lg-0" data-aos="zoom-in" data-aos-delay="300">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bx-walk"></i></div>
+                                <h4><a href="">Leave Management</a></h4>
+                                <p>Process of managing employee time-off requests in a fair, accurate, and efficient way.</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="100">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bxs-map"></i></div>
+                                <h4><a href="">Travel Management</a></h4>
+                                <p>This includes travel requisition, generation of travel orders, and manages employee travel history.</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="200">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bxs-award"></i></div>
+                                <h4><a href="">Awards Management</a></h4>
+                                <p>This includes nominations, deliberation and posting of declared winners on specific awards.</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bx-calendar"></i></div>
+                                <h4><a href="">Overtime and CTDO Requests (New)</a></h4>
+                                <p>This includes filing of overtime and ctdo requisition on the system.</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bxs-cloud-upload"></i></div>
+                                <h4><a href="">Announcement, Issuances, and Downloadables</a></h4>
+                                <p>Posting of announcement, issuances, and downloadables.</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bx-arch"></i></div>
+                                <h4><a href="">Grievances (New)</a></h4>
+                                <p>Filing, forwarding, and acted on grievances</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
+                            <div class="icon-box">
+                                <div class="icon"><i class="bx bx-file"></i></div>
+                                <h4><a href="">Document Tracking and Transmittal (New)</a></h4>
+                                <p>Tracking and transmittal of documents.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="contact" class="contact section-bg">
+                <div class="container" data-aos="fade-up">
+                    <div class="section-title">
+                        <h2>Contact</h2>
+                        <h3><span>Contact Us</span></h3>
+                        <p>For account support and other concerns, please fill up the required fields in the form below.</p>
+                    </div>
+                    <div class="row" data-aos="fade-up" data-aos-delay="100">
+                        <div class="col-lg-6 col-md-12" style="margin: 0 auto;">
+                            <div class="info-box p-4 text-left">
+                                <form id="ictSupport">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <label for="username">Requester Username</label>
+                                            <div class="input-group m-b">
+                                                <input type="text" name="username" style="font-size:14px;" id="username" class="form-control" autocomplete="off" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-sm-12">
+                                            <label for="subject">Subject of the Request</label>
+                                            <div class="input-group m-b">
+                                                <input type="text" name="subject" style="font-size:14px;" id="subject" class="form-control" autocomplete="off" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-sm-12">
+                                            <label for="description">Description of the Request</label>
+                                            <div class="input-group m-b">
+                                                <textarea type="text" name="description" style="font-size:14px;" id="description" class="form-control" autocomplete="off" required></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-sm-6">
+                                            <label for="category">Category</label>
+                                            <div class="input-group m-b">
+                                                <select class="form-control select-contact" id="category" name="category" required>
+                                                    <option></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label for="subcategory">Subcategory</label>
+                                            <div class="input-group m-b">
+                                                <select class="form-control select-contact" id="subcategory" name="subcategory" required disabled>
+                                                
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-sm-6">
+                                            <label for="impact">Impact</label>
+                                            <div class="input-group m-b">
+                                                <select class="form-control select-contact" id="impact" name="impact" required>
+                                                    <option></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label for="urgency">Urgency</label>
+                                            <div class="input-group m-b">
+                                                <select class="form-control select-contact" id="urgency" name="urgency" required>
+                                                    <option></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-sm-12" style="margin:0 auto; text-align:center;">
+                                            <input type="submit" value="&emsp;Submit&emsp;" class="btn btn-success" style="background:#00bfa5;">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="faq" class="faq">
+                <div class="container" data-aos="fade-up">
+                    <div class="section-title">
+                        <h2>FAQs</h2>
+                        <h3>Frequently Asked <span>Questions</span></h3>
+                        <p>Here are the following FAQs</p>
+                    </div>
+                    <ul class="faq-list" data-aos="fade-up" data-aos-delay="100">
+                        {% for row in faqs %}
+                        <li>
+                            <a data-toggle="collapse" href="#faq{{ row.id }}" class="collapsed">{{ row.question }} <i class="icofont-simple-up"></i></a>
+                            <div id="faq{{ row.id }}" class="collapse" data-parent=".faq-list">
+                                <p>
+                                    {{ row.answer }}
+                                </p>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+            <section id="testimonials" class="testimonials">
+                <div class="container" data-aos="fade-up">
+                    <div class="owl-carousel testimonials-carousel">
+                        {% for row in key_partners %}
+                        {% getemployeebyempid row.sec_head_id as key_partner %}
+                        <div class="testimonial-item">
+                            <div class="section-title">
+                                <h2>KEY PARTNERS</h2>
+                            </div>
+                            <img loading="lazy"  src="{{ key_partner.picture.url }}" class="testimonial-img" alt="">
+                            <h3>{{ key_partner.pi.user.first_name }} {{ key_partner.pi.user.middle_name|to_middleinitial }} {{ key_partner.pi.user.last_name }}</h3>
+                            <h4>Head, {{ row.sec_name }}</h4>
+                        </div>
+                        {% endfor %}
+
+                        {% for row in other_partners %}
+                        {% getemployeebyempid row.sec_head_id as other_partner %}
+                        <div class="testimonial-item">
+                            <div class="section-title">
+                                <h2>OTHER PARTNERS</h2>
+                            </div>
+                            <img loading="lazy"  src="{{ other_partner.picture.url }}" class="testimonial-img" alt="">
+                            <h3>{{ other_partner.pi.user.first_name }} {{ other_partner.pi.user.middle_name|to_middleinitial }} {{ other_partner.pi.user.last_name }}</h3>
+                            <h4>Head, {{ row.sec_name }}</h4>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer id="footer">
+            <div class="footer-top">
+              <div class="container">
+                <div class="row">
+                  <div class="col-lg-3 col-md-6 footer-contact">
+                    <h3 style="margin-bottom: 5px;">Caraga <span>PORTAL</span></h3>
+                    <img loading="lazy"  src="{% static 'image/branding.png' %}" style="margin-bottom: 5px;" width="200px" class="img-fluid">
+                    <p>
+                      DSWD Field Office Caraga <br>
+                      R. Palma Street, Butuan City<br>
+                    </p>
+                  </div>
+                  <div class="col-lg-3 col-md-6 footer-links">
+                    <h4>SECURITY</h4>
+                    <ul>
+                      <li><i class="bx bx-chevron-right"></i> Privacy Policy</li>
+                    </ul>
+                  </div>
+                  <div class="col-lg-4 col-md-6 footer-links">
+                    <h4>LINKS</h4>
+                    {% for row in website_links %}
+                    <ul>
+                      <li>
+                          <a href="{{ row }}"><i class="bx bx-chevron-right"></i> {{ row }}</a>
+                      </li>
+                    </ul>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="container py-4">
+              <div class="copyright">
+                &copy; Copyright <strong>DSWD My PORTAL</strong>. All Rights Reserved
+              </div>
+            </div>
+          </footer>
+        <div id="preloader"></div>
+        <a href="javascript:;" class="back-to-top"><i class="icofont-simple-up"></i></a>
+        <script src="{% static 'bizland/vendor/jquery/jquery.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/jquery.easing/jquery.easing.min.js' %}"></script>
+        <script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+        <script src="{% static 'js/plugins/select2/select2-cascade.js' %}"></script>
+        <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/php-email-form/validate.js' %}"></script>
+        <script src="{% static 'bizland/vendor/waypoints/jquery.waypoints.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/counterup/counterup.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/owl.carousel/owl.carousel.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/venobox/venobox.min.js' %}"></script>
+        <script src="{% static 'bizland/vendor/aos/aos.js' %}"></script>
+        <script src="{% static 'bizland/js/main.js' %}"></script>
+        <script>
+            $(document).ready(function(){
+                var select2options = {
+                    width: "100%",
+                    allowClear: true,
+                    placeholder: '',
+                    disabled: true
+                };
+                var select2options2 = {
+                    width: "100%",
+                    allowClear: true,
+                    placeholder: '',
+                };
+
+                $('.select-contact').select2(select2options);
+
+                $.get('{% url "get-categories" %}',
+                    function (data) {
+                        $.each(data, function(){
+                            for (var k in this){
+                                var newOption = new Option(this[k], k, false, false);
+                                $('#category').append(newOption).trigger('change.select2');
+                            }
+                        });
+                    }).done(function(){
+                        $('#category').select2('enable');
+                        $.get('{% url "get-impacts" %}',
+                            function (data) {
+                                $.each(data, function(){
+                                    for (var k in this){
+                                        var newOption = new Option(this[k], k, false, false);
+                                        $('#impact').append(newOption).trigger('change.select2');
+                                    }
+                                });
+                            }).done(function(){
+                                $('#impact').select2('enable');
+                                $.get('{% url "get-urgencies" %}',
+                                    function (data) {
+                                        $.each(data, function(){
+                                            for (var k in this){
+                                                var newOption = new Option(this[k], k, false, false);
+                                                $('#urgency').append(newOption).trigger('change.select2');
+                                            }
+                                        });
+                                    }).done(function(){
+                                        $('#urgency').select2('enable');
+                                    });
+                            });
+                    });
+
+        	    var categoryCascade = Select2Cascade($("#category"), $("#subcategory"), "/support/get/subcategories/:parentId:", select2options2);
+            });
+
+            $('#ictSupport').on('submit', function(e){
+                e.preventDefault();
+                var form = new FormData(this);
+                Swal.fire({
+                    title: "Are you sure",
+                    text: "You want to send the following concern to us?",
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3498DB",
+                    confirmButtonText: "Yes",
+                    closeOnConfirm: false,
+                    allowOutsideClick: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: function (){
+                        return $.ajax({
+                            data        : form,
+                            url         : "{% url 'add-support-request' %}",
+                            type        : 'POST',
+                            cache       : false,
+                            contentType : false,
+                            processData : false
+                        });
+                    },
+                }).then(function(data) {
+                    var success = data.data;
+                    if (success == 'success'){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: "You have successfully sent us a message. We will make sure that your request gets attended to by our staffs as soon as possible. Thank you!",
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.reload(true);
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                          title: "Error",
+                          text: data.errors,
+                          icon: "error",
+                          confirmButtonColor: "#3498DB",
+                        });
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

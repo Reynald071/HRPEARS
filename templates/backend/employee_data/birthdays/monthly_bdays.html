@@ -1,0 +1,112 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">{{ tab_title }}</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    Admin
+                </li>
+                <li class="breadcrumb-item">
+                    {{ tab_parent }}
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>{{ tab_title }}</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                <a href="{% url 'print_birthdays' month %}" id="print" class="btn btn-info" target="_blank"><i class="fas fa-print"></i> Print</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <select class="form-control select" name="months" id="months" required>
+                    <option></option>
+                    {% for key, value in list_month %}
+                        {% if key == month %}
+                            <option value="{{ key }}"} selected>{{ value }}</option>
+                        {% else %}
+                            <option value="{{ key }}"}>{{ value }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+	<div class="row">
+		<div class="col-lg-12">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+                    <table class="table table-bordered table-hover" id="birthday-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th width="5%">DAY</th>
+                                <th class="text-center">ID NUMBER</th>
+                                <th class="text-center">PICTURE</th>
+                                <th class="text-center">NAME</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script>
+$(document).ready(function(){
+	$('#birthday-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'asc' ], [ 3, 'asc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/birthday/?format=datatables&month=' + '{{ month }}',
+            'type': 'GET',
+        },
+        'columns': [
+            {'data': 'birth_day', 'name': 'pi.dob.day', 'className': 'text-center'},
+            {'data': 'id_number', 'className': 'text-center'},
+            {'data': 'picture',
+                'render': function(data, type, row, meta) {
+                    return `<center><img loading="lazy" class="img-circle" data-toggle="popover"
+                        data-html="true"
+                        loading="lazy"
+                        style="object-fit:cover; width: 40px; height: 40px;"
+                        data-placement="right"
+                        data-content="<center><img loading='lazy' src='`+ data + `' style='width: 250px; height: 250px; object-fit:cover;'></center>" src="` + data + `">
+                    </center>`;
+                },
+                'className': 'text-center',
+                'searchable': 'false'
+            },
+            {'data': 'full_name', 'name': 'pi.user.first_name, pi.user.middle_name, pi.user.last_name, pi.ext.name', 'className': 'text-center'}
+        ],
+    });
+
+    $('#months').on('change', function(){
+        var month = $(this).val();
+        $('#birthday-table').DataTable().ajax.url('/api/birthday/?format=datatables&month=' + month).load();
+        $('#print').attr('href', '/backend/monthly-birthdays/print/' + month)
+    });
+});
+</script>
+{% endblock %}

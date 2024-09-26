@@ -1,0 +1,109 @@
+{% extends 'epay/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item active">Payroll Monitoring</li>
+            </ol>
+        </nav>
+        <div class="row mt-3">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-bordered w-100" id="table-payroll-monitoring">
+                            <thead>
+                                <tr>
+                                    <th>DV No.</th>
+                                    <th class="text-center">Amount</th>
+                                    <th class="text-center">Payroll Type</th>
+                                    <th class="text-center">Current Assignee</th>
+                                    <th class="text-center">Current Status</th>
+                                    <th class="text-center display-none">Current Status</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="payroll-tracker-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>PAYROLL TRACKER <span id="dv_no_text"></span></strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="payroll-tracker-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function getCurrentDate(){
+        var now = new Date();
+        var month = (now.getMonth() + 1);
+        var day = now.getDate();
+        if(month < 10)
+            month = "0" + month;
+        if(day < 10)
+            day = "0" + day;
+        var today = now.getFullYear() + '-' + month + '-' + day;
+        var time = now.getHours() + ":" + now.getMinutes();
+        if(now.getHours() < 10)
+            time = '0' + time;
+        if(now.getMinutes() < 10)
+            time = time.slice(0,3) + '0' + time.slice(3);
+        var dateTime = today + 'T' + time;
+
+        return dateTime;
+    }
+
+    $('#table-payroll-monitoring').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 4, 'desc' ]],
+        'ajax': {
+            'url': '/api/infimos/tracking/history/?format=datatables',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'dv_no',
+                'render': function (data, type, row, meta) {
+                    return '<a href="javascript:;" data-role="track-payroll" data-id="'+ data + '">'+ data + '</a>'
+                },
+                'className': 'text-center'
+            },
+            {'data': 'amount_certified',
+                'render': function(data, type, row, meta) {
+                    var amt_certified = parseFloat(data).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return amt_certified;
+                },
+                'searchable': false, 'className': 'text-center'
+            },
+            {'data': 'payroll_type', 'searchable': false, 'className': 'text-center'},
+            {'data': 'latest_payroll_status', "orderable": false, 'searchable': false, 'className': 'text-center' },
+            {'data': 'latest_payroll_assignee', "orderable": false, 'searchable': false, 'className': 'text-center' },
+            {'data': 'id', 'visible': false}
+        ]
+    });
+
+    $(document).on('click', 'a[data-role=track-payroll]', function(){
+        var dv_no = $(this).data('id');
+        $('#payroll-tracker-content').load('/epay/manage/payroll/tracker/' + dv_no, function(){
+            $('#dv_no_text').text('- ' + dv_no);
+            $('#payroll-tracker-modal').modal('show');
+        });
+    });
+</script>
+{% endblock %}

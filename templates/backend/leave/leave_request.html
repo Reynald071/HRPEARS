@@ -1,0 +1,630 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style>
+    input.file {
+    	border: none;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">Leave Applications</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					Admin
+				</li>
+				<li class="breadcrumb-item">
+					Leave Management
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>Leave Applications</strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+				<button class="btn btn-info" data-toggle="modal" data-target="#apply-leave"><i class="fas fa-plus"></i> Apply for Leave</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card card-info card-tabs">
+				<div class="card-header p-0 pt-1">
+					<ul class="nav nav-tabs" id="tabUL">
+						<li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#workflow-view"> Workflow</a></li>
+						<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#dashboard">Dashboard</a></li>
+					</ul>
+				</div>
+                <div class="card-body">
+                    <div class="tabs-container">
+                        <div class="tab-content" style="border: 0px !important;">
+                            <div id="workflow-view" class="tab-pane active">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-4">
+											<div class="small-box bg-info">
+												<div class="inner pl-3">
+													<p>Leave applications pending</p>
+													<h1><strong>{{ total_leave_pending }}</strong></h1>
+												</div>
+											</div>
+                                        </div>
+                                        <div class="col-lg-4">
+											<div class="small-box bg-success">
+												<div class="inner pl-3">
+													<p>Leave applications approved</p>
+													<h1><strong>{{ total_leave_approved }}</strong></h1>
+												</div>
+											</div>
+                                        </div>
+                                        <div class="col-lg-4">
+											<div class="small-box bg-warning">
+												<div class="inner pl-3">
+													<p>Leave applications cancelled</p>
+													<h1><strong>{{ total_leave_canceled }}</strong></h1>
+												</div>
+											</div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="table-responsive">
+                                        <table id="leave-admin-table" class="table table-bordered table-hover" width="100%">
+                                            <thead>
+                                                <tr>
+                                                    <th class="capslock text-left" width="15%">Action</th>
+                                                    <th width="10%">TRACKING NO.</th>
+                                                    <th class="capslock" width="20%">REQUESTED BY</th>
+                                                    <th class="capslock">Leave Type</th>
+                                                    <th class="capslock text-center">Inclusive Dates</th>
+                                                    <th class="capslock text-center">Date of Filing</th>
+                                                    <th class="capslock display-none">Date Approved</th>
+                                                    <th class="capslock text-right">Status</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="dashboard" class="tab-pane">
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover">
+                                        <tbody>
+                                            <th>LEAVE TYPE</th>
+                                            <th class="text-center">TOTAL PENDING</th>
+                                            <th class="text-center">TOTAL APPROVED</th>
+                                            <th class="text-center">TOTAL CANCELLED</th>
+                                        </tbody>
+                                        <tbody>
+                                            {% for row in leavesubtype %}
+                                            {% get_total_leavesubtype_per_status row.id current_year as total_leavesubtype %}
+                                            <tr>
+                                                <td>{{ row.name }}</td>
+                                                <td class="text-center">{{ total_leavesubtype.0 }}</td>
+                                                <td class="text-center">{{ total_leavesubtype.1 }}</td>
+                                                <td class="text-center">{{ total_leavesubtype.2 }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card">
+				<div class="card-header title bg-info">
+					<h5 class="card-title font-weight-bold">FILTER LEAVE</h5>
+				</div>
+				<div class="card-body">
+					<form method="GET">
+						<h4>By year</h4>
+						<input type="number" class="form-control" value="{{ current_year }}" name="current_year" autocomplete="off">
+					</form><br>
+					<h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item list-group-item-action active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+						<a class="list-group-item list-group-item-action"  id="status-0" href="javascript:;" data-role="status" data-filter="0">Pending</a>
+						<a class="list-group-item list-group-item-action"  id="status-1" href="javascript:;" data-role="status" data-filter="1">Approved</a>
+						<a class="list-group-item list-group-item-action" id="status-2" href="javascript:;" data-role="status" data-filter="2">Cancelled</a>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="apply-leave" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">LEAVE APPLICATION</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form id="submitLeaveForm">
+	        <div class="modal-body">
+				{% csrf_token %}
+				<div class="form-group">
+					<label>In Behalf Of<span class="asteriskField">*</span></label>
+					<input type="text" class="form-control filter-employee" name="in_behalf_of" autocomplete="off" required>
+				</div>
+                <div class="form-group">
+                    <label>Date of Filing<span class="asteriskField">*</span></label>
+                    <input type="datetime-local" name="date_of_filing" id="date_of_filing" class="form-control b-r-sm" required>
+                </div>
+				<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Type of Leave<span class="asteriskField">*</span></label>
+		        		<select class="form-control select" name="leavesubtype" id="request-leavesubtype" required>
+		        			<option></option>
+		        			{% for row in leavesubtype %}
+ 		        			<option value="{{ row.id }}">{{ row.name }} {% if row.description %}({{ row.description}}){% endif %}</option>
+							{% endfor %}
+		        		</select>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+	        		<div class="request-content-wrapper"></div>
+	        	</div>
+				<div class="row" id="filter_content" style="display:none;">
+					<div class="form-group col-md-12">
+						<label>Filter Dates By<span class="asteriskField">*</span></label>
+						<select class="form-control select" id="request_filter_dates" required>
+							<option></option>
+							<option value="range">Range</option>
+							<option value="random">Custom</option>
+						</select>
+					</div>
+				</div>
+	        	<div class="row" id="request_inclusive_dates" style="display:none;">
+		        	<div class="form-group col-md-6">
+		        		<label>Start Date<span class="asteriskField">*</span></label>
+		        		<input type="date" name="start_date" id="request_start_date" class="form-control b-r-sm">
+		        	</div>
+		        	<div class="form-group col-md-6">
+		        		<label>End Date<span class="asteriskField">*</span></label>
+		        		<input type="date" name="end_date" id="request_end_date" class="form-control b-r-sm">
+		        	</div>
+	        	</div>
+				<div id="request_random_dates" style="display:none;">
+					<div id="request_items">
+						<div class="row">
+							<div class="form-group col-md-12">
+								<div class="input-group">
+									<input type="date" class="form-control b-r-sm dates" name="dates[]"> <span class="input-group-btn"> <button type="button" class="btn btn-info request_add" style="height: 34px;"><i class="fas fa-plus"></i></button> </span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% if leave_credits %}
+	        	<label>Leave Credits</label>
+				<table class="table table-bordered">
+	        		<thead>
+	        			<tr>
+	        				<th>Leave Type</th>
+	        				<th class="text-center">Total Balance</th>
+							<th class="text-right">Updated on</th>
+	        			</tr>
+	        		</thead>
+					<tbody>
+						{% for row in leave_credits %}
+							<tr>
+								<td>{{ row.leavetype.name }}</td>
+								<td class="text-center">{{ row.leave_total }}</td>
+								<td class="text-right">{{ row.updated_on|date:'F d, Y' }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+	        	</table>
+				{% endif %}
+	        </div>
+	        <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="view-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+				<h4 class="modal-title"></h4>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			</div>
+	        <div id="view-content"></div>
+	    </div>
+	</div>
+</div>
+
+<div class="modal" id="edit-leave" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">EDIT LEAVE APPLICATION</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<div id="edit-content"></div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="leave-attachment-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">LEAVE APPLICATION ATTACHMENT</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<div id="leave-attachment-content"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script type="text/javascript">
+	$(".filter-employee").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+	$('.request_add').on('click', function(){
+		$('#request_items').append('<div class="row"><div class="form-group col-md-12"><div class="input-group"><input type="date" class="form-control b-r-sm dates" name="dates[]"> <span class="input-group-btn"> <button type="button" class="btn btn-danger request_remove_field" style="height: 34px;"><i class="fas fa-minus"></i></button> </span></div></div></div>')
+	});
+
+	$('#request_items').on('click', '.request_remove_field', function(e){
+		$(this).parent().parent().parent().remove();
+	});
+
+	$('#request_filter_dates').on('select2:select', function(){
+		if($(this).val() == "range"){
+			$('#request_random_dates').css('display', 'none');
+			$('.request_dates').removeAttr('required');
+
+			$('#request_inclusive_dates').css('display', '');
+			$('#request_start_date').attr('required', 'required');
+			$('#request_end_date').attr('required', 'required');
+		}else if ($(this).val() == "random"){
+			$('#request_inclusive_dates').css('display', 'none');
+			$('#request_start_date').removeAttr('required');
+			$('#request_end_date').removeAttr('required');
+
+			$('#request_random_dates').css('display', '');
+			$('.edit_dates').attr('required', 'required');
+		}
+	});
+
+	$('#request-leavesubtype').on('change.select2', function(){
+		$.ajax({
+			url: "{% url 'get_leavespent' %}",
+			data: {
+				id: $(this).val()
+			},
+			type: "POST"
+		})
+		.done(function(data){
+			var value = data.data;
+			template = '';
+			$('.request-content-wrapper').empty();
+
+			if (value.length != 0){
+				template += "<div class='col-md-12'>";
+				template += "<p class='text-danger'>Note: Please do check the checkboxes if applicable and specify your reason for leave.</p>";
+				template += "<div class='alertBox'></div>";
+				for(var row=0; row < value.length; row++){
+					if(row == 0){
+						template += "<div class='col-md-6'>";
+						template += "<input type='checkbox' class='check leavespent_check' name='leavespent_check' value='"+ value[row]['id'] +"' checked> &nbsp;" + value[row]['name'];
+						template += "</div>";
+						template += "<div class='col-md-6'>";
+						if (value[row]['is_specify'] == 0){
+							template += "<div class='form-group'>&nbsp;</div>";
+						} else {
+							template += "<div class='form-group'><input type='text' class='form-control b-r-sm leavespent_specify' id='leavespent_specify" + value[row]['id'] + "' name='leavespent_specify"+ value[row]['id'] +"' placeholder='Specify' autocomplete='off'></div>";
+						}
+						template += "</div>";
+					}else{
+						template += "<div class='col-md-6'>";
+						template += "<input type='checkbox' class='check leavespent_check' name='leavespent_check' value='"+ value[row]['id'] +"'> &nbsp;" + value[row]['name'];
+						template += "</div>";
+						template += "<div class='col-md-6'>";
+						if (value[row]['is_specify'] == 0){
+							template += "<div class='form-group'>&nbsp;</div>";
+						} else {
+							template += "<div class='form-group'><input type='text' class='form-control b-r-sm leavespent_specify' id='leavespent_specify" + value[row]['id'] + "' name='leavespent_specify"+ value[row]['id'] +"' placeholder='Specify' autocomplete='off'></div>";
+						}
+						template += "</div>";
+					}
+				}
+				template += "</div>";
+
+				$(document).on('click', '.leavespent_check', function(){
+					$(".leavespent_check").prop('checked', false);
+					$('.leavespent_specify').removeAttr("required");
+					$("#leavespent_specify" + $(this).val()).prop("required", "true");
+					$(this).prop('checked', true);
+				});
+			}
+
+			if (data.has_reason){
+				template += '<div class="col-sm-12">';
+				template += '<div class="form-group">';
+				template += '<label>Reason for Leave</label>';
+				template += '<textarea class="form-control" name="reasons" placeholder="Write Something" autocomplete="off" required></textarea>';
+				template += '</div>';
+				template += '</div><br>';
+			}
+
+			if (data.remarks_text){
+				template += '<div class="col-sm-12">';
+				template += '<div class="form-group">';
+				template += '<label>'+ data.remarks_text +'</label>';
+				template += '<input type="text" class="form-control" name="remarks" id="remarks" autocomplete="off" required>';
+				template += '</div>';
+				template += '</div><br>';
+			}
+			if (data.with_days){
+				$('#filter_content').css('display', 'block');
+				$('#request_filter_dates').attr('required', 'required');
+			} else {
+				$('#filter_content').css('display', 'none');
+				$('#request_filter_dates').removeAttr('required');
+			}
+			$('.request-content-wrapper').html(template);
+		});
+	});
+
+	$('#submitLeaveForm').on('submit', function(e){
+		var form = new FormData(this);
+		 Swal.fire({
+			title: "Are you sure",
+			text: "You want to submit this leave application?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonColor: "#3498DB",
+			confirmButtonText: "Yes",
+			closeOnConfirm: false,
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+					url         : "{% url 'leave_request' %}",
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false
+                });
+		    },
+		}).then(function (response){
+		    if (response.value.data == "success"){
+		    	Swal.fire({
+				  title: "Good job!",
+				  text: "This will serve as your tracking no. " + response.value.tracking_no +". Please wait for the reviewal of your leave application. Thank you.",
+				  icon: "info",
+				  confirmButtonColor: "#3498DB",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#submitLeaveForm').trigger('reset');
+						$(".select").val('', '');
+						$('#apply-leave').modal('hide');
+						$('#leave-admin-table').DataTable().ajax.reload();
+					}
+				});
+		    }
+		});
+		e.preventDefault();
+    });
+
+	$(document).on('click', 'a[data-role=view]', function(){
+		var id = $(this).data('id');
+        var tracking_no = $('#'+id).find('td:eq(1)').text();
+		$('#view-modal').find('.modal-title').html("LEAVE TRACKING NUMBER: " + tracking_no + "<p><small>Below are the information provided</small></p>");
+		$('#view-modal').modal('show').find('#view-content').empty();
+		$('#view-modal').modal('show').find('#view-content').load("/backend/view-leave-request/" + $(this).data('id'));
+	});
+
+	$(document).on('click', 'a[data-role=status]', function(){
+    	$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+    	if($(this).data('filter') == 'all'){
+    		$('#leave-admin-table').DataTable().ajax.url('/api/leave/application/admin/?format=datatables&year={{ current_year }}').load();
+    	}else{
+			$('#leave-admin-table').DataTable().ajax.url('/api/leave/application/admin/?format=datatables&year={{ current_year }}&status=' + $(this).data('filter')).load();
+		}
+	});
+
+	LeaveAdminTable();
+	function LeaveAdminTable(){
+		$('#leave-admin-table').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 5, 'desc' ]],
+			'ajax': {
+				'url': '/api/leave/application/admin/?format=datatables&year={{ current_year }}',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+                        if(row['leavesubtype_name'] == 'CTDO') {
+                            template = "<a href='javascript:void(0)' data-id='" + data +"' data-role='move'>Move</a>";
+                        } else {
+                            template = "<a href='javascript:void(0)' data-id='" + data +"' data-role='view'>Details</a>";
+                        }
+
+						if (row['status'] == 0) {
+							template += " | <a href='javascript:void(0)' data-role='edit' data-id='"+ data + "' data-filter='" + row['tracking_no'] + "'>Edit</a>"
+							template += " | <a href='javascript:void(0)' data-role='cancel' data-id='"+ data + "'>Cancel</a>"
+						}
+						if (row['status'] == 1) {
+							template += " | <a href='javascript:void(0)' data-role='attachment' data-id='" + data + "'>Attachment</a>"
+						}
+						if (row['status'] == 2) {
+							template += " | <a href='javascript:void(0)' data-role='uncancel' data-id='"+ data + "'>Uncancel</a>"
+						}
+						return template;
+					}
+				},
+				{'data': 'tracking_no',
+					'render': function(data, type, row, meta) {
+						return "<a href='/leave/requests/print/"+ row['id'] +"' target='_blank'>"+ data +"</a>";
+					}
+				},
+				{'data': 'requested_by', 'name': 'emp.pi.user.last_name, emp.pi.user.first_name, emp.pi.user.middle_name' },
+				{'data': 'leavesubtype_name', 'className': 'text-center', 'name': 'leavesubtype.name'},
+				{'data': 'inclusive_dates', 'className': 'text-center', 'name': 'remarks, start_date, end_date' },
+				{'data': 'date_of_filing', 'className': 'text-center' },
+				{'data': 'approved_date', 'className': 'display-none' },
+				{'data': 'status',
+					'searchable': false,
+					'render': function(data, type, row, meta) {
+						if(row['status'] == 0){
+							return '<span class="badge badge-primary">Pending</span>';
+						}else if (row['status'] == 1){
+							return '<span class="badge badge-success" rel="tooltip" data-placement="top" title="Date Approved: '+ row['approved_date'] +'">Approved</span>';
+						} else if (row['status'] == 2){
+							return '<span class="badge badge-warning">Cancelled</span>';
+						} else {
+							return '<span class="badge badge-danger">Disapproved</span>'
+						}
+					},
+					'className': 'text-right'
+				},
+			]
+		});
+	}
+
+    $(document).on('click', 'a[data-role=move]', function(){
+        var list = {
+            'pk': $(this).data('id'),
+        }
+
+        var url = '{% url "move_leave_application_to_ctdo" %}';
+        var title = "Are you sure";
+        var text = "You want to move this leave application to ctdo requests";
+        var table_id = '#leave-admin-table';
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {table_id: table_id});
+	});
+
+	$(document).on('click', 'a[data-role=edit]', function(){
+		var tracking_no = $(this).data('filter');
+		$('#edit-content').load("/personnel/requests/leave/edit/" + $(this).data('id'), function(){
+			$('#edit-leave .modal-title').text('EDIT LEAVE APPLICATION: ' + tracking_no);
+			$('#edit-leave').modal('show');
+		});
+	});
+
+
+	$(document).on('click', 'a[data-role=attachment]', function(){
+		var id = $(this).data('id');
+		$('#leave-attachment-content').load("/backend/leave-request/attachment/" + id, function(){
+			$('#leave-attachment-modal').modal('show');
+		});
+	});
+
+
+    $(document).on('click', 'a[data-role=cancel]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to cancel this request for leave?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : {
+                    	id: id
+                   	},
+                    url         : '{% url "cancel_leave_request" %}',
+                    type        : 'POST',
+                });
+		   	},
+		}).then(function (data){
+		    if(data.value.data == "success"){
+		    	Swal.fire({
+                    title: "Good job!",
+                    html: data.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+		    		$('#leave-admin-table').DataTable().ajax.reload();
+		    	});
+		    }
+		});
+    });
+
+    $(document).on('click', 'a[data-role=uncancel]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to uncancel this leave request?",
+		  icon: "info",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : {
+                    	id: id
+                   	},
+                    url         : '{% url "uncancel_leave_request" %}',
+                    type        : 'POST',
+                });
+		   	},
+		}).then(function (data){
+		    if(data.value.data == "success"){
+		    	Swal.fire({
+                    title: "Good job!",
+                    html: data.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+		    		$('#leave-admin-table').DataTable().ajax.reload();
+		    	});
+		    }
+		});
+    });
+</script>
+{% endblock %}

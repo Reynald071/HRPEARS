@@ -1,0 +1,31 @@
+{% load static %}
+{% load frontend_tags %}
+{% if announcements %}
+<div class="container">
+    <div class="row mt-5">
+        {% for ann in announcements %}
+        {% get_extension ann.attachment.url as extension %}
+        <div class="card shadow rounded-4 border-0 mb-3">
+            <div class="card-body">
+                <div class="row g-0">
+                    <div class="col-lg-4">
+                    {% if extension.1 == '.pdf' %}
+                        <iframe class="d-block w-100" src="{{ ann.attachment.url }}" type="application/pdf" width="100%" height="300px" frameBorder="0" scrolling="yes"></iframe>
+                    {% else %}
+                        <center><img class="img-cover rounded-start rounded-end" src="{{ ann.attachment.url }}" height="300px" /></center>
+                    {% endif %}
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="p-5">
+                            <h3 class="fw-bold">{{ ann.uploaded_by.section.div.div_acronym }} - {{ ann.uploaded_by.section.sec_name }}</h3>
+                            <p class="text-muted">Date Published: <u>{{ ann.datetime|date:"F d, Y" }}</u></p>
+                            <p>{{ ann.caption }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

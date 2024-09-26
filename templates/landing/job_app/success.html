@@ -1,0 +1,40 @@
+{% extends 'landing/layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<style>
+    .text-underline {
+        text-decoration: underline;
+    }
+    @media only screen and (min-width: 992px) {
+        #content-wrapper {
+            width: 60%;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div id="content-wrapper" class="p-4 ml-0 mx-auto">
+    <div class="card card-info card-outline">
+        <div class="card-body text-center py-5">
+            <br>
+            <p class="font-weight-bold" style="font-size: 25px; line-height: 40px;">
+                {{ job_app.get_fullname }},<br>You have successfully submitted your Application in<br><span class="text-info">{{ job_app.vacancy.get_position_with_status }}</span><br>
+                With Tracking No: <br> <span class="text-success" style="font-size: 30px;">{{ job_app.tracking_no }}</span>
+            </p>
+            <img src="{% static 'icons8/success-96.png' %}" height="96" width="96" class="my-4">
+            <p class="text-danger" style="font-size: 25px; line-height: 40px;">Make sure to save your Tracking No. to track your Application Status.</p>
+            <a href="{% url 'app_tracking' %}?tracking_no={{ job_app.tracking_no }}" class="btn btn-info btn-lg mt-5">Go to Tracking Page</a>
+            <br>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(function() {
+
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,495 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<style type="text/css">
+	#canvas {
+		position: absolute;
+		background: transparent;
+		overflow-y: hidden;
+		overflow-x: hidden;
+		width: 100%;
+		height: 100vh;
+		margin-top: -280px;
+		z-index: 100;
+	}
+
+	#c {
+		position: absolute;
+		background: transparent;
+		overflow-y: hidden;
+		overflow-x: hidden;
+		width: 100%;
+		height: 100vh;
+		margin-top: -280px;
+		z-index: 100;
+	}
+
+	@media screen and (max-width: 400px) {
+	    .img-bot {
+	        display: none;
+	    }
+    }
+
+    .table-valign>tbody>tr>td, .table-valign>tbody>tr>th {
+        vertical-align: middle;
+        text-align: center;
+        font-size: 12px !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <ul class="nav bg-white mt-3 rounded main-nav" role="tablist">
+        <li role="presentation" class="nav-item" data-toggle="tooltip" data-placement="bottom" title="Announcements">
+            <a class="bg-transparent nav-link active" role="tab" data-toggle="tab" data-role="tab" data-filter="main" data-target="#dashboard-1">
+                <img src="{% static 'icons8/headline.png' %}" alt="headline" width="32" height="32">
+            </a>
+        </li>
+        <li role="presentation" class="nav-item" data-toggle="tooltip" data-placement="bottom" title="Statistics">
+            <a class="bg-transparent nav-link" aria-controls="employee" role="tab" data-toggle="tab" data-role="tab" data-filter="statistics" data-target="#dashboard-1">
+                <img src="{% static 'icons8/combo-chart.png' %}" alt="statistics" width="32" height="32">
+            </a>
+        </li>
+        <li role="presentation" class="nav-item" data-toggle="tooltip" data-placement="bottom" title="Issuances">
+            <a class="bg-transparent nav-link" aria-controls="employee" role="tab" data-toggle="tab" data-role="tab" data-filter="issuances" data-target="#dashboard-1">
+                <img src="{% static 'icons8/hand-out.png' %}" alt="issuances" width="32" height="32">
+            </a>
+        </li>
+        <li role="presentation" class="nav-item" data-toggle="tooltip" data-placement="bottom" title="Regional Special Order">
+            <a class="bg-transparent nav-link" aria-controls="employee" role="tab" data-toggle="tab" data-role="tab" data-filter="rso" data-target="#dashboard-1">
+                <img src="{% static 'icons8/stack-of-paper.png' %}" alt="rso" width="32" height="32">
+            </a>
+        </li>
+    </ul>
+</div>
+<div class="content-wrapper p-5 ml-0">
+    <div class="tabs-container" style="border: 0px !important;">
+        <div class="tab-content">
+            <div role="tabpanel" id="dashboard-1" class="tab-pane active"></div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="assistance_modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">EMPLOYEE ASSISTANCE SHEET</h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form method="GET" action="{% url 'get_form' %}" target="_blank">
+            <div class="modal-body">
+                <label>Requested By<span class="asteriskField">*</span></label>
+                <input type="text" class="form-control typeahead2" name="fname" style="width:100%;" autocomplete="off" required>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Get Form</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="april-fools-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+            <div class="modal-body">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<center>
+                    <img loading="lazy"  src="{% static 'image/april_fools.jpg' %}" width="90%">
+                    <h2>from CDO PORTAL Team</h2>
+                </center>
+            </div>
+        </div>
+    </div>
+</div>
+{% now "md" as curr_date %}
+{% if curr_date == '0401' or curr_date == '0402' %}
+<div class="modal fade" id="notice-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+            <div class="modal-body">
+                <center>
+                    <i class="fas fa-user-lock fa-4x text-success"></i>
+                <br>
+                <h2 class="bold">Your Account is Temporarily Locked</h2>
+                <p class="no-margins text-muted" style="font-size: 20px !important;">
+                    We've locked your account because someone recently tried to log in from an
+                    unfamiliar location. Please help us confirm that it was you who tried to log in.
+                </p>
+                <br>
+                </center>
+                <a href="javascript:;" class="btn btn-info btn-block btn-lg" id="enter-to-continue"><i class="fas fa-credit-card"></i> Enter your credit card number</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<div class="modal fade" id="feedback-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content animated bounceInDown">
+			<form id="submitFeedbackForm">
+			{% csrf_token %}
+			<div class="modal-body">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<br><br>
+                <div class="row">
+					<h2 class="text-center font-bold">How do you feel about your CDO PORTAL experience?</h2>
+				</div>
+                <div class="emoji-rate">
+                    <div class="item">
+                        <label>
+                            <input class="radio" type="radio" name="rate" value="1" required/>
+                            <span>😠</span>
+                        </label>
+                    </div>
+                    <div class="item">
+                        <label>
+                            <input class="radio" type="radio" name="rate" value="2" required/>
+                            <span>😕</span>
+                        </label>
+                    </div>
+                    <div class="item">
+                        <label>
+                            <input class="radio" type="radio" name="rate" value="3" required/>
+                            <span>😶</span>
+                        </label>
+                    </div>
+                    <div class="item">
+                        <label>
+                            <input class="radio" type="radio" name="rate" value="4" required/>
+                            <span>😊</span>
+                        </label>
+                    </div>
+                    <div class="item">
+                        <label>
+                            <input class="radio" type="radio" name="rate" value="5" checked required/>
+                            <span>😍</span>
+                        </label>
+                    </div>
+                </div>
+				<div class="form-group">
+					<label class="text-center">What would you like to share with us?</label>
+					<textarea class="form-control" style="resize:vertical; max-height:200px; min-height:100px;" placeholder="If, for any reason, you are not entirely satisfied with any aspect of our service, we want to hear from you to help us make things right.." name="comment" required></textarea>
+				</div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-info btn-block btn-lg" id="btnFeedBack">Submit</button>
+                </div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="checklist" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-olive">
+                <h3 class="modal-title">
+                    HEALTH CHECKLIST
+                    <p><small>DSWD is implementing health screening and temperature check for all personnel, visitors and clients. For your protection, please wear your face mask at all times. For any concerns, you may contact the HR Welfare at local 114.</small></p>
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form method="POST" action="{% url 'save_checklist' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <h4>Please provide the following information:</h4>
+                <div class="form-group">
+                    <label style="font-size:12px;">Temperature taken by the Security Guard<span class="asteriskField">*</span></label>
+                    <input type="number" class="form-control" name="temp" value="36.0" autocomplete="off" step="0.1" required>
+                </div>
+
+                <table class="table-valign table table-hover table-bordered text-wrap" style="fonst-size: 12px !important;">
+                    <tr>
+                        <th style="width:5%">#</th>
+                        <th style="width:51%; text-align:left;">QUESTIONS</th>
+                        <th style="width:8%">Yes</th>
+                        <th style="width:8%">No</th>
+                        <th style="width:8%">Others</th>
+                        <th style="width:20%">If others, give details</th>
+                    </tr>
+                    <tr>
+                        <td colspan="6" style="text-align:left;" class="bold">Are you experiencing/experienced for the last 24 hours the following?</td>
+                    </tr>
+                    <tr>
+                        <td>A</td>
+                        <td style="text-align:left;" class="bold">Sore Throat<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q1" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q1" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q1" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer1" id="answer1" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>B</td>
+                        <td style="text-align:left;" class="bold">Body Pains<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q2" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q2" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q2" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer2" id="answer2" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>C</td>
+                        <td style="text-align:left;" class="bold">Headache<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q3" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q3" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q3" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer3" id="answer3" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>D</td>
+                        <td style="text-align:left;" class="bold">Cough<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q4" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q4" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q4" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer4" id="answer4" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>E</td>
+                        <td style="text-align:left;" class="bold">Colds<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q5" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q5" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q5" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer5" id="answer5" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>F</td>
+                        <td style="text-align:left;" class="bold">Fever<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q6" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q6" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q6" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer6" id="answer6" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>G</td>
+                        <td style="text-align:left;" class="bold">Loss of Smell<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q7" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q7" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q7" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer7" id="answer7" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>H</td>
+                        <td style="text-align:left;" class="bold">Loss of Taste<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q8" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q8" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q8" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer8" id="answer8" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td>I</td>
+                        <td style="text-align:left;" class="bold">Diarrhea<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q9" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q9" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q9" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer9" id="answer9" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align:left;" class="bold">Have you worked together or stayed in the same close environment of a confirmed COVID-19 case in the last 24 hours and/or if you are identified as close contact?<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q10" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q10" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q10" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer10" id="answer10" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align:left;" class="bold">Have you had any contact with anyone with fever, cough, colds, sore throat, body pains, headache, loss of smell and taste and diarrhea in the last 24 hours?<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q11" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q11" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q11" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer11" id="answer11" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align:left;" class="bold">Have you travelled outside of the Philippines in the last 24 hours?<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q12" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q12" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q12" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer12" id="answer12" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align:left;" class="bold">Have you travelled outside your household in the last 24 hours?<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q13" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q13" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q13" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer13" id="answer13" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align:left;" class="bold">Have you visited any hospital or health facility in the last 24 hours?<span class="asteriskField">*</span></td>
+                        <td><input type="radio" class="q icheck" name="q14" value="YES"  required></td>
+                        <td><input type="radio" class="q icheck" name="q14" value="NO"  required></td>
+                        <td><input type="radio" class="q icheck" name="q14" value="0"  required></td>
+                        <td style="padding:0px; background-color:#eee;"><input type="text" class="form-control answer" name="answer14" id="answer14" style="outline:0; border:0px; border-radius:0;" required></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align:left;" class="bold">I hereby voluntarily and freely give my consent to DSWD to collect, process and share the data indicated herein for the purpose of effecting control of the COVID-19 infection. I understand that any personal information is protected by RA 10173, Data Privacy Act of 2012, and that I am required by RA 11469, Bayanihan to Heal as One Act, to provide, true, correct, and complete information. I understand that failure to answer any question or giving false answer can be penalized in accordance with the law.<span class="asteriskField">*</span></td>
+                        <td style="">
+                            <select class="select" style="width:100%;" name="choose" id="choose" required>
+                                <option></option>
+                                <option value="1">Agree</option>
+                                <option value="0">Disagree</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info" id="checklist-submit" disabled>Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Skip</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="trigger-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    CDO PORTAL REQUIRED INFORMATION
+                    <p><small class="sub-title">Please provide the following information.</small></p>
+                </h3>
+            </div>
+            <form method="POST" action="{% url 'save_information' %}">
+            <div class="modal-body">
+                {% csrf_token %}
+                <h3>Personal Information</h3>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" class="form-control" name="email" value="{{ employee.pi.user.email }}" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" class="form-control" name="mobile_no" value="{{ employee.pi.mobile_no }}" autocomplete="off" required>
+                </div>
+                <h3>Contact In Case of Emergency</h3>
+                <div class="form-group">
+                    <label>Contact Name</label>
+                    <input type="text" class="form-control" name="contact_name" value="{{ incase_of_emergency.contact_name }}" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" class="form-control" name="contact_number" value="{{ incase_of_emergency.contact_number }}" autocomplete="off" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="preview-announcement-modal" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    <small class="sub-title"></small>
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+			<div class="modal-body" style="padding:0px !important;">
+				<img loading="lazy"  style="object-fit:contain; width:100%;" src="" id="preview-announcement">
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script src="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.4.2/bootstrap-tagsinput.min.js"></script>
+<script src="{% static 'js/plugins/chartJs/Chart.min.js' %}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        {% if curr_date == '0401' or curr_date == '0402' %}
+        $('#notice-modal').modal('show');
+
+        $('#enter-to-continue').on('click', function() {
+            $('#notice-modal').modal('hide');
+            setTimeout(
+            function(){
+                $('#april-fools-modal').modal('show');
+            }, 1000);
+        });
+        {% endif %}
+
+        callPage("{% url 'main_dashboard' %}");
+        $(document).on('click', 'a[data-role=tab]', function(){
+            if($(this).data('filter') == "main") {
+                callPage("{% url 'main_dashboard' %}");
+            } else if ($(this).data('filter') == "statistics") {
+                callPage("{% url 'statistics_dashboard' %}");
+            } else if ($(this).data('filter') == "issuances") {
+                callPage("{% url 'issuances_dashboard' %}");
+            } else if ($(this).data('filter') == "leaderboards") {
+                callPage("{% url 'leaderboards_dashboard' %}");
+            } else if ($(this).data('filter') == "rso") {
+                callPage("{% url 'rso_attachment' %}");
+            }
+        });
+
+        function callPage(pageRefInput) {
+            $.ajax({
+                url: pageRefInput,
+                type: "GET",
+                dataType: 'text',
+                beforeSend: function() {
+                    $('.tab-content').find('#dashboard-1').empty();
+                    $('.tab-content').find('#dashboard-1').append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+                },
+                success: function(response) {
+                    $('.tab-content').find('#dashboard-1').html(response);
+                },
+                complete: function() {
+                    $('#preloader').css('display', 'none');
+                }
+            });
+        }
+    });
+
+    $(".typeahead2").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $(document).ready(function(){
+        disabled();
+        function disabled(){
+            for(var i = 1; i <= 14; i++){
+                $("#answer"+i).prop('disabled', true);
+            }
+        }
+        
+        $('.q').on('change', function(){
+            var num = $(this).attr('name').replace(/[^0-9]/gi, '');
+            if($(this).val() == 0){
+                $("#answer"+num).prop('disabled', false);
+                $("#answer"+num).parent('td').css('background-color', '#fff');
+            }else{
+                $("#answer"+num).val("");
+                $("#answer"+num).prop('disabled', true);
+                $("#answer"+num).parent('td').css('background-color', '#eee');
+            }
+        });
+
+        $('#choose').on('change', function(){
+            if($(this).val() == '1'){
+                $('#checklist-submit').removeAttr('disabled');
+            }else{
+                $('#checklist-submit').attr('disabled', 'true');
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+
+
+

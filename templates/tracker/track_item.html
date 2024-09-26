@@ -1,0 +1,63 @@
+{% extends 'tracker/layout.html' %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'tracker' %}">Home</a></li>
+                <li class="breadcrumb-item active">Item</li>
+            </ol>
+        </nav>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-bordered" id="table-item" width="100%">
+                    <thead>
+                        <tr>
+                            <th>TRACKING NO.</th>
+                            <th>EMPLOYEE NAME</th>
+                            <th class="text-center">DOCUMENT DATE</th>
+                            <th class="text-center">DOCUMENT INFORMATION</th>
+                            <th class="text-center">DATE SHIPPED</th>
+                            <th class="text-center">STATUS</th>
+                            <th class="display-none">CRYPTO</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#table-item').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 0, 'desc' ]],
+        'ajax': {
+            'url': '/api/tracker/item/?format=datatables&section_id={{ employee.section_id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'tracking_no',
+                render: function(data, type, row, meta) {
+                    return "<a href='/tracker/package/details/"+ row['crypto'] +"' class='text-green' data-role='action-details' data-id='"+ row['crypto'] +"'>Details</a>";
+                },
+                'searchable': false,
+                'name':'package.tracking_no'
+            },
+            {'data': 'full_name', 'name': 'emp.pi.user.last_name, emp.pi.user.first_name' },
+            {'data': 'document_date', 'searchable': false, 'className': 'text-center'},
+            {'data': 'other_info', 'className': 'text-center' },
+            {'data': 'date_created', 'searchable': false, 'className': 'text-center'},
+            {'data': 'latest_status', 'searchable': false, 'className': 'text-center'},
+            {'data': 'crypto', 'searchable': false, 'className': 'display-none'},
+        ]
+    });
+</script>
+{% endblock %}

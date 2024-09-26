@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Issuances</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                File
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Issuances</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <p class="bold">ISSUANCES TYPE</p>
+                </div>
+                <div class="ibox-content" style="padding: 0px !important;">
+                    <div class="list-group">
+                        {% for row in issuances_type %}
+                        <a class="list-group-item type-{{ row.id }} type" data-role="open-documents" data-id="{{ row.id }}"><i class="far fa-folder"></i>&emsp;{{ row.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+             <div class="ibox">
+                 <div class="ibox-content documents">
+                 </div>
+             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('.type-1').addClass('active');
+    $('.documents').load('/backend/documents/upload-issuances-files/' + 1);
+
+    $(document).on('click', 'a[data-role=open-documents]', function(){
+        var id = $(this).data('id');
+        $('.type').each(function(){
+            $(this).removeClass('active');
+        });
+        $('.type-'+id).addClass('active');
+        $('.documents').load('/backend/documents/upload-issuances-files/' + id);
+    });
+</script>
+{% endblock %}

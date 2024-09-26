@@ -1,0 +1,460 @@
+{% load tags %}
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+<title>DSWD My PORTAL PDS | Print Page 3</title>
+<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style type="text/css">
+	@media print{
+		body{-webkit-print-color-adjust: exact;}
+		.containerX {
+			padding: 0px;
+			margin: 0px;
+			zoom: 90% !important;
+			height: 0% !important;
+		}
+		page {
+			margin: 0px;
+			border: 0.1px solid transparent;
+			height: 329mm !important;
+			width: 100% !important;
+		}
+		thead tr th {
+			padding: 4px 8px !important;
+		}
+		.margin-0-b {
+			margin-bottom: 2px !important;
+		}
+		.table thead th, small {
+	    	background-color: #999999 !important;
+	    	color: white !important;  
+	    	font-size: 15px;
+	    	font-style: italic;
+	    	-webkit-print-color-adjust: exact; 
+	    }
+	    .table .gray-bg{
+	    	background-color: #E8E8E8 !important;		
+		}
+		.table tbody .text-danger i{
+	    	color: red !important;		
+		}
+		.padding-15-r {
+			padding-right: 15px !important;
+		}
+		.padding-15-l {
+			padding-left: 15px !important;
+		}
+		.margin-20 {
+			margin-top: -1px !important;
+		}
+		.margin-0-b {
+			margin-bottom: 0px !important;
+		}
+		.border-1-r {
+			border-right: 1px solid black !important;
+		}
+		.table {
+			page-break-inside: avoid;
+			page-break-after: avoid;
+		}
+		.center-div {
+			display:flex;
+			justify-content:center;
+			align-items:center;
+			height:39px !important;
+			padding:2px !important;
+			overflow: hidden;
+		}
+	}
+
+	@page {
+		size: auto;
+	}
+
+	.col-33 {
+		width: 33.335% !important;
+		float: left;
+	}
+	.col-34 {
+		width: 33.34% !important;
+		float: left;
+	}
+	.containerX {
+		zoom: 80%;
+	}
+	th{
+		font-family: Arial Narrow;
+	}
+	td{
+		border: 1px solid black;
+		font-family: Arial Narrow;
+	}
+	.text-capital{
+		text-transform: uppercase;
+	}
+	.padding-zero{
+		padding: 0px !important;
+	}
+	.font-small{
+		font-size: 13.33px;
+	}
+	.font-xsmall{
+		font-size: 12px;
+	}
+    .magic-2{
+    	border-right:0px solid black !important;
+    }
+    .magic-3{
+    	border-left:0px solid black !important;
+    }
+    .padding-right-zero{
+        padding-right:0;
+    }
+    .padding-left-zero{
+        padding-left:0;
+    }
+    .padding-left-right-zero{
+        padding-right:0;
+        padding-left:0;
+    }
+    thead th {
+    	background-color: #999;
+    	color: white;  
+    	font-size: 15px;
+    	border: 1px solid black !important;
+    	font-style: italic;
+    }
+    .text-danger{
+    	color:red !important;
+    }
+    .gray-bg{
+		background-color: #E8E8E8 !important;
+	}
+	.margin-20 {
+		margin-top: -1px !important;
+	}
+	.margin-0-b {
+		margin-bottom: 0px !important;
+	}
+	.center-div {
+		display:flex;
+		justify-content:center;
+		align-items:center;
+		height:40px !important;
+		padding:2px !important;
+		overflow: hidden;
+	}
+</style>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">
+            <strong>Page 3&emsp;
+			<em><small class="font-xsmall">Notes: Paper size is Folio, scale to 90%, margin to 0.19, 0.33, 0.08, 0.36</small></em>
+            </strong>
+        </a>
+		<ul class="navbar-nav ml-auto">
+			<li><a href="javascript:;" class="btn btn-info print-button" id="floatprint" title="Print"><i class="fas fa-print"></i> <span id="print">Print</span></a></li>
+		</ul>
+	</div>
+</nav>
+<page size="long" style="padding: 30px; position: relative; page-break-after: always;">
+	<div class="containerX">
+		<table class="table" border=1>
+			<thead>
+				<th colspan="9">VI. VOLUNTARY WORK OR INVOLVEMENT IN CIVIC / NON-GOVERNMENT / PEOPLE / VOLUNTARY ORGANIZATION/S</th>
+			</thead>
+			<tbody>
+				<tr>
+					<td rowspan="2" width="2%" class="magic-2 font-xsmall gray-bg">29.</td>
+					<td rowspan="2" class="font-xsmall text-center magic-3 gray-bg" width="35%">NAME & ADDRESS OF ORGANIZATION<br>(Write in full)</td>
+					<td colspan="2" class="font-xsmall text-center padding-zero gray-bg" width="22%">INCLUSIVE DATES <br>(mm/dd/yyyy)</td>
+					<td rowspan="2" class="font-xsmall text-center gray-bg" width="7%">NUMBER OF HOURS</td>
+					<td rowspan="2" class="font-xsmall text-center gray-bg" width="33%">POSITION / NATURE OF WORK</td>
+				</tr>
+				<tr>
+					<td class="font-xsmall text-center gray-bg">From</td>
+					<td class="font-xsmall text-center gray-bg">To</td>
+				</tr>
+				{% if voluntary %}
+					{% for row in voluntary %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>{{ row.organization|upper }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>{{ row.vol_from|date:"m/d/Y" }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>{{ row.vol_to|date:"m/d/Y" }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>{{ row.vol_hours }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>{{ row.now|upper }}</strong></div></td>
+					</tr>
+					{% endfor %}
+					{% getrange 7 voluntary.count as voluntary_range %}
+					{% for row in voluntary_range|times %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div" style="height:37px;">&nbsp;</div></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+					</tr>
+					{% endfor %}
+				{% else %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div" style="height:37px;"><strong>N/A</strong></div></td>
+					</tr>
+					{% getrange 7 1 as voluntary_range %}
+					{% for row in voluntary_range|times %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div" style="height:37px;">&nbsp;</div></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+					</tr>
+					{% endfor %}
+				{% endif %}
+                <tr>
+                    <td colspan="8" class="text-center padding-zero text-danger font-small gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+                </tr>
+			</tbody>
+		</table>
+		<table class="table" style="margin-top: -15px; margin-bottom:0px;" border=1>
+			<thead>
+				<th colspan="9">VII. LEARNING AND DEVELOPMENT (L&D) INTERVENTIONS/TRAINING PROGRAMS ATTENDED <br><small>(Start from the most recent L&D/training program and include only the relevant L&D/training taken for the last five (5) years for Division Chief/Executive/Managerial positions)</small></th>
+			</thead>
+			<tbody>
+				<tr>
+					<td rowspan="2" width="2%" class="magic-2 font-xsmall gray-bg">30.</td>
+					<td rowspan="2" class="font-xsmall text-center magic-3 gray-bg" width="27%">TITLE OF LEARNING AND DEVELOPMENT<br> INTERVENTIONS/TRAINING PROGRAMS)<br>(Write in full)</td>
+					<td colspan="2" class="font-xsmall text-center padding-zero gray-bg" width="14%">INCLUSIVE DATES OF ATTENDANCE <br>(mm/dd/yyyy)</td>
+					<td rowspan="2" class="font-xsmall text-center gray-bg" width="7%">NUMBER OF HOURS</td>
+					<td rowspan="2" class="font-xsmall text-center padding-zero gray-bg" width="7%">Type of LD<br>( Managerial/ Supervisory/
+						Technical/etc)</td>
+					<td rowspan="2" class="font-xsmall text-center gray-bg" width="24%">CONDUCTED/ SPONSORED BY <br>(Write in full)</td>
+				</tr>
+				<tr>
+					<td class="font-xsmall text-center gray-bg">From</td>
+					<td class="font-xsmall text-center gray-bg">To</td>
+				</tr>
+				{% if training %}
+					{% for row in training %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.training|upper }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.tr_from|date:"m/d/Y" }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.tr_to|date:"m/d/Y" }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.tr_hours }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.training_type|upper }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.conducted|upper }}</strong></div></td>
+					</tr>
+					{% endfor %}
+					{% getrange 21 training.count as training_range %}
+					{% for row in training_range|times %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div">&nbsp;</div></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+					</tr>
+					{% endfor %}
+				{% else %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>N/A</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>N/A</strong></div></td>
+					</tr>
+					{% getrange 21 1 as no_training_range %}
+					{% for row in no_training_range|times %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div">&nbsp;</div></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+					</tr>
+					{% endfor %}
+				{% endif %}
+				<tr>
+					<td colspan="9" class="text-center padding-zero text-danger font-small gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+				</tr>
+			</tbody>
+			<thead>
+				<th colspan="9">VIII. OTHER INFORMATION</th>
+			</thead>
+		</table>
+		<div class="row margin-20">
+			<div class="col-sm-4 padding-right-zero">
+				<table class="table margin-0-b">
+					<tr>
+						<td class="font-xsmall magic-2 gray-bg">31.</td>
+						<td class="font-xsmall text-center magic-3 magic-2 gray-bg"><div class="center-div">SPECIAL SKILLS and HOBBIES</div></td>
+					</tr>
+					{% if skills %}
+						{% for row in skills %}
+							<tr>
+								<td colspan="2" class="text-center magic-2 font-small padding-zero">
+									<div class="center-div" style="height:35px;">
+										<strong>{{ row.hob.hob_name|upper }}</strong>
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+						{% getrange 6 skills.count as skills_range %}
+						{% for row in skills_range|times %}
+							<tr>
+								<td colspan="2" class="text-center magic-2 font-small padding-zero">
+									<div class="center-div" style="height:35px;">
+										&nbsp;
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					{% else %}
+						{% getrange 6 1 as no_skills_range %}
+							<tr>
+								<td colspan="2" class="text-center magic-2 font-small padding-zero">
+									<div class="center-div" style="height:35px;">
+										<strong>N/A</strong>
+									</div>
+								</td>
+							</tr>
+						{% for row in no_skills_range|times %}
+							<tr>
+								<td colspan="2" class="text-center magic-2 font-small padding-zero">
+									<div class="center-div" style="height:35px;">
+										&nbsp;
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					{% endif %}
+				</table>
+			</div>
+			<div class="col-sm-4 padding-left-right-zero">
+				<table class="table margin-0-b">
+					<tr>
+						<td class="font-xsmall magic-2 gray-bg">32.</td>
+						<td class="font-xsmall magic-3 magic-2 text-center gray-bg"><div class="center-div">NON-ACADEMIC DISTINCTIONS / RECOGNITION<br>(Write in full)</div></td>
+					</tr>
+					{% if nonacad %}
+						{% for row in nonacad %}
+						<tr>
+							<td colspan="2" class="text-center magic-2 font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									<strong>{{ row.na.na_name|upper }}</strong>
+								</div>
+							</td>
+						</tr>
+						{% endfor %}
+						{% getrange 6 nonacad.count as nonacad_range %}
+						{% for row in nonacad_range|times %}
+						<tr>
+							<td colspan="2" class="text-center magic-2 font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									&nbsp;
+								</div>
+							</td>
+						</tr>
+						{% endfor %}
+					{% else %}
+						<tr>
+							<td colspan="2" class="text-center magic-2 font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									<strong>N/A</strong>
+								</div>
+							</td>
+						</tr>
+						{% getrange 6 1 as no_nonacad_range %}
+						{% for row in no_nonacad_range|times %}
+						<tr>
+							<td colspan="2" class="text-center magic-2 font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									&nbsp;
+								</div>
+							</td>
+						</tr>
+						{% endfor %}
+					{% endif %}
+				</table>
+			</div>
+			<div class="col-sm-4 padding-left-zero">
+				<table class="table margin-0-b">
+					<tr>
+						<td class="font-xsmall magic-2 gray-bg">33.</td>
+						<td class="font-xsmall text-center magic-3 gray-bg"><div class="center-div">MEMBERSHIP IN ASSOCIATION / ORGANIZATION<br>(Write in full)</div></td>
+					</tr>
+					{% if membership %}
+						{% for row in membership %}
+						<tr>
+							<td colspan="2" class="text-center font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									<strong>{{ row.org.org_name|upper }}</strong>
+								</div>
+							</td>
+						</tr>
+						{% endfor %}
+						{% getrange 6 membership.count as membership_range %}
+						{% for row in membership_range|times %}
+						<tr>
+							<td colspan="2" class="text-center font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									&nbsp;
+								</div>
+							</td>
+						</tr>
+						{% endfor %}
+					{% else %}
+						<tr>
+							<td colspan="2" class="text-center font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									<strong>N/A</strong>
+								</div>
+							</td>
+						</tr>
+						{% getrange 6 1 as no_membership_range %}
+						{% for row in no_membership_range|times %}
+						<tr>
+							<td colspan="2" class="text-center font-small padding-zero">
+								<div class="center-div" style="height:35px;">
+									&nbsp;
+								</div>
+							</td>
+						</tr>
+						{% endfor %}
+					{% endif %}
+				</table>
+			</div>
+			<div class="col-sm-12">
+				<table class="table" border=1 style="margin-bottom:0px;">
+					<tr>
+						<td colspan="9" class="text-center padding-zero text-danger font-small gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+					</tr>
+					<tr>
+						<th width="29%" class="text-center gray-bg font-small"><i>SIGNATURE</i></th>
+						<td width="20%"></td>
+						<th width="18%" class="text-center gray-bg font-small"><i>DATE</i></th>
+						{% get_latest_workexperience request.session.pi_id as latest_work_experience %}
+						<td width="21%" class="text-center font-small"><strong>{{ latest_work_experience|date:"m/d/Y" }}</strong></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<p class="font-small float-right" style="font-family: Arial Narrow;"><i>CS FORM 212 (Revised 2017), Page 3 of 4</i></p>
+	</div>
+</page>
+
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/adminlte.min.js' %}"></script>
+<script src="{% static 'js/plugins/sweetalert/sweetalert.min.js' %}"></script>
+<script src="{% static 'js/functions.js' %}"></script>

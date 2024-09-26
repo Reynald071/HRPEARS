@@ -1,0 +1,55 @@
+{% load tags %}
+<div class="modal-body p-4">
+    {% if vacancy.attachment %}
+        <div class="row">
+            <div class="col-xl-6">
+                <h2 class="my-3 font-weight-bold">{{ vacancy.position.name }} - {{ vacancy.empstatus.name }}</h2>
+                <div style="font-size: 18px;">
+                    <p>Number: <span class="font-weight-bold">{{ vacancy.number }}</span></p>
+                    <p>Item Number: <span class="font-weight-bold">{{ vacancy.item_number }}</span></p>
+                    <p>Salary Rate: <span class="font-weight-bold">{{ vacancy.salary_rate }}</span></p>
+                    <p>Salary Grade: <span class="font-weight-bold">{{ vacancy.salary_grade.name }}</span></p>
+                    <p>Area of Assignment: <span class="font-weight-bold">{{ vacancy.aoa.name }}</span></p>
+                    <p>Quantity Needed: <span class="font-weight-bold">{{ vacancy.quantity }}</span></p>
+                    <p>Total Applicants: <span class="font-weight-bold">{{ vacancy.get_total_app }}</span></p>
+                    <p>Total Hired: <span class="font-weight-bold">{{ vacancy.get_total_hired }}</span></p>
+                    <p>Deadline: <span class="font-weight-bold">{{ vacancy.deadline }}</span></p>
+                    <p>Uploaded By: <span class="font-weight-bold">{{ vacancy.upload_by }}</span></p>
+                </div>
+                {% if vacancy.job_description %}
+                <h3 class="mt-5 font-weight-bold"  style="font-size: 18px;">Job Description</h3>
+                <p class="p-3" style="font-size: 16px;">{{ vacancy.job_description }}</p>
+                {% endif %}
+            </div>
+            <div class="col-xl-6">
+                <iframe src="{{ vacancy.attachment.url }}" class="border-0" width="100%" height="800px"></iframe>
+            </div>
+        </div>
+    {% else %}
+        <h2 class="my-3 font-weight-bold">{{ vacancy.position.name }} - {{ vacancy.empstatus.name }}</h2>
+        <div style="font-size: 18px;">
+            <p>Number: <span class="font-weight-bold">{{ vacancy.number }}</span></p>
+            <p>Item Number: <span class="font-weight-bold">{{ vacancy.item_number }}</span></p>
+            <p>Salary Rate: <span class="font-weight-bold">{{ vacancy.salary_rate }}</span></p>
+            <p>Salary Grade: <span class="font-weight-bold">{{ vacancy.salary_grade.name }}</span></p>
+            <p>Area of Assignment: <span class="font-weight-bold">{{ vacancy.aoa.name }}</span></p>
+            <p>Quantity Needed: <span class="font-weight-bold">{{ vacancy.quantity }}</span></p>
+            <p>Total Applicants: <span class="font-weight-bold">{{ vacancy.get_total_app }}</span></p>
+            <p>Deadline: <span class="font-weight-bold">{{ vacancy.deadline }}</span></p>
+            <p>Uploaded By: <span class="font-weight-bold">{{ vacancy.upload_by }}</span></p>
+        </div>
+        {% if vacancy.job_description %}
+        <h3 class="mt-5 font-weight-bold"  style="font-size: 18px;">Job Description</h3>
+        <p class="p-3" style="font-size: 16px;">{{ vacancy.job_description }}</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% if vacancy.attachment %}
+<script>
+    $('.vacancy-modal-dialog').removeClass('modal-lg').css('max-width', '85%');
+</script>
+{% else %}
+<script>
+    $('.vacancy-modal-dialog').addClass('modal-lg').removeAttr('style');
+</script>
+{% endif %}

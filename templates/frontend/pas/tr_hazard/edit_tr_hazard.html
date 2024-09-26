@@ -1,0 +1,82 @@
+<form id="submitEditForm">
+<div class="modal-body">
+    {% csrf_token %}
+    <div class="form-group">
+        <label>Date<span class="asteriskField">*</span></label>
+        <input type="date" name="date" class="form-control b-r-sm" value="{{ travel_report.date|date:'Y-m-d' }}" required>
+    </div>
+    <div class="form-group">
+        <label>Category</label>
+        <select class="form-control edit-select" name="category">
+            {% for row in category %}
+                {% if row.id == travel_report.category_id %}
+                    <option value="{{ row.id }}" selected>{{ row.category }}</option>
+                {% else %}
+                    <option value="{{ row.id }}">{{ row.category }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Area<span class="asteriskField">*</span></label>
+        <textarea class="form-control b-r-sm" name="area" placeholder="Input area/s.." required>{{ travel_report.area }}</textarea>
+    </div>
+    <div class="form-group">
+        <label>Accomplishment/Work Done<span class="asteriskField">*</span></label>
+        <textarea class="form-control b-r-sm" name="accomplishment" placeholder="Input accomplishment/work done.." required>{{ travel_report.accomplishment }}</textarea>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info" id="btnSaveForm">Save</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.edit-select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#submitEditForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this record?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "edit_tr_hazard" travel_report.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == 'success'){
+                Swal.fire({
+                    title: "Good job!",
+                    text: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#edit-report-modal').modal('show').find('#edit-content-tr').empty();
+			            $('#edit-report-modal').modal('show').find('#edit-content-tr').load("{% url "edit_tr_hazard" travel_report.id %}");
+                        $('#table-tr-hazard').DataTable().ajax.reload();
+                    }
+                });
+            }
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

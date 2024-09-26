@@ -1,0 +1,425 @@
+{% extends 'landing/layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<style>
+    .select2-selection__rendered {
+        line-height: 31px !important;
+    }
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+    }
+    .select2-selection__arrow {
+        height: 34px !important;
+    }
+    .select2-container .select2-results__option.optInvisible {
+        display: none;
+    }
+    .text-underline {
+        text-decoration: underline;
+    }
+    @media only screen and (min-width: 992px) {
+        #content-wrapper {
+            width: 80%;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div id="content-wrapper" class="p-4 ml-0 mx-auto">
+    <form id="appForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="font-weight-bold my-5">YOU ARE APPLYING FOR:<br><span class="text-info" style="font-size: 35px;">{{ vacancy.position.name}} - {{ vacancy.empstatus.name }}</span></h1>
+            <div class="card card-info card-outline mb-4">
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <h2>Personal Information</h2>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>First Name<span class="asteriskField">*</span></label>
+                                <input type="text" name="f_name" class="form-control b-r-sm" autocomplete="off" required placeholder="First Name">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Middle Name</label>
+                                <input type="text" name="m_name" class="form-control b-r-sm" autocomplete="off" placeholder="Middle Name">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Last Name<span class="asteriskField">*</span></label>
+                                <input type="text" name="l_name" class="form-control b-r-sm" autocomplete="off" required placeholder="Last Name">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Extension</label>
+                                <select class="form-control select b-r-sm" name="extension" autocomplete="off">
+                                    <option></option>
+                                    <option value="Jr">Jr</option>
+                                    <option value="Sr">Sr</option>
+                                    <option value="II">II</option>
+                                    <option value="III">III</option>
+                                    <option value="IV">IV</option>
+                                    <option value="V">V</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Sex<span class="asteriskField">*</span></label>
+                                <select class="form-control select b-r-sm" name="sex" autocomplete="off" required>
+                                    <option></option>
+                                    <option value="1">Male</option>
+                                    <option value="2">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Date of Birth<span class="asteriskField">*</span></label>
+                                <input type="date" name="dob" class="form-control b-r-sm" autocomplete="off" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Civil Status<span class="asteriskField">*</span></label>
+                                <select class="form-control select b-r-sm" name="civil_status" autocomplete="off" required>
+                                    <option></option>
+                                    {% for row in civil_status %}
+                                    <option value="{{ row.id }}">{{ row.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Email<span class="asteriskField">*</span></label>
+                                <input type="email" name="email" class="form-control b-r-sm" autocomplete="off" required placeholder="example@email.com">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Contact Number<span class="asteriskField">*</span></label>
+                                <input type="text" name="contact" class="form-control b-r-sm" autocomplete="off" required placeholder="09xxxxxxxxx" maxlength="11">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Course<span class="asteriskField">*</span></label>
+                                <input type="text" name="course" class="form-control b-r-sm" autocomplete="off" required placeholder="Course">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Previous Work Experience</label>
+                                <input type="text" name="work_exp" class="form-control b-r-sm" autocomplete="off" placeholder="Position, Location, Date">
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Province<span class="asteriskField">*</span></label>
+                                <select class="form-control select b-r-sm" id="province" name="province" autocomplete="off" required>
+                                    <option></option>
+                                    {% for row in province %}
+                                    <option value="{{ row.id }}">{{ row.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div id="city-content" class="col-md-3">
+                            <div class="form-group">
+                                <label>City<span class="asteriskField">*</span></label>
+                                <select class="form-control select select-city b-r-sm" id="city" name="city" autocomplete="off" required>
+                                    <option></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="brgy-content" class="col-md-3">
+                            <div class="form-group">
+                                <label>Barangay<span class="asteriskField">*</span></label>
+                                <select class="form-control select select-brgy b-r-sm" id="brgy" name="brgy" autocomplete="off" required>
+                                    <option></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Zip Code<span class="asteriskField">*</span></label>
+                                <input type="text" name="zip_code" class="form-control b-r-sm" autocomplete="off" required placeholder="Zip Code">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Street<span class="asteriskField">*</span></label>
+                                <input type="text" name="street" class="form-control b-r-sm" autocomplete="off" required placeholder="Street">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card card-info card-outline mb-4">
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <h2>Documents</h2>
+                    </div>
+                    <div class="alert alert-warning" role="alert" style="font-size: 15px;">
+                        <i class="fas fa-info-circle"></i> Note: Files with <span class="text-danger font-weight-bold">red outline</span> are <span class="text-danger font-weight-bold">REQUIRED</span>.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="callout callout-danger">
+                                <p class="font-weight-bold mb-3" style="font-size: 16px;">Transcript of Records</p>
+                                <input type="file" name="tor" class="form-control-file" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="callout callout-danger">
+                                <p class="font-weight-bold mb-3" style="font-size: 16px;">Application Letter</p>
+                                <input type="file" name="app_letter" class="form-control-file" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="callout callout-danger">
+                                <p class="font-weight-bold mb-3" style="font-size: 16px;">Personal Data Sheet</p>
+                                <input type="file" name="pds" class="form-control-file" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="callout callout-danger">
+                                <p class="font-weight-bold mb-3" style="font-size: 16px;">Work Experience Sheet</p>
+                                <input type="file" name="we_sheet" class="form-control-file" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="callout callout-success">
+                                <p class="font-weight-bold mb-3" style="font-size: 16px;">Certificate of Training</p>
+                                <input type="file" name="cert_training" class="form-control-file">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="callout callout-success">
+                                <p class="font-weight-bold mb-3" style="font-size: 16px;">Certificate of Employment</p>
+                                <input type="file" name="cert_employment" class="form-control-file">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="callout callout-success">
+                                <p class="font-weight-bold mb-3" style="font-size: 16px;">IPCR/Performance Evaluation</p>
+                                <input type="file" name="ipcr" class="form-control-file">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-check form-check-inline my-3 ml-2" style="font-size: 16px;">
+                <input class="form-check-input" id="with_el" type="radio" name="el_radio" value="with_el">
+                <label for="with_el" class="form-check-label">With Eligibility</label>
+                &ensp;&ensp;
+                <input class="form-check-input" id="no_el" type="radio" name="el_radio" value="no_el" checked>
+                <label for="no_el" class="form-check-label">Without Eligibility</label>
+            </div>
+            <div class="card card-info card-outline" id="card-el" style="display: none;">
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <h2>Eligibility <span class="text-info">(Optional)</span></h2>
+                    </div>
+                    <div class="row">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" rowspan="2">Eligibility Name</th>
+                                        <th class="text-center" rowspan="2">Rating<br>(If Applicable)</th>
+                                        <th class="text-center" rowspan="2">Date of Examination/<br>Conferment</th>
+                                        <th class="text-center" rowspan="2">Place of Examination/<br>Conferment</th>
+                                        <th class="text-center" colspan="2">License<br>(If Applicable)</th>
+                                        <th class="text-center" rowspan="2">Attachment</th>
+                                        <th class="text-center" rowspan="2"><button type="button" id="add-el-btn" class="btn btn-success"><i class="fas fa-plus"></i></button></th>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-center">Number</th>
+                                        <th class="text-center">Date of Validity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="el-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-lg-12">
+                    <div id="alert-div"></div>
+                </div>
+            </div>
+            <div class="row mb-5">
+                <div class="col-md-6 offset-md-6">
+                    <div class="float-right">
+                        <script src="https://www.google.com/recaptcha/api.js"></script>
+                        <div class="g-recaptcha" data-sitekey="6LdviewpAAAAAL4r0oSqTvuYnar7qjeuYLSvy9rT"></div>
+                        <button id="submitBtn" type="submit" class="btn btn-info btn-lg float-right mt-3">Submit Application</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+$(document).ready(function() {
+    $('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+	$('#province').on('change', function() {
+		var id = $(this).val();
+		if (id !== '') {
+            $('#city-content').load('/application/show-city/' + id);
+        } else {
+			$('#city-content').load('/application/show-city/-1');
+			$('#brgy-content').load('/application/show-brgy/-1');
+        }
+    });
+
+	var fieldHtml = `
+        <tr>
+            <td class="p-0">
+                <input type="text" name="el_name[]" class="form-control b-r-sm border-0" autocomplete="off" required>
+            </td>
+            <td class="p-0">
+                <input type="number" step="0.01" name="el_rating[]" class="form-control b-r-sm border-0" autocomplete="off">
+            </td>
+             <td class="p-0">
+                <input type="date" name="el_date[]" class="form-control b-r-sm border-0" required>
+            </td>
+            <td class="p-0">
+                <input type="text" name="el_place[]" class="form-control b-r-sm border-0" autocomplete="off" required>
+            </td>
+            <td class="p-0">
+                <input type="text" name="el_num[]" class="form-control b-r-sm border-0" autocomplete="off">
+            </td>
+            <td class="p-0">
+                <input type="date" name="el_dov[]" class="form-control b-r-sm border-0">
+            </td>
+            <td class="p-1">
+                <input type="file" name="el_file[]" class="form-control-file border-0" required>
+            </td>
+            <td class="text-center">
+                <button class="btn btn-danger btn-sm" data-role="el-remove"><i class="fas fa-minus"></i></button>
+            </td>
+        </tr>
+	`;
+
+	$('#add-el-btn').on('click', function () {
+		$('#el-tbody').append(fieldHtml);
+    });
+
+	$(document).on('click','button[data-role=el-remove]', function(){
+        $(this).closest('tr').remove();
+    });
+
+	$(document).on('change', 'input[name=el_radio]', function () {
+		var val = $(this).val();
+
+		if (val === "with_el") {
+			$('#card-el').show();
+			$('#el-tbody').append(fieldHtml);
+        } else {
+			$('#card-el').hide();
+			$('#el-tbody').html('');
+        }
+    });
+
+	function submitForm(form) {
+		Swal.fire({
+            title: "Confirm Submission",
+            html: `<strong>Are you sure you want to submit this application?</strong>
+                   <p class="mt-3"><small>Please wait for a moment after submitting while the system is processing your application.
+                   <span class="text-danger font-weight-bold">DO NOT REFRESH THE PAGE.</span></small></p>`,
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "job_application" pk %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+        }).then(function (response){
+            if (response.value.data == "success"){
+				window.location.href = '/application/success/' + response.value.tracking_no;
+			} else {
+				Swal.fire({
+				  title: "Unauthorized transaction",
+				  text: response.value.msg,
+				  icon: "warning",
+				  confirmButtonColor: "#3498DB",
+				});
+			}
+        });
+    }
+
+	var passedCaptcha = false
+
+	$('#appForm').on('submit', function(e){
+        var form = new FormData(this);
+		$.ajax({
+            url: '{% url "check_captcha" %}',
+            data: form,
+            type: 'POST',
+            beforeSend: function() {
+                $("#submitBtn").html('<span class="loading open-circle"></span>').prop("disabled", true);
+            },
+            success: function(response){
+                if(response.data == "success" || passedCaptcha) {
+					passedCaptcha = true;
+					$('#alert-div').html('');
+                    submitForm(form);
+                } else {
+					$('#alert-div').html(`
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <h5 style="font-size: 18px;"><i class="icon fas fa-exclamation-triangle"></i> `+ response.msg +`</h5>
+                        </div>
+                    `);
+                }
+            },
+            complete: function() {
+                $("#submitBtn").html('Submit Application').prop("disabled", false);
+            },
+            cache       : false,
+            contentType : false,
+            processData : false,
+        });
+
+        e.preventDefault();
+	});
+});
+</script>
+{% endblock %}

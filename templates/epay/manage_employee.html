@@ -1,0 +1,127 @@
+{% extends 'epay/layout.html' %}
+{% load tags %}
+{% load static %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'epay_home' %}">Home</a></li>
+                <li class="breadcrumb-item active">Manage Employee</li>
+            </ol>
+        </nav>
+        <div class="row mt-3">
+            <div class="col-lg-12">
+                <div class="card mb-3">
+                    <form id="addEmployeeForm">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <p><strong>ADD EMPLOYEE</strong></p>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control filter-employee form-control-sm" placeholder="[16-00000] JUAN DELA CRUZ" aria-describedby="button-add" name="employee_name" autocomplete="off" required>
+                            <button class="btn btn-info btn-sm" type="submit" id="button-add">Add Employee</button>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <p><strong>EMPLOYEE DETAILS</strong></p>
+                        <table class="table table-bordered table-hover table-sm w-100" id="table-employee-details">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Last Name</th>
+                                    <th>First Name</th>
+                                    <th>Middle Name</th>
+                                    <th class="text-center">Position</th>
+                                    <th class="text-center">Section</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(".filter-employee").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $(document).on('click', 'a[data-role=remove-employee]', function(){
+        var list = {
+            'pk': $(this).data('id'),
+        }
+
+        var url = '{% url "remove_payroll_employee" %}';
+        var title = "Are you sure";
+        var text = "You want to remove this employee to your payroll list";
+        var table_id = '#table-employee-details';
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {table_id: table_id});
+    });
+
+    $('#addEmployeeForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "manage_payroll_employee" %}';
+        var title = "Are you sure";
+        var text = "You want to add this employee to your payroll list";
+        var table_id = '#table-employee-details';
+
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id});
+        e.preventDefault();
+    });
+
+    $(document).on('click', 'a[data-role=employee-details]', function(){
+        var id = $(this).data('id');
+        var url = '/epay/view/employee/details/' + id;
+        window.open(url, '_blank');
+    });
+
+    $('#table-employee-details').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 1, 'asc' ]],
+        'ajax': {
+            'url': '/api/epay/employee/list/?format=datatables&pk={% generate_token request.session.emp_id as pk %}{{ pk }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                render: function(data, type, row, meta) {
+                    var template = '<a href="javascript:;" data-role="employee-details" data-id="'+ data +'">Details</a>';
+                    template += ' | <a href="javascript:;" data-role="remove-employee" data-id="'+ data +'">Remove</a>';
+
+                    return template;
+                }
+            },
+            {'data': 'last_name', 'name':'emp.pi.user.last_name' },
+            {'data': 'first_name', 'name': 'emp.pi.user.first_name', 'className': 'text-center' },
+            {'data': 'middle_name', 'name': 'emp.pi.user.middle_name', 'className': 'text-center' },
+            {'data': 'position', 'name': 'emp.position.name', 'className': 'text-center' },
+            {'data': 'section', 'name': 'emp.section.sec_name', 'className': 'text-center' },
+        ]
+    });
+</script>
+{% endblock %}

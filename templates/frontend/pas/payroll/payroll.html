@@ -1,0 +1,199 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style>
+    #payroll-table th:nth-child(5),
+    #payroll-table th:nth-child(6),
+    #payroll-table th:nth-child(7){
+        text-align:center;
+    }
+
+    #payroll-table tr td:nth-child(6) {
+        background-color: #e8f5e9;
+    }
+
+    #payroll-table tr td:nth-child(5),
+    #payroll-table tr td:nth-child(6),
+    #payroll-table tr td:nth-child(7){
+        text-align:center;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Payroll</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    Personnel
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Payroll</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                <button class="btn btn-info" data-target="#generate_user_payslip" data-toggle="modal"><i class="fas fa-sticky-note"></i> Generate Payslip</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-5 ml-0">
+    <div class="row">
+        <div class="col-sm-9">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+                    <div class="table-responsive table-freeze">
+                        <table class="table table-bordered table-hover" id="payroll-table" width="100%">
+                            <thead>
+                                <tr>
+                                <th>Action</th>
+                                {% for row in columns %}
+                                    {% if row.attribute != "Status" and row.attribute != "DV Number" %}
+                                        {% if forloop.counter > 3 %}
+                                        <th class="text-center">{{ row.attribute }}</th>
+                                        {% else %}
+                                        <th class="text-center">{{ row.attribute }}</th>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+			<div class="card">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">FILTER</h5>
+				</div>
+				<div class="card-body">
+                    <h4>By year</h4>
+                    <div class="input-group">
+						<input type="text" class="form-control b-r-sm" id="year" value="{{ current_year }}" autocomplete="off">
+                        <div class="input-group-append">
+						    <button type="button" class="btn btn-info" id="filter-year">Filter</button>
+                        </div>
+					</div>
+				</div>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="generate_user_payslip" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    GENERATE PAYSLIP
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <form action="{% url 'generate_user_payslip' %}" target="_blank" method="POST">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select class="form-control select" name="type" required>
+                        <option></option>
+                        <option value="first_quencena">First Quencena</option>
+                        <option value="second_quencena">Second Quencena</option>
+                        <option value="whole_month">Whole Month</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Month/Year</label>
+                    <input type="month" name="month" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>No. of Copies</label>
+                    <input type="number" min="1" max="2" value="1" name="copies" class="form-control" required>
+                </div>
+                <input type="hidden" value="yes" name="loans" required>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Generate</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="payroll-details" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">
+                    PAYROLL DETAILS
+                    <p><small>Information provided below.</small></p>
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div id="payroll-details-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $('#payroll-table').DataTable({
+            "fixedHeader": true,
+            "pageLength": 25,
+            "responsive": true,
+            "scrollX": true,
+            "scrollY": true,
+            "processing": true,
+            "autoFill": true,
+            "ordering": false,
+            "ajax": "{% url 'get_employee_payroll_list' current_year %}",
+            "columns": [
+                {"data": "",
+                    'render': function(data, type, row, meta) {
+                        return "<a href='javascript:;' data-role='details' data-id='"+ row['_id']['$oid'] + "'>Details</a>"
+                    }
+                },{% for row in columns %}
+                    {% if row.attribute != "Status" and row.attribute != "DV Number" %}
+                        {% if forloop.counter > 3 %}
+                            { "data": "{{ row.attribute }}",
+                                'render': function(data, type, row, meta) {
+                                    if (data) {
+                                        return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                                    }
+                                }
+                            },
+                        {% else %}
+                            { "data": "{{ row.attribute }}" },
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            ]
+        });
+
+        $('#filter-year').on('click', function(){
+            var table = $('#payroll-table').DataTable();
+            table.clear();
+            table.ajax.url('/personnel/payroll/list/employee/' + $('#year').val()).load();
+        });
+
+        $(':checkbox[name=select_all]').click (function () {
+            $('.checkbox').prop('checked', this.checked);
+        });
+
+        $(document).on('click', 'a[data-role=details]', function(){
+            $('#payroll-details-content').load('/personnel/payroll/details/content/' + $(this).data('id'));
+            $('#payroll-details').modal('show');
+        });
+
+        $.fn.dataTable.ext.errMode = 'none';
+    });
+</script>
+{% endblock %}

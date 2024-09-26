@@ -1,0 +1,268 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Separation Request</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">
+                Employees
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Separation Request</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="ibox">
+		<div class="ibox-content">
+			{% if request.GET.search and employee.paginator.count == 0 %}
+				<div class="col-xs-12">
+					<a href="{% url 'resignation_request' %}" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+				</div>
+				<br>
+				<hr>
+			{% else %}
+				<div class="pull-left">
+					<a class="btn btn-info" data-toggle="modal" data-target="#deactivation-modal"><i class="fas fa-plus"></i> Separation Request</a>
+				</div>
+				<div class="pull-right" style="padding-right:5px">
+				Showing {{ data.start_index }} - {{ data.end_index }} of {{ data.paginator.count }} entries&emsp;
+					<div class="btn-group">
+					{% if data.has_other_pages %}
+						{% if data.has_previous %}
+							<a class="btn btn-default" href="?page={{ data.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+						{% else %}
+							<a class="btn btn-default disabled">Previous</a>
+						{% endif %}
+						{% for row in data.paginator.page_range %}
+							{% if data.number == row %}
+								<a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+							{% elif row > data.number|add:-3 and row < data.number|add:3 %}
+								<a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+							{% endif %}
+						{% endfor %}
+						{% if data.has_next %}
+							<a class="btn btn-default" href="?page={{ data.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+						{% else %}
+							<a class="btn btn-default disabled">Next</a>
+						{% endif %}
+					{% endif %}
+					</div>
+					<a class="btn btn-default" href="{% url 'resignation_request' %}">Refresh</a>
+				</div>
+				<br><br><br>
+			{% endif %}
+			{% if request.GET.search and employee.paginator.count == 0 %}
+				<div style="padding:0px 15px !important; text-align:center;">
+					<div class="row" style="padding-bottom:15px">
+						<div class="" style="text-align:center;">
+							<img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="height:250px; width:auto; margin: 0 auto; object-fit:cover;">
+						</div>
+						<div class="row col-md-6 col-md-offset-3">
+							<form method="get">
+								<div class="input-group form-group">
+									<span class="input-group-addon"><i class="fas fa-search"></i></span>
+									<input type="text" class="form-control" placeholder="Search employee.." name="search" value="{{ request.GET.search }}">
+								</div>
+							</form>
+						</div>
+						<div class="row col-md-6 col-md-offset-3">
+							<p>
+								Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.status and request.GET.search %}{{ request.GET.search }}{% else %}{% if request.GET.status %}{{ request.GET.status }}{% endif %}{% if request.GET.search %}{{ request.GET.search }}{% endif %}{% endif %}'</i>. Please try another keyword.
+							</p>
+						</div>
+					</div>
+				</div>
+			{% else %}
+				<form method="get">
+					<div class="input-group form-group">
+						<span class="input-group-addon"><i class="fas fa-search"></i></span>
+						<input type="text" class="form-control" placeholder="Search employee.." name="search" value="{{ request.GET.search }}">
+					</div>
+				</form>
+				<table class="table table-bordered table-hover">
+					<thead>
+						<tr>
+							<th class="capslock" style="width:10%;">Action</th>
+							<th class="capslock">Name</th>
+							<th class="text-center capslock">Position</th>
+							<th class="text-center capslock">Employment Status</th>
+							<th class="text-center capslock">Program</th>
+							<th class="text-center capslock">Type of separation</th>
+							<th class="text-center capslock">Date Requested</th>
+							<th class="text-right capslock">Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if data %}
+						{% for row in data %}
+						<tr>
+							<td>
+								<a data-role="view" data-id="{{ row.user_id }}">Details</a>
+							</td>
+							<td>{{ row.user.pi.user.first_name|title }} {{ row.user.pi.user.middle_name|to_middleinitial }} {{ row.user.pi.user.last_name|title }}</td>
+							<td class="text-center" title="{{ row.user.position.name }}">{{ row.user.position.acronym }}</td>
+							<td class="text-center">{{ row.user.empstatus.acronym }}</td>
+							<td class="text-center">{{ row.user.project.name }}</td>
+							<td class="text-center">{{ row.tfs.name }}</td>
+							<td class="text-center">{{ row.date_requested }}</td>
+							<td class="text-right">
+								&nbsp;
+								{% if row.status == 0 %}
+								<span class="label label-primary">Pending</span>
+								{% else %}
+								<span class="label label-success" rel="tooltip" data-placement="top" title="{{ row.date_approved }}">Approved</span>
+								{% endif %}
+							</td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<tr>
+							<td class="text-center" colspan="9"><img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" width="250px;" style="margin: 0 auto;"><p class="text-center">There is no data to show you right now. </p></td>
+						</tr>
+						{% endif %}
+					</tbody>
+				</table>
+			{% endif %}
+		</div>
+	</div>
+</div>
+<div class="modal" id="view-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+            	<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">Separation Request Detail</h3>
+            </div>
+            <div class="modal-body">
+            </div> 
+        </div>
+    </div>
+</div>
+<div class="modal" id="deactivation-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+            	<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">Separation Request</h3>
+
+            </div> 
+            <form id="submitRFDForm">
+            {% csrf_token %}
+            <div class="modal-body">
+            	<div class="form-group">
+            		<label>Employees</label>
+            		<input type="text" class="form-control b-r-sm typeahead_2 filter_employee" placeholder="e.g. [16-12345] Juan dela Cruz" name="user_id" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Type of employment separation</label>
+                    <br>
+                    {% for row in tempsep %}
+                    &emsp; <input class="icheck" type="radio" name="tempsep" value="{{ row.id }}" required> {{ row.name }} <br>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label>Date of Effectivity</label>
+                    <input type="date" class="form-control b-r-sm" name="date_effectivity" required>
+                </div>
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <textarea class="form-control b-r-sm" name="remarks" placeholder="(Optional)"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer"> 
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>  
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).on('click', 'a[data-role=view]',function(){
+		$('#view-modal').modal('show').find('.modal-body').empty();
+		$('#view-modal').modal('show').find('.modal-body').load('/backend/view-resignation-detail/' + $(this).data('id'));
+	});
+	
+
+	$(document).on('click', 'a[data-role=approve]', function(e){
+		if (confirm("Are you sure you want to approve?")){
+			emp_id = $(this).data('id')[1];
+			$.ajax({
+				url: "/backend/view-resignation-detail/" + $(this).data('id')[1],
+				data: {
+					emp_id: $(this).data('id')[1],
+					req_id: $(this).data('id')[0]
+				},
+				type: "POST"
+			}).done(function(data){
+				if (data.data){
+					$('#view-modal').modal('show').find('.modal-body').load("/backend/view-resignation-detail/" + emp_id);
+				}
+			});
+		}
+		e.preventDefault();
+	});
+
+	$(document).on('click', 'a[data-role=delete]', function(e){
+		if (confirm("Are you sure you want to delete?")){
+			emp_id = $(this).data('id')[1];
+			$.ajax({
+				url: "{% url 'delete_compliance' %}",
+				data: {
+					emp_id: $(this).data('id')[1],
+					req_id: $(this).data('id')[0]
+				},
+				type: "POST"
+			}).done(function(data){
+				if (data.data){
+					$('#view-modal').modal('show').find('.modal-body').load("/backend/view-resignation-detail/" + emp_id);
+				}
+			});
+		}
+		e.preventDefault();
+	});
+
+	$('#submitRFDForm').on('submit', function(e){
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "resignation_request" %}',
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            if (data.data){
+                window.location.href = "{% url 'resignation_request' %}";
+            }
+        });
+        e.preventDefault();
+    });
+
+	$(".filter_employee").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+</script>
+{% endblock %}

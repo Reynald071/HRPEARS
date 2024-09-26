@@ -1,0 +1,83 @@
+<form id="editPatchForm">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div class="form-group">
+            <label>Title<span class="asteriskField">*</span></label>
+            <input type="text" class="form-control" name="edit-title" value="{{ patches.title }}" id="edit-title" placeholder="Title" required>
+        </div>
+        <div class="form-group">
+            <label>Description<span class="asteriskField">*</span></label>
+            <textarea id="edit-patch-description" name="edit-description" required>{{ patches.description|safe }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Release Date<span class="asteriskField">*</span></label>
+            <input type="date" class="form-control" name="edit_release_date" value="{{ patches.release_date|date:'Y-m-d' }}" required>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-info">Save changes</button>
+    </div>
+</form>
+{% block script %}
+<script>
+$(document).ready(function(){
+    $('#edit-patch-description').summernote({
+        height: $(window).height() * 0.2,
+        dialogsInBody: true,
+        dialogsFade: true,
+        codeviewFilterRegex: 'custom-regex',
+        disableDragAndDrop: true,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+
+    $('#editPatchForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to update this patch",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "edit_patch_notes" patches.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        }).then(function (data){
+            if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: "You have successfully added name '" + $('#edit-title').val() +"' in patch.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#editPatchForm').trigger('reset');
+                        $('#edit_patch_modal').modal('hide');
+                        $('#patches-table').DataTable().ajax.reload();
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

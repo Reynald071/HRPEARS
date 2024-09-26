@@ -1,0 +1,130 @@
+{% load frontend_tags %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+<ol class="breadcrumb bg-white p-0">
+    <li class="breadcrumb-item">
+        RSO
+    </li>
+    <li class="breadcrumb-item active">
+        <strong>{{ rso_type.name }}</strong>
+    </li>
+</ol>
+<hr>
+{% if user|check_permission:'file_uploading' or user|check_permission:'superadmin'%}
+<form id="uploadRSOForm">
+{% csrf_token %}
+<div class="row">
+    <div class="col-lg-2">
+        <label>Year<span class="asteriskField">*</span></label>
+        <input type="number" class="form-control" name="year" autocomplete="off" required>
+    </div>
+    <div class="col-lg-2">
+        <label>RSO No.<span class="asteriskField">*</span></label>
+        <input type="text" class="form-control" name="rso_no" autocomplete="off" required>
+    </div>
+    <div class="col-lg-3">
+        <label>Title<span class="asteriskField">*</span></label>
+        <input type="text" class="form-control" name="title" autocomplete="off" required>
+    </div>
+    <div class="col-lg-3">
+        <label>Attachment<span class="asteriskField">*</span></label>
+        <input type="file" class="form-control file-control" name="attachment" accept=".pdf" required>
+    </div>
+    <div class="col-lg-2">
+        <button type="submit" class="btn btn-success btn-block mt-4">Upload</button>
+    </div>
+</div>
+<hr>
+{% endif %}
+</form>
+<div class="table-responsive">
+    <table class="table table-bordered" width="100%" id="rso_table">
+        <thead>
+            <th>Action</th>
+            <th>Year</th>
+            <th>RSO No.</th>
+            <th>Type</th>
+            <th>Title</th>
+            <th class="d-none">Attachment</th>
+            <th class="d-none">Attachment Name</th>
+            <th>Date Uploaded</th>
+        </thead>
+    </table>
+</div>
+<div class="modal" id="preview_modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info" style="border-bottom: 0px !important;">
+                <h3 class="modal-title"></h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="preview-pdf" width="100%" height="700px" frameBorder="0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(document).on('click', 'a[data-role=preview]', function(){
+        $("#preview_modal .modal-body").css("padding",'0px');
+        $("#preview_modal .modal-body").css("margin",'0px');
+        $('#preview_modal .modal-title').html($(this).data('content'));
+        $('#preview_modal').modal('show');
+        $('#preview-pdf').attr('src', $(this).data('filter') + '#toolbar=0');
+    });
+
+    {% if user|check_permission:'file_uploading' or user|check_permission:'superadmin'%}
+    $('#uploadRSOForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "rso_attachment_view" pk %}';
+        var title = "Are you sure";
+        var text = "You want to upload this file";
+        var table_id = '#rso_table';
+
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id});
+
+        e.preventDefault();
+    });
+
+    $('#rso_table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 2, 'asc' ]],
+        'ajax': {
+            'url': '/api/documents/rso/attachment/?format=datatables&type_pk={% generate_token rso_type.id as type_pk %}{{ type_pk }}',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    template = '<a href="javascript:;" data-role="preview" data-filter="'+ row['attachment'] +'" data-content="'+ row['title'] +' ' + row['year'] + " / " + row['attachment_name'] +'">Preview</a> |';
+                    template += ' <a href="'+ row['attachment'] +'" download>Download</a>';
+                    return template;
+                },
+                'searchable': false,
+            },
+            {'data': 'year', 'className': 'text-center' },
+            {'data': 'rso_no', 'className': 'text-center' },
+            {'data': 'type', 'className': 'text-center', 'name': 'type.name' },
+            {'data': 'title', 'className': 'text-center text-wrap' },
+            {'data': 'attachment', 'className': 'd-none', 'searchable': false },
+            {'data': 'attachment_name', 'className': 'd-none', 'searchable': false },
+            {'data': 'date_uploaded', 'className': 'text-center' },
+        ],
+    });
+    {% endif %}
+</script>
+{% endblock %}

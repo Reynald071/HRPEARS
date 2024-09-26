@@ -1,0 +1,117 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% load frontend_tags %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-xs-8">
+        <h1 class="bold">ISO Forms</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Downloads
+            </li>
+            <li class="breadcrumb-item">
+                <strong>ISO Forms</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-md-9">
+            {% if downloadable %}
+                <div class="grid-xx" id="grid-xx">
+                    {% for row in downloadable %}
+                        <div class="grid-item-xx" style="margin-bottom:20px;">
+                            <div class="file-box" style="width: 183px; border:1px solid #e7eaec; ">
+                                <div class="file" style="margin:0px;">
+                                    <span class="corner"></span>
+                                    {% get_extension row.attachment.url as get_extension %}
+                                    <a href="{{ row.attachment.url }}" onclick="record_download({{ row.id }});" download>
+                                    <div class="icon" style="margin-top:35px; margin-bottom:35px;">
+                                        {% if get_extension.1 == '.jpg' or get_extension.1 == '.jpeg' or get_extension.1 == '.png' %}
+                                        <i class="fa fa-file-image text-info" style="color:#23c6c8;"></i>
+                                        {% elif get_extension.1 == '.pdf' %}
+                                        <i class="fa fa-file-pdf" style="color:#ed5565;"></i>
+                                        {% elif get_extension.1 == '.docx' %}
+                                        <i class="fa fa-file-word" style="color:#23527c;"></i>
+                                        {% elif get_extension.1 == '.xlsx' %}
+                                        <i class="fa fa-file-excel" style="color:#00bfa5;"></i>
+                                        {% elif get_extension.1 == '.rar' or get_extension.1 == '.zip' %}
+                                        <i class="fa fa-file-archive" style="color:#990169;"></i>
+                                        {% endif %}
+                                    </div>
+                                    </a>
+                                    <div class="file-name">
+                                        <a href="{{ row.attachment.url }}" onclick="record_download({{ row.id }});" class="bold" rel="tooltip" title="{{ row.title }}" download>{{ row.title }}</a>
+                                        <br/>
+                                        <small>Added: {{ row.uploaded_on }}</small>
+                                        <br/>
+                                        <small>Downloaded: {% getNumberOfDownloads row.id as xx %}{{ xx }} time{{ xx|pluralize:'s' }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <div class="text-center">
+                            <br>
+                            <img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" style="margin: 0 auto;">
+                            <p>There is no data to show you right now.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            <div class="ibox" style="margin-bottom: 20px;">
+                <div class="ibox-title bg-primary">
+                    <h5>FILTER</h5>
+                </div>
+                <div class="ibox-content">
+                    <form method="get" id="srcform" style="margin-bottom:10px">
+                        <div class="form-group">
+                            <h4>By Keyword</h4>
+                            <input type="text" class="form-control" name="search" value="{{ request.GET.search }}">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+	$(".grid-xx").masonry({
+		itemSelector: ".grid-item-xx",
+		gutter: 20,
+	});
+
+    $(document).ready(function(){
+        $('.file-box').each(function() {
+            animationHover(this, 'pulse');
+        });
+    });
+
+    function record_download(id){
+		$.post("{% url 'iso-forms-downloaded' %}",
+		{
+			csrfmiddlewaretoken: '{{ csrf_token }}',
+			id: id,
+		},
+		function(data, status){
+			if (data.error) {
+				alert(data.errors);
+			}
+		});
+	}
+
+</script>
+{% endblock %}

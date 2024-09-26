@@ -1,0 +1,122 @@
+<form id="createGroupForm">
+{% csrf_token %}
+<div class="row">
+    <div class="form-group col-md-10">
+        <label>Column Group Name</label>
+        <input type="text" class="form-control" name="cg_name" id="cg_name" placeholder="e.g. General Payroll" autocomplete="off" required>
+        <span class="form-text m-b-none text-danger"></span>
+    </div>
+    <div class="form-group col-md-2">
+        <label>&nbsp;</label>
+        <div class="btn-group btn-group-justified">
+            <div class="btn-group">
+                <button type="submit" class="btn btn-info" id="submit"><span class="loading open-circle" style="display:none;"></span> Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ACTION</th>
+                <th>COLUMN GROUP NAME</th>
+                <th class="text-center">DATE CREATED</th>
+                <th class="text-right">STATUS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>
+                    <a href="javascript:;" data-role="start-draft" data-id="{{ row.id }}">Start Drafting Columns</a> |
+                    <a href="{% url 'download_template' row.id %}">Download Template</a> |
+                    <a data-role="delete" data-id="{{ row.id }}" data-filter="{{ row.name }}">Delete</a>
+                </td>
+                <td>{{ row.name }}</td>
+                <td class="text-center">{{ row.date_created }}</td>
+                <td class="text-right">
+                    {% if row.is_active == 1 %}
+                    <span class="label label-primary">Active</span>
+                    {% else %}
+                    <span class="label label-default">Inactive</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% block script %}
+<script>
+    $('#createGroupForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : '{% url "draft_column_group" %}',
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false,
+            beforeSend: function(){
+                $('.loading').css('display', '');
+                $('.btn').prop("disabled", true);
+            },
+            success: function(response){
+                if (response.data == "success"){
+                    $('#draft-columns').modal('show').find('.modal-body').empty();
+                    $('#draft-columns').modal('show').find('.modal-body').load("{% url 'draft_column_group' %}");
+                }
+            },
+            complete: function(){
+                $('.loading').css('display', 'none');
+                $('.btn').prop("disabled", false);
+            }
+        });
+    });
+
+    $(document).on('click', 'a[data-role=start-draft]', function(){
+        $('#draft-columns').modal('show').find('.modal-body').empty();
+        $('#draft-columns').modal('show').find('.modal-body').load("/backend/payroll/draft/column-group/start/" + $(this).data('id'));
+    });
+
+    $(document).on('click', 'a[data-role=delete]', function(){
+        var id = $(this).data('id');
+        var filter = $(this).data('filter');
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to delete the column group name '" + filter + "'",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : { id: id},
+                    url         : '{% url "delete_draft_columns" %}',
+                    type        : 'POST',
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+		        Swal.fire({
+                    title: "Deleted!",
+                    html: "Column group has been deleted.",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#draft-columns').modal('show').find('.modal-body').empty();
+                        $('#draft-columns').modal('show').find('.modal-body').load("{% url 'draft_column_group' %}");
+                    }
+                });
+            }
+		});
+    });
+</script>
+{% endblock %}

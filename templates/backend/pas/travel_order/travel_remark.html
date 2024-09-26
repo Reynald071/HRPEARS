@@ -1,0 +1,45 @@
+<div class="row">
+    <div class="col-sm-6">
+        <a href="javascript:;" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+        <hr>
+        <button class="btn btn-default" data-role="clipboard" data-filter="For clarification">For clarification</button>
+        <button class="btn btn-default" data-role="clipboard" data-filter="For correction">For correction</button>
+        <br><br>
+        <form id="submitRemarkForm">
+        {% csrf_token %}
+        <div class="form-group col-sm-12">
+            <label>REMARKS</label>
+            <textarea class="form-control" rows="5" name="pending_remarks" id="remarks">{{ rito.remarks }}</textarea>
+            <br>
+            <button type="submit" class="btn btn-info">Update</button>
+        </div>
+        </form>
+    </div>
+</div>
+<script>
+    $('#btn-back').on('click', function(){
+		$('#edit-modal').modal('show').find('.modal-body').empty();
+		$('#edit-modal').modal('show').find('.modal-body').load("{% if rito.tracking_merge %}{% url 'view_rito_details' rito.tracking_merge %}{% else %}{% url 'view_rito_details' rito.tracking_no %}{% endif %}");
+	});
+
+    $(document).on('click', 'button[data-role=clipboard]', function(){
+        $('#remarks').val($(this).data('filter'));
+    });
+
+	$('#submitRemarkForm').on('submit', function(e){
+	    $.ajax({
+	        url: "{% if rito.tracking_merge %}{% url 'travel_remark' rito.tracking_merge %}{% else %}{% url 'travel_remark' rito.tracking_no %}{% endif %}",
+	        data: new FormData(this),
+	        type: "POST",
+	        cache       : false,
+	        contentType : false,
+	        processData : false
+	    })
+	    .done(function(data){
+	        if (data.data == "success"){
+	            Swal.fire("Good job!", "You have successfully added pending remarks.", "success");
+	        }
+	    });
+	    e.preventDefault();
+	});
+</script>

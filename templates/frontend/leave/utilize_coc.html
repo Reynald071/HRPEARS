@@ -1,0 +1,59 @@
+{% load static %}
+<form id="utilizeForm">
+{% csrf_token %}
+<div class="modal-body">
+    <table class="table table-bordered">
+        <tr>
+            <td class="text-center bold">Month Earned</td>
+            <td class="text-center bold">Days</td>
+            <td class="text-center bold">Hours</td>
+            <td class="text-center bold">Minutes</td>
+            <td class="text-center bold">Date Expiry</td>
+        </tr>
+        <tr>
+            <td class="text-center">{{ coc.cocbal.month_earned }}</td>
+            <td class="text-center">{{ coc.days|floatformat:"0" }}</td>
+            <td class="text-center">{{ coc.hours|floatformat:"0" }}</td>
+            <td class="text-center">{{ coc.minutes|floatformat:"0" }}</td>
+            <td class="text-center">{{ coc.cocbal.date_expiry }}</td>
+        </tr>
+    </table>
+    <br>
+    <div class="row">
+        <div class="col-lg-4">
+            <label>Days<span class="asteriskField">*</span></label>
+            <input type="number" class="form-control" name="days" required>
+        </div>
+        <div class="col-lg-4">
+            <label>Hours<span class="asteriskField">*</span></label>
+            <input type="number" class="form-control" name="hours" required>
+        </div>
+        <div class="col-lg-4">
+            <label>Minutes<span class="asteriskField">*</span></label>
+            <input type="number" class="form-control" name="minutes" required>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Utilize</button>
+</div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#utilizeForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "utilize_coc_earned" pk %}';
+        var title = "Are you sure";
+        var text = "You want to utilize your coc earned";
+        var modal_id = '#utilize-coc-modal';
+        var loadContent = "#coc-earned-content";
+        var loadUrl = "/personnel/coc/earned/"
+
+        submitFormWithConfirmation(form, url, title, text, {loadUrl: loadUrl, loadContent: loadContent, modal_id: modal_id});
+
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

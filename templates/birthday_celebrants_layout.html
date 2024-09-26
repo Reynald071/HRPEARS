@@ -1,0 +1,65 @@
+{% load frontend_tags %}
+{% block style %}
+<style>
+	.ibox, .grid-xx {
+	  	clear: both;
+	  	margin-bottom: 0px;
+	  	margin-top: 0px;
+	  	padding: 0;
+	}
+</style>
+{% endblock %}
+<div class="row justify-content-end">
+    <div class="col-sm-4" style="z-index: 999;">
+        Showing {{ birthday_celebrants.start_index }} - {{ birthday_celebrants.end_index }} of {{ birthday_celebrants.paginator.count }} entries
+        <div class="btn-group">
+            {% if birthday_celebrants.has_other_pages %}
+                {% if birthday_celebrants.has_previous %}
+                    <a class="btn btn-default" data-id="{{ month_num }}" data-title="?page={{ birthday_celebrants.previous_page_number }}" data-role="pagination">Previous</a>
+                {% else %}
+                    <a class="btn btn-default disabled">Previous</a>
+                {% endif %}
+                {% for row in birthday_celebrants.paginator.page_range %}
+                    {% if birthday_celebrants.number == row %}
+                        <a class="btn btn-info" data-id="{{ month_num }}" data-title="?page={{ row }}" data-role="pagination">{{ row }}</a>
+                    {% elif row > birthday_celebrants.number|add:-3 and row < birthday_celebrants.number|add:3 %}
+                        <a class="btn btn-default" data-id="{{ month_num }}" data-title="?page={{ row }}" data-role="pagination">{{ row }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if birthday_celebrants.has_next %}
+                    <a class="btn btn-default" data-id="{{ month_num }}" data-title="?page={{ birthday_celebrants.next_page_number }}" data-role="pagination">Next</a>
+                {% else %}
+                    <a class="btn btn-default disabled">Next</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+<br><br>
+<div class="row">
+	<div class="col-lg-12">
+        <div class="grid-xx" id="grid-xx">
+        {% for row in birthday_celebrants %}
+            <div class="grid-item-xx" style="width:260px;">
+                <div class="card card-{% get_card_color forloop.counter0 %} card-outline">
+                    <div class="card-body">
+                        <center>
+                        <img loading="lazy"  alt="image" class="img-circle shimmer" src="{{ row.picture.url }}" style="width: 150px; height: 150px; object-fit: cover;"><br><br>
+                        <h3 class="no-margins">{{ row.pi.user.get_fullname }}</h3>
+                        <h4 class="no-margins">{{ row.pi.dob|date:"F d" }}</h4>
+                        </center>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(".grid-xx").masonry({
+        itemSelector: ".grid-item-xx",
+        gutter: 48,
+    });
+</script>
+{% endblock %}

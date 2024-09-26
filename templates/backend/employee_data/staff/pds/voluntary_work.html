@@ -1,0 +1,385 @@
+{% load crispy_forms_tags %}
+{% block style %}
+<style type="text/css">
+    .notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row" id="page-content">
+    <div class="col-sm-12">
+		<div class="table-responsive">
+        	<form id="submitVoluntaryForm">
+	    	{% csrf_token %}
+			<div class="pull-left">
+				<div class="form-group">
+					<label>Choose Shortcuts</label>
+					<select class="form-control shortcuts select">
+						{% for row in shortcuts %}
+						{% if row.name == "Voluntary Work" %}
+						<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+						{% else %}
+						<option value="{{ row.backend_url }}">{{ row.name }}</option>
+						{% endif %}
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+			<div class="pull-right" style="margin-top:23px;">
+				<div class="form-group">
+					<button type="submit" class="btn btn-info">Save changes</button>
+					<div class="btn-group">
+					<button type="button" id="btn-previous-we" class="btn btn-default">Previous</button>
+                	<button type="button" id="btn-next-trainings" class="btn btn-default">Next</button>
+					</div>
+				</div>
+			</div>
+	    	<table class="table table-bordered notboldandbig tbl-vw">
+	            <thead>
+	                <th colspan="9">
+	                    <h3>VI. VOLUNTARY WORK OR INVOLVEMENT IN CIVIC / NON-GOVERNMENT / PEOPLE / VOLUNTARY ORGANIZATIONS</h3>
+	                </th>
+	            </thead>
+	            <tbody style="font-size: 11px;">
+	                <tr>
+	                    <th rowspan="3" class="text-center nopadding" width="30%">
+	                        NAME & ADDRESS OF ORGANIZATION
+{#                            &emsp;<button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target='#add-org'><i class="fas fa-plus"></i></button><br>#}
+                            <br><small>(write in full)</small>
+	                    </th>
+	                    <th class="text-center nopadding" colspan="2" width="20%">
+	                        INCLUSIVE DATES
+	                    </th>
+	                    <th class="text-center nopadding" rowspan="3" width="15%">
+	                        NUMBER OF HOURS
+	                    </th>
+	                    <th class="text-center nopadding" rowspan="3" width="30%">
+	                        POSITION / NATURE OF WORK
+	                    </th>
+	                    <th rowspan="3">
+	                    	<center><button type="button" class="btn btn-info btn-xs add" style="margin-top: 10px"><i class="fas fa-plus"></i></button></center>
+	                    </th>
+	                </tr>
+	                <tr>
+	                	<th class="text-center" width="10%">FROM</th>
+	                	<th class="text-center">TO</th>
+	                </tr>
+	                <tr></tr>
+	                {% if voluntary %}
+	                {% for e in voluntary %}
+	                <tr id="{{ e.id }}">
+{#	                	<td class="nopadding">#}
+{#	                		<select class="form-control input-sm select org" name="org[]">#}
+{#	                            <option></option>#}
+{#	                            {% for row in org %}#}
+{#	                            {% if row.id == e.org_id %}#}
+{#	                            <option value="{{ row.id }}" selected="selected">{{ row.org_name }}</option>#}
+{#	                            {% else %}#}
+{#	                            <option value="{{ row.id }}">{{ row.org_name }}</option>#}
+{#	                            {% endif %}#}
+{#	                            {% endfor %}#}
+{#	                        </select>#}
+{#	                	</td>#}
+                        <td class="nopadding">
+	                		<input type="text" class="form-control input-sm borderless org text-center" name="org[]" value="{{ e.organization }}">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]" value="{{ e.vol_from|date:'Y-m-d' }}">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]" value="{{ e.vol_to|date:'Y-m-d' }}">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="text" class="form-control input-sm borderless num_hours text-center" name="num_hours[]" value="{{ e.vol_hours }}">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="text" class="form-control input-sm borderless now" name="now[]" value="{{ e.now }}">
+	                	</td>
+	                	<td class="nopadding">
+	                		<center><button type="button" class="btn btn-danger btn-xs" data-id="{{ e.id }}" data-role="delete-voluntary"><i class="fa fa-minus"></i></button></center>
+	                	</td>
+	                </tr>
+	                {% endfor %}
+                    {% else %}
+                    <tr>
+{#	                	<td class="nopadding">#}
+{#	                		<select class="form-control input-sm select org" name="org[]">#}
+{#	                            <option></option>#}
+{#	                            {% for row in org %}#}
+{#	                            <option value="{{ row.id }}">{{ row.org_name }}</option>#}
+{#	                            {% endfor %}#}
+{#	                        </select>#}
+{#	                	</td>#}
+                        <td class="nopadding">
+	                		<input type="text" class="form-control input-sm borderless org text-center" name="org[]">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="text" class="form-control input-sm borderless num_hours text-center" name="num_hours[]">
+	                	</td>
+	                	<td class="nopadding">
+	                		<input type="text" class="form-control input-sm borderless now" name="now[]">
+	                	</td>
+	                	<td class="nopadding">
+	                		<center><button type="button" class="btn btn-danger btn-xs remove" data-role="remove-vw"><i class="fa fa-minus"></i></button></center>
+	                	</td>
+	                </tr>
+	                {% endif %}
+            	</tbody>
+	        </table>
+            </form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="add-org" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">Add New Organization</h3>
+				<button type="button" class="close text-white" id="close-add-org-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="addOrg">
+            {% csrf_token %}
+            <div class="modal-body">
+                {{ form_org.org_name|as_crispy_field }}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+	$('#close-add-org-modal').on('click', function(){
+        $('#add-org').modal('toggle');
+    });
+
+    $('#btn-previous-we').on('click', function(){
+    	callPage("{% url 'update_work_experience' pi_id %}");
+    });
+
+    $('#btn-next-trainings').on('click', function(){
+    	callPage("{% url 'update_trainings' pi_id %}");
+    });
+
+	var fieldVWHTML = '<tr>\
+	                	<td class="nopadding">\
+	                		<input type="text" class="form-control input-sm borderless org text-center" name="org[]" id="org">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="date" class="form-control input-sm borderless inc_from text-center" name="inc_from[]" id="inc_from">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="date" class="form-control input-sm borderless inc_to text-center" name="inc_to[]" id="inc_to">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="text" class="form-control input-sm borderless num_hours text-center" name="num_hours[]" id="num_hours">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<input type="text" class="form-control input-sm borderless now" name="now[]" id="now[]">\
+	                	</td>\
+	                	<td class="nopadding">\
+	                		<center><button type="button" class="btn btn-danger btn-xs remove" data-role="remove-vw"><i class="fa fa-minus"></i></button></center>\
+	                	</td>\
+	                </tr>';
+
+	$('.add').on('click', function(){
+        $('.tbl-vw > tbody:last-child').append(fieldVWHTML);
+        // fetch_organizations();
+
+        $('.select').select2({
+        	width: "100%",
+            placeholder: "Choose",
+            allowClear: true,
+        });
+        calculateNumHours();
+    });
+
+    calculateNumHours();
+    function calculateNumHours(){
+        $('.inc_to').on('change', function(){
+            var date_from, date_to;
+            var hours = 0;
+            $('.tbl-vw tbody tr').each(function(){
+                date_from = new Date($(this).find('.inc_from').val());
+                date_to = new Date($(this).find('.inc_to').val());
+
+                start = Math.floor(date_from.getTime() / (3600 * 24 * 1000))
+                end = Math.floor(date_to.getTime() / (3600 * 24 * 1000))
+                hours = (end - start + 1) * 8;
+                $(this).find('.num_hours').val(parseFloat(hours).toFixed(2));
+            });
+        });
+    }
+
+	$(document).on('click','button[data-role="remove-vw"]', function(){
+        $(this).parent().parent().parent().remove();
+    });
+
+    $('#submitVoluntaryForm').on('submit', function(e){
+        if (checkForm() == 0){
+            $.ajax({
+                data        : new FormData(this),
+                url         : '{% url "update_voluntary_work" pi_id %}',
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                Swal.fire("Well done!", "Voluntary Work has been saved successfully.", "success");
+            });
+        }
+        e.preventDefault();
+    });
+
+    function checkForm(){
+        invalid = 0;
+        $('.org').each( function() {
+            if (this.value == "") {
+                $(this).nextAll('.error').remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll('.error').remove();
+            }
+        });
+
+        $('.inc_from').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.inc_to').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.num_hours').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+
+        $('.now').each( function() {
+            if (this.value == "") {
+                $(this).nextAll().remove();
+                $(this).after("<span class='error text-danger'>This field is required.</span>");
+                invalid += 1;
+            } else {
+                $(this).nextAll().remove();
+            }
+        });
+        return invalid;
+    }
+
+    $(document).on('click', 'button[data-role=delete-voluntary]', function(){
+        id = $(this).data('id');
+        Swal.fire({
+          title: "Are you sure",
+          text: "You want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#DD6B55",
+          confirmButtonText: "Yes",
+          closeOnConfirm: false,
+          allowOutsideClick: false,
+		}).then((result) => {
+		    if (result.isConfirmed) {
+		        Swal.showLoading()
+				$.ajax({
+					url: "/delete-voluntary/",
+					data: {
+						id: id
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					$('.tbl-vw tr#'+id).remove();
+					Swal.fire("Success!", "Your record was successfully deleted. Farewell.", "success");
+				});
+			}
+	    });
+    });
+
+    $('#addOrg').on('submit', function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+            data        : new FormData(this),
+            url         : '{% url "admin_add_org" pi_id %}',
+            type        : 'POST',
+            success: function (response) {
+                $('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=org_name]').after(error);
+                }
+                else {
+                    $('#add-org').modal('hide');
+                    toastrOptions();
+                    toastr.success("The organization \'" + response.org_name.toUpperCase() + "\' has been added successfully.", "Well done!");
+                    fetch_organizations();
+                }
+            },
+            cache       : false,
+            contentType : false,
+            processData : false
+        });
+    });
+
+    function fetch_organizations(){
+        $.getJSON('{% url 'api-organizations' pi_id %}', function(response) {
+            data_organizations = [];
+
+            for (var d = 0; d < response.data.length; d++) {
+                data_organizations.push({id: response.data[d].id, text: response.data[d].org_name});
+            }
+
+            $('.org').select2({
+                data: data_organizations,
+                allowClear: true,
+                placeholder: 'Choose'
+            });
+        });
+    }
+
+    $('.shortcuts').on('select2:select', function(){
+    	callPage($(this).val() + {{ pi_id }});
+    });
+</script>
+{% endblock %}

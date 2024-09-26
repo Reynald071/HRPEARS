@@ -1,0 +1,238 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">ID Generator</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employees
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>ID Generator</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#custom-view">Custom</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#section-view">Section</a></li>
+                        </ul>
+						<div class="tab-content" style="border: 0px !important;">
+                            <div id="custom-view" class="tab-pane active">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <form id="addEmployeeForm">
+                                        {% csrf_token %}
+                                        <div class="col-lg-10">
+                                            <div class="form-group">
+                                                <label>Employee Name<span class="asteriskField">*</span></label>
+                                                <input type="text" placeholder="e.g. [16-12345] JUAN DELA CRUZ" class="form-control filter-employee-all" name="employee_name" autocomplete="off" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <button type="submit" class="btn btn-info btn-block" id="add-custom-button" style="margin-top: 23px;">Add</button>
+                                        </div>
+                                        </form>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div id="employee-add-content"></div>
+                                            <button type="button" class="btn btn-info display-none" id="print-id-custom">Print ID</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+							<div id="section-view" class="tab-pane">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-5">
+                                            <div class="form-group">
+                                                <label>Section<span class="asteriskField">*</span></label>
+                                                <select class="form-control select" name="section" id="section" required>
+                                                    <option></option>
+                                                    {% for division in divisions %}
+                                                        <optgroup label="{{ division.div_name }}">
+                                                        {% for section in sections %}
+                                                            {% if division.id == section.div_id %}
+                                                                <option value="{% generate_token section.id as section_id %}{{ section_id }}">{{ section.sec_name }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        </optgroup>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-5">
+                                            <div class="form-group">
+                                                <label>Area of Assignment<span class="asteriskField">*</span></label>
+                                                <select class="form-control select" name="aoa" id="aoa" required>
+                                                    <option></option>
+                                                    {% for row in aoa %}
+                                                        <option value="{% generate_token row.id as aoa_id %}{{ aoa_id }}">{{ row.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <button type="button" class="btn btn-info btn-block" id="filter-button" style="margin-top: 23px;">Filter</button>
+                                        </div>
+                                    </div>
+                                    <table class="table table-bordered" id="employee-list-content">
+                                        <thead>
+                                            <tr>
+                                                <th>Full Name</th>
+                                                <th class="text-center">Position</th>
+                                                <th class="text-center">Area of Assignment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="4">No data available</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <br>
+                                    <button type="button" class="btn btn-info display-none" id="print-id">Print ID</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $(".filter-employee-all").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee_all" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+
+        $('#addEmployeeForm').on('submit', function(e){
+            $('#print-id-custom').removeClass('display-none');
+
+            var form = new FormData(this);
+            $.ajax({
+                data        : form,
+                url         : '{% url "add_employee_transmittal" 0 %}',
+                type        : 'POST',
+                success: function(response){
+                    $('#employee-add-content').append(
+                        `
+                        <div id="content-`+ response.pk +`">
+                        <div class="row">
+                            <div class="col-lg-1">
+                                <center>
+                                    <button type="button" class="btn btn-danger" data-role="remove-employee" data-id="`+ response.pk +`">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </center>
+                            </div>
+                            <div class="col-lg-11">
+                                <input type="hidden" class="checkbox" value="`+ response.id +`" checked>
+                                <p class="no-margins"><strong>`+ response.full_name + `</strong></p>
+                                <small>` + response.position + `</small>
+                            </div>
+                        </div>
+                        <hr>
+                        </div>
+                        `
+                    );
+                    $('#addEmployeeForm').trigger('reset');
+                },
+                cache       : false,
+                contentType : false,
+                processData : false,
+            })
+            e.preventDefault();
+        });
+
+        $('#print-id-custom').on('click', function(){
+            var data = [];
+            $('.checkbox').each(function(){
+                if ($(this).prop('checked') == true){
+                    data.push($(this).val());
+                }
+            });
+
+            var json_data = JSON.stringify(data);
+
+            let a = document.createElement('a');
+            a.target= '_blank';
+            a.href= "/id-generator/print/custom/?list_variable=" + encodeURIComponent(json_data);
+            a.click();
+        });
+
+        $(document).on('click', 'button[data-role=remove-employee]', function(){
+            var id = $(this).data('id');
+            $('#content-'+ id).remove();
+        });
+    });
+
+    $('#print-id').on('click', function(){
+        var section_id = $('#section').val();
+        var aoa_id = $('#aoa').val();
+        let a = document.createElement('a');
+        a.target= '_blank';
+        a.href= "/id-generator/print/" + section_id + '/' + aoa_id;
+        a.click();
+    });
+
+    $('#filter-button').on('click', function(){
+        var section_id = $('#section').val();
+        var aoa_id = $('#aoa').val();
+        $('#print-id').removeClass('display-none');
+
+        $.post({
+            url: "{% url 'id_generate_employee_list' %}",
+            data: {
+                section_id: section_id,
+                aoa_id: aoa_id
+            },
+            success: function(response){
+                employee = response.data;
+
+                $('#employee-list-content tbody').empty();
+
+                var template = "";
+                for (var i=0; i < employee.length; i++){
+                    template += `<tr>
+                        <td>` + employee[i]['full_name'] + `</td>
+                        <td class="text-center">` + employee[i]['position'] + `</td>
+                        <td class="text-center">` + employee[i]['area_of_assignment'] + `</td>
+                    </tr>`
+                }
+
+                $('#employee-list-content tbody').append(template);
+            }
+        })
+    });
+</script>
+{% endblock %}

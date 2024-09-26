@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load static %}
+{% load frontend_tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Generate Travel Order</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/hrpearlogo_192.png' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+		#iso-logo{
+			display:none;
+		}
+        @media print {
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 205mm !important;
+			}
+			.containerX {
+				zoom: 100%;
+			}
+			page[size="longflex"][layout="landscape"] {
+				min-height: 205mm !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		  	.btn{ display: none; }
+		  	#indicator{ display: none; }
+		  	.picture{
+		    	visibility: visible;
+		  	}
+		  	#line{display: none;}
+		  	.remove-text{display: none;}
+		  	.subject-checked{display: none;}
+
+		  	header{
+				position: fixed;
+				width: 100%;
+				top: 0;
+			}
+			header, .header-space{
+				height: 230px;
+			}
+
+			footer{
+				position: absolute;
+				right: 0;
+				bottom: 0;
+			}
+			#iso-logo{
+				display:block;
+			}
+			footer, .footer-space{
+				height: 100px;
+			}
+			#signatory-content {
+				margin-top: -110px !important;
+			}
+   		}
+
+   		@page {
+			size: auto;
+		}
+
+   		footer{
+			float: right;
+			margin-top: -30px;
+		}
+
+		.containerX {
+			zoom: 95%;
+		}
+
+		body{
+			font-size: 12px;
+			font-family: 'Inter';
+			color: black;
+		}
+
+		.text-center{
+			text-align: center;
+		}
+
+		#table2, thead, tr, td{
+			border: 0px !important;
+		}
+
+		.center{
+			text-align: center;
+		}
+	</style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">Special Order No. {% if name.tracking_merge %}{{ name.tracking_merge }}{% else %}{{ name.tracking_no }}{% endif %}</a>
+		<ul class="navbar-nav ml-auto">
+			{% if user|check_permission:'travel_order' or user|check_permission:'superadmin' %}
+				{% if name.tracking_merge %}{% check_to_approved name.tracking_merge as check_approved %}{% else %}{% check_to_approved name.tracking_no as check_approved %}{% endif %}
+				<li id="status-content">
+				{% if check_approved %}
+				<button type="button" class="btn btn-default" data-role="unapproved-to" data-id="{% if name.tracking_merge %}{{ name.tracking_merge }}{% else %}{{ name.tracking_no }}{% endif %}" id="unapprove-to-btn"><i class="fas fa-check-circle text-success"></i> Unapprove</button>&emsp;
+				{% else %}
+				<button type="button" class="btn btn-default" data-role="approved-to" data-id="{% if name.tracking_merge %}{{ name.tracking_merge }}{% else %}{{ name.tracking_no }}{% endif %}" id="approve-to-btn"><i class="fas fa-check-circle text-success"></i> Approve</button>&emsp;
+				{% endif %}
+				</li>
+				{% if name.count_confirmation_travel != '' or name.count_justification_travel != '' %}
+					{% if attachment.file %}
+					<li><button type="button" class="btn btn-warning" id="rito-attachment" data-url="{{ attachment.file.url }}" ><i class="fas fa-file"></i> Requirements</button>&emsp;</li>
+					{% else %}
+					<li><button disabled type="button" class="btn btn-default"><i class="fas fa-file"></i> No Requirements</button>&emsp;</li>
+					{% endif %}
+				{% endif %}
+				<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button>&emsp;</li>
+				<li><button type="button" class="btn btn-info" id="check-edit-modal"><i class="fas fa-pen"></i> Edit</button>&emsp;</li>
+				<div class="dropdown">
+					<button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"><i class="fas fa-cog"></i> Settings <span class="caret"></span></button>
+					<div class="dropdown-menu">
+						<h5 class="dropdown-header float-left">Subject</h5>
+						<a class="dropdown-item" href="javascript:;" data-role="subject" data-id="1">Authority</a><span class="subject"></span>
+						<a class="dropdown-item" href="javascript:;" data-role="subject" data-id="2">Confirmation</a><span class="subject"></span>
+						<div class="dropdown-divider"></div>
+						<h5 class="dropdown-header float-left">Signatory</h5>
+						<a class="dropdown-item" href="javascript:;" data-role="signatory" data-filter="arda">ARDA</a>
+						<a class="dropdown-item" href="javascript:;" data-role="signatory" data-filter="ardo">ARDO</a>
+						<a class="dropdown-item" href="javascript:;" data-role="signatory" data-filter="rd">Regional Director</a>
+					</div>
+				</div>
+			{% endif %}
+		</ul>
+	</div>
+</nav>
+<body>
+	<page size="longflex" layout="landscape" class="page" style="padding: 45px;">
+		<div class="containerX">
+			<header>
+                <br>
+                <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="10%">&emsp;
+                <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="4%" style="margin-top: -10px;">
+				<img loading="lazy"  src="{% static 'image/iso.png' %}" class="picture pull-right" style="height:60px;">
+				<table width="100%">
+					<tr>
+						<td width="40%"><p class="font-weight-bold" style="margin-top: 10px; font-size: 18px;">SPECIAL ORDER</p></td>
+						<td class="text-right"><br><p class="pull-right">{{ date|date:"F d, Y" }} <br> {{ date|date:"h:i A"}}</p></td>
+					</tr>
+					<tr>
+						<td>
+							<p style="margin-top: -25px;">No. <u>{% if name.tracking_merge %}{{ name.tracking_merge }}{% else %}{{ name.tracking_no }}{% endif %}</u></p>
+						</td>
+					</tr>
+					<tr>
+						<td><p style="margin-top: -18px;">Series of {{ year }}</p></td>
+					</tr>
+				</table>
+				<div style="margin-top: -30px;">
+				<center>
+					<p class="font-weight-bold" style="margin-top: -15px;">Subject: <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; text-transform: uppercase;" class="center" placeholder="e.g. AUTHORITY" size="15" value="AUTHORITY" id="subject-value" readonly></p><br>
+				</center>
+				{% get_to_people pk as total_people %}
+				<p style="margin-top: -15px;">This is to <span id="subject-text">authorize</span> the travel of the following DSWD FO Caraga Staff/s whose {% if total_people > 1%}names are{% else %}name is{% endif %} written below with the purpose of travel, places and dates indicated opposite their names, to wit:</p>
+				</div>
+			</header>
+			<div class="content" style="margin-top: -15px;">
+				<table id="table2" border="1" width="100%">
+					<thead><tr><td><div class="header-space"></div></td></tr></thead>
+					<tbody style="border: 1px solid black !important">
+					<tr>
+						<td class="text-center" style="border: 1px solid black !important"><small class="font-weight-bold">Names - Position/Area of Assignment</small><br><small style="margin-top:-5px; font-weight:lighter;">R(SN, FN M. II)</small></td>
+						<td class="text-center" style="border: 1px solid black !important"><small class="font-weight-bold">Place/s of Visit</small></td>
+						<td class="text-center" style="border: 1px solid black !important"><small class="font-weight-bold">Duration of Travel</small></td>
+						<td class="text-center" style="border: 1px solid black !important"><small class="font-weight-bold">Purpose</small></td>
+						<td class="text-center" style="border: 1px solid black !important"><small class="font-weight-bold">Expected Output</small></td>
+						<td class="text-center" style="border: 1px solid black !important"><small class="font-weight-bold">Means of <br>Transportation</small><br><small style="margin-top:-5px; font-weight:lighter; font-size: 9px;"><b>1</b> PUV Vice-Versa <br> <b>2</b> RP Vice-Versa <br> <b>3</b> RP-one-way PUV one-way <br> <b>4</b> Hired Van</small></td>
+						<td class="text-center" style="border: 1px solid black !important"><small class="font-weight-bold">Claims</small><br><small style="margin-top:-5px; font-weight:lighter; font-size: 9px;"><b>1</b> without per diem <br> <b>2</b> with per diem <br><b>3</b> Official Time Only <br><b>4</b> Compensatory Day off</small></td>
+					</tr>
+					{% for row in rito %}
+					<tr id="{{ row.id }}">
+						<div class="content">
+							<td width="30%" style="border: 1px solid black !important">
+								<ol>
+								{% ritopeople row.id as people %}
+									{% for emp in people %}
+										<li>{{ emp.name.pi.user.first_name|title }}
+										{{ emp.name.pi.user.middle_name|to_middleinitial }}
+										{{ emp.name.pi.user.last_name|title }} - {{ emp.name.position.acronym }} / {{ emp.name.aoa.name }}</li>
+									{% endfor %}
+								</ol>
+							</td>
+							<td class="text-center" width="15%" style="border: 1px solid black !important">{{ row.place }}</td>
+							<td class="text-center" width="10%" style="border: 1px solid black !important">
+								{% if row.inclusive_from == row.inclusive_to %}
+								{{ row.inclusive_from }}
+								{% else %}
+								{{ row.inclusive_from }} - {{ row.inclusive_to }}
+								{% endif %}
+							</td>
+							<td class="text-center" style="border: 1px solid black !important">{{ row.purpose }}</td>
+							<td class="text-center" style="border: 1px solid black !important">{{ row.expected_output }}</td>
+							<td class="text-center" data-target="mot" style="border: 1px solid black !important">
+								{{ row.mot.name }}
+							</td>
+							<td class="text-center" data-target="claims" width="10%" style="border: 1px solid black !important">
+								{{ row.claims.name}}
+							</td>
+						</div>
+					</tr>
+					{% endfor %}
+					</tbody>
+					<tfoot><tr><td><div class="footer-space">&nbsp;</div></td></tr></tfoot>
+				</table>
+			</div>
+			<div id="signatory-content">
+				<br>
+				&emsp;<small>It is understood that report shall be submitted upon completion of the Travel together with certificate of appearance from each place/s visited and other documentary evidences of travel.</small>
+				<br><br><br>
+				<center>
+					<p>Approved by:</p><br>
+					<input type="text" style="border: 0px !important; font-weight: bold; text-transform: uppercase;" class="center" placeholder="Signatory" size="40" value="" id="designation_name"><br>
+					<input type="text" style="border: 0px !important;" class="center" placeholder="Designation / Position" size="40" value="" id="designation">
+				</center>
+				<input type="text" style="border: 0px !important; font-size: 10px; margin-top:-60px;" id="countersign" placeholder="e.g. RFJ/MCLM/mrrs/css" size="60" value="">
+			</div>
+			<footer>
+				<img loading="lazy"  src="{% static 'image/socotec.png' %}" style="width: 39mm;" id="iso-logo">
+			</footer>
+		</div>
+		{% if name.tracking_merge %}
+			{% get_to_tracking_merge_number name.tracking_merge as tracking_numbers_merge %}
+		{% else %}
+			{% get_to_tracking_merge_number name.tracking_no as tracking_numbers_merge %}
+		{% endif %}
+		{% if tracking_numbers_merge %}
+			<small>Merge RITOs:
+			{% for row in tracking_numbers_merge %}
+				{% if not row.tracking_no == name.tracking_merge %}
+					{% if forloop.last %}
+						{{ row.tracking_no }}
+					{% else %}
+						{{ row.tracking_no }},
+					{% endif %}
+				{% endif %}
+				{% endfor %}</small>
+		{% endif %}
+	</page>
+
+	<div class="modal" id="edit-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<h3 class="modal-title" style="font-size: 16px;">TRAVEL REQUEST DETAILS</h3>
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				</div>
+				<div class="modal-body"></div>
+			</div>
+		</div>
+	</div>
+	{% getemployeebyempid designation.0.emp_id as designation_rd %}
+	{% getemployeebyempid designation.2.emp_id as designation_arda %}
+	{% getemployeebyempid designation.1.emp_id as designation_ardo %}
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+	<script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+	<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+	<script type="text/javascript">
+		$('#check-edit-modal').on('click', function(){
+			$('#edit-modal').modal('toggle');
+			$('#edit-modal').modal('show').find('.modal-body').empty();
+			$('#edit-modal').modal('show').find('.modal-body').load("{% if name.tracking_merge %}{% url 'view_rito_details' name.tracking_merge %}{% else %}{% url 'view_rito_details' name.tracking_no %}{% endif %}");
+		});
+
+		$('#designation_name').val("{{ designation_rd.pi.user.get_fullname }}");
+		$('#designation').val("{{ designation.0.name }}");
+		{% generate_countersignatories request.session.emp_id designation.1.name as countersignatories %}
+		$('#countersign').val('{{ countersignatories }}');
+
+		$(document).on('click', 'a[data-role=subject]', function(){
+			if ($(this).data('id') == 1){
+				$('#subject-value').val('AUTHORITY');
+				$('#subject-text').text('authorize');
+			} else if ($(this).data('id') == 2){
+				$('#subject-value').val('CONFIRMATION');
+				$('#subject-text').text('confirm');
+			} else {
+			}
+		});
+
+		$("#edit-modal").on('hide.bs.modal', function(){
+			window.location.href = "{% if name.tracking_merge %}{% url 'generate-to' name.tracking_merge %}{% else %}{% url 'generate-to' name.tracking_no %}{% endif %}"
+		});
+
+		$(document).on('click', 'a[data-role=signatory]', function(){
+			if ($(this).data('filter') == 'arda'){
+				$('#designation_name').val("{{ designation_arda.pi.user.get_fullname }}");
+				$('#designation').val("{{ designation.2.name }}");
+				{% generate_countersignatories request.session.emp_id designation.2.name as countersignatories %}
+				$('#countersign').val('{{ countersignatories }}');
+			} else if ($(this).data('filter') == 'ardo'){
+				$('#designation_name').val("{{ designation_ardo.pi.user.get_fullname }}");
+				$('#designation').val("{{ designation.1.name }}");
+				{% generate_countersignatories request.session.emp_id designation.1.name as countersignatories %}
+				$('#countersign').val('{{ countersignatories }}');
+			} else if ($(this).data('filter') == 'rd'){
+				$('#designation_name').val("{{ designation_rd.pi.user.get_fullname }}");
+				$('#designation').val("{{ designation.0.name }}");
+				{% generate_countersignatories request.session.emp_id designation.0.name as countersignatories %}
+				$('#countersign').val('{{ countersignatories }}');
+			}
+		});
+
+		$('.print-button').on('click', function (){
+			updateRemarks();
+		});
+
+		function updateRemarks() {
+			$.post({
+				url: '/backend/travel-remark/update/{% if name.tracking_merge %}{{ name.tracking_merge }}{% else %}{{ name.tracking_no }}{% endif %}',
+				data: {
+					subject: $('#subject-value').val(),
+					designation_name: $('#designation_name').val(),
+					designation: $('#designation').val()
+				},
+				success: function (response) {}
+			});
+		}
+
+		$(document).on('click', '[data-role=approved-to]', function(){
+			var id = $(this).data('id');
+			$.ajax({
+				url: "{% url 'approved-to' %}",
+				data: {
+					id: id
+				},
+				type: "POST",
+				beforeSend: function () {
+					$('#approve-to-btn').html('<center><span class="loading open-circle"></span></center>');
+				},
+				success: function(response) {
+					if(response.data == 'success'){
+						$('#status-content').html(`
+							<a href="javascript:;" class="btn btn-default" data-role="unapproved-to" data-id="{% if name.tracking_merge %}{{ name.tracking_merge }}{% else %}{{ name.tracking_no }}{% endif %}" id="unapprove-to-btn"><i class="fas fa-check-circle text-success"></i> Unapprove</a>&emsp;
+						`)
+					}
+				},
+				complete: function() {
+					$('#approve-to-btn').html('<i class="fas fa-check-circle text-success"></i> Approve</a>');
+				}
+			});
+		});
+
+		$(document).on('click', '[data-role=unapproved-to]', function(){
+			var id = $(this).data('id');
+			$.ajax({
+				url: "{% url 'unapproved-to' %}",
+				data: {
+					id: id
+				},
+				type: "POST",
+				beforeSend: function () {
+					$('#unapprove-to-btn').html('<center><span class="loading open-circle"></span></center>');
+				},
+				success: function (response) {
+					if (response.data == 'success'){
+						$('#status-content').html(`
+							<a href="javascript:;" class="btn btn-default" data-role="approved-to" data-id="{% if name.tracking_merge %}{{ name.tracking_merge }}{% else %}{{ name.tracking_no }}{% endif %}" id="approve-to-btn"><i class="fas fa-check-circle text-success"></i> Approve</a>&emsp;
+						`)
+					}
+				},
+				complete: function () {
+					$('#unapprove-to-btn').html('<i class="fas fa-check-circle text-success"></i> Unapprove');
+				}
+			})
+		});
+
+		$(document).ready(function(){
+			$('#indicator').prop('checked', false);
+			$('#indicator').change();
+		});
+
+		$('#rito-attachment').on('click', function(){
+			var url = $(this).data('url');
+			window.open(url, '_blank');
+		});
+	</script>
+</body>
+</html>

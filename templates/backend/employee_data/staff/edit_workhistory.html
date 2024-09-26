@@ -1,0 +1,243 @@
+{% load crispy_forms_tags %}
+<form id="submitEditWorkForm">
+{% csrf_token %}
+	<input type="hidden" name="we_id" value="{{ work_experience.id }}">
+	<input type="hidden" name="emp_id" value="{{ employee_id }}">
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Date Started<span class="asteriskField">*</span></label>
+				<input type="date" name="date_of_appointment" value="{{ work_experience.we_from|date:'Y-m-d' }}" class="form-control" required>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>End of Contract<span class="asteriskField">*</span></label>
+				<input type="date" name="end_of_appointment" value="{{ work_experience.we_to|date:'Y-m-d' }}" class="form-control" required>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Position<span class="asteriskField">*</span></label>
+				<select class="form-control edit-select" name="position" required>
+					<option></option>
+					{% for row in position %}
+					{% if row.id == work_experience.position_id %}
+					<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Employment status<span class="asteriskField">*</span></label>
+				<select class="form-control edit-select" name="empstatus" required>
+					<option></option>
+					{% for row in empstatus %}
+					{% if row.id == work_experience.empstatus_id %}
+					<option value="{{ row.id }}" selected="selected">{{ row.name|title }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.name|title }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group"> 
+        		<label>Section<span class="asteriskField">*</span></label>
+        		<select class="form-control edit-select" name="section" required>
+        			<option value=""></option>
+        			{% for div in division %}
+        			<optgroup label="{{ div.div_name }}">
+        				{% for row in section %}
+        				{% if row.div_id == div.id %}
+	        				{% if row.id == work_history.section_id %}
+	        				<option value="{{ row.id }}" selected="selected">{{ row.sec_name }}</option>
+	        				{% else %}
+	        				<option value="{{ row.id }}">{{ row.sec_name }}</option>
+	        				{% endif %}
+        				{% endif %}
+        				{% endfor %}
+        			</optgroup>
+        			{% endfor %}
+	        	</select>		
+        	</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Fund Source<span class="asteriskField">*</span></label>
+				<select class="form-control edit-select" name="fundsource" required>
+					<option></option>
+					{% for row in fundsource %}
+					{% if row.id == work_history.fundsource_id %}
+					<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Area of Assignment<span class="asteriskField">*</span></label>
+				<select class="form-control edit-select" name="aoa" required>
+					<option></option>
+					{% for row in aoa %}
+					{% if row.id == work_history.aoa_id %}
+					<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Project/Program<span class="asteriskField">*</span></label>
+				<select class="form-control edit-select" name="project">
+					<option></option>
+					{% for row in project %}
+					{% if row.id == work_history.project_id %}
+					<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Salary rate</label>
+				<input type="text" name="salary_rate" class="form-control" value="{{ work_experience.salary_rate }}" required>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Salary grade - Step Increment</label>
+				<input type="text" name="sg_step" class="form-control" value="{{ work_experience.sg_step }}" required>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Item Number</label>
+				<input type="text" name="item_number" class="form-control" value="{{ work_history.item_number }}">
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Former Incumbent</label>
+				<input type="text" name="former_incumbent" class="form-control typeahead_2 filter_employee" value="{{ work_history.former_incumbent }}">
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Date of Creation Position</label>
+				<input type="date" name="dateofcreation" class="form-control filter_employee" value="{{ work_history.datecreation_pos|date:'Y-m-d' }}">
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Designation</label>
+				<input type="text" name="designation" class="form-control" value="{{ work_history.designation }}">
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Date of Designation</label>
+				<input type="text" name="dateof_designation" class="form-control" value="{{ work_history.dateof_designation|date:'Y-m-d' }}">
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Special Order No.</label>
+				<input type="text" name="specialorder" class="form-control" value="{{ work_history.specialorder_no}}">
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Mode of Accession</label>
+				<select class="form-control edit-select" name="modeaccess">
+					<option></option>
+					{% for row in access %}
+					{% if row.id == work_history.mode_access_id %}
+					<option value="{{ row.id }}" selected="selected">{{ row.name|title }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.name|title }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Mode of Separation</label>
+				<select class="form-control edit-select" name="modesep">
+					<option></option>
+					{% for row in sep %}
+					{% if row.id == work_history.mode_sep_id %}
+					<option value="{{ row.id }}" selected="selected">{{ row.name|title }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.name|title }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Date Vacated</label>
+				<input type="date" name="date_vacated" class="form-control" value="{{ work_history.date_vacated|date:'Y-m-d'}}">
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Plantilla PSIPOP</label>
+				<input type="text" name="plantilla" class="form-control" value="{{ work_history.plantilla_psipop}}">
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Date of Orig Appointment</label>
+				<input type="date" name="dateoforig" class="form-control" value="{{ work_history.dateof_orig_appointment|date:'Y-m-d' }}">
+			</div>
+		</div>
+		<div class="col-sm-4">
+			<div class="form-group">
+				<label>Date of Last Promotion</label>
+				<input type="date" name="dateoflast" class="form-control" value="{{ work_history.dateof_orig_appointment|date:'Y-m-d' }}">
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="form-group">
+				<label>Remarks Vacated</label>
+				<textarea name="remarks_vacated" cols="40" rows="3" class="textarea form-control" id="id_remarks_vacated">{{ work_history.remarks_vacated}}</textarea>
+			</div>
+		</div>
+	</div>
+</div>
+<button type="submit" class="btn btn-info">Save changes</button>
+</form>

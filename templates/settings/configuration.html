@@ -1,0 +1,261 @@
+<div id="configuration_content">
+    <div class="pull-left">
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#add-configuration-modal"><i class="fas fa-plus"></i> Add Configuration</button>
+    </div>
+    <br><br><br>
+</div>
+<div class="table-responsive">
+    <table id="configuration-table" class="table table-bordered table-hover" width="100%">
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Key Name</th>
+                <th class="text-center">Key Acronym</th>
+                <th class="text-center">Counter</th>
+                <th class="text-center">Year</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<div class="modal" id="add-configuration-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">ADD CONFIGURATION</h3>
+
+            </div>
+            <form id="addConfigurationForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Key Name<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="key_name" id="key_name">
+                </div>
+                <div class="form-group">
+                    <label>Key Acronym<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="key_acronym">
+                </div>
+                <div class="form-group">
+                    <label>Counter</label>
+                    <input type="text" class="form-control" name="counter">
+                </div>
+                <div class="form-group">
+                    <label>Year</label>
+                    <input type="text" class="form-control" name="year">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="update_config" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">UPDATE CONFIGURATION</h3>
+
+            </div>
+            <form id="configurationForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <input type="hidden" name="id" id="id">
+                <div class="form-group">
+                    <label>Key Name<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="key_name" id="edit_key_name">
+                </div>
+                <div class="form-group">
+                    <label>Key Acronym<span class="asteriskField">*</span></label>
+                    <input type="text" class="form-control" name="key_acronym" id="edit_key_acronym">
+                </div>
+                <div class="form-group">
+                    <label>Counter</label>
+                    <input type="text" class="form-control" name="counter" id="edit_counter">
+                </div>
+                <div class="form-group">
+                    <label>Year</label>
+                    <input type="text" class="form-control" name="year" id="edit_year">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function(){
+        Table();
+
+        $(document).on('click', 'a[data-role=update]',function(){
+            var id = $(this).data('id');
+            var key_name = $('#'+id).find('td:eq(1)').text();
+            var key_acronym = $('#'+id).find('td:eq(2)').text();
+            var counter = $('#'+id).find('td:eq(3)').text();
+            var year = $('#'+id).find('td:eq(4)').text();
+
+            $('#id').val(id);
+            $('#edit_key_name').val(key_name);
+            $('#edit_key_acronym').val(key_acronym);
+            $('#edit_counter').val(counter);
+            $('#edit_year').val(year);
+            $('#update_config').modal('show');
+        });
+
+        $(document).on('click', 'a[data-role=delete]', function(){
+            var id = $(this).data('id');
+            var key_name = $('#'+id).find('td:eq(1)').text();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to delete the configuration",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : { id: id },
+                        url         : '{% url "portal_configuration_delete" %}',
+                        type        : 'POST',
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully deleted key_name '" + key_name +"' in configuration.",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#configuration-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#addConfigurationForm').on('submit', function(e){
+            var form = new FormData(this);
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to add the configuration",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "portal_configuration" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully added key_name '" + $('#key_name').val() +"' in configuration.",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#addConfigurationForm').trigger('reset');
+                            $('#add-configuration-modal').modal('hide');
+                            $('#configuration-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        $('#configurationForm').on('submit', function(e){
+            var form = new FormData(this);
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to update the configuration",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "portal_configuration_update" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (data){
+                if (data.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: "You have successfully updated key_name '" + $('#edit_key_name').val() +"' in configuration.",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            $('#configurationForm').trigger('reset');
+                            $('#update_config').modal('hide');
+                            $('#configuration-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        function Table(){
+            $('#configuration-table').DataTable({
+                'serverSide': true,
+                'processing': true,
+                'deferRender': true,
+                'lengthMenu': [ 25, 50, 100 ],
+                'ajax': {
+                    'url': '/api/configuration/?format=datatables',
+                    'type': 'GET',
+                    'beforeSend': function (request) {
+                        request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+                    }
+                },
+                'fnCreatedRow': function (row, data, index) {
+                    $(row).attr('id', data['id']);
+                },
+                'columns': [
+                    {'data': 'id',
+                        'render': function(data, type, row, meta) {
+                            return "<a href='javascript:;' data-role='update' data-id='"+ row['id'] + "'>Edit</a> | <a href='javascript:;' data-role='delete' data-id='"+ row['id'] + "'>Delete</a>"
+                        }
+                    },
+                    {'data': 'key_name'},
+                    {'data': 'key_acronym', 'className': 'text-center'},
+                    {'data': 'counter', 'className': 'text-center'},
+                    {'data': 'year', 'className': 'text-center'},
+                ]
+            });
+        }
+    });
+</script>
+{% endblock %}

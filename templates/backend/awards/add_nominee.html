@@ -1,0 +1,102 @@
+{% load frontend_tags %}
+{% load tags %}
+<div class="row">
+	<div class="col-sm-12">
+		<a href="javascript:;" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+		<br>
+		<hr>
+	</div>
+	<div class="card-body text-center">
+		<h4 class="no-margins" style="font-weight:normal;">{{ award.classification.shortname }} {{ award.year }}</h4>
+		<h2 class="no-margins" style="font-weight:bold;">{{ award.name }}</h2>
+		<h4 class="" style="font-weight:normal; margin-bottom:3px !important;">{{ award.level }} / {{ award.category.name }}</h4>
+		<h5 class="" id="numberofnominees{{award.id}}" style="font-weight:normal;">Number of Nominees: {% get_numberofnominees award.id %}</h5>
+        <br><br>
+        <h3 class="font-weight-bold">{% if nominee%}Edit{% else %}Add{% endif %} Nominee</h3>
+	</div>
+	<br>
+    <div class="col-sm-12 p-3">
+	    <form id="submitAddForm">
+		    {% csrf_token %}
+			{% if award.category.needs_title %}
+				<label>Team Leader</label>
+			{% else %}
+				<label>Name of Nominee</label>
+			{% endif %}
+			<div class="form-group">
+				<div class="input-group">
+					<input type="text" class="form-control typeahead_2 filter_employee b-r-sm" name="nominee" required autocomplete="off" placeholder="e.g. [16-12345] Juan dela Cruz" value="{% if nominee %}[{{ nominee.nominee.id_number }}] {{ nominee.nominee.pi.user.first_name }} {{ nominee.nominee.pi.user.last_name }}{% endif %}" {% if nominee %}disabled{% endif %}>
+					<span class="input-group-append">
+						<button type="submit" class="btn btn-info" data-id="{{ row.name_id }}">
+							Submit
+						</button>
+					</span>
+				</div>
+			</div>
+
+			{% if award.category.needs_title %}
+				<label>Name of {{ award.category.name }}</label>
+				<div class="form-group">
+					<input type="text" class="form-control" name="title" required autocomplete="off" value="{% if nominee %}{% if nominee.title == None %}{% else %}{{ nominee.title }}{% endif %}{% else %}{% endif %}">
+				</div>
+			{% endif %}
+
+			<label>Write an overall statement on the consistent demonstration of exemplary ethical behavior and render of extraordinary work performance or service.</label>
+			<div class="form-group">
+				<textarea required name="why" id="why" class="form-control" placeholder="Please write statement with a minimum of 100 words." minlength="" style="resize:vertical; max-height:300px; min-height:150px;">{% if nominee %}{% if nominee.why == None %}{% else %}{{ nominee.why }}{% endif %}{% else %}{% endif %}</textarea>
+			</div>
+	    </form>
+    </div>
+</div>
+<script type="text/javascript">
+	var limit = 100;
+	$(document).ready(function(){
+		var jsonEmployeesExceptMe = $.ajax({
+			url: '{% url "filter_employee_except_me" %}',
+			async: false,
+			dataType: 'json'
+		}).responseJSON;
+
+		$("#why").textareaCounter({ limit: limit });
+
+		$('#submitAddForm').on('submit', function(e){
+			e.preventDefault();
+			text = $('#why').val();
+			wordcount = $.trim(text).split(" ").length;
+			if (wordcount < limit) {
+	            document.getElementById('why').setCustomValidity("You only have written "+wordcount+" of minimum "+limit+" words.");
+			} else {
+				$.ajax({
+					data        : new FormData(this),
+					url         : '{% if nominee %}{% url "edit-nominee" nominee.id %}{% else %}{% url "add-nominee" awards_id %}{% endif %}',
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false
+				})
+				.done(function(data){
+					$('.error').remove();
+					if (data.error){
+						error = '<span style="font-size: 11px; clear: both; margin-top: 3px; display: block;" class="text-danger error">' + data.error + '</span>';
+						$('input[name=nominee]').parent().after(error);
+					} else {
+						$('#edit-modal').modal('show').find('.modal-body').empty();
+						$('#edit-modal').modal('show').find('.modal-body').load("/backend/validate-nominees/" + $('#awards-id').val());
+					}
+				});
+			}
+		});
+
+		{% if nominee %}
+		{% else %}
+			$(".filter_employee").typeahead({
+				source:jsonEmployeesExceptMe,
+			});
+		{% endif %}
+
+		$('#btn-back').on('click', function(){
+			$('#edit-modal').modal('show').find('.modal-body').empty();
+			$('#edit-modal').modal('show').find('.modal-body').load("/backend/validate-nominees/" + $('#awards-id').val());
+		});
+	});
+</script>

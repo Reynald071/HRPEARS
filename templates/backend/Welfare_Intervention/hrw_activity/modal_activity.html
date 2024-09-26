@@ -1,0 +1,172 @@
+<div class="form-group">
+	<form id="interventionupdate">
+		{% csrf_token %}
+		<div class="table-responsive">
+			{% if inventory.inventory is not null %}
+			<table cellspacing="0" class="table table-bordered notboldandbig" id="input_fields_wrap"
+				   width="100%">
+				<tr>
+					<td style="display: none;">
+						<input id="empid" name="empid" value="{{intervention.id}}" type="text">
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Full Name</label>
+						<input autocomplete="off" class="form-control typeahead" value="{{intervention.emp.pi.user.first_name}} {{intervention.emp.pi.user.last_name}}" id="fullname" name="fname"
+							   style="width:180px;" type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Activity</label>
+						<input class="form-control" value="{{intervention.activity.activity}}" id="actvty_db" name="case" style="width:100%;"
+							   type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Item</label>
+						<input class="form-control" value="{{intervention.item.item}}" id="item" name="item" style="width:100%;" type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Intervention</label>
+						<input class="form-control" value="{{intervention.total}}" id="intervention" name="total" style="width:100%;"
+							   type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Input Here</label>
+						<input autocomplete="off" class="form-control" id="add" name="total" style="width:100%;"
+							   type="number" required>
+					</td>
+				</tr>
+			</table>
+			<br>
+			<table cellspacing="0" class="table table-bordered notboldandbig" id="input_field_wrap" width="100%">
+					<td>
+						<label class="col-form-label" for="recipient-name">TOTAL INTERVENTION</label>
+						<input class="form-control" id="total" name="activitytotal" style="width:100%;"
+							   type="text" required readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">{{inventory.item}} TOTAL STOCKS</label>
+						<input autocomplete="off" class="form-control" value="{{inventory.inventory}}" id="stocks" name="stocks" style="width:100%;"
+							   type="text" readonly>
+					</td>
+					<br>
+					<td>
+						<label class="col-form-label" for="recipient-name">{{inventory.item}} TOTAL STOCKS</label>
+						<input autocomplete="off" class="form-control" id="total_inventory" name="total_stock" style="width:100%;"
+							   type="number" readonly>
+					</td>
+			</table>
+			{% else %}
+			<table cellspacing="0" class="table table-bordered notboldandbig" id="input_fields_wrap"
+				   width="100%">
+				<tr>
+					<td style="display: none;">
+						<input id="empid" name="empid" value="{{intervention.id}}" type="text">
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Full Name</label>
+						<input autocomplete="off" class="form-control typeahead" value="{{intervention.emp.pi.user.first_name}} {{intervention.emp.pi.user.last_name}}" id="fullname" name="fname"
+							   style="width:180px;" type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Activity</label>
+						<input class="form-control" value="{{intervention.activity.activity}}" id="actvty_db" name="case" style="width:100%;"
+							   type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Item</label>
+						<input class="form-control" value="{{intervention.item.item}}" id="item" name="item" style="width:100%;" type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Intervention</label>
+						<input class="form-control" value="{{intervention.total}}" id="intervention" name="total" style="width:100%;"
+							   type="text" readonly>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">Input Here</label>
+						<input autocomplete="off" class="form-control" id="add" name="total" style="width:100%;"
+							   type="text" required>
+					</td>
+					<td>
+						<label class="col-form-label" for="recipient-name">TOTAL INTERVENTION</label>
+						<input class="form-control" id="total" name="activitytotal" style="width:100%;"
+							   type="number" required readonly>
+					</td>
+				</tr>
+			</table>
+			{% endif %}
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-info" type="submit">Save</button>
+		</div>
+	</form>
+</div>
+<script>
+$("#intervention, #add").keyup(function (){ 
+	$("#total").val(+$("#intervention").val() + +$("#add").val());
+});
+
+$("#stocks, #add").keyup(function (){
+	var stocks = $('#stocks').val();
+	var add = $('#add').val();
+
+	var total = $("#stocks").val() - +$("#add").val();
+	if(total < 0){
+		$("#total_inventory").val("0")
+	}else{
+		$("#total_inventory").val(total)
+	}
+
+});
+
+$('#interventionupdate').on('submit', function(e){
+var form = new FormData(this);
+Swal.fire({
+    title: "Are you sure",
+    text: "Did you review it before updating?",
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#3498DB",
+    confirmButtonText: "Yes",
+    closeOnConfirm: false,
+    allowOutsideClick: false,
+}).then((result) => {
+    if (result.isConfirmed) {
+        Swal.showLoading()
+        $.ajax({
+            data        : form,
+            url         : "{% url 'updateintervention' %}",
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            var data = data.data;
+            if(data == 'success'){
+                Swal.fire({
+                  title: "Good job!",
+                  text: "You successfully Updated the data",
+                  icon: "info",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#intervention_db').DataTable().ajax.reload();
+                    }
+                });
+            }else if(data == 'fail'){
+                Swal.fire({
+                  title: "Update Failed!",
+                  text: "Kindly retry again",
+                  icon: "error",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{% url 'hrwactivity' %}";
+                    }
+                });
+            }
+        });
+    }
+    });
+    e.preventDefault();
+});
+</script>

@@ -1,0 +1,121 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style type="text/css">
+	.dropdown-menu {
+	    width: 100%;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">Payslip</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					Payroll Management
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>Payslip</strong>
+				</li>
+			</ol>
+		</div>
+        {% comment %}
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+				<button class="btn btn-info" data-toggle="modal" data-target="#add-position-modal"><i class="fas fa-plus"></i> Add Vacancy</button>
+			</div>
+		</div>
+        {% endcomment %}
+	</div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card card-info card-outline">
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover" id="table-payslip" width="100%">
+							<thead>
+								<tr>
+									<th class="text-left">ACTION</th>
+									<th class="text-center">EMPLOYEE ID</th>
+									<th class="text-center">EMPLOYEE NAME</th>
+									<th class="text-center">PAYROLL CODE</th>
+									<th class="text-center">PAY PERIOD</th>
+									<th class="text-center">GROUP ID</th>
+									<th class="text-center">DATE POSTED</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="detail-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+				<h3 class="modal-title">PAYSLIP DETAILS</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			</div>
+	        <div id="payslip-content"></div>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#table-payslip').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 0, 'asc' ]],
+			'ajax': {
+				'url': '/api/payroll-new/payslip/?format=datatables&id_number={{ emp.id_number }}',
+				'type': 'GET',
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+                        var template = "<a href='javascript:;' data-role='detail' data-id='"+ data +"'>Details</a>";
+						return template;
+					}
+				},
+				{'data': 'emp_id_no', 'className': 'text-center', 'name': 'fldempid'},
+				{'data': 'emp_name', 'className': 'text-center',
+					'name': 'fldemp_name',
+					'render': function(data, type, row, meta) {
+                        return data.toUpperCase();
+					}
+				},
+				{'data': 'fldpayroll_code', 'className': 'text-center' },
+				{'data': 'pay_period', 'className': 'text-center', 'name': 'fldpay_period' },
+				{'data': 'fldgroupid', 'className': 'text-center' },
+				{'data': 'date_posted', 'className': 'text-center', 'name': 'flddateposted' },
+			]
+		});
+
+		$(document).on('click', 'a[data-role=detail]', function () {
+            $('#detail-modal').modal('show').find('#payslip-content').load('/payroll/payslip/detail/' + $(this).data('id'));
+        });
+
+	});
+</script>
+{% endblock %}

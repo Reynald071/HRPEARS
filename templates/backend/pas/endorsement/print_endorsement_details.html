@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load static %}
+{% load humanize %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Generate Travel Order</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+			.containerX {
+				margin: 0px;
+				height: 0% !important;
+			}
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+			}
+
+			body{-webkit-print-color-adjust: exact;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+		  	}
+        }
+    </style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<i class="fas fa-bars"></i>
+				</button>
+				<a class="navbar-brand" href="javascript:;">Endorsement</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li>
+                        <button class="btn btn-info print-button" id="floatprint" style="margin-top: 8px;"><i class="fas fa-print"></i> Print</button>
+                    </li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+<body>
+    <page size="A4flex" layout="landscape" class="page" style="padding: 30px; position: relative;">
+		<div class="containerX">
+            <div style="margin-top: 10px;">
+            <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="10%">
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="5%" style="margin-top: -10px;">
+            </div>
+			<hr>
+            <table width="100%" style="font-size: 12px;">
+                <tr>
+                    <td>For:</td>
+                    <td><strong>PERSONNEL SECTION</strong></td>
+                </tr>
+                <tr>
+                    <td>From:</td>
+                    <td><strong>HUMAN RESOURCE PLANNING AND PERFORMANCE MANAGEMENT SECTION</strong></td>
+                </tr>
+                <tr>
+                    <td>Subject:</td>
+                    <td contenteditable="true"><strong>ENDORSEMENT OF RENEWED STAFF FOR PAYROLL INCLUSION</strong></td>
+                </tr>
+                <tr>
+                    <td>Date:</td>
+                    <td><strong>{{ data.date|date:'F d, Y' }}</strong></td>
+                </tr>
+            </table>
+            <hr>
+            <p style="margin-top: -15px; font-size: 12px;">Formally endorsing herewith the list of newly-hired/promoted staff. Further, kindly include the following in the payroll.</p>
+            <table border="1px" style="font-size: 11px;" width="100%">
+                <thead>
+                    <tr>
+                        <th class="text-center">No.</th>
+                        <th class="text-center">Last Name</th>
+                        <th class="text-center">First Name</th>
+                        <th class="text-center">M.I.</th>
+                        <th class="text-center">Suffix</th>
+                        <th class="text-center">Position</th>
+                        <th class="text-center">Basic Monthly Salary</th>
+                        <th class="text-center">Premium Rate</th>
+                        <th class="text-center">Effectivity of Contract</th>
+                        <th class="text-center">End of Contract</th>
+                        <th class="text-center">Status of Employment</th>
+                        <th class="text-center">Remarks</th>
+                        <th class="text-center">Charge fund / Prog / Proj.</th>
+                        <th class="text-center">Vice</th>
+                        <th class="text-center">LBP Account Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in people %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td class="text-center">{{ row.emp.pi.user.last_name }}</td>
+                        <td class="text-center">{{ row.emp.pi.user.first_name }}</td>
+                        <td class="text-center">{{ row.emp.pi.user.middle_name|slice:'1' }}</td>
+                        <td class="text-center">{{ row.emp.pi.ext.name }}</td>
+                        <td class="text-center">{{ row.position.name }}</td>
+                        <td class="text-center">{{ row.basic_salary|intcomma }}</td>
+                        <td class="text-center">{% if row.premium_rate != 0 %}{{ row.premium_rate|intcomma }}{% else %}N/A{% endif %}</td>
+                        <td class="text-center">{{ row.effectivity_contract|date:'Y-m-d' }}</td>
+                        <td class="text-center">{% if row.end_of_contract %}{{ row.end_of_contract|date:'Y-m-d' }}{% else %}N/A{% endif %}</td>
+                        <td class="text-center">{{ row.empstatus.name }}</td>
+                        <td class="text-center">{{ row.remarks }}</td>
+                        <td class="text-center">{{ row.fundcharge.name }}</td>
+                        <td class="text-center">{% if row.vice %}{{ row.vice }}{% else %}N/A{% endif %}</td>
+                        <td class="text-center">{{ row.emp.account_number }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <div class="row" style="font-size: 12px;">
+                <div class="col-sm-6">
+                    <p>Prepared by</p>
+                    <br>
+                    <p class="no-margins"><strong>{{ data.preparedby.pi.user.get_fullname|upper }}</strong></p>
+                    <p>{{ data.preparedby.position.name|upper }}</p>
+                </div>
+                <div class="col-sm-6">
+                    <p>Noted by</p>
+                    <br>
+                    {% getemployeebyempid data.preparedby.section.sec_head_id as head %}
+                    <p class="no-margins"><strong>{{ head.pi.user.get_fullname|upper }}</strong></p>
+                    <p>{{ head.position.name|upper }}</p>
+                </div>
+            </div>
+        </div>
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

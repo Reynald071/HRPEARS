@@ -1,0 +1,240 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h2>Outpass</h2>
+    </div>
+</div>
+
+{% getweek datetoday as daterange %}
+{% getnumberofhours datetoday emp_id 1 as getnumberofhours %}
+{% getnumberofhours datetoday emp_id 0 as forbutton %}
+
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>Outpass Details for this Week</h5>
+
+				</div>
+				<div class="ibox-content">
+					Week range: {{ daterange.0 }} to {{ daterange.1 }}<br>
+					Consumed time for this week: {{ getnumberofhours.0 }}<br>
+					Remaining time for outpass: {{ getnumberofhours.1 }}
+				</div>
+			</div>
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>Request for Outpass</h5>
+
+				</div>
+				<div class="ibox-content">
+					<form method="POST" action="{% url 'outpass' %}">
+					{% csrf_token %}
+					<div class="row">
+						<div class="col-md-12">
+							<label>Request in Behalf of</label>
+							<div id="items">
+								<div class="form-group">
+									<input type="text" id="reqid" class="form-control typeahead_2 filter_employee" onchange="$('.dateofoutpass').val(new Date().toISOString().split('T')[0]); $('.dateofoutpass').trigger('change');" name="in_behalf_of" autocomplete="off">
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label>Nature of Business<sup>*</sup></label>
+								<select class="form-control select" id="nature" name="nature" required>
+									<option></option>
+									<option value="1">Official</option>
+									<option value="2">Personal</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Date<sup>*</sup></label>
+								<input type="date" name="date" min="{{ datetoday }}" class="form-control dateofoutpass" required>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Time Out<sup>*</sup></label>
+								<input type="time" name="time_out" class="form-control" required>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Destination</label>
+								<textarea class="form-control" name="destination" style="min-height:50px; min-width:100%; max-width:100%; max-height:100px;"></textarea>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Activity to be Attended</label>
+								<textarea class="form-control" name="activity" style="min-width:100%; max-width:100%; max-height:100px; min-height:50px;"></textarea>
+							</div>
+						</div>
+						<div class="col-xs-12" id="buttonforrequest">
+							{% if forbutton.1 == 0 %}
+								<div class="alert alert-warning" role="alert">
+									Either you have exceeded the maximum allowed time for this week, or there is an on-going outpass where you have not returned from.
+								</div>
+							{% else %}
+								<button type="submit" class="btn btn-info">Add</button>
+							{% endif %}
+						</div>
+					</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-8">
+			<div class="ibox">
+				<div class="ibox-title">
+					<h5>Outpass Workflow</h5>
+
+				</div>
+				<div class="ibox-content">
+					<form method="get">
+						<div class="input-group form-group">
+							<span class="input-group-addon"><i class="fas fa-search"></i></span>
+							<input type="text" class="form-control" placeholder="Search for an outpass using any keyword.." name="search">
+						</div>
+					</form>
+					<form role="form" class="form-inline">
+						Show&nbsp;
+						<select class="form-control input-sm" id="rows" onchange="window.location = '{% url 'outpass' %}?rows=' + document.getElementById('rows').value;">
+							<option value="10" {% if rows == "10" %}selected="selected"{% endif %}>10</option>
+							<option value="25" {% if rows == "25" %}selected="selected"{% endif %}>25</option>
+							<option value="50" {% if rows == "50" %}selected="selected"{% endif %}>50</option>
+						</select>
+						&nbsp;rows per page
+						<div class="pull-right">
+						Showing {{ outpass.start_index }} - {{ outpass.end_index }} of {{ outpass.paginator.count }} entries&emsp;
+						<div class="btn-group">
+							{% if outpass.has_other_pages %}
+							  {% if outpass.has_previous %}
+								<a class="btn btn-default btn-sm" href="?page={{ outpass.previous_page_number }}"><i class="fa fa-angle-left"></i></a>
+							  {% else %}
+								<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-left"></i></a>
+							  {% endif %}
+							  {% if outpass.has_next %}
+								<a class="btn btn-default btn-sm" href="?page={{ outpass.next_page_number }}"><i class="fa fa-angle-right"></i></a>
+							  {% else %}
+								<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-right"></i></a>
+							  {% endif %}
+							{% endif %}
+							<a class="btn btn-white btn-sm" href="{% url 'outpass' %}"><i class="fas fa-sync-alt"></i></a>
+						</div>
+						</div>
+					</form>
+
+					<table class="table table-hover">
+						<thead class="">
+							<tr>
+								<th class="text-center">#</th>
+								<th>Requested for</th>
+								<th>Requested by</th>
+								<th class="text-center">Date and Time</th>
+								<th class="text-center">Time Returned</th>
+								<th class="text-center">Nature of Business</th>
+								<th class="text-center">Status</th>
+								<th class="text-center">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for row in outpass %}
+							<tr>
+								<td class="text-center">{{ forloop.counter0|add:outpass.start_index }}</td>
+								<td>{{ row.outpass.in_behalf_of.pi.user.first_name }} {{ row.outpass.in_behalf_of.pi.user.middle_name|to_middleinitial }} {{ row.outpass.in_behalf_of.pi.user.last_name }}</td>
+								{% if row.outpass.emp_id == request.session.emp_id %}
+									<td>You</td>
+								{% else %}
+									<td>{{ row.outpass.emp.pi.user.first_name }} {{ row.outpass.emp.pi.user.middle_name|to_middleinitial }} {{ row.outpass.emp.pi.user.last_name }}</td>
+								{% endif %}
+								<td class="text-center">{{ row.date }} @ {{ row.time_out }}</td>
+								<td class="text-center">{{ row.time_returned }}</td>
+								<td class="text-center">{% if row.nature == 1 %}Official{% else %}Personal{% endif %}</td>
+								<td class="text-center">{% if row.outpass.status == 1 %}<span class="badge badge-warning"><span class="fas fa-spinner"></span> Pending</span>{% elif row.outpass.status == 2 %}<span class="badge badge-primary"><span class="fas fa-check"></span> Approved</span>{% else %}<span class="badge badge-danger"><span class="fas fa-times"></span> Declined</span>{% endif %}</td>
+								<td class="text-center">
+									{% if row.outpass.status == 1 %}
+										<a href="javascript:;" data-role="update" data-id="{{ row.outpass_id }}" rel="tooltip" data-placement="bottom" title="Update Outpass"><i class="fas fa-edit"></i></a>
+									{% endif %}
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal" id="update-outpass" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+			<div class="modal-header" style="border-bottom: 0px;">
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h3>Update Request for Outpass</h3>
+			</div>
+			<div class="modal-body">
+	      	</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).on('click', 'a[data-role=update]',function(){
+		$('#update-outpass').modal('show').find('.modal-body').empty()
+		$('#update-outpass').modal('show').find('.modal-body').load('/update-outpass/' + $(this).data('id'));
+	});
+
+    $.get('{% url "filter_employee_except_me" %}', function(data){
+		$(".filter_employee").typeahead({
+			source:data,
+		});
+    },'json');
+
+	{% getemployeebyempid request.session.emp_id as reqid %}
+	$('.dateofoutpass').on('change', function(){
+		var id = $('#reqid').val();
+		if (id == '') {
+			id = '{{ reqid.id }}';
+			callback_x(this.value, id);
+		} else {
+			id = id.replace( /(^.*\[|\].*$)/g, '' );
+			$.ajax({
+				url: '/get-employee/' + id,
+				type: 'GET',
+				success: function(data) {
+					callback_x($('.dateofoutpass').val(), data.id);
+				}
+			});
+		}
+	});
+
+	function callback_x(value, id) {
+		$.ajax({
+			url: '/count-outpass/' + value + '/' + id,
+			type: 'GET',
+			success: function(data) {
+				if (data.x == '1') {
+					document.getElementById('buttonforrequest').innerHTML = '<div class="alert alert-warning" role="alert">A staff is only allowed a maximum of one outpass per day.</div>';
+				} else {
+					document.getElementById('buttonforrequest').innerHTML = '<button type="submit" class="btn btn-info">Add</button>';
+				}
+			}
+		});
+	}
+</script>
+{% endblock %}

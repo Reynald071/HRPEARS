@@ -1,0 +1,985 @@
+{% load tags %}
+{% load frontend_tags %}
+{% load crispy_forms_tags %}
+<div class="modal-body">
+    <div class="tabs-container">
+        <ul class="nav nav-tabs" id="tabUL">
+            <li class="nav-item"><a class="nav-link text-dark active" data-toggle="tab" href="#details"> Details</a></li>
+            <li class="nav-item"><a class="nav-link text-dark" data-toggle="tab" href="#participants">Participants</a></li>
+            <li class="nav-item"><a class="nav-link text-dark" data-toggle="tab" href="#facilitators">Facilitators</a></li>
+        </ul>
+        <div class="tab-content" style="border: 0px !important;">
+            <div id="details" class="tab-pane active">
+                <div class="border p-3">
+                    {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                        <form id="updateForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="rso_id" value="{{ training.id }}">
+                            <div class="form-group">
+                                <label>Title<span class="asteriskField">*</span></label>
+                                <div class="pull-right"><input type="checkbox" name="is_online_platform" {% if training.is_online_platform %}checked{% endif %}> Is online platform?</div>
+                                <input type="text" class="form-control" name="title" value="{{ training.training.tt_name }}" autocomplete="off" required>
+                            </div>
+                            <div class="form-group">
+                                <label id="venue">Venue </label> (if online platform please indicate if it's Zoom, Google Meet or any other online platform) <label><span class="asteriskField">*</span></label>
+                                <textarea class="form-control" name="venue" rows="3" autocomplete="off" required>{{ training.venue }}</textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-5">
+                                    <label>Start Date<span class="asteriskField">*</span></label>
+                                    <input type="date" class="form-control" name="start_date" value="{{ training.start_date|date:'Y-m-d' }}" required>
+                                </div>
+                                <div class="col-lg-7">
+                                    <label>End Date<span class="asteriskField">*</span></label>
+                                    <div class="input-group">
+                                        <input type="date" class="form-control" name="end_date" value="{{ training.end_date|date:'Y-m-d' }}" required>
+                                        <div class="input-group-append">
+                                            <button type="submit" class="btn btn-info">Update</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="form-group">
+                            <label>Title<span class="asteriskField">*</span></label>
+                            <input type="text" class="form-control" name="title" value="{{ training.training.tt_name }}" autocomplete="off" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Venue<span class="asteriskField">*</span></label>
+                            <textarea class="form-control" name="venue" rows="3" autocomplete="off" readonly>{{ training.venue }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label>Start Date<span class="asteriskField">*</span></label>
+                                <input type="date" class="form-control" name="start_date" value="{{ training.start_date|date:'Y-m-d' }}" readonly>
+                            </div>
+                            <div class="col-lg-6">
+                                <label>End Date<span class="asteriskField">*</span></label>
+                                <input type="date" class="form-control" name="end_date" value="{{ training.end_date|date:'Y-m-d' }}" readonly>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <hr style="margin-right:-15px; margin-left:-15px; margin-top:25px;">
+                    {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 %}
+                        <form id="uploadAttachmentForm" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ attachment_form.attachment|as_crispy_field }}
+                            {% if training.attachment %}
+                            Uploaded Attachment: <a href="{{ training.attachment.url }}" target="_blank">{{ training.attachment }}</a>
+                            {% endif %}
+                            <br><br>
+                            <button type="submit" class="btn btn-info">Upload</button>
+                        </form>
+                    {% else %}
+                        {% if training.attachment %}
+                            <a href="{{ training.attachment.url }}" target="_blank">{{ training.attachment }}</a>
+                        {% endif %}
+                    {% endif %}
+                    {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin'%}
+                        {% if training.rrso_status %}
+                            {% if not training.rso_status %}
+                                <hr style="margin-right:-15px; margin-left:-15px; margin-top:25px;">
+                                <button type="button" class="btn btn-success" id="bypass-approval-rso">Approve RSO</button>
+                            {% endif %}
+                        {% else %}
+                            <hr style="margin-right:-15px; margin-left:-15px; margin-top:25px;">
+                            <button type="button" class="btn btn-info" id="bypass-approval">Approve RRSO</button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div id="participants" class="tab-pane">
+                <div class="border p-3">
+                    <div class="tabs-container">
+                        <div class="form-group">
+                            {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                            <form id="addInternalParticipantForm">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="text" class="form-control filter_employee b-r-sm" name="employee" required autocomplete="off" placeholder="e.g. [16-12345] FIRST NAME MIDDLE INITIAL LAST NAME">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-info">Add Internal Participant</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <br>
+                            {% endif %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="lds-internal-participants-table" width="100%">
+                                    <thead>
+                                        <th width="15%">ACTION</th>
+                                        <th width="30%">EMPLOYEE NAME</th>
+                                        <th width="30%">POSITION</th>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                        <hr style="margin-right:-15px; margin-left:-15px;">
+                        <div class="form-group" style="margin-bottom:0px;">
+                            {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                            <form id="addExternalParticipantForm">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="text" class="form-control b-r-sm" name="employee" required autocomplete="off" placeholder="FIRST NAME MIDDLE INITIAL LAST NAME" style="text-transform: uppercase;">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-info">Add External Participant</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <br>
+                            {% endif %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="lds-external-participants-table" width="100%">
+                                    <thead>
+                                        <th width="15%">ACTION</th>
+                                        <th width="30%">PARTICIPANT NAME</th>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="facilitators" class="tab-pane">
+                <div class="border p-3">
+                    {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                    <form id="addFacilitatorForm">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" class="form-control filter_employee_facilitator b-r-sm" name="employee" required autocomplete="off" placeholder="e.g. [16-12345] FIRST NAME MIDDLE INITIAL LAST NAME">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-info">Add Facilitator</button>
+                            </div>
+                        </div>
+                    </form>
+                    <br>
+                    {% endif %}
+                    <table class="table table-bordered" id="lds-facilitators-table" width="100%">
+                        <thead>
+                            <th>ACTION</th>
+                            <th>EMPLOYEE NAME</th>
+                            <th class="text-center">POSITION</th>
+                            <th class="display-none">IS RESOURCE PERSON</th>
+                        </thead>
+                    </table>
+                    <hr style="margin-right:-15px; margin-left:-15px;">
+                    <div class="form-group" style="margin-bottom:0px;">
+                        {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                        <form id="addExternalFacilitatorForm">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" class="form-control b-r-sm" name="employee" required autocomplete="off" placeholder="FIRST NAME MIDDLE INITIAL LAST NAME" style="text-transform: uppercase;">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-info">Add External Facilitator</button>
+                                </div>
+                            </div>
+                        </form>
+                        <br>
+                        {% endif %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="lds-external-facilitator-table" width="100%">
+                                <thead>
+                                    <th width="15%">ACTION</th>
+                                    <th width="30%">FACILITATOR / RESOURCE PERSON NAME</th>
+                                    <th class="display-none">IS RESOURCE PERSON</th>
+                                    <th class="display-none">IS GROUP</th>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <div class="dropup btn-group">
+        <button type="button" data-toggle="dropdown" class="btn btn-info dropdown-toggle" style="margin-left: 7px !important;">Generate <span class="caret"></span></button>
+        <ul class="dropdown-menu" style="margin-left: -20px !important;">
+            <li><a class="dropdown-item" href="{% url 'print_rrso' training.id %}" target="_blank">RRSO</a></li>
+            {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 1 %}
+            <li><a class="dropdown-item" href="{% url 'print_rso' training.id %}" target="_blank">RSO</a></li>
+            {% endif %}
+            <li><a class="dropdown-item" href="{% url 'print_ld_attendance' training.id %}" target="_blank">Attendance</a></li>
+        </ul>
+    </div>
+    {% if training.rrso_status == 1 %}
+    <div class="dropup btn-group">
+        <button type="button" data-toggle="dropdown" class="btn btn-warning dropdown-toggle" style="margin-left: 7px !important;">Generate Certificates <span class="caret"></span></button>
+        <ul class="dropdown-menu" style="margin-left: -20px !important;">
+            <li><a class="dropdown-item" href="{% url 'generate_certificate_of_appearance' training.id %}" target="_blank">Appearance</a></li>
+            <li><a class="dropdown-item" href="{% url 'generate_certificate_participants' training.id %}" target="_blank">Participants</a></li>
+            <li><a class="dropdown-item" href="{% url 'generate_certificate_facilitators' training.id %}" target="_blank">Facilitators</a></li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $(".filter_employee, .filter_employee_facilitator").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+
+        $('#updateForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to update the training?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "lds_rrso" %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: response.value.msg,
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#submitForm').trigger('reset');
+                            $('#new_training').modal('hide');
+                            $('#lds-rso-table').DataTable().ajax.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                      title: "Unauthorized transaction",
+                      text: response.value.errors,
+                      icon: "error",
+                      confirmButtonColor: "#3498DB",
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#lds-internal-participants-table').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'order': [[ 1, 'asc' ]],
+            'lengthMenu': [15,25,50],
+            'ajax': {
+                'url': '/api/learning-and-development/participants/?format=datatables&type_pk=' + '{% getHash 0 as type_pk %}{{ type_pk }}&rso_pk=' + '{% getHash training.id as rso_pk %}{{ rso_pk }}',
+                'type': 'GET',
+            },
+            'fnCreatedRow': function (row, data, index) {
+                $(row).attr('id', data['id']);
+            },
+            'columns': [
+                {'data': 'id',
+                    'render': function(data, type, row, meta){
+                        {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                            var template = '';
+                            template += '<a href="javascript:;" data-role="delete-participants" data-id="'+ data +'" data-filter="0">Delete</a>'
+                            return template
+                        {% else %}
+                            return '';
+                        {% endif %}
+                    }
+                },
+                {'data': 'full_name',
+                    'render': function(data, type, row, meta){
+                        return data.toUpperCase();
+                    },
+                    'name': 'emp.pi.user.last_name, emp.pi.user.first_name'
+                },
+                {'data': 'position',
+                    'render': function(data, type, row, meta){
+                        return data.toUpperCase();
+                    },
+                    'name': 'emp.position.name'
+                },
+            ],
+        });
+
+        $('#lds-external-participants-table').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'order': [[ 1, 'asc' ]],
+            'lengthMenu': [15,25,50],
+            'ajax': {
+                'url': '/api/learning-and-development/participants/?format=datatables&type_pk=' + '{% getHash 1 as type_pk %}{{ type_pk }}&rso_pk=' + '{% getHash training.id as rso_pk %}{{ rso_pk }}',
+                'type': 'GET',
+            },
+            'fnCreatedRow': function (row, data, index) {
+                $(row).attr('id', data['id']);
+            },
+            'columns': [
+                {'data': 'id',
+                    'render': function(data, type, row, meta){
+                        {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                            var template = '';
+                            template += '<a href="javascript:;" data-role="delete-participants" data-id="'+ data +'" data-filter="1">Delete</a>'
+                            return template;
+                        {% else %}
+                            return '';
+                        {% endif %}
+                    }
+                },
+                {'data': 'participants_name',
+                    'render': function(data, type, row, meta){
+                        return data.toUpperCase();
+                    }
+                },
+            ],
+        });
+
+        $('#lds-facilitators-table').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'order': [[ 1, 'asc' ]],
+            'lengthMenu': [15,25,50],
+            'ajax': {
+                'url': '/api/learning-and-development/facilitators/?format=datatables&rso_pk=' + '{% getHash training.id as rso_pk %}{{ rso_pk }}&type_pk=' + '{% getHash 0 as type_pk %}{{ type_pk }}',
+                'type': 'GET',
+            },
+            'fnCreatedRow': function (row, data, index) {
+                $(row).attr('id', data['id']);
+            },
+            'columns': [
+                {'data': 'id',
+                    'render': function(data, type, row, meta){
+                        {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                        var template = '';
+                        if(row['is_resource_person'] == "0"){
+                            template += '<a href="javascript:;" data-role="tagging" data-id="'+ data +'">Tag as Resource Person</a>'
+                        } else {
+                            template += '<a href="javascript:;" data-role="remove-tagging" data-id="'+ data +'">Remove Tag as Resource Person</a>'
+                        }
+
+                        template += ' | <a href="javascript:;" data-role="delete-facilitator" data-id="'+ data +'" data-filter="0">Delete</a>'
+
+                        return template
+                        {% endif %}
+                    }
+                },
+                {'data': 'full_name',
+                    'render': function(data, type, row, meta){
+                        return data.toUpperCase();
+                    },
+                    'name': 'emp.pi.user.last_name, emp.pi.user.first_name'
+                },
+                {'data': 'position',
+                    'render': function(data, type, row, meta){
+                        return data.toUpperCase();
+                    },
+                    'name': 'emp.position.name'
+                },
+                {'data': 'is_resource_person', 'searchable': false, 'className': 'display-none'},
+            ],
+        });
+
+        $('#lds-external-facilitator-table').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'order': [[ 1, 'asc' ]],
+            'lengthMenu': [15,25,50],
+            'ajax': {
+                'url': '/api/learning-and-development/facilitators/?format=datatables&rso_pk=' + '{% getHash training.id as rso_pk %}{{ rso_pk }}&type_pk=' + '{% getHash 1 as type_pk %}{{ type_pk }}',
+                'type': 'GET',
+            },
+            'fnCreatedRow': function (row, data, index) {
+                $(row).attr('id', data['id']);
+            },
+            'columns': [
+                {'data': 'id',
+                    'render': function(data, type, row, meta){
+                        {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0 or training.created_by_id == request.session.emp_id %}
+                        var template = '';
+                        if(row['is_resource_person'] == "0"){
+                            template += '<a href="javascript:;" data-role="tagging" data-id="'+ data +'">Tag as Resource Person</a>'
+                        } else {
+                            template += '<a href="javascript:;" data-role="remove-tagging" data-id="'+ data +'">Remove Tag as Resource Person</a>'
+                        }
+
+                        if(row['is_group'] == "0"){
+                            template += ' | <a href="javascript:;" data-role="group" data-id="'+ data +'">Group</a>'
+                        } else {
+                            template += ' | <a href="javascript:;" data-role="ungroup" data-id="'+ data +'">Ungroup</a>'
+                        }
+
+                        template += ' | <a href="javascript:;" data-role="delete-facilitator" data-id="'+ data +'" data-filter="1">Delete</a>'
+
+                        return template
+                        {% endif %}
+                    }
+                },
+                {'data': 'rp_name',
+                    'render': function(data, type, row, meta){
+                        return data.toUpperCase();
+                    },
+                },
+                {'data': 'is_resource_person', 'searchable': false, 'className': 'display-none'},
+                {'data': 'is_group', 'searchable': false, 'className': 'display-none'},
+            ],
+        });
+
+        {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' or training.rrso_status == 0  or training.created_by_id == request.session.emp_id %}
+        $('#uploadAttachmentForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to upload this attachment?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "upload_ld_attachment" training.id %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: response.value.msg,
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#uploadAttachmentForm').trigger('reset');
+                            $('#training_details').find('#details-content').load('{% url "training_details" training.id %}');
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                      title: "Unauthorized transaction",
+                      text: response.value.msg,
+                      icon: "warning",
+                      confirmButtonColor: "#3498DB",
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#addInternalParticipantForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to add this internal participant in the training?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "add_training_participant" training.id 0 %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: response.value.msg,
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#addInternalParticipantForm').trigger('reset');
+                            $('#lds-internal-participants-table').DataTable().ajax.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                      title: "Unauthorized transaction",
+                      text: response.value.msg,
+                      icon: "warning",
+                      confirmButtonColor: "#3498DB",
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#addExternalParticipantForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to add this external participant in the training?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "add_training_participant" training.id 1 %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: response.value.msg,
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#addExternalParticipantForm').trigger('reset');
+                            $('#lds-external-participants-table').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#addFacilitatorForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to add this facilitator in the training?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "add_training_facilitator" training.id 0 %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: response.value.msg,
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#addFacilitatorForm').trigger('reset');
+                            $('#lds-facilitators-table').DataTable().ajax.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                      title: "Unauthorized transaction",
+                      text: response.value.msg,
+                      icon: "warning",
+                      confirmButtonColor: "#3498DB",
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#addExternalFacilitatorForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to add this external facilitator in the training?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : form,
+                        url         : '{% url "add_training_facilitator" training.id 1 %}',
+                        type        : 'POST',
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: response.value.msg,
+                      icon: "success",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $('#addExternalFacilitatorForm').trigger('reset');
+                            $('#lds-external-facilitator-table').DataTable().ajax.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                      title: "Unauthorized transaction",
+                      text: response.value.msg,
+                      icon: "warning",
+                      confirmButtonColor: "#3498DB",
+                    });
+                }
+            });
+            e.preventDefault();
+        });
+
+        $(document).on('click', 'a[data-role=tagging]', function(){
+            var id = $(this).data('id');
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to tag this facilitator in the training as a resource person?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            'id': id
+                        },
+                        url: "{% url 'tag_as_resource_person' %}",
+                        type: "POST",
+                        success: function(response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    text: response.msg,
+                                    icon: "success",
+                                    confirmButtonColor: "#3498DB",
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#lds-facilitators-table').DataTable().ajax.reload();
+                                        $('#lds-external-facilitator-table').DataTable().ajax.reload();
+                                    }
+                                });
+                            }
+                        },
+                    });
+                },
+            });
+        });
+
+        $(document).on('click', 'a[data-role=group]', function(){
+            var id = $(this).data('id');
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to tag this facilitator as a group?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            'id': id
+                        },
+                        url: "{% url 'tag_as_group' %}",
+                        type: "POST",
+                        success: function(response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    text: response.msg,
+                                    icon: "success",
+                                    confirmButtonColor: "#3498DB",
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#lds-facilitators-table').DataTable().ajax.reload();
+                                        $('#lds-external-facilitator-table').DataTable().ajax.reload();
+                                    }
+                                });
+                            }
+                        },
+                    });
+                },
+            });
+        });
+
+        $(document).on('click', 'a[data-role=ungroup]', function(){
+            var id = $(this).data('id');
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to remove the tag as a group?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            'id': id
+                        },
+                        url: "{% url 'remove_tag_as_group' %}",
+                        type: "POST",
+                        success: function(response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    text: response.msg,
+                                    icon: "success",
+                                    confirmButtonColor: "#3498DB",
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#lds-facilitators-table').DataTable().ajax.reload();
+                                        $('#lds-external-facilitator-table').DataTable().ajax.reload();
+                                    }
+                                });
+                            }
+                        },
+                    });
+                },
+            });
+        });
+
+        $(document).on('click', 'a[data-role=remove-tagging]', function(){
+            var id = $(this).data('id');
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to remove the tag as a resource person?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            'id': id
+                        },
+                        url: "{% url 'remove_tag_as_resource_person' %}",
+                        type: "POST",
+                        success: function(response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    text: response.msg,
+                                    icon: "success",
+                                    confirmButtonColor: "#3498DB",
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#lds-facilitators-table').DataTable().ajax.reload();
+                                        $('#lds-external-facilitator-table').DataTable().ajax.reload();
+                                    }
+                                });
+                            }
+                        },
+                    });
+                },
+            });
+        });
+
+        $(document).on('click', 'a[data-role=delete-facilitator]', function(){
+            var id = $(this).data('id');
+            var type = $(this).data('filter');
+            text = ''
+            if (type == 0) {
+                text = "You want to delete this facilitator / resource person?"
+            } else {
+                text = "You want to delete this external facilitator / resource person?"
+            }
+
+            Swal.fire({
+                title: "Are you sure",
+                text: text,
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            'pk': id
+                        },
+                        url: "{% url 'delete_facilitator' %}",
+                        type: "POST",
+                        success: function(response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    text: response.msg,
+                                    icon: "success",
+                                    confirmButtonColor: "#3498DB",
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#lds-facilitators-table').DataTable().ajax.reload();
+                                        $('#lds-external-facilitator-table').DataTable().ajax.reload();
+                                    }
+                                });
+                            }
+                        },
+                    });
+                },
+            });
+        });
+
+        $(document).on('click', 'a[data-role=delete-participants]', function(){
+            var id = $(this).data('id');
+            var type = $(this).data('filter');
+            text = ''
+            if (type == 0) {
+                text = "You want to delete this participant?"
+            } else {
+                text = "You want to delete this external participant?"
+            }
+
+            Swal.fire({
+                title: "Are you sure",
+                text: text,
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3498DB",
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data: {
+                            'pk': id
+                        },
+                        url: "{% url 'delete_participants' %}",
+                        type: "POST",
+                        success: function(response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    text: response.msg,
+                                    icon: "success",
+                                    confirmButtonColor: "#3498DB",
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        $('#lds-internal-participants-table').DataTable().ajax.reload();
+                                        $('#lds-external-participants-table').DataTable().ajax.reload();
+                                    }
+                                });
+                            }
+                        },
+                    });
+                },
+            });
+        });
+        {% endif %}
+
+        {% if user|check_permission:'ld_manager' or user|check_permission:'superadmin' %}
+            $('#bypass-approval').on('click', function(){
+                Swal.fire({
+                    title: "Are you sure",
+                    text: "You want to approve the Request for Issuance of Regional Special Order?",
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3498DB",
+                    confirmButtonText: "Yes",
+                    allowOutsideClick: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: function (){
+                        return $.ajax({
+                            url         : '{% url "bypass_lds_rrso_approval" training.id %}',
+                            type        : 'POST',
+                        });
+                    },
+                }).then(function (response){
+                    if (response.value.data == "success"){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: response.value.msg,
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#lds-rso-admin-table').DataTable().ajax.reload();
+                                $('#training_details').modal('show').find('#details-content').load('/learning-and-development/details/{{ training.id }}');
+                            }
+                        });
+                    }
+                });
+            });
+
+            $('#bypass-approval-rso').on('click', function(){
+                Swal.fire({
+                    title: "Are you sure",
+                    text: "You want to approve the Regional Special Order?",
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3498DB",
+                    confirmButtonText: "Yes",
+                    allowOutsideClick: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: function (){
+                        return $.ajax({
+                            url         : '{% url "bypass_lds_rso_approval" training.id %}',
+                            type        : 'POST',
+                        });
+                    },
+                }).then(function (response){
+                    if (response.value.data == "success"){
+                        Swal.fire({
+                          title: "Good job!",
+                          text: response.value.msg,
+                          icon: "success",
+                          confirmButtonColor: "#3498DB",
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $('#lds-rso-admin-table').DataTable().ajax.reload();
+                                $('#training_details').modal('show').find('#details-content').load('/learning-and-development/details/{{ training.id }}');
+                            }
+                        });
+                    }
+                });
+            });
+        {% endif %}
+    });
+</script>
+{% endblock %}

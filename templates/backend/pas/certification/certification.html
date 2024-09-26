@@ -1,0 +1,234 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<style type="text/css">
+	.font-century{
+		font-family: Century Gothic;
+		font-size: 12px;
+	}
+
+	.upper{
+		text-transform: uppercase;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Certification</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                Employees
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Certification</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="ibox">
+		<div class="ibox-content">
+			<div class="row">
+				<div class="col-sm-4">
+					<label>Certificate</label>
+					<div class="form-group">
+						<select class="form-control select" id="certificate">
+							<option></option>
+							{% for row in certificate %}
+							<option value="{{ row.id }}">{{ row.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-group">
+						<label>Employee Search</label>
+						<input type="text" class="form-control typeahead_2 filter_employee" id="employee" name="employee" placeholder="e.g. [16-11626] FIRST NAME LAST NAME" required autocomplete="off">
+					</div>
+					<div class="form-group">
+						<button class="btn btn-info" id="btn-view"><i class="fas fa-eye"></i> View Certificate</button>
+					</div>
+					<div class="contentwrapper"></div>
+				</div>
+				<div class="col-sm-8">
+					<div class="view-certificate"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/jQuery.print.js' %}"></script>
+<script type="text/javascript">
+	function ordinal_suffix_of(i) {
+	    var j = i % 10,
+	        k = i % 100;
+	    if (j == 1 && k != 11) {
+	        return i + "st";
+	    }
+	    if (j == 2 && k != 12) {
+	        return i + "nd";
+	    }
+	    if (j == 3 && k != 13) {
+	        return i + "rd";
+	    }
+	    return i + "th";
+	}
+
+	const monthNames = ["January", "February", "March", "April", "May", "June",
+			  "July", "August", "September", "October", "November", "December"
+			];
+	$('#btn-view').on('click', function(){
+		cooContent ='<h4 class="text-muted no-margins">DETAILS</h4>\
+					<br><br>\
+					<label>Names to merge</label>\
+					<div id="items">\
+						<div class="form-group">\
+							<div class="input-group"><input type="text" class="form-control upper" name="name[]" required autocomplete="off"> <span class="input-group-btn"> <button type="button" class="btn btn-info add" style="height: 33px;"><i class="fas fa-plus"></i></button> </span></div>\
+							</div>\
+						</div>\
+					</div>\
+					<div class="form-group">\
+						<button class="btn btn-success" id="btn-save-coo"><i class="fas fa-check"></i> Save Certificate</button>\
+					</div>'; 
+
+			if ($('#certificate').val() == 4){
+				emp = $('#employee').val();
+				id_number = emp.split(/[\[\]]+/)[1];
+
+				if ($('#employee').val().length > 0){
+					$('.contentwrapper').empty();
+					$('.contentwrapper').append(cooContent);
+
+					$('.view-certificate').empty();
+					$('.view-certificate').load("{% url 'coo' pk=12345 %}".replace(/12345/, id_number.toString()));
+					
+
+					$('#btn-coo-print').click(function(){
+						if ($('.upper').val() == ""){
+							Swal.fire("", "Print not available. Their are some empty fields.", "info");
+						} else {
+							$("#coo-print-data").print();
+						}
+					});
+				
+					$('.add').on('click', function(){
+						$('#items').append('<div class="form-group"><div class="input-group minus-remove"><input type="text" class="form-control upper" name="name[]" required autocomplete="off"> <span class="input-group-btn"> <button type="button" class="btn btn-danger remove_field" style="height: 33px;"><i class="fa fa-minus"></i></button> </span></div></div></div>');
+
+						$(".upper").on('blur', function(){
+							$('#dynamic-text').empty();
+							$('#dynamic-2-text').empty();
+							var max = $("input[name='name[]']").length;
+							var i = 1;
+							if (max > 1){
+								$("input[name='name[]']").each(function(){
+									if (max == i){
+										$('#dynamic-text').append("and " + $(this).val().toUpperCase());
+									} else {
+										$('#dynamic-text').append($(this).val().toUpperCase() + ", ");
+									}
+									i++;
+								});
+							} else {
+								$("input[name='name[]']").each(function(){
+									$('#dynamic-text').append($(this).val().toUpperCase());
+								});
+							}
+
+							$("input[name='name[]']").each(function(){
+								$('#dynamic-2-text').append($(this).val() + ", ");
+							});
+
+					    });
+					});
+
+					$(".upper").on('blur', function(){
+						$('#dynamic-text').append($(this).val().toUpperCase());
+
+						$("input[name='name[]']").each(function(){
+							$('#dynamic-2-text').append($(this).val() + ", ");
+						});
+					});
+
+					$('#items').on("click", ".remove_field", function(e){
+						e.preventDefault();
+						$(this).parent().parent().remove();
+					});	
+
+
+				    $('#btn-save-coo').on('click', function(){
+				    	if (checkEmptyFields() == true){
+				    		Swal.fire({
+							  title: "Are you sure you want to save this certification?",
+							  text: "After you save this certification you can track this on certificate workflow under certification navigation.",
+							  type: "info",
+							  showCancelButton: true,
+							  confirmButtonColor: "#DD6B55",
+							  confirmButtonText: "Yes!",
+							}).then((result) => {
+								if (result.isConfirmed) {
+									Swal.showLoading()
+									var name = [];
+									$("input[name='name[]']").each( function() {
+										name.push(this.value);
+									});
+									$.ajax({
+										data: {
+											name: name,
+											emp_id: $('#employee').val()
+										},
+										url: "{% url 'submit_cootracking' %}",
+										type: "POST"
+									})
+									.done(function(data){
+										if (data.data){
+											window.location.reload();
+										}
+									})
+								}
+							});
+						} else {
+							Swal.fire("Error!", "empty field(s) on names to merge.", "error");
+						}
+				    });
+
+				    function checkEmptyFields(){
+						valid = true;
+						$("input[name='name[]']").each(function(){
+							if (this.value == ""){
+								valid = false;
+							} else {
+								valid = true;
+							}
+						});
+
+						return valid;
+					}
+				}
+			} else {
+				$('.contentwrapper').empty();
+			}
+	});
+	
+	$('#employee').on('keyup', function(){
+		if (!$(this).val()){
+			$('.view-certificate').empty();
+			$('.contentwrapper').empty();
+		}
+	});
+	
+	$(".filter_employee").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+</script>
+{% endblock %}

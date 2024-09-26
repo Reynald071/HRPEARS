@@ -1,0 +1,238 @@
+{% load tags %}
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+<title>DSWD My PORTAL PDS | Print Page 5</title>
+<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/print.css' %}" rel="stylesheet">
+<style type="text/css">
+	@media print{
+		.containerX {
+			padding: 0px;
+			margin: 0px;
+			zoom: 90% !important;
+			height: 0% !important;
+		}
+		page {
+			margin: 0px;
+			border: 0.1px solid transparent;
+			height: 326mm !important;
+			width: 100% !important;
+		}
+		table .gray-bg{
+			background-color: #E8E8E8 !important;
+		}
+		.table thead th, small {
+	    	background-color: #999999 !important;
+	    	color: white !important;  
+	    	font-size: 15px;
+	    	font-style: italic;
+	    	-webkit-print-color-adjust: exact; 
+	    }
+	    .table tbody .text-danger i{
+	    	color: red !important;		
+		}
+		body{-webkit-print-color-adjust: exact;}
+	}
+
+	@page {
+		size: auto;
+	}
+
+	.containerX {
+		zoom: 80%;
+	}
+	th{
+		font-family: Arial Narrow;
+	}
+	td{
+		border: 1px solid black;
+		font-family: Arial Narrow;
+	}
+	.text-capital{
+		text-transform: uppercase;
+	}
+	.padding-zero{
+		padding: 0px !important;
+	}
+	.font-small{
+		font-size: 13px;
+	}
+	.font-xsmall{
+		font-size: 11px;
+	}
+	.font-xxsmall{
+		font-size: 10px;
+	}
+	.magic{
+        border-top: 0px solid black !important; border-bottom: 0px solid black !important;
+    }
+    .magic-2{
+    	border-right:0px solid black !important;
+    }
+    .magic-3{
+    	border-left:0px solid black !important;
+    }
+    thead th {
+    	background-color: #999;
+    	color: white;  
+    	font-size: 15px;
+    	border: 1px solid black !important;
+    	font-style: italic;
+    }
+    .text-danger{
+    	color:red !important;
+    }
+    .gray-bg{
+		background-color: #E8E8E8 !important;
+	}
+	.center-div {
+		display:flex;
+		justify-content:center;
+		align-items:center;
+		height:40px !important;
+		padding:2px !important;
+		overflow: hidden;
+	}
+</style>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">
+            <strong>Page 5&emsp;
+			<em><small class="font-xsmall">Notes: Paper size is Folio, scale to 90%, margin to 0.19, 0.33, 0.08, 0.36</small></em>
+            </strong>
+        </a>
+		<ul class="navbar-nav ml-auto">
+			<li><a href="javascript:;" class="btn btn-info print-button" id="floatprint" title="Print" style="cursor:pointer;"><i class="fas fa-print"></i> <span id="print">Print</span></a></li>
+		</ul>
+	</div>
+</nav>
+<page size="long" style="padding: 30px; position: relative; page-break-after: always;">
+	<div class="containerX">
+		{% if work %}
+		<table class="table" border=1 style="margin-bottom:0 !important;">
+			<thead>
+				<th colspan="9">V.  WORK EXPERIENCE <br><small>(Include private employment. Start from your recent work) Description of duties should be indicated in the attached Work Experience sheet.)</small>
+				</th>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="font-small magic-3 gray-bg" colspan="2" width="20%">28. &emsp; <div class="text-center" style="margin-top: -15px;">INCLUSIVE DATES <br>(mm/dd/yyyy)</div></td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="20%">POSITION TITLE <br>(Write in full/Do not abbreviate)</td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="30%">DEPARTMENT / AGENCY / OFFICE / COMPANY <br>(Write in full/Do not abbreviate)</td>
+					<td rowspan="2" class="font-small text-center gray-bg">MONTHLY SALARY</td>
+					<td rowspan="2" class="font-xsmall text-center gray-bg">SALARY/ JOB/ PAY GRADE</td>
+					<td rowspan="2" class="font-small text-center gray-bg">STATUS OF APPOINTMENT</td>
+					<td rowspan="2" class="font-small text-center gray-bg">GOVT SERVICE</td>
+				</tr>
+				<tr>
+					<td class="text-center font-small gray-bg">FROM</td>
+					<td class="text-center font-small gray-bg">TO</td>
+				</tr>
+				{% for row in work %}
+				<tr>
+					<td class="font-small text-center" valign="center" style="padding:0px !important;"><div class="center-div"><strong>{{ row.we_from|date:"m/d/Y" }}</strong></div></td>
+					<td class="font-small text-center" valign="center" style="padding:0px !important;"><div class="center-div"><strong>{% is_past_due row.we_to as is_past_due %}{% if is_past_due %}PRESENT{% else %}{{ row.we_to|date:"m/d/Y" }}{% endif %}</strong></div></td>
+					<td class="font-small text-center" valign="center" style="padding:0px !important;"><div class="center-div"><strong>{{ row.position|upper }}</strong></div></td>
+					<td class="font-small text-center" style="padding:0px !important;"><div class="center-div"><strong>{{ row.company|upper }}</strong></div></td>
+					<td class="font-small text-center" style="padding:0px !important;"><div class="center-div"><strong>{{ row.salary_rate }}</strong></div></td>
+					<td class="font-small text-center" style="padding:0px !important;"><div class="center-div"><strong>{{ row.sg_step }}</strong></div></td>
+					<td class="text-center font-xsmall" style="padding:0px !important;"><div class="center-div"><strong>{% getappstatus row.empstatus_id as appstatus %}{{ appstatus.name|upper }}</strong></div></td>
+					<td class="font-small text-center" style="padding:0px !important;"><div class="center-div"><strong>{% if row.govt_service == 1%}Y{% else %}N{% endif %}</strong></div></td>
+				</tr>
+				{% endfor %}
+				{% getrange 15 work.count as work_range %}
+				{% for row in work_range|times %}
+				<tr>
+					<td class="font-small text-center" style="padding:0px !important;"><div class="center-div">&nbsp;</div></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+					<td class="font-small text-center"></td>
+				</tr>
+				{% endfor %}
+				<tr>
+					<td colspan="9" class="text-center text-danger font-small padding-zero gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+				</tr>
+			</tbody>
+		</table>
+		{% endif %}
+		<table class="table" border=1 style="margin-top: -1px; margin-bottom:0 !important;">
+			<thead>
+				<th colspan="9">VII. LEARNING AND DEVELOPMENT (L&D) INTERVENTIONS/TRAINING PROGRAMS ATTENDED <br><small>(Start from the most recent L&D/training program and include only the relevant L&D/training taken for the last five (5) years for Division Chief/Executive/Managerial positions)</small></th>
+			</thead>
+			<tbody>
+				<tr>
+					<td rowspan="2" width="2%" class="magic-2 font-small gray-bg">30.</td>
+					<td rowspan="2" class="font-small text-center magic-3 gray-bg" width="27%">TITLE OF LEARNING AND DEVELOPMENT<br> INTERVENTIONS/TRAINING PROGRAMS)<br>(Write in full)</td>
+					<td colspan="2" class="font-small text-center padding-zero gray-bg" width="18%">INCLUSIVE DATES OF ATTENDANCE <br>(mm/dd/yyyy)</td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="7%">NUMBER OF HOURS</td>
+					<td rowspan="2" class="font-small text-center padding-zero gray-bg" width="7%">Type of LD<br>(Managerial/ Supervisory/
+						Technical/etc)</td>
+					<td rowspan="2" class="font-small text-center gray-bg" width="20%">CONDUCTED/ SPONSORED BY <br>(Write in full)</td>
+				</tr>
+				<tr>
+					<td class="font-small text-center gray-bg">From</td>
+					<td class="font-small text-center gray-bg">To</td>
+				</tr>
+				{% for row in training %}
+				<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.training|upper }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.tr_from|date:"m/d/Y" }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.tr_to|date:"m/d/Y" }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.tr_hours }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.training_type|upper }}</strong></div></td>
+						<td class="font-small text-center padding-zero"><div class="center-div"><strong>{{ row.conducted|upper }}</strong></div></td>
+				</tr>
+				{% endfor %}
+				{% if work %}
+					{% getrange 20 training.count as training_range %}
+					{% for row in training_range|times %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div">&nbsp;</div></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+					</tr>
+					{% endfor %}
+				{% else %}
+					{% getrange 39 training.count as training_range %}
+					{% for row in training_range|times %}
+					<tr>
+						<td colspan="2" class="font-small text-center padding-zero"><div class="center-div">&nbsp;</div></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+						<td class="font-small text-center"></td>
+					</tr>
+					{% endfor %}
+				{% endif %}
+				<tr>
+					<td colspan="9" class="text-center text-danger font-small padding-zero gray-bg"><strong><i>(Continue on separate sheet if necessary)</i></strong></td>
+				</tr>
+				<tr>
+					<th colspan="2" class="text-center gray-bg font-small"><i>SIGNATURE</i></th>
+					<td colspan="2"></td>
+					<th colspan="2" class="text-center gray-bg font-small"><i>DATE</i></th>
+					{% get_latest_workexperience request.session.pi_id as latest_work_experience %}
+					<td colspan="3" class="text-center font-small"><strong>{{ latest_work_experience|date:"m/d/Y" }}</strong></td>
+				</tr>
+			</tbody>
+		</table>
+		<p class="font-small pull-right" style="font-family: Arial Narrow;"><i>CS FORM 212 (Revised 2017), Page 5 of 5</i></p>
+	</div>
+</page>
+<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/adminlte.min.js' %}"></script>
+<script src="{% static 'js/plugins/sweetalert/sweetalert.min.js' %}"></script>
+<script src="{% static 'js/functions.js' %}"></script>

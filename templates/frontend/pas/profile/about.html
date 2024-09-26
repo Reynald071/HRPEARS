@@ -1,0 +1,474 @@
+{% load crispy_forms_tags %}
+<div id="page-about">
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="submitForm">
+                {% csrf_token %}
+                <div class="card card-outline">
+                    <div class="card-header">
+                        <div class="pull-right">
+                            <button type="submit" class="btn btn-sm btn-info mt-2">
+                                <span class="loading open-circle" style="display:none;"></span> Save changes
+                            </button>
+                        </div>
+                        <h4 class="font-weight-bold mb-0">Employee Information</h4>
+                        <small>You can update your employee information and other important data here.</small>
+                    </div>
+                    
+                    <div class="card-body" style="zoom: 95% !important;">
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>ID Number</label>
+                                    <input type="text" class="form-control" name="id_number" value="{{ employee.id_number }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label>Account Number</label>
+                                    <input type="text" class="form-control" name="account_number" value="{% if employee.account_number %}{{ employee.account_number }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label>Position<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control" name="position" value="{% for row in position %}{% if row.id == employee.position_id %}{{ row.name }}{% endif %}{% endfor %}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label>Employment Status<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control" name="empstatus" value="{% for row in empstatus %}{% if row.id == employee.empstatus_id %}{{ row.name }}{% endif %}{% endfor %}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label>Project<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control" name="empstatus" value="{% for row in project %}{% if row.id == employee.project_id %}{{ row.name }}{% endif %}{% endfor %}" readonly>
+                                </div>
+                         </div>
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <div class="form-group">
+                                    <label>Section<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control" name="section" value="{% for row in section %}{% if row.id == employee.section_id %}{{ row.sec_name }}{% endif %}{% endfor %}" readonly>
+                                </div>
+                            </div>                        
+                            <div class="col-lg-5">
+                                <div class="form-group">
+                                    <label>Fund Source</label>
+                                    <input type="text" class="form-control" name="fund_source" value="{% for row in fundsource %}{% if row.id == employee.fundsource_id %}{{ row.name }}{% endif %}{% endfor %}" readonly>
+                                </div>
+                            </div>
+                        </div><div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Area of Assignment<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control form-select-sm" name="aoa" value="{% for row in aoa %}{% if row.id == employee.aoa_id %}{{ row.name }}{% endif %}{% endfor %}" readonly>
+                                </div>
+                            </div>                        
+                            <div class="col-lg-3">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Salary Rate<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control" name="salary_rate" value="{{ employee.salary_rate }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Salary Grade<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control" name="salary_grade" value="{{ employee.salary_grade }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Step Increment<span class="asteriskField"></span></label>
+                                    <input type="text" class="form-control" name="step_inc" value="{{ employee.step_inc }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-outline">
+                    <div class="card-header">
+                        <div class="pull-right">
+                            <button type="submit" class="btn btn-sm btn-info mt-2">
+                                <span class="loading open-circle" style="display:none;"></span> Save changes
+                            </button>
+                        </div>
+                        <h4 class="font-weight-bold mb-0">Additional Information</h4>
+                        <small>You can update employee position information here.</small>
+                    </div>
+                    <div class="card-body" style="zoom: 95% !important;">
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Item Number </label>
+                                    <input type="text" class="form-control" name="item_number" value="{% if employee.item_number %}{{ employee.item_number }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Date of Creation of Position </label>
+                                    <input type="date" class="form-control" name="docp" value="{% if employee.dateofcreation_pos %}{{ employee.dateofcreation_pos|date:'Y-m-d' }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Designation </label>
+                                    <input type="text" class="form-control" name="designation" value="{% if employee.designation %}{{ employee.designation }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Date of Designation </label>
+                                    <input type="date" class="form-control" name="dod" value="{% if employee.dateof_designation %}{{ employee.dateof_designation|date:'Y-m-d' }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Mode of Accession</label>
+                                    <select class="form-control select" name="mode_access">
+                                        <option></option>
+                                        {% for row in mode_accession %}
+                                            {% if row.id == employee.mode_access_id %}
+                                            <option value="{{ row.id }}" selected>{{ row.name|title }}</option>
+                                            {% else %}
+                                            <option value="{{ row.id }}">{{ row.name|title }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Special Order Number </label>
+                                    <input type="text" class="form-control" name="special_order_no" value="{% if employee.specialorder_no %}{{ employee.specialorder_no }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Plantilla PSIPOP </label>
+                                    <input type="text" class="form-control" name="plantilla" value="{% if employee.plantilla_psipop %}{{ employee.plantilla_psipop }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Type of Disability </label>
+                                    <input type="text" class="form-control" name="tod" value="{% if personal_info.type_of_disability %}{{ personal_info.type_of_disability }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Type of Indigenous Group </label>
+                                    <select class="form-control select" name="tig">
+                                        <option></option>
+                                        {% for row in indi %}
+                                            {% if row.id == personal_info.type_of_indi_id %}
+                                            <option value="{{ row.id }}" selected>{{ row.name|title }}</option>
+                                            {% else %}
+                                            <option value="{{ row.id }}">{{ row.name|title }}</option>
+                                            {% endif%}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Former Incumbent</label>
+                                    <input type="text" class="form-control filter_employee" name="former_incumbent" value="{% if employee.former_incumbent %}{{ employee.former_incumbent }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Mode of Separation</label>
+                                    <select class="form-control select" name="mode_sep">
+                                        <option></option>
+                                        {% for row in mode_separation %}
+                                            {% if row.id == employee.mode_sep_id %}
+                                            <option value="{{ row.id }}" selected>{{ row.name|title }}</option>
+                                            {% else %}
+                                            <option value="{{ row.id }}">{{ row.name|title }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Date Vacated</label>
+                                    <input type="date" class="form-control" name="date_vacated" value="{% if employee.date_vacated %}{{ employee.date_vacated|date:'Y-m-d' }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Remarks Vacated</label>
+                                    <textarea class="form-control" style="resize:vertical;" name="remarks_vacated" rows="5">{% if employee.remarks_vacated %}{{ employee.remarks_vacated }}{% endif %}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="card card-outline">
+				<form id="saveSocialMediaForm">
+                    <div class="card-header">
+                        <div class="pull-right">
+                            <button type="submit" class="btn btn-sm btn-info mt-2">
+                                <span class="loading open-circle" style="display:none;"></span> Save changes
+                            </button>
+                        </div>
+                        <h4 class="font-weight-bold mb-0">Social Media</h4>
+                        <small>You can also add your social media links here.</small>
+                    </div>
+                    {% csrf_token %}
+                    <div class="card-body" style="zoom:95% !important;">
+                        <div class="form-group">
+                            <label>Facebook URL</label>
+                            <input type="text" class="form-control" name="facebook_url" value="{{ sm.facebook_url }}" placeholder="e.g. www.facebook.com/profile/" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>Instagram URL</label>
+                            <input type="text" class="form-control" name="instagram_url" value="{{ sm.instagram_url }}" placeholder="e.g. www.instagram.com/account/" autocomplete="off">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Twitter URL</label>
+                            <input type="text" class="form-control" name="twitter_url" value="{{ sm.twitter_url }}" placeholder="e.g. www.twitter.com/feed/" autocomplete="off">
+                        </div>
+                    </div>
+				</form>
+			</div>
+		</div>
+		<div class="col-sm-6">
+			<div class="card card-outline">
+                <form id="saveIncaseForm">
+                    <div class="card-header">
+                        <div class="pull-right">
+                            <button type="submit" class="btn btn-sm btn-info mt-2">
+                                <span class="loading open-circle" style="display:none;"></span> Save changes
+                            </button>
+                        </div>
+                        <h4 class="font-weight-bold mb-0">Other Contact Information</h4>
+                        <small>These are information you have provided for emergency purposes.</small>
+                    </div>
+                    {% csrf_token %}
+                    <div class="card-body" style="zoom: 95% !important;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Your Email</label>
+                                    <input type="text" class="form-control" value="{{ employee.pi.user.email }}" autocomplete="off" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Your Contact</label>
+                                    <input type="text" class="form-control" value="{{ employee.pi.mobile_no }}" autocomplete="off" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact In Case of Emergency<span class="asteriskField">*</span></label>
+                            <input type="text" class="form-control" name="contact_name" value="{{ incase.contact_name }}" autocomplete="off">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Contact Number<span class="asteriskField">*</span></label>
+                            <input type="text" class="form-control" name="contact_number" maxlength="11" value="{{ incase.contact_number }}" autocomplete="off">
+                        </div>
+                    </div>
+                </form>
+			</div>
+		</div>
+	</div>
+	<div class="row mb-0">
+		<div class="col-lg-12">
+			<div class="card card-outline mb-0">
+				<form id="submitPassForm">
+		            <div class="card-header">
+			            <div class="pull-right">
+							<button type="submit" class="btn btn-sm btn-info mt-2">
+								<span class="loading open-circle" style="display:none;"></span> Save changes
+							</button>
+			            </div>
+		                <h4 class="font-weight-bold mb-0">Security Settings</h4>
+						<small>After you change your password here, your accounts in Active Directory and Global Protect will be changed too.</small>
+		            </div>
+		            {% csrf_token %}
+		            <div class="card-body">
+                        <div class="row"    >
+                            <div class="col-4">
+                                <div class="form-group mb-0">
+                                    <label>Old Password<span class="asteriskField">*</span></label>
+                                    <input type="password" class="form-control" name="old_password" required>
+                                    <small class="text-danger" id="error-msg"></small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-group mb-0">
+                                    <label>New Password<span class="asteriskField">*</span></label>
+                                    <input type="password" class="form-control" name="new_password" id="new_password" required>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-group mb-0" style="margin-bottom:0;">
+                                    <label>Confirm New Password<span class="asteriskField">*</span></label>
+                                    <input type="password" class="form-control" name="confirm_password" id="confirm_password" required>
+                                    <small class="text-danger" id="confirm-msg"></small>
+                                </div>
+                            </div>
+                        </div>
+		            </div>
+	            </form>
+	        </div>
+		</div>
+	</div>
+</div>
+{% block script %}
+<script type="text/javascript">
+	$.get('{% url "filter-incumbent" %}', function(data){
+        $(".filter_employee").typeahead({
+            source:data,
+            highlight: true
+        });
+    },'json');
+
+	$('#submitForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            url: '{% url "about" %}',
+            type: "POST",
+            data: form,
+            beforeSend: function() {
+                $('.loading').css('display', '');
+                $('button').prop("disabled", true);
+            },
+            success: function (response) {
+                if(response.data) {
+                    Swal.fire({
+                        title: "Good job!",
+                        text: "Personal employee information was updated successfully.",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                    });
+                }
+            },
+            complete: function(){
+                $('.loading').css('display', 'none');
+                $('button').prop("disabled", false);
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    });
+
+	$('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+	$('#saveSocialMediaForm').on('submit', function(e){
+		e.preventDefault();
+		$.ajax({
+			url: '{% url "social_media" %}',
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				if (response.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Social media URLs successfully updated.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+					});
+				}
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+
+	$('#saveIncaseForm').on('submit', function(e){
+		e.preventDefault();
+		$.ajax({
+			url: '{% url "incase_of_emergency" %}',
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				if (response.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Incase of emergency details successfully updated.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+					});
+				}
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+
+	$('#submitPassForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		if($('#new_password').val() == $('#confirm_password').val()){
+			$.ajax({
+				url: '{% url "change-password" %}',
+				type: "POST",
+				data: new FormData(this),
+				beforeSend: function(){
+					$('.loading').css('display', '');
+					$('button').prop("disabled", true);
+				},
+				success: function (response) {
+					if (response.error){
+						$('#error-msg').text('Invalid old password!');
+						$('#confirm-msg').empty();
+					} else if (response.confirm){
+						$('#confirm-msg').text('Passwords do not match!');
+						$('#error-msg').empty();
+					}
+					else {
+						$('#error-msg').empty();
+						$('#confirm-msg').empty();
+						$('#submitPassForm').trigger('reset');
+						Swal.fire({
+							title: "Good job!",
+							html: "Your password was successfully updated",
+							icon: "success",
+							confirmButtonColor: "#3498DB",
+						});
+					}
+				},
+				complete: function(){
+					$('.loading').css('display', 'none');
+					$('button').prop("disabled", false);
+				},
+				cache: false,
+				contentType: false,
+				processData: false
+			});
+		}else{
+			$('#confirm-msg').text('Passwords do not match!');
+			$('#error-msg').empty();
+		}
+	});
+</script>
+{% endblock %}
+

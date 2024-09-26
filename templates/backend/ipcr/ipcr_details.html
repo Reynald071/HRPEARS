@@ -1,0 +1,90 @@
+<form id="submitUpdateForm">
+{% csrf_token %}
+<div class="modal-body">
+    <input type="hidden" name="employee_id" value="{{ data.emp_id }}">
+    <div class="form-group">
+        <label>Employee</label>
+        <input type="text" class="form-control filter_employee" name="employee" value="{{ data.emp.pi.user.get_fullname|upper }}" readonly>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Year<span class="asteriskField">*</span></label>
+                <input type="number" class="form-control" name="year" value="{{ data.year }}" autocomplete="off" required>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Semester<span class="asteriskField">*</span></label>
+                <select class="form-control update-select" name="semester" required>
+                    <option></option>
+                    <option value="1" {% if data.semester == 1%}selected{% endif %}>1st</option>
+                    <option value="2" {% if data.semester == 2%}selected{% endif %}>2nd</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="form-group" style="margin-bottom:0px;">
+        <label>Rating<span class="asteriskField">*</span></label>
+        <input type="text" class="form-control" name="ipcr" value="{{ data.ipcr|floatformat:5 }}" onkeypress="return isNumberKey(event)" autocomplete="off" required>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Save changes</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.update-select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $('#submitUpdateForm').on('submit', function(e){
+    	var form = new FormData(this);
+        Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to update this IPC rating",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "ipcr_details" data.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: data.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#details-modal').modal('hide');
+                        $('#ipcr-table').DataTable().ajax.reload();
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: "Ooops!",
+                    html: data.value.msg,
+                    icon: "warning",
+                })
+            }
+		});
+		e.preventDefault();
+    });
+</script>
+{% endblock %}

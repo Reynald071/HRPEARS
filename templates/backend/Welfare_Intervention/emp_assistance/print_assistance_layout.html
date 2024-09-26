@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Clearance</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style>
+
+		@media print {
+			body{-webkit-print-color-adjust: exact;}
+
+		}
+		.containerX {
+			zoom: 80%;
+		}
+		.no-margins{
+			margin: 0 !important;
+		}
+
+		.no-padding{
+			padding: 0px !important;
+		}
+
+		hr {
+		  border-top: solid 1px #000 !important;
+		}
+		@media print {
+		    tr.vendorListHeading {
+		        background-color: #1a4567 !important;
+		        -webkit-print-color-adjust: exact; 
+		    }
+		}
+
+		@media print {
+		    .vendorListHeading th {
+		        color: white !important;
+		    }
+		}
+		input {border:0;outline:0;}
+		input:focus {outline:none!important;}
+		::-webkit-input-placeholder {
+
+		}
+
+		@media print {
+		  ::-webkit-input-placeholder { /* WebKit browsers */
+		      color: transparent;
+		  }
+		  :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      color: transparent;
+		  }
+		  ::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      color: transparent;
+		  }
+		  :-ms-input-placeholder { /* Internet Explorer 10+ */
+		      color: transparent;
+		  }
+		}
+		textarea {
+		    border: none;
+		    overflow: auto;
+		    outline: none;
+
+		    -webkit-box-shadow: none;
+		    -moz-box-shadow: none;
+		    box-shadow: none;
+
+		    resize: none; /*remove the resize handle on the bottom right*/
+		}
+
+		input::-webkit-input-placeholder {
+		    font-size: 15px;
+		    line-height: 3;
+		}
+		@media print {
+		tr.vendorListHeading {
+		    background-color: #999999!important;
+		    -webkit-print-color-adjust: exact; 
+		}}
+
+		@media print {
+		    .vendorListHeading th {
+		    color: white !important;
+		}}
+        input.largerCheckbox {
+            width: 40px;
+            height: 40px;
+        }
+		@media print {
+		  #printPageButton {
+		    display: none;
+		  }
+		}
+		body{
+		  -webkit-print-color-adjust:exact;
+		}
+		@media print { 
+		    .table td, .table th { 
+		        background-color: #fff !important; 
+		    } 
+		}
+		#text_title{
+			margin-right:220px;
+		}
+		#button{
+			margin-top: 10px;
+		}
+		.unstyled-button {
+		  border: none;
+		  padding: 0;
+		  background: none;
+		}
+	</style>
+</head>
+<form id="form_submit">
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Employee Assistance</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><button type="submit" class="btn btn-info" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-check-circle"></i> Save</button> &nbsp;</li>
+				<li><button type="button" class="btn btn-info print-button" id="floatprint" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+    <page size="longflex" layout="portrait" class="page" style="padding: 30px; position: relative; font-family: 'Inter'; page-break-after: always;">
+		<div class="containerX">
+			<p class="bold text-center no-margins">Republic of the Philippines</p>
+			<p class="bold text-center no-margins">HUMAN RESOURCE MANAGEMENT AND DEVELOPMENT SERVICE</p>
+			<p class="bold text-center no-margins">General Administration and Support Services</p>
+			<p class="bold text-center">DSWD-HRMDS-GF-004|REV 00/11 JAN 2021</p>
+			<div class="pull-left" style="margin-top: -80px">
+				<img loading="lazy"  src="{% static 'image/hrwdswd.png' %}" width="240px;" style="mix-blend-mode: multiply;">
+			</div>
+			<center>
+				<hr style="height:2px;border-width:0;color:black;background-color:black">
+				<div style="text-align: center;"><span style="font-size: 18px;"><b>EMPLOYEE ASSISTANCE SHEET</b></span></div>
+				<div style="text-align: center;"><br></div>
+				<div style="text-align: left;"></div>
+			</center>
+			<table class="table table-bordered no-margins">
+			    <tbody>
+			        <tr>
+			        	<input type="text" name="emp_id" value="{{data1.id}}" hidden>
+						<input type="text" name="pk" value="{{emp_assistance.id}}" hidden>
+			            <td>
+			                Name of requesting employee:
+			                <br>
+			                <input type="text" id="fname" value="{{data1.pi.user.first_name}}" placeholder="Type here..">&nbsp;&nbsp;&nbsp;<input type="text" placeholder="Type here.." value="{{data1.pi.user.middle_name}}">&nbsp;&nbsp;&nbsp;<input type="text" placeholder="Type here.." value="{{data1.pi.user.last_name}}">
+			            </td>
+			            <td>
+			                Sex:
+			                <br>
+			                {% if data1.pi.gender == 1 %}
+			                <input type="checkbox" checked>Male
+			                <br>
+			                <input type="checkbox">Female
+			                {% else %}
+			                <input type="checkbox">Male
+			                <br>
+			                <input type="checkbox" checked>Female
+			                {% endif %}
+			            </td>
+			            <td>
+			                REQUEST DATE:
+			                <br>
+			                <input type="date" name="date_requested" required value="{{emp_assistance.rq_date|date:'Y-m-d'}}">
+			            </td>
+			        </tr>
+			    </tbody>
+			 </table>
+			 <p><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;First Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Middle Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Last Name</i></p>
+			 <table class="table table-bordered no margins">
+			    <thead>
+			        <th width="695px;">Office</th>
+			        <th>Position</th>
+			    </thead>
+			    <tbody>
+			        <td><input type="text" placeholder="Type here.." value="{{data1.section.div.div_name}}" size="50"></td>
+			        <td><input type="text" placeholder="Type here.." value="{{data1.position.name}}" size="30"></td>
+			    </tbody>
+			 </table>
+			 <div id="informant">
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th width="695px;">INFORMANT, IF ANY (IF NONE, PUT N/A):</th>
+			            <th>INFORMANT'S CONTACT DETAIL</th>
+			        </thead>
+			        <tbody>
+			            <td><input type="text" name="informant" placeholder="Type here.." required value="{{emp_assistance.informant}}"></td>
+			            <td><input type="text" name="informant_contact" placeholder="Type here.." required value="{{emp_assistance.informant_contact}}"></td>
+			        </tbody>
+			     </table>
+			</div>
+			 <div id="informant">
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th colspan="2">Brief nature of request: </th>
+			        </thead>
+			        <tbody>
+			            <td><input type="text" name="brief_request" placeholder="Type here.." style="width: 500px;" required
+							value="{{emp_assistance.brief_request}}"></td>
+			        </tbody>
+			     </table>
+			</div>
+			 <div id="informant">
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th colspan="3">CATEGORY OF REQUEST:</th>
+			        </thead>
+			        <tbody>
+			            <td>Financial
+			            	<br>
+			            	{% for row in financial %}
+							<input type="checkbox" id="financial" name="financial" value="{{row.id}}" {% if row.id == emp_assistance.cr_financial_id %}checked{% endif %}>&nbsp;{{row.name}}
+							<br>
+			                {% endfor %}
+			                <input type="checkbox" id="others" name="cr_fa_others" value="others" {% if emp_assistance.cr_fa_others%}checked{% endif %}> Others (Please Specify) &nbsp;<input type="text" id="other_specfy" name="others" placeholder="Type here if others.." style="width: 280px;" value="{{emp_assistance.cr_financial_others}}">
+						</td>
+			            <td>Mental/Emotional:
+			                <br>
+							{% for row in mental %}
+			                <input type="checkbox" name="mental" value="{{row.id}}" {% if row.id == emp_assistance.cr_mental_id%}checked{% endif %}>&nbsp;{{row.name}}
+			                <br>
+			                {% endfor %}
+			            </td>
+			            <td>Other:
+			                <br>
+							{% for row in other %}
+			                <input type="checkbox" name="other_request" value="{{row.id}}" {% if row.id == emp_assistance.cr_other_id%}checked{% endif %}>&nbsp;{{row.name}}
+			                <br>
+			                {% endfor %}
+			            </td>
+			        </tbody>
+			     </table>
+			</div>
+			 <div id="informant">
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th colspan="3" style="background-color: #87cefa">Document Attached:</th>
+			        </thead>
+			        <tbody>
+			            <td>For Financial – Medical Assistance Claims (Certified True Copy):
+			                <br>
+			                <input type="checkbox" name="validid" {% if emp_assistance.docx_valid_id %}checked{%endif%} value="Photocopy of Valid Government ID (aside from DSWD-issued IDs)">&nbsp;Photocopy of Valid Government ID (aside from DSWD-issued IDs)
+			                <br>
+			                <input type="checkbox" name="barangay_cert" {% if emp_assistance.docx_barangay_cert %}checked{%endif%} value="Barangay Certificate">&nbsp;Barangay Certificate
+			                <br>
+			                <input type="checkbox" name="case_study_report" {% if emp_assistance.docx_case_study %}checked{%endif%} value="Case Study Report">&nbsp;Case Study Report
+			                <br>
+			                <input type="checkbox" name="clinical_abstract" {% if emp_assistance.docx_clinical_abstract %}checked{%endif%} value="Clinical Abstract or Medical Certificate issued within three (3) months from request with signature and license of physician.">&nbsp;Clinical Abstract or Medical Certificate issued within three (3) months from request with signature and license of physician.
+			                <br>
+			                <input type="checkbox" name="host_bill" {% if emp_assistance.docx_host_bill %}checked{%endif%} value="Hospital Bill (for hospitalization expenses)">&nbsp;Hospital Bill (for hospitalization expenses)
+			                <br>
+			                <input type="checkbox" name="prescription" {% if emp_assistance.docx_prescription %}checked{%endif%} value="Prescription (for medicine purchase)">&nbsp;Prescription (for medicine purchase)
+			                <br>
+			                <input type="checkbox" name="lab_request" {% if emp_assistance.docx_lab_request %}checked{%endif%} value="Laboratory Request (for procedures)">&nbsp;Laboratory Request (for procedures)
+			            </td>
+			            <td>For Financial – Transportation Assistance Claims (Certified True Copy)
+			                <br>
+			                <input type="checkbox" name="validid" value="Photocopy of Valid Government ID (aside from DSWD-issued IDs)">&nbsp;Photocopy of Valid Government ID (aside from DSWD-issued IDs)
+			                <br>
+			                <input type="checkbox" name="barangay_cert" value="Barangay Certificate">&nbsp;Barangay Certificate
+			                <br>
+			                <input type="checkbox" name="" value="Document showing emergency concern (pls. specify):">&nbsp;Document showing emergency concern (pls. specify): <input type="text" placeholder="typedocxshowing" value="{{emp_assistance.docx_showing}}" name="document_showing">
+			                <br>
+			                <input type="checkbox" name="police_blotter_cert" {% if emp_assistance.docx_police_blotter %}checked{%endif%} value="Police Blotter/ Certification (for victim of pickpockets, etc.)">&nbsp;Police Blotter/ Certification (for victim of pickpockets, etc.)
+			            </td>
+			            <td>For Financial – Burial Assistance Claims (Certified True Copy)
+			                <br>
+			                <input type="checkbox" name="validid" value="Photocopy of Valid Government ID (aside from DSWD-issued IDs)">&nbsp;Photocopy of Valid Government ID (aside from DSWD-issued IDs)
+			                <br>
+			                <input type="checkbox" name="barangay_cert" value="Barangay Certificate">&nbsp;Barangay Certificate
+			                <br>
+			                <input type="checkbox" name="Funeral_Contract" {% if emp_assistance.docx_funeral_contract %}checked{%endif%} value="Funeral Contract">&nbsp;Funeral Contract
+			                <br>
+			                <input type="checkbox" name="Death_Certificate" {% if emp_assistance.docx_death_cert %}checked{%endif%} value="Death Certificate">&nbsp;Death Certificate
+			                <br>
+			                <input type="checkbox" name="permit_to_transfer" {% if emp_assistance.docx_permit_to_transfer %}checked{%endif%} value="Permit to Transfer/ Health Permit (for transfer of cadaver)">&nbsp;Permit to Transfer/ Health Permit (for transfer of cadaver)
+			                <br>
+			                <hr style="height:2px;border-width:0;color:black;background-color:black">
+			                <table>
+			                    <thead>
+			                        <th>For Memorandum for Voluntary Contribution: Interview will suffice no need for documentation.</th>
+			                    </thead>
+			                    <tbody>
+			                        <td><input type="text" name="for_memo" placeholder="Type here.." value="{{emp_assistance.memo_voluntaryContrib}}"></td>
+			                    </tbody>
+			                </table>
+			                <hr style="height:2px;border-width:0;color:black;background-color:black">
+			                <table>
+			                    <thead>
+			                        <th>For other Financial Needs:</th>
+			                    </thead>
+			                    <tbody>
+			                        <td><input type="checkbox" name="for_financial" {% if emp_assistance.endorsement_letter %}checked{% endif %}>&nbsp;Endorsement Letter or Letter of Request for referral.</td>
+			                    </tbody>
+			                </table>
+			                <hr style="height:2px;border-width:0;color:black;background-color:black">
+			                Other documents (specify):&nbsp;<textarea rows="5" placeholder="Type here" id="other_docx" name="other_docx" cols="40">{% if emp_assistance.other_docx %}{{emp_assistance.other_docx}}{% endif %}</textarea>
+			            </td>
+			        </tbody>
+			     </table>
+			</div>
+			<p style="font-size: 15px; margin-top: 15px;" class="text-center">
+				Page 1 of 2 
+				<img loading="lazy"  src="{% static 'image/socotec.png' %}" width="100px;" class="pull-right">
+			</p>
+			<hr width="90%" style="margin-top: -10px;">
+			<p style="font-size: 12px; margin-top: -15px; font-family: Times New Roman;" class="text-center">
+				DSWD Field Office Caraga, R. Palma St., Butuan City, Philippines (8600)<br>
+				Website: http://www.dswd.gov.ph Tel Nos.: (632) 8 931-8101 to 07 Telefax (632) 8 931-8191
+			</p>
+			<br>
+			<br>
+			<br>
+			 <div id="informant">
+				<p class="pull-right mt-5">DSWD-HRMDS-GF-004 | REV 01/ 07 NOV 2022</p>
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th>RESULT OF INTERVIEW WITH EMPLOYEE</th>
+			        </thead>
+			        <tbody>
+			            <td><textarea rows="7" cols="120" name="result_emp"></textarea></td>
+			        </tbody>
+			     </table>
+			</div>
+			 <div id="informant">
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th>ACTION(S) PROVIDED/GIVEN</th>
+			        </thead>
+			        <tbody>
+			            <td><textarea rows="7" name="action_provided" cols="120"></textarea></td>
+			        </tbody>
+			     </table>
+			</div>
+			 <div id="informant">
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th>REMARKS, IF ANY</th>
+			        </thead>
+			        <tbody>
+			            <td><textarea rows="7" name="remarks" cols="120"></textarea></td>
+			        </tbody>
+			     </table>
+			</div>
+			 <div id="informant">
+			     <table class="table table-bordered no margins">
+			        <thead>
+			            <th colspan="2">ACKNOWLEDGEMENT AND APPROVAL</th>
+			        </thead>
+			        <tbody>
+			            <td width="650px;"><center><br><input type="text" name="office_in_charge"><br><hr style="height:2px;border-width:0;color:black;width: 400px;background-color:black">
+			                <p>ACTION’S OFFICER SIGNATURE OVER PRINTED NAME</p></center>
+			            </td>
+			            <td><center><br><input type="text" name="date_approved" value="{{date_today}}" style="text-align:center;"><br><hr style="height:2px;border-width:0;color:black;width: 300px;background-color:black">
+			                <p>Date</p></center></td>
+			        </tbody>
+			     </table>
+			</div>
+		</div>
+		<footer>
+		<center>
+			<h6>PAGE 2 of 2</h6>
+			<hr style="height:2px;border-width:0;color:black;background-color:black">
+			DSWD | GASSG | HUMAN RESOURCE MANAGEMENT AND DEVELOPMENT SERVICE
+		</center>
+		</footer>
+    </page>
+</body>
+</form>
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+	<script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+	<script>
+
+    $('#form_submit').on('submit', function(e){
+	var form = new FormData(this);
+    Swal.fire({
+        title: "Good Job! ",
+        text: "Please click (Okay) button to proceed.",
+        icon: "info",
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Okay",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+    if (result.isConfirmed) {
+        Swal.showLoading()
+        $.ajax({
+            data        : form,
+            url         : "{% url 'assistance_submit' %}",
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            var data = data.data;
+            if(data == "Success"){
+                Swal.fire({
+                  title: "Success!",
+                  text: "You can now go to HR Welfare",
+                  icon: "info",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                    	window.location.reload();
+                    }
+                });
+            }else{
+                Swal.fire({
+                  title: "Error",
+                  text: "Data not saved to database",
+                  icon: "error",
+                  confirmButtonColor: "#3498DB",
+                });
+            }
+        });
+    }
+    });
+    e.preventDefault();
+	});
+
+	$('#others').click(function() {
+	if($("#others").is(':checked')){
+		$('#other_specfy').attr('required', 'required');
+		$('#other_docx').attr('required','required');
+	}else{
+		$('#other_specfy').removeAttr('required');
+		$('#other_docx').removeAttr('required');
+	}
+	});
+	</script>
+</html>

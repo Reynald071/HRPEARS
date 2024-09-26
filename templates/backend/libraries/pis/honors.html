@@ -1,0 +1,273 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load frontend_tags %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/libraries.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Academic Honors</h1>
+		<ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Libraries
+            </li>
+			<li class="breadcrumb-item">
+                Education
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Academic Honors</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-4">
+			<div class="ibox">
+				<form id="submitForm" novalidate="">
+					<div class="ibox-content">
+						{% csrf_token %}
+						{{ form.hon_name|as_crispy_field }}
+						{{ form.hon_status|as_crispy_field }}
+					</div>
+					<div class="ibox-footer">
+						<button class="btn btn-info">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-sm-8">
+			<div class="ibox">
+				<div class="ibox-title">
+					{% if request.GET.search and data.paginator.count == 0 %}
+						<div class="col-xs-12">
+							<a href="{% url 'honors' %}" id="btn-back"><i class="fas fa-chevron-left"></i> Back</a>
+						</div>
+					{% else %}
+						<div class="row">
+							<div class="col-xs-12">
+								<div class="pull-right">
+								Showing {{ data.start_index }} - {{ data.end_index }} of {{ data.paginator.count }} entries&emsp;
+									<div class="btn-group">
+									{% if data.has_other_pages %}
+										{% if data.has_previous %}
+											<a class="btn btn-default" href="?page={{ data.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+										{% else %}
+											<a class="btn btn-default disabled">Previous</a>
+										{% endif %}
+										{% for row in data.paginator.page_range %}
+											{% if data.number == row %}
+												<a class="btn btn-info" href="javascript:;">{{ row }}</a>
+											{% elif row > data.number|add:-3 and row < data.number|add:3 %}
+												<a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+											{% endif %}
+										{% endfor %}
+										{% if data.has_next %}
+											<a class="btn btn-default" href="?page={{ data.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+										{% else %}
+											<a class="btn btn-default disabled">Next</a>
+										{% endif %}
+									{% endif %}
+									</div>
+									<a class="btn btn-default" href="{% url 'honors' %}">Refresh</a>
+								</div>
+							</div>
+						</div>
+					{% endif %}
+				</div>
+				<div class="ibox-content">
+					{% if request.GET.search and data.paginator.count == 0 %}
+						<div style="padding:0px 15px !important; text-align:center;">
+							<div class="row" style="padding-bottom:15px">
+								<div class="" style="text-align:center;">
+									<img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="margin: 0 auto; object-fit: cover;">
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<form method="get">
+										<div class="input-group form-group">
+											<span class="input-group-addon"><i class="fas fa-search"></i></span>
+											<input type="text" class="form-control" placeholder="Search for a keyword.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+										</div>
+									</form>
+								</div>
+								<div class="row col-md-6 col-md-offset-3">
+									<p>
+										Sorry. We have not found any results matching the search keyword <i>'{% if request.GET.status and request.GET.search %}{{ request.GET.search }}{% else %}{% if request.GET.status %}{{ request.GET.status }}{% endif %}{% if request.GET.search %}{{ request.GET.search }}{% endif %}{% endif %}'</i>. Please try another keyword.
+									</p>
+								</div>
+							</div>
+						</div>
+					{% else %}
+						<form method="get">
+							<div class="input-group form-group">
+								<span class="input-group-addon"><i class="fas fa-search"></i></span>
+								<input type="text" class="form-control" placeholder="Search for a keyword.." name="search" value="{{ request.GET.search }}">
+							</div>
+						</form>
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th class="text-right" style="width:4%">#</th>
+									<th>NAME</th>
+									<th class="text-center">STATUS</th>
+									<th class="text-center">UPLOAD BY</th>
+									<th class="text-right">ACTION</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% if data %}
+								{% for row in data %}
+								<tr>
+									<td class="text-right">{{ forloop.counter0|add:data.start_index }}</td>
+									<td>{{ row.hon_name }}</td>
+									<td class="text-center">{% if row.hon_status %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-times-circle text-danger"></i>{% endif %}</td>
+									<td class="text-center">{{ row.pi.user.first_name }} {{ row.pi.user.middle_name|to_middleinitial }} {{ row.pi.user.last_name }}</td>
+									<td class="text-right">
+										{% count_possible_merges "honors" row.hon_name row.id as cnt_psbl_mrgs %}
+										{% if cnt_psbl_mrgs %}
+										<a data-role="merge" data-id="{{ row.id }}" data-content="{{ row.hon_name }}">Merge</a> |
+										{% endif %}
+										<a href="{% url 'honors-update' row.id %}">Update</a>
+									</td>
+								</tr>
+								{% endfor %}
+								{% else %}
+								<tr>
+									<td class="text-center" colspan="5"><img loading="lazy"  src="{% static 'image/no-data.png' %}" class="img-responsive" width="250px;" style="margin: 0 auto;"><p class="text-center">There is no data to show you right now. </p></td>
+								</tr>
+								{% endif %}
+							</tbody>
+						</table>
+					{% endif %}
+				</div>
+			</div>	
+		</div>
+	</div>
+</div>
+<div class="modal" id="merge" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">MERGE</h3>
+	            <small>Merge similar entries into one entity.</small>
+	        </div>
+	        <form id="mergeForm">
+	        {% csrf_token %}
+        	<div class="modal-body">
+            	<div class="row">
+            		<div class="col-sm-12">
+            			<div class="form-group row">
+							<div class="col-sm-12">
+								<label>Current Entity</label>
+								<input type="hidden" id="current_id" class="form-control" name="current_id">
+								<input type="text" id="current_entity" name="current_entity" style="outline:none; padding:5px;" class="form-control">
+							</div>
+						</div>
+            		</div>
+            		<div class="col-sm-12">
+            			<div class="form-group" style="margin:0px;">
+            				<label>Suggested Merges</label>
+							<div class="table-responsive">
+								<table class="table table-bordered" style="margin:0px;">
+									<thead>
+										<tr>
+											<th style="width:1% !important; text-align:right !important;">#</th>
+											<th style="text-align:left !important;">ENTITY NAME</th>
+										</tr>
+									</thead>
+									<tbody id="merge_results_table">
+									</tbody>
+								</table>
+							</div>
+						</div>
+            		</div>
+            	</div>
+            </div>
+            <div class="modal-footer">
+				<div class="btn-group">
+	            	<button type="submit" class="btn btn-info"><span class="loading open-circle" style="display:none;"></span> Start Merge</button>
+				</div>
+            </div>
+            </form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).on('click', 'a[data-role=merge]',function(){
+		$('#merge').modal('show');
+		$('#current_id').val($(this).data('id'));
+		$('#current_entity').val($(this).data('content'));
+		$("#merge_results_table").empty();
+
+		var url = '{% url "find-merges" "honors" "entity_name" "entity_id" %}'
+				.replace("entity_name", $('#current_entity').val())
+				.replace("entity_id", $('#current_id').val());
+		$.get(url, function(data, status){
+			if (data.data.length > 0) {
+				for (i=0; i < data.data.length; i++) {
+					$("#merge_results_table").append('<tr>\
+						<td style="text-align:right !important;"><input type="checkbox" value="'+data.data[i].id+'" name="include_merge" checked></td>\
+							<td style="text-align:left !important;">'+data.data[i].name+'</td>\
+						</tr>\
+					');
+				}
+			} else {
+				$("#merge_results_table").append('\
+					<tr>\
+						<td class="text-center" colspan="6"><i class="fa fa-database"></i> Nothing to merge to this entry.</td>\
+					</tr>\
+				');
+			}
+		});
+	});
+
+	$('#mergeForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		$.ajax({
+			url: "{% url 'merge-honors' %}",
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				window.location = "{% url 'honors' %}";
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+
+	$('#submitForm').on('submit', function(e){
+		e.preventDefault();
+		$form = $(this);
+		$.ajax({
+			url: window.location = "{% url 'honors' %}",
+			type: "POST",
+			data: new FormData(this),
+			success: function (response) {
+				$('.error').remove();
+                if (response.msg){
+                    error = '<small class="text-danger error">' + response.msg + '</small>'
+                    $form.find('[name=hon_name]').after(error);
+                }
+                else {
+                    window.location = "{% url 'honors' %}";
+                }
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+</script>
+{% endblock %}

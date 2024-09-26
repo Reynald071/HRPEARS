@@ -1,0 +1,17 @@
+{% extends "rest_framework/base.html" %}
+{% load static %}
+{% block meta %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/api.ico' %}"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;900&display=swap');
+        body {
+            font-family: Inter !important;
+        }
+    </style>
+{% endblock %}
+{% block branding %}
+    <a class="navbar-brand" rel="nofollow" href="javascript:;">
+        <strong>Caraga PORTAL API</strong>
+    </a>
+{% endblock %}

@@ -1,0 +1,270 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Tracking</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Document
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Tracking</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="pull-left">
+						<button class="btn btn-info" data-toggle="modal" data-target="#add"><i class="fas fa-plus"></i> New Document</button>
+					</div>
+					<div class="pull-right">
+						Showing {{ data.start_index }} - {{ data.end_index }} of {{ data.paginator.count }} entries&emsp;
+						<div class="btn-group">
+							{% if data.has_other_pages %}
+							  	{% if data.has_previous %}
+									<a class="btn btn-default" href="?page={{ data.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.current_year %}&current_year={{ request.GET.current_year}}{% endif %}{% if request.GET.status %}&status={{ request.GET.status}}{% endif %}">Previous</a>
+							  	{% else %}
+									<a class="btn btn-default disabled">Previous</a>
+							  	{% endif %}
+								{% for row in data.paginator.page_range %}
+									{% if data.number == row %}
+										<a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.current_year %}&current_year={{ request.GET.current_year}}{% endif %}{% if request.GET.status %}&status={{ request.GET.status}}{% endif %}">{{ row }}</a>
+									{% elif row > data.number|add:-3 and row < data.number|add:3 %}
+										<a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.current_year %}&current_year={{ request.GET.current_year}}{% endif %}{% if request.GET.status %}&status={{ request.GET.status}}{% endif %}">{{ row }}</a>
+									{% endif %}
+								{% endfor %}
+							  	{% if rito.has_next %}
+									<a class="btn btn-default" href="?page={{ data.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.current_year %}&current_year={{ request.GET.current_year}}{% endif %}{% if request.GET.status %}&status={{ request.GET.status}}{% endif %}">Next</a>
+							  	{% else %}
+									<a class="btn btn-default disabled">Next</a>
+							  	{% endif %}
+							{% endif %}
+						</div>
+						<a class="btn btn-default" href="{% url 'document_tracking' %}">Refresh</a>
+					</div>
+                    <br><br><br>
+                    <form method="get">
+                        <div class="input-group form-group">
+                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search document.." name="search" value="{{ request.GET.search }}" autocomplete="off">
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+				        <table class="table table-hover">
+                            <thead>
+                                <th>Action</th>
+                                <th>TRACKING NO.</th>
+                                <th class="text-center">Document Type</th>
+                                <th class="text-center">ORIGIN</th>
+                                <th class="text-center">Date Received</th>
+                                <th class="text-right">CURRENT STATUS</th>
+                            </thead>
+                            <tbody>
+                                {% for row in data %}
+                                <tr>
+                                    <td>
+                                        <a href="javascript:;" data-role="details" data-id="{{ row.id }}">Details</a>
+                                    </td>
+                                    <td>{{ row.tracking_no }}</td>
+                                    <td class="text-center">{{ row.document_type.name }}</td>
+                                    <td class="text-center">{{ row.origin }}</td>
+                                    <td class="text-center">{{ row.date_received }}</td>
+                                    <td class="text-right">{% getDocumentCurrentStatus row.id %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                   </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+                    <h5>FILTER DOCUMENTS</h5>
+                </div>
+                <div class="ibox-content">
+                    <h4>By year</h4>
+                    <form method="GET">
+                        <div class="form-group">
+                            <input type="number" class="form-control" value="{{ current_year }}" name="current_year">
+                        </div>
+                    </form>
+                    <h4>By status</h4>
+                    <div class="list-group">
+                        <a class="list-group-item {% if request.GET.status == '' or request.GET.status == None or request.GET.search == '' %}{% if request.GET.search is None %}active{% endif %}{% endif %}" href='?status={% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>All</a>
+					    {% for row in doc_trail %}
+                        <a class="list-group-item {% if request.GET.status == row.id and request.GET.search is None %}active{% endif %}" href='?status=Incoming{% if request.GET.page > 1 %}&page={{ request.GET.page }}{% endif %}'>{{ row.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="add" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog fs-sm-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">NEW DOCUMENT</h3>
+
+            </div>
+            <form id="submitForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group col-sm-4">
+                            <label>From<span class="text-danger">*</span></label>
+                            <select class="form-control select" name="from" required>
+                                <option></option>
+                                <option value="National">National</option>
+                                <option value="Local">Local</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-sm-8">
+                            <label>Origin<span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="origin" autocomplete="off" required>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label>Subject<span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="subject" autocomplete="off" required>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label>Purpose</label>
+                            <input type="text" class="form-control" name="purpose" autocomplete="off">
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label>Document Type<span class="text-danger">*</span></label>
+                            <select class="form-control select" name="doc_type" required>
+                                <option></option>
+                                {% for row in doc_type %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label>Details<span class="text-danger">*</span></label>
+                            <textarea class="form-control" rows="3" name="details" placeholder="Description, Date, Destination" required></textarea>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label>Date Received<span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" name="date_received" placeholder="" required>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Forward To</label>
+                            <input type="text" class="form-control typeahead_2 filter_employee" name="to" placeholder="e.g. [16-12345] Firstname Lastname" autocomplete="off">
+                        </div>
+                        <label>Provide Copy to Employees (if necessary)</label>
+                        <small class="text-danger"><strong> Note: Search for employee ID number on input provided.</strong></small>
+						<div id="items">
+							<div class="form-group">
+								<div class="input-group">
+									<input type="text" class="form-control typeahead_2 filter_employee b-r-sm" name="employee[]" autocomplete="off" placeholder="e.g. [16-12345] Firstname Lastname"> <span class="input-group-btn"> <button type="button" class="btn btn-info add" style="height: 34px;"><i class="fas fa-plus"></i></button> </span>
+								</div>
+							</div>
+						</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="details" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">DOCUMENT INFORMATION</h3>
+                <small>View specific document details and information.</small>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('.add').on('click', function(){
+		$('#items').append('<div class="form-group"><div class="input-group minus-remove"><input type="text" class="form-control typeahead_2 filter_employee b-r-sm" name="employee[]" autocomplete="off" placeholder="e.g. [16-11626] FIRST NAME LAST NAME"> <span class="input-group-btn"> <button type="button" class="btn btn-danger remove_field" style="height: 33px;"><i class="fa fa-minus"></i></button> </span></div></div></div>');
+
+	    $(".filter_employee").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+	});
+
+	$('#items').on("click", ".remove_field", function(e){
+		e.preventDefault();
+		$(this).parent().parent().remove();
+	});
+
+	$('#submitForm').on('submit', function(e){
+		$.ajax({
+            data        : new FormData(this),
+            url         : '{% url "document_tracking" %}',
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(response){
+            if (response.data == "success"){
+            	$('#add').modal('toggle');
+            	Swal.fire({
+					title: "Good job!",
+					text: "Document(s) successfully added.",
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				}).then((result) => {
+					if(result.isConfirmed){
+						window.location.href = "{% url 'document_tracking' %}"
+					}
+				});
+			}
+		});
+
+        e.preventDefault();
+    });
+
+
+    $(document).on('click', 'a[data-role=details]', function(){
+        var id = $(this).data('id');
+        $('#details').modal('show').find('.modal-body').empty();
+        $('#details').modal('show').find('.modal-body').load('/backend/document/details/' + id);
+    });
+</script>
+{% endblock %}

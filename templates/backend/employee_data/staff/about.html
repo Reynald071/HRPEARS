@@ -1,0 +1,337 @@
+{% load qr_code %}
+{% load tags %}
+{% load frontend_tags %}
+{% load crispy_forms_tags %}
+<div class="ibox" id="page-about" style="margin-top: -15px;">
+{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin'%}
+<form id="submitForm">
+{% csrf_token %}
+    <div class="row mb-3">
+        <div class="col-lg-12">
+            <div class="pull-left">
+                <h3 class="bold m-0">Employee Information</h3>
+                <small>Update employee information below.</small>
+            </div>
+            <div class="pull-right">
+                <button type="submit" class="btn btn-info">Save changes</button>
+                <a href="{% get_empstatus employee.id as emp_status %}{% url 'view_clearance_layout' employee.id emp_status %}" class="btn btn-default" target="_blank"><i class="fas fa-file-alt"></i> Print Clearance</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox-content" style="padding-bottom: 0px !important;">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>ID Number</label>
+                        <input type="text" class="form-control" name="id_number" value="{{ employee.id_number }}" readonly>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Account Number</label>
+                        <input type="text" class="form-control" name="account_number" value="{% if employee.account_number %}{{ employee.account_number }}{% endif %}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Position<span class="asteriskField">*</span></label>
+                        <select class="form-control select" name="position" required>
+                            <option></option>
+                            {% for row in position %}
+                                {% if row.id == employee.position_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Employment Status<span class="asteriskField">*</span></label>
+                        <select class="form-control select" name="empstatus" required>
+                            <option></option>
+                            {% for row in empstatus %}
+                                {% if row.id == employee.empstatus_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Project</label>
+                        <select class="form-control select" name="project">
+                            <option></option>
+                            {% for row in project %}
+                                {% if row.id == employee.project_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="form-group">
+                        <label>Section<span class="asteriskField">*</span></label>
+                        <select class="form-control select" name="section" required>
+                            <option value=""></option>
+                            {% for div in division %}
+                            <optgroup label="{{ div.div_name }}">
+                                {% for row in section %}
+                                {% if row.div_id == div.id %}
+                                    {% if row.id == employee.section_id %}
+                                    <option value="{{ row.id }}" selected="selected">{{ row.sec_name }}</option>
+                                    {% else %}
+                                    <option value="{{ row.id }}">{{ row.sec_name }}</option>
+                                    {% endif %}
+                                {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="form-group">
+                        <label>Fund Source</label>
+                        <select class="form-control select" name="fund_source">
+                            <option></option>
+                            {% for row in fundsource %}
+                                {% if row.id == employee.fundsource_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Area of Assignment<span class="asteriskField">*</span></label>
+                        <select class="form-control select" name="aoa">
+                            <option></option>
+                            {% for row in aoa %}
+                                {% if row.id == employee.aoa_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Salary Rate<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control" name="salary_rate" value="{{ employee.salary_rate }}" required>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Salary Grade<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control" name="salary_grade" value="{{ employee.salary_grade }}" required>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="form-group">
+                        <label>Step Increment<span class="asteriskField">*</span></label>
+                        <input type="text" class="form-control" name="step_inc" value="{{ employee.step_inc }}" required>
+                    </div>
+                </div>
+            </div>
+            </div>
+        <hr>
+        <div class="ibox-title mb-3">
+            <h3 class="bold m-0">Additional Information</h3>
+            <small>Update employee additional information below.</small>
+        </div>
+        <div class="ibox-content">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Item Number </label>
+                        <input type="text" class="form-control" name="item_number" value="{% if employee.item_number %}{{ employee.item_number }}{% endif %}">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Date of Creation of Position </label>
+                        <input type="date" class="form-control" name="docp" value="{% if employee.dateofcreation_pos %}{{ employee.dateofcreation_pos|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Designation </label>
+                        <input type="text" class="form-control" name="designation" value="{% if employee.designation %}{{ employee.designation }}{% endif %}">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Date of Designation </label>
+                        <input type="date" class="form-control" name="dod" value="{% if employee.dateof_designation %}{{ employee.dateof_designation|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Mode of Accession</label>
+                        <select class="form-control select" name="mode_access">
+                            <option></option>
+                            {% for row in mode_accession %}
+                                {% if row.id == employee.mode_access_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Special Order Number </label>
+                        <input type="text" class="form-control" name="special_order_no" value="{% if employee.specialorder_no %}{{ employee.specialorder_no }}{% endif %}">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Plantilla PSIPOP </label>
+                        <input type="text" class="form-control" name="plantilla" value="{% if employee.plantilla_psipop %}{{ employee.plantilla_psipop }}{% endif %}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Type of Disability </label>
+                        <input type="text" class="form-control" name="tod" value="{% if personal_info.type_of_disability %}{{ personal_info.type_of_disability }}{% endif %}">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Type of Indiginous Group </label>
+                        <select class="form-control select" name="tig">
+                            <option></option>
+                            {% for row in indi %}
+                                {% if row.id == personal_info.type_of_indi_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif%}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Former Incumbent</label>
+                        <input type="text" class="form-control filter_employee" name="former_incumbent" value="{% if employee.former_incumbent %}{{ employee.former_incumbent }}{% endif %}">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Mode of Separation</label>
+                        <select class="form-control select" name="mode_sep">
+                            <option></option>
+                            {% for row in mode_separation %}
+                                {% if row.id == employee.mode_sep_id %}
+                                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                                {% else %}
+                                <option value="{{ row.id }}">{{ row.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label>Date Vacated</label>
+                        <input type="date" class="form-control" name="date_vacated" value="{% if employee.date_vacated %}{{ employee.date_vacated|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="form-group">
+                        <label>Remarks Vacated</label>
+                        <textarea class="form-control" name="remarks_vacated" rows="5">{% if employee.remarks_vacated %}{{ employee.remarks_vacated }}{% endif %}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</form>
+{% endif %}
+</div>
+{% block script %}
+<script type="text/javascript">
+$(document).ready(function(){
+    $('input').attr('autocomplete', 'off');
+
+    $.get('{% url "filter-incumbent" %}', function(data){
+        $(".filter_employee").typeahead({
+            source:data,
+            highlight: true
+        });
+    },'json');
+
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+    '{% if user|check_permission:'edit_employee' or user|check_permission:'superadmin'%}'
+    $('#submitForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            url: '{% url "backend-about" employee.id employee.pi_id %}',
+            type: "POST",
+            data: form,
+            success: function (response) {
+                $('.error').remove();
+                if (response.error){
+                    $.each(response.errors, function(name, error){
+                        error = '<small class="text-danger error">' + error + '</small>'
+                        $form.find('[name=' + name + ']').after(error);
+                    })
+                }
+                else {
+                    Swal.fire({
+                        title: "Good job!",
+                        text: "Employee Information was updated successfully",
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                    });
+                }
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+    });
+    '{% endif %}'
+});
+</script>
+{% endblock %}

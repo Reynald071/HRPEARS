@@ -1,0 +1,61 @@
+{% load frontend_tags %}
+<form id="vacancyAttachmentForm" enctype="multipart/form-data">
+<div class="modal-body">
+    {% csrf_token %}
+    <p>
+        {% if attachment %}
+            File: <a href="{{ attachment.url }}" target="_blank">{{ attachment }}</a>
+        {% else %}
+            No file yet. Please upload a file.
+        {% endif %}
+    </p>
+    <input class="pt-3" type="file" name="file" accept="application/pdf,application/vnd.ms-excel" required>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Upload</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('#vacancyAttachmentForm').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        Swal.fire({
+		  title: "Are you sure",
+          text: "You upload this attachment in the vacancy " + "{{ vacancy.position.name }} - {{ vacancy.empstatus.name }}" + "?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  	    data        : form,
+		  		url         : "/backend/position/attachment/" + "{{ pk }}",
+		  		type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false,
+		  	});
+		  }
+		}).then(function (response){
+		    if (response.value.data == 'success'){
+		    	Swal.fire({
+				  title: "Good job!",
+				  text: "Vacancy " + response.value.vacancy_name + " - " + response.value.empstatus + " attachment was successfully uploaded.",
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+					    $('#attachment-content').load('/backend/position/attachment/' + response.value.pk);
+						$('#table-drafts').DataTable().ajax.reload();
+                        $('#table-vacancy').DataTable().ajax.reload();
+					}
+				});
+			}
+		});
+    });
+</script>
+{% endblock %}

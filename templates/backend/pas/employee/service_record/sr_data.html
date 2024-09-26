@@ -1,0 +1,44 @@
+{% load frontend_tags %}
+<button type="button" class="btn btn-info pull-right" id="btn-generate-sr">Generate</button>
+<br><br><br>
+<table class="table table-bordered" width="100%" id="service-record-data-table">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>DRN</th>
+            <th class="text-center">Date Added</th>
+            <th class="text-right">Created By</th>
+        </tr>
+    </thead>
+</table>
+{% block script %}
+<script>
+    $('#btn-generate-sr').on('click', function(){
+        callSRPage('{% url "generate_sr_template" employee.id_number %}');
+    });
+
+    $('#service-record-data-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 2, 'desc' ]],
+        'ajax': {
+            'url': '/api/employees/service-record/?format=datatables&pk='+'{% getHash employee.id as employee_id %}{{ employee_id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    return '<a href="/backend/service-record/print/'+ data +'" target="_blank">View</a>'
+                }
+            },
+            {'data': 'drn' },
+            {'data': 'date_added', 'className': 'text-center' },
+            {'data': 'created_by', 'className': 'text-right' },
+        ],
+    });
+</script>
+{% endblock %}

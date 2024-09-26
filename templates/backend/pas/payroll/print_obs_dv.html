@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+{% load payroll_tags %}
+{% load tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DSWD My PORTAL | Print OBS/DV Form</title>
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+        @media print {
+			page {
+				margin: 0px;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+			}
+			.vertical-right, .vertical-left {
+				margin: 0px !important;
+			}
+			body{-webkit-print-color-adjust: exact; padding-top: 120px;}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		    	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		    	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		    	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		    	color: transparent;
+			}
+		}
+
+		.no-margins{
+		    margin: 0px;
+		}
+
+		.no-padding{
+		    padding: 0px !important;
+		}
+
+		.bold{
+		    font-weight: bold;
+		}
+	</style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">OBS/DV Form</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><a class="print-button" id="floatprint" title="Print" style="font-size: 14px;"><i class="fas fa-print"></i> Print</a></li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+    <page size="A4flex" class="page" style="padding: 40px; page-break-after: always;">
+        <p class="text-right no-margins" style="font-size: 12px;"><i>Appendix 11</i></p>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <th style="border-right: 0px;">
+                        <center>
+                            <img loading="lazy"  src="{% static 'image/dswd.png' %}" width="50px">
+                        </center>
+                    </th>
+                    <th width="65%" class="text-center" style="border-left: 0px;">
+                        <h5 class="no-margins bold">OBLIGATION REQUEST AND STATUS</h5>
+                        <p class="no-margins">Department of Social Welfare and Development </p>
+                        <p class="no-margins">Entity Name</p>
+                    </th>
+                    <th>
+                        Serial No. : <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 10px;" size="13"> <br>
+                        Date : <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 10px;" size="17"> <br>
+                        Fund Cluster : <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 10px;" size="11">
+                    </th>
+                </tr>
+            </thead>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <td style="border-right: 0px;">&emsp;</td>
+                    <td style="border-left: 0px;">Payee</td>
+                    <td>
+                        <input type="text" style="border: 0px; font-size: 10px;" size="100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border-right: 0px;">&emsp;</td>
+                    <td style="border-left: 0px;">Office</td>
+                    <td>
+                        <input type="text" style="border: 0px; font-size: 10px;" size="100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border-right: 0px;">&emsp;</td>
+                    <td style="border-left: 0px;">Address</td>
+                    <td>
+                        <input type="text" style="border: 0px; font-size: 10px;" size="100%">
+                    </td>
+                </tr>
+            </thead>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <td class="text-center" width="20%" style="border-right: 0px;">Responsibilty Center</td>
+                    <td class="text-center" width="40%" style="border-left: 0px;">Particulars</td>
+                    <td class="text-center" width="10%" style="border-right: 0px;">MFO/PAP</td>
+                    <td class="text-center" width="10%" style="border-left: 0px;">UACS Object Code</td>
+                    <td class="text-center" width="20%">Amount</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border-right: 0px;"></td>
+                    <td style="border-left: 0px;" class="text-center" contenteditable="true">
+                        <h5 class="bold">{{ payroll_order.description }}</h5><br>
+                        {% for row in fund_charges %}
+                        <h6>{{ row.value }}</h6>
+                        {% endfor %}
+                    </td>
+                    <td style="border-right: 0px;">
+
+                    </td>
+                    <td style="border-left: 0px;">
+
+                    </td>
+                    <td class="text-right" contenteditable="true">
+                        <h5>&nbsp;</h5><br>
+                        {% for row in fund_charges %}
+                            {% get_group_total row.value dv_number payroll_order.id as total %}
+                            <h6>{{ total.0|floatformat:2|intcomma }}</h6>
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border-right: 0px;"></td>
+                    <th class="text-right" style="border-left: 0px;">Total</th>
+                    <td colspan="2"></td>
+                    <td class="text-right bold"><h6 class="bold" style="margin:3px 0px">{{ total_accrude|floatformat:2|intcomma }}</h6></td>
+                </tr>
+            </tbody>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <tbody style="border: 0px !important;">
+                <tr>
+                    <th>
+                        &emsp;A.
+                    </th>
+                    <td>
+                        <b>Certified:</b> Charges to appropriation/alloment are <br> necesary, lawful and under my direct supervision, and <br> supporting documents valid proper and legal
+                        <br><br>
+                    </td>
+                    <td>&emsp;B.</td>
+                    <td colspan="2">
+                        <b>Certified:</b> Allotment available and obligated <br> for the purpose/adjustment necessary as <br> indicated above
+                        <br><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Signature: </td>
+                    <td></td>
+                    <td>Signature: </td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td>Printed Name: </td>
+                    <td class="text-center">
+                        <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="MARY CHILL L. MOMO">
+                    </td>
+                    <td>Printed Name: </td>
+                    <td class="text-center" colspan="2">
+                        <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="LILIBETH T. BORDARIO">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Position: </td>
+                    <td class="text-center">
+                        <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="HRMDD Division Chief"> <br>
+                        <input type="text" style="border: 0px; font-size: 10px; text-align: center;" size="50" value="Head, Requesting Office/Authorized Representative">
+                    </td>
+                    <td>Position: </td>
+                    <td class="text-center" colspan="2">
+                        <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="Administrative Officer V"> <br>
+                        <input type="text" style="border: 0px; font-size: 10px; text-align: center;" size="50" value="Head, Budget Division Unit/Authorized">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Date: </td>
+                    <td class="text-center">
+                        <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 10px;" size="30">
+                    </td>
+                    <td>Date: </td>
+                    <td class="text-center" colspan="2">
+                        <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 10px;" size="30">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <td colspan="8">&nbsp;</td>
+                </tr>
+                <tr>
+                    <th>C.</th>
+                    <th colspan="7" class="text-center">STATUS OF OBLIGATION</th>
+                </tr>
+                <tr>
+                    <th colspan="3" class="text-center">Reference</th>
+                    <th class="text-center" colspan="5">Amount</th>
+                </tr>
+                <tr>
+                    <td class="text-center" rowspan="3" width="10%">Date</td>
+                    <td class="text-center" rowspan="3">Particulars</td>
+                    <td class="text-center" rowspan="3" width="5%">ORS/JEV/Check/<br>ADA/TRA No.</td>
+                    <td class="text-center" rowspan="2" width="20%">Obligation</td>
+                    <td class="text-center" rowspan="2" width="15%">Payable</td>
+                    <td class="text-center" rowspan="2" width="15%">Payment</td>
+                    <td class="text-center" colspan="2">Balance</td>
+                </tr>
+                <tr>
+                    <td class="text-center" width="10%">Not Yet Due</td>
+                    <td class="text-center">Due and <br> Demandable</td>
+                </tr>
+                <tr>
+                    <td class="text-center">(a)</td>
+                    <td class="text-center">(b)</td>
+                    <td class="text-center">(c)</td>
+                    <td class="text-center">(a-b)</td>
+                    <td class="text-center">(b-c)</td>
+                </tr>
+                {% for row in 12|times%}
+                <tr>
+                    <td><br><br></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+            </thead>
+        </table>
+    </page>
+    <page size="A4flex" class="page" style="padding: 45px; page-break-after: always;">
+        <p class="text-right no-margins" style="font-size: 12px;"><i>Appendix 32</i></p>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <td rowspan="2" style="border-right: 0px !important;" width="15%">
+                        <center>
+                            <img loading="lazy"  src="{% static 'image/dswd.png' %}" width="60px">
+                        </center>
+                    </td>
+                    <td rowspan="2" class="text-center" width="65%" style="border-left: 0px !important;">
+                        <br>
+                        <h6 class="no-margins bold">DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT</h6>
+                        <p>Entity Name</p>
+                        <h5 class="bold">DISBURSEMENT VOUCHER</h5>
+                    </td>
+                    <td>
+                        Fund Cluster: <br>
+                        <input type="text" style="border: 0px; font-size: 10px;" size="15">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Date: <input type="text" style="border: 0px; font-size: 10px; text-align: right" size="15" value=""> <br>
+                        DV No.: <input type="text" style="border: 0px; font-size: 10px; text-align: right" size="15" value="{{ dv_number }}">
+                    </td>
+                </tr>
+            </thead>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <th width="10%" class="text-center">Mode of Payment</th>
+                    <td class="text-center" colspan="4">
+                        <input type="checkbox"> MDS Check &emsp;&emsp;
+                        <input type="checkbox"> Commercial Check &emsp;&emsp;
+                        <input type="checkbox"> ADA &emsp;&emsp;
+                        <input type="checkbox"> Others (Please specify) <br>
+                        <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 10px; margin-left: 300px;" size="15">
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-center">Payee</th>
+                    <th>
+                        <input type="text" style="border: 0px; font-size: 12px;" size="50%">
+                    </th>
+                    <td>
+                        TIN/Employee No.: <br>
+                        <input type="text" style="border: 0px; font-size: 12px;" size="15%">
+                    </td>
+                    <td>
+                        ORS/BURS No.: <br>
+                        <input type="text" style="border: 0px; font-size: 12px;" size="15%">
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-center">Address</th>
+                    <th colspan="3">
+                        <input type="text" style="border: 0px; font-size: 12px;" size="80%">
+                    </th>
+                </tr>
+            </thead>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <tr>
+                <td class="text-center" width="50%">Particulars</td>
+                <td class="text-center">Responsibility Center</td>
+                <td class="text-center">MFO/PAP</td>
+                <td class="text-center">Amount</td>
+            </tr>
+            <tr>
+                <td class="text-center" contenteditable="true">
+                    <h5 class="bold">{{ payroll_order.description }}</h5><br>
+                    {% for row in fund_charges %}
+                    <h6>{{ row.value }}</h6>
+                    {% endfor %}
+                </td>
+                <td>
+
+                </td>
+                <td>
+
+                </td>
+                <td class="text-right" contenteditable="true">
+                    <h5>&nbsp;</h5><br>
+                    {% for row in fund_charges %}
+                        {% get_group_total row.value dv_number payroll_order.id as total %}
+                        <h6 class="amount_due">{{ total.1|floatformat:2|intcomma }}</h6>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th class="text-center">Amount Due</th>
+                <td></td>
+                <td></td>
+                <td class="text-right bold"><h6 class="bold" style="margin:3px 0px">{{ total_due|floatformat:2|intcomma }}</h6></td>
+            </tr>
+            <tr>
+                <td colspan="4">&emsp;<b>A.</b> Certified: Expenses/Cash Advance necessary, lawful and incurred under my direct supervision.</td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <br><br>
+                    <center>
+                        <input type="text" style="border-left: 0px; border-right: 0px; border-top: 0px; font-size: 12px; text-align: center; font-weight: bold;" size="30" value="MARY CHILL L. MOMO"> <br>
+                        <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="HRMD Division Chief"> <br>
+                        Printed Name, Designation and Signature of Supervisor
+                    </center>
+                    <br>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">&emsp;<b>B.</b> Accounting Entry: </td>
+            </tr>
+            <tr>
+                <td class="text-center">Account Title</td>
+                <td class="text-center">UACS Code</td>
+                <td class="text-center">Debit</td>
+                <td class="text-center">Credit</td>
+            </tr>
+            <tr>
+                <td><br><br><br><br><br><br><br></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    &emsp;<b>C.</b> Certified:
+                </td>
+                <td colspan="3">
+                    &emsp;<b>D.</b> Approved for Payment:
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &emsp;<input type="checkbox"> Cash available <br>
+                    &emsp;<input type="checkbox"> Subject to Authority to Debit Account (when applicable) <br>
+                    &emsp;<input type="checkbox"> Supporting documents complete and amount claimed proper
+                </td>
+                <td colspan="3"></td>
+            </tr>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <tr>
+                <td class="text-center">Signature: </td>
+                <td><br><br></td>
+                <td class="text-center">Signature: </td>
+                <td colspan="2"></td>
+            </tr>
+            <tr>
+                <td class="text-center">Printed Name: </td>
+                <td class="text-center">
+                    <br>
+                    <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="GRETCHEN F. ESCALA">
+                </td>
+                <td class="text-center">Printed Name: </td>
+                <td class="text-center" colspan="2">
+                    <br>
+                    <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="RAMIL M. TACULOD">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center">Position: </td>
+                <td class="text-center">
+                    <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="Accountant III"> <br>
+                    <input type="text" style="border: 0px; font-size: 10px; text-align: center;" size="50" value="Head, Accounting Unit/Authorized Representative">
+                </td>
+                <td class="text-center">Position: </td>
+                <td class="text-center" colspan="2">
+                    <input type="text" style="border: 0px; font-size: 10px; text-align: center; font-weight: bold;" size="30" value="OIC, ARDA"> <br>
+                    <input type="text" style="border: 0px; font-size: 10px; text-align: center;" size="50" value="Agency Head/Authorized Representative">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center">Date: </td>
+                <td class="text-center">
+                    <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 12px;" size="30">
+                </td>
+                <td class="text-center">Date: </td>
+                <td class="text-center" colspan="2">
+                    <input type="text" style="border-top: 0px; border-left: 0px; border-right: 0px; font-size: 12px;" size="30">
+                </td>
+            </tr>
+        </table>
+        <table border="1" width="100%" style="font-size: 10px;">
+            <tr>
+                <td colspan="4">&emsp;<b>E. Receipt of Payment</b></td>
+                <td rowspan="2">
+                JEV No.<br>
+                <input type="text" style="border: 0px; font-size: 12px;" size="10">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center">Check/<br>ADA No.:</td>
+                <td width="20%"><input type="text" style="border: 0px; font-size: 12px;" size="10"></td>
+                <td>
+                    Date: <br>
+                    <input type="text" style="border: 0px; font-size: 12px;" size="10">
+                </td>
+                <td>
+                    Bank Name & Account Number: <br>
+                    <input type="text" style="border: 0px; font-size: 12px;" size="10">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center">Signature:</td>
+                <td width="20%"><input type="text" style="border: 0px; font-size: 12px;" size="10"></td>
+                <td>
+                    Date: <br>
+                    <input type="text" style="border: 0px; font-size: 12px;" size="10">
+                </td>
+                <td>
+                    Printed Name: <br>
+                    <input type="text" style="border: 0px; font-size: 12px;" size="10">
+                </td>
+                <td rowspan="2">
+                    Date:<br>
+                    <input type="text" style="border: 0px; font-size: 12px;" size="10">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Official Receipt No. & Date/Other Documents</td>
+            </tr>
+        </table>
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script>
+
+    </script>
+</body>
+</html>

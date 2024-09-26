@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Travel Request</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+		@media print {
+			page {
+				margin: 0px;
+				padding: 0px !important;
+				border: 0.5px solid transparent;
+				height: 204mm !important;
+			}
+			.containerX {
+				margin-left: 20px !important;
+				margin-top: 0 !important;
+			}
+
+			body{-webkit-print-color-adjust: exact;}
+
+            table .light-orange {
+                background-color: #FFF3E0 !important;
+            }
+
+            table .light-green {
+                background: #81C784 !important;
+            }
+
+            table .light-violet {
+                background: #E1BEE7 !important;
+            }
+        }
+
+		.containerX {
+			zoom: 85%;
+		}
+
+        .padding-10 {
+            padding: 3px !important;
+        }
+
+        table .light-orange {
+            background-color: #FFF3E0 !important;
+        }
+
+        table .light-green {
+            background: #81C784 !important;
+        }
+
+        table .light-violet {
+            background: #E1BEE7 !important;
+        }
+	</style>
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;"><strong>Document Request Form</strong></a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<button class="btn btn-info print-button" id="floatprint" style="margin-top: 8px;"><i class="fas fa-print"></i> Print</button>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+	<page size="A4" layout="landscape" class="page" style="padding: 30px;">
+		<div class="containerX" style="margin-top: -25px;">
+            <table class="table table-bordered">
+                <tr>
+                    <td width="50%">
+                        <br>
+                        <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="20%">&emsp;&emsp;&emsp;
+                        <br>
+                        <span style="font-family: Times New Roman; font-size: 10.7px;">
+                            {% get_doc_version 21 as doc_version %}
+                            {{ doc_version|safe }}
+                        </span>
+                        <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -50px;">
+                        <br><br>
+                        <h3 class="text-center"><strong>DOCUMENT REQUEST FORM</strong></h3>
+                        <p class="pull-right">
+                            Date: {{ services.date_time }}
+                        </p>
+                        <br>
+                        <p class="no-margins"><strong>The Section Head</strong></p>
+                        <p class="no-margins">Personnel Administration Section</p>
+                        <p>DSWD Field Office Caraga</p>
+                        <p>May I request for issuance of:</p>
+                        &emsp;
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;" {% if services.classification_id == 15 %}checked{% endif%}> &emsp;<span style="position: absolute; margin-top: 8px !important;">Service Record</span>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;" {% if services.classification_id == 16 %}checked{% endif%}> &emsp;<span style="position: absolute; margin-top: 8px !important;">Certificate of Employment</span>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;" {% if services.classification_id == 17 %}checked{% endif%}> &emsp;<span style="position: absolute; margin-top: 8px !important;">Certificate of Leave Without Pay</span>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;" {% if services.classification_id == 18 %}checked{% endif%}> &emsp;<span style="position: absolute; margin-top: 8px !important;">Certificate of Leave Credits</span>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;" {% if services.classification_id == 19 %}checked{% endif%}> &emsp;
+                                <span style="position: absolute; margin-top: 8px !important;">Duly Accomplished Office Clearance Certificate Form</span>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;" {% if services.classification_id not in primary_drf_type %}checked{% endif %}> &emsp;
+                                <span style="position: absolute; margin-top: 8px !important;">Others (please specify):
+                                    {% if services.classification_id not in primary_drf_type %}
+                                        {{ services.classification.name }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <br>
+                            <p>Employment Status:</p>
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div style="margin-top: -20px; margin-left: 20px;">
+                                    <div style="position: relative;">
+                                        <input type="checkbox" style="width: 25px; height: 20px;"
+                                        {% if services.requested_by.pi.user.is_active %}checked{% endif %}> &emsp;
+                                        <span style="position: absolute; margin-top: 8px !important;">Current</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div style="margin-top: -20px; margin-left: 20px;">
+                                    <div style="position: relative;">
+                                        <input type="checkbox" style="width: 25px; height: 20px;"> &emsp;
+                                        <span style="position: absolute; margin-top: 8px !important;">Permanent/Contractual/Casual</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div style="margin-top: -20px; margin-left: 20px;">
+                                    <div style="position: relative;">
+                                        <input type="checkbox" style="width: 25px; height: 20px;"
+                                        {% if not services.requested_by.pi.user.is_active %}checked{% endif %}> &emsp;
+                                        <span style="position: absolute; margin-top: 8px !important;">Separated</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div style="margin-top: -20px; margin-left: 20px;">
+                                    <div style="position: relative;">
+                                        <input type="checkbox" style="width: 25px; height: 20px;"> &emsp;
+                                        <span style="position: absolute; margin-top: 8px !important;">Contract of Service Worker</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <p>Additional Information (if requested):</p>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;"> &emsp;
+                                <span style="position: absolute; margin-top: 8px !important;">Salary/Cost of Service</span>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;"> &emsp;
+                                <span style="position: absolute; margin-top: 8px !important;">Service/Contract Gaps (if any)</span>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-top: -20px; margin-left: 20px;">
+                            <div style="position: relative;">
+                                <input type="checkbox" style="width: 25px; height: 20px;"> &emsp;
+                                <span style="position: absolute; margin-top: 8px !important;">Others (please specify): ______________________</span>
+                            </div>
+                        </div>
+                        <br>
+                        <p>Purpose: <u>{{ services.purpose }}</u></p>
+                        <p>Contact no.
+                            {% if services.requested_by %}
+                                <u>{{ services.requested_by.pi.mobile_no }}</u>
+                            {% else %}
+                                ___________________________
+                            {% endif %} &emsp;
+                            Email Add:
+                            {% if services.requested_by %}
+                                <u>{{ services.requested_by.pi.user.email }}</u>
+                            {% else %}
+                                ___________________________
+                            {% endif %}
+                        </p>
+                        <p>Mode of receipt: ___________________________</p>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <p>Office:
+                                {% if services.requested_by %}
+                                    <u>{{ services.requested_by.section.sec_acronym }}</u>
+                                {% else %}
+                                    ________________________
+                                {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-center">
+                                    <u>
+                                        {% if services.requested_by %}
+                                            {{ services.requested_by.pi.user.get_fullname|upper }}
+                                        {% else %}
+                                            {{ services.others|upper }}
+                                        {% endif %}
+                                    </u>
+                                </p>
+                                <p class="text-center" style="margin-top: -10px;">Signature over printed name</p>
+                            </div>
+                        </div>
+                        <img loading="lazy"  src="{% static 'image/footer.png' %}" width="100%">
+                        <br><br>
+                    </td>
+                    <td>
+                        <div style="margin-top: -10px;">
+                            <img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="25%">&emsp;&emsp;&emsp;
+                            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -10px;"><br><br>
+                            <table width="100%" border="1" style="margin: 0px !important; font-family: 'Arial Narrow'; font-size: 13px; table-layout: fixed;" id="table-drf">
+                                <tr>
+                                    <td colspan="10" class="text-center light-green"><strong>Time Study Observation Form</strong></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" style="padding: 15px;">Name of Field Office: FO Caraga</td>
+                                    <td colspan="3" class="light-orange">
+                                        Control Number:<br>
+                                        HRMDD-PAS-{{ control_number }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" style="padding: 15px;">Section: Personnel Administration Section</td>
+                                    <td colspan="3">
+                                        Observer/processor:<br>
+                                        {{ services.assigned_emp.pi.user.get_fullname|upper }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    {% if services.requested_by.pi.user.is_active and services.classification.description %}
+                                        {% replace_string services.classification.description "Current" as new_value %}
+                                        <td colspan="10"><strong>Transaction: {{ new_value }}</strong></td>
+                                    {% else %}
+                                        <td colspan="10"><strong>Transaction: {{ services.classification.description }}</strong></td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <td class="text-center" width="10%"><strong>Date</strong></td>
+                                    <td class="text-center" width="10%"><strong>Elements /Steps</strong></td>
+                                    <td class="text-center" width="10%"><strong>Beginning Point</strong></td>
+                                    <td class="text-center" width="10%"><strong>Ending Point</strong></td>
+                                    <td class="text-center" width="10%"><strong>Allocated time per CC</strong></td>
+                                    <td class="text-center light-orange" width="10%"><strong>Start Time</strong></td>
+                                    <td class="text-center" width="10%"><strong>Waiting Time</strong></td>
+                                    <td class="text-center light-violet" width="10%"><strong>End Time</strong></td>
+                                    <td class="text-center" width="10%"><strong>Observed Time</strong></td>
+                                    <td class="text-center" width="10%"><strong>Remarks</strong></td>
+                                </tr>
+                                {% for row in tsof %}
+                                    <tr>
+                                        <td class="padding-10">&nbsp;</td>
+                                        <td class="padding-10 elements-steps">{{ row.elements_steps }}</td>
+                                        <td class="padding-10">{{ row.beginning_point }}</td>
+                                        <td class="padding-10">{{ row.ending_point }}</td>
+                                        <td class="padding-10 elements-steps-time text-center">{{ row.allocated_time_per_cc }}</td>
+                                        <td class="padding-10 light-orange">&nbsp;</td>
+                                        <td class="padding-10">&nbsp;</td>
+                                        <td class="padding-10 light-violet">&nbsp;</td>
+                                        <td class="padding-10">&nbsp;</td>
+                                        <td class="padding-10">&nbsp;</td>
+                                    </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td colspan="4" class="text-center" style="padding: 20px;">TOTAL</td>
+                                    <td class="text-center"><strong>{{ total_tsof.total }}</strong></td>
+                                    <td class="text-center light-orange"><strong>&nbsp;</strong></td>
+                                    <td class="text-center"><strong>&nbsp;</strong></td>
+                                    <td class="text-center light-violet"><strong>&nbsp;</strong></td>
+                                    <td class="text-center"><strong>&nbsp;</strong></td>
+                                    <td class="text-center"><strong>&nbsp;</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+		</div>
+	</page>
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+    <script>
+        window.onload = function() {
+            var table = document.getElementById("table-drf");
+            var rows = table.rows;
+
+            for (var i = 0; i < rows.length - 1; i++) {
+                var currentCell = rows[i].getElementsByClassName("elements-steps")[0];
+                var nextCell = rows[i + 1].getElementsByClassName("elements-steps")[0];
+                var currentCellTime = rows[i].getElementsByClassName("elements-steps-time")[0];
+                var nextCellTime = rows[i + 1].getElementsByClassName("elements-steps-time")[0];
+
+                if (currentCell && nextCell && currentCell.innerHTML == nextCell.innerHTML) {
+                    currentCell.rowSpan++;
+                    nextCell.remove();
+                    i--; // adjust counter as row length decreases
+                }
+
+                if (currentCellTime && nextCellTime && currentCellTime.innerHTML == nextCellTime.innerHTML) {
+                    currentCellTime.rowSpan++;
+                    nextCellTime.remove();
+                    i--; // adjust counter as row length decreases
+                }
+            }
+        }
+    </script>
+</body>
+</html>

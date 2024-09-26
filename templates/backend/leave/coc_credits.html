@@ -1,0 +1,87 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Compensatory Overtime Credit</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Leave
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Compensatory Overtime Credit</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="ibox">
+                <div class="ibox-content">
+                    <div class="form-group col-md-5">
+                        <input type="text" class="form-control typeahead_2 filter_employee" placeholder="Search Employee" id="search" name="search" value="{{ request.GET.search }}" autocomplete="off">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <button type="button" class="btn btn-info btn-block" id="btn-search"><i class="fas fa-search"></i> Search</button>
+                    </div>
+                    <br><br>
+                    <hr>
+                    <div id="view-coc-content">
+                        <center>Search to show employee compensatory overtime credit record.</center>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="view-coc-utilization-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal" id="btn-close-utilization-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">COC UTILIZATION</h3>
+	        </div>
+            <div id="coc-utilization-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(".filter_employee").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee_all" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $('#btn-close-utilization-modal').on('click', function(){
+        var employee = $('#search').val();
+        var regex = /\[([^)]+)\]/;
+        var match = employee.match(regex);
+
+        $('#view-coc-content').load('/backend/ctdo/coc/view/' + match[1]);
+    });
+
+    $('#btn-search').on('click', function(){
+        var employee = $('#search').val();
+        var regex = /\[([^)]+)\]/;
+        var match = employee.match(regex);
+
+        $('#view-coc-content').load('/backend/ctdo/coc/view/' + match[1]);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+    <title>DSWD My PORTAL | Forgot Password</title>
+    <link href="{% static 'css/tailwind.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;900&display=swap');
+        body {
+            font-family: Inter !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen bg-white flex">
+        <div class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+            <div class="mx-auto w-full max-w-sm">
+                <div>
+                    <h2 class="mt-6 text-4xl leading-9 font-extrabold text-gray-900">Caraga <span class="text-green-500">PORTAL</span></h2><br>
+                    <h4 class="font-semibold text-2xl">Enter 6 Digits Code</h4>
+                    <p class="mt-2 text-sm leading-5 text-gray-600 max-w">
+                        Enter the 6 digits code that you received on your phone number +*******{{ phone_number }}
+                    </p>
+                </div>
+                <div class="mt-8">
+                    <div class="mt-6">
+                        <div id="alertDiv"></div>
+                        <form id="codeForm">
+                            {% csrf_token %}
+                            <div>
+                                <div class="mt-1 rounded-md shadow-sm">
+                                    <input
+                                        id="code"
+                                        type="text"
+                                        name="code"
+                                        autocomplete="off"
+                                        placeholder="######"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                    />
+                                </div>
+                            </div>
+                            <p class="mt-2 text-sm leading-5 text-gray-600 max-w">Code expires in <span id="counter-time">00:00</span>
+                            <div class="mt-6">
+                                <span class="block w-full rounded-md shadow-sm">
+                                    <button
+                                        id="submitBtn"
+                                        type="submit"
+                                        class="w-full flex justify-center py-2 px-4 border border-transparent font-medium rounded-md text-white bg-green-500 hover:bg-green-400 focus:outline-none focus:border-green-500 focus:shadow-outline-green active:bg-green-700 transition duration-150 ease-in-out"
+                                    >
+                                        <strong>Continue</strong>
+                                    </button>
+                                </span>
+                            </div>
+                            <p class="mt-2 text-sm leading-5 text-gray-600 max-w">Didn't receive a code? <a href="javascript:;" class="text-blue-500 hover:text-blue-400" id="resend_code">Resend Code</a></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hidden lg:block relative w-0 flex-1">
+            <img loading="lazy"  class="absolute inset-0 h-full w-full object-cover" src="{% static 'image/background.jpg' %}" alt="" />
+        </div>
+    </div>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script>
+        $('#resend_code').on('click', function(){
+            $.post({
+                url: '{% url "resend_code" token %}',
+                success: function(response) {
+                    localStorage.clear("minute");
+                  	localStorage.clear("sec");
+                  	window.location.reload(true);
+                }
+            });
+        })
+
+		$('#codeForm').on('submit', function(e){
+			e.preventDefault();
+			var form = new FormData(this);
+			$.ajax({
+				url: '{% url 'forgot_password_code' token %}',
+				data: form,
+				type: 'POST',
+				beforeSend: function() {
+				    $("#submitBtn").html('<span class="loading open-circle" style="font-size: 25px;"></span>');
+				},
+				success: function(response){
+					if(response.data) {
+					    $("#submitBtn").html('<span class="loading open-circle" style="font-size: 25px;"></span>');
+					    localStorage.clear("minute");
+                  	    localStorage.clear("sec");
+						window.location.href = '{% url "set_new_password" token %}'
+					} else{
+					    $("#submitBtn").html('Continue');
+						$('#alertDiv').html(`
+						    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                               <div class="flex">
+                                <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                                <div>
+                                  <p class="font-bold">Invalid 6 digit code</p>
+                                  <p class="text-sm">` + response.msg +`
+                                </div>
+                              </div>
+                            </div><br>
+						`);
+					}
+				},
+				cache       : false,
+				contentType : false,
+				processData : false,
+			});
+		});
+
+        const leadingZero = (num, places) => String(num).padStart(places, '0')
+
+        window.onload = function () {
+			if(localStorage.getItem("minute")){
+				var minute = localStorage.getItem("minute");
+				var sec = localStorage.getItem("sec");
+			} else {
+				var minute = 4;
+            	var sec = 59;
+			}
+
+            setInterval(function () {
+                document.getElementById("counter-time").innerHTML = leadingZero(minute, 2) + ":" + leadingZero(sec, 2);
+                sec--;
+                localStorage.setItem("sec",sec);
+                if (sec == 00) {
+                    minute--;
+                    localStorage.setItem("minute",minute);
+                    sec = 60;
+                    if (minute == 0) {
+                  	    $.ajax({
+                  		    url: '{% url "forgot_password_expire_code" 'token' %}',
+                  		    type: 'POST',
+                  		    success: function(response) {
+							    if (response.data) {
+							        localStorage.clear("minute");
+                  	                localStorage.clear("sec");
+								    window.location.href = '{% url 'forgot_password' %}';
+							    }
+                  		    }
+                  	    });
+                  	    minute = 5;
+                    }
+                }
+            }, 1000);
+        };
+
+        $(document).keydown(function (event) {
+			if (event.keyCode == 123) {
+				return false;
+			} else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+				return false;
+			}
+		});
+	</script>
+</body>
+</html>

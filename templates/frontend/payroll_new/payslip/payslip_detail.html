@@ -1,0 +1,90 @@
+<div class="modal-body">
+    <div class="row">
+        <div class="col-lg-12">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>EMPLOYEE ID</th>
+                        <td>{{ payslip.fldempid }}</td>
+                    </tr>
+                    <tr>
+                        <th>EMPLOYEE NAME</th>
+                        <td>{{ payslip.fldemp_name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <th>PAYROLL CODE</th>
+                        <td>{{ payslip.fldpayroll_code }}</td>
+                    </tr>
+                    <tr>
+                        <th>PAY PERIOD</th>
+                        <td>{{ payslip.get_pay_period }}</td>
+                    </tr>
+                    <tr>
+                        <th>GROUP ID</th>
+                        <td>{{ payslip.fldgroupid }}</td>
+                    </tr>
+                    <tr>
+                        <th>DATE POSTED</th>
+                        <td>{{ payslip.flddateposted|default_if_none:"" }}</td>
+                    </tr>
+                    <tr>
+                        <th>SLIP COPY</th>
+                        <td>{{ payslip.fldslip_copy }}</td>
+                    </tr>
+                    <tr>
+                        <th>REMARKS</th>
+                        <td>{{ payslip.fldremarks }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-lg-6">
+            <h3>EARNINGS</h3>
+            <table class="table table-bordered">
+                <tbody>
+                {% for name, value in payslip.get_fields %}
+                    {% if value %}
+                        {% if 'fldearn_desc' in name %}
+                        <tr>
+                            <th>{{ value }}</th>
+                        {% endif %}
+                        {% if 'fldearn_amt' in name %}
+                            <td>{{ value }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                    <tr>
+                        <th>TOTAL EARNINGS</th>
+                        <td>{{ payslip.fldtotal_earnings }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-6">
+            <h3>DEDUCTIONS</h3>
+            <table class="table table-bordered">
+                <tbody>
+                {% for name, value in payslip.get_fields %}
+                    {% if value %}
+                        {% if 'fldded_desc' in name %}
+                        <tr>
+                            <th>{{ value }}</th>
+                        {% endif %}
+                        {% if 'fldded_amt' in name %}
+                            <td>{{ value }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                    <tr>
+                        <th>TOTAL DEDUCTIONS</th>
+                        <td>{{ payslip.fldtotal_deductions }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

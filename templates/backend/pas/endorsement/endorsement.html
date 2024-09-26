@@ -1,0 +1,178 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Endorsement</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employee
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Endorsement</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#create-endorsement-modal"><i class="fas fa-plus"></i> Create Endorsement</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-lg-8">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="table-endorsement" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th width="25%">Date</th>
+                                    <th width="45%">Employee</th>
+                                    <th width="20%">Created by</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="ibox">
+                <div class="ibox-title bg-primary">
+                    <h5>FILTER EMPLOYEE</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="text" class="form-control b-r-sm" id="filter_employee" autocomplete="off"> <span class="input-group-btn">
+                            <button type="button" class="btn btn-info" style="height: 34px;" id="filter-keyword">Filter</button> </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ibox">
+                <div class="ibox-content">
+                    <h5><strong>SHORTLISTED</strong></h5>
+                    <hr>
+                    <div id="shortlistedContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="create-endorsement-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">CREATE ENDORSEMENT</h3>
+
+            </div>
+            <form id="submitForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Date of Endorsement<span class="asteriskField">*</span></label>
+                    <input type="date" class="form-control" name="date" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Create</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="details-endorsement-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-xl modal-vertical-center">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">ENDORSEMENT DETAILS</h3>
+
+            </div>
+            <div id="details-endorsement-content"></div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="edit-details-endorsement-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <button type="button" class="close text-white" data-dismiss="modal" id="close-edit-modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">EDIT ENDORSEMENT DETAILS</h3>
+
+            </div>
+            <div id="edit-details-endorsement-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#submitForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var url = '{% url "endorsement" %}';
+        var title = "Are you sure";
+        var text = "You want to create a new endorsement";
+        var modal_id = "#create-endorsement-modal";
+        var table_id = '#table-endorsement';
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, modal_id: modal_id});
+    });
+
+    $('#shortlistedContent').load('/endorsement/shortlisted/view/');
+
+    $('#filter-keyword').on('click', function() {
+        var employee = $('#filter_employee').val();
+        if(employee != '') {
+            $('#table-endorsement').DataTable().ajax.url('/api/endorsement/?format=datatables&employee=' + employee).load();
+        } else {
+            $('#table-endorsement').DataTable().ajax.url('/api/endorsement/?format=datatables').load();
+        }
+    });
+
+    $('#table-endorsement').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'lengthMenu': [ 25, 50, 100 ],
+        'order': [[ 0, 'desc' ]],
+        'ajax': {
+            'url': '/api/endorsement/?format=datatables',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta) {
+                    return '<a href="javascript:;" data-role="details" data-id="'+ data +'" data-target="#details-endorsement-modal" data-toggle="modal">Details</a>';
+                }
+            },
+            {'data': 'date', 'className': 'text-center' },
+            {'data': 'people', 'className': 'text-center', 'searchable': false },
+            {'data': 'created_by', 'className': 'text-center', 'name': 'preparedby.pi.user.first_name, preparedby.pi.user.last_name'},
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=details]', function() {
+        var id = $(this).data('id');
+        $('#details-endorsement-content').load('/endorsement/details/' + id);
+    });
+</script>
+{% endblock %}

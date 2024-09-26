@@ -1,0 +1,295 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load welfare_tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+	<div class="col-lg-8">
+		<h1 class="bold">Health Profiling</h1>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="{% url 'backend-dashboard' %}">Administrator</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>Health Profiling</strong>
+			</li>
+		</ol>
+	</div>
+	<div class="col-lg-4">
+		<div class="title-action">
+			<div class="btn-group">
+				<a class="btn btn-default" href='#' data-role="view">Add Staff</a>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-md-9">
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="pull-right">
+						<a class="btn btn-default" href='{% url "health_profiling" %}'>Refresh</a>
+					</div>
+					<br><br><br>
+					<div class="table-responsive text-nowrap table-scroll">
+						<table class="table table-hover" id="healthprofile" width="100%">
+							<thead>
+								<tr>
+									<th class="capslock">Action</th>
+									<th class="capslock">Emp ID</th>
+									<th class="capslock">Last Name</th>
+									<th class="capslock">First Name</th>
+									<th class="capslock">Middle Name</th>
+									<th class="capslock">Division</th>
+									<th class="capslock">category</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="ibox">
+						<div class="ibox-title bg-primary">
+							<h5>FILTER</h5>
+						</div>
+						<div class="ibox-content">
+							<h4>By status</h4>
+							<div class="list-group">
+								<a class="list-group-item active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+								<a class="list-group-item"  id="status-Monitoring" href="javascript:;" data-role="status" data-filter="Monitoring">Monitoring</a>
+								<a class="list-group-item"  id="status-Recording" href="javascript:;" data-role="status" data-filter="Recording">Recording</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="myModal" class="modal fade" role="dialog" aria-labelledby="myExtraLargeModalLabel" data-backdrop="static"  aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+	<div class="modal-content">
+		<div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+			<h3 class="modal-title">Health Profiling</h3>
+		  <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		  <div class="modal-body" id="load_data"> 
+			<form id="health_profile">
+				{% csrf_token %}
+				<div class="form-group">
+					<label class="bmd-label-floating">Employee Name<span class="asteriskField">*</span> </label>
+					<input class="form-control typeahead3" name="emp_id" required="true" type="text">
+					<h4>By Category<span class="asteriskField">*</span></h4>
+					<div class="form-group">
+						<select class="form-control select" style="width:100%;" id="" name="category" required="true">
+							<option></option>
+							<option value="Monitoring">Monitoring</option>
+							<option value="Recording">Recording</option>
+						</select>
+						<br>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Save</button>
+					<button class="btn btn-light" data-dismiss="modal">Close</button>
+				</div>
+			</form>    
+		  </div> 
+	</div>
+  </div>
+</div>
+<div aria-hidden="true" aria-labelledby="myExtraLargeModalLabel" class="modal fade" data-backdrop="static" id="emp_profile_modal"
+	 role="dialog">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header" style="background-color:#00bfa5; color:#fff;">
+				<h3 class="modal-title">Employee Health Profiling</h3>
+				<button aria-label="Close" class="close text-white" data-dismiss="modal"
+						type="button">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" id="load_data">
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+
+$("form").attr('autocomplete', 'off');
+	datatable_stocks();
+	function datatable_stocks(){
+		$('#healthprofile').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 0, 'desc' ]],
+			'lengthMenu': [25,50,100],
+			'ajax': {
+				'url': '/api/hrws/health_profile_view?format=datatables',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data,type,row,meta){
+						if(row['status'] == 1){
+							return "";
+						}else{
+							return "<a href='#' data-role='emp_profile' data-id="+ data + ">Details</a>"
+						}
+					}
+				},
+				{'data': 'emp_id', 'className': 'text-center', 'name':'emp.id_number'},
+				{'data':'lname', 'className': 'text-center', 'name':'emp.pi.user.last_name'},
+				{'data':'fname', 'className': 'text-center', 'name':'emp.pi.user.first_name'},
+				{'data':'mname', 'className': 'text-center', 'name':'emp.pi.user.middle_name'},
+				{'data':'division','className': 'text-center', 'name':'emp.section.div.div_name'},
+				{'data':'category', 'className': 'text-center'},
+			],
+		});
+	}
+	$(document).on('click','a[data-role=emp_profile]', function(){ // FOR MODAL SUMMARY
+	  var id = $(this).data('id');
+	  $('#emp_profile_modal').modal('show').find('#load_data').load('/welfare/health_profile/modal_emp_profile/' +id);
+	});
+    
+   $(document).on('click', 'a[data-role=status]', function(){
+    	$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+    	if($(this).data('filter') == 'all'){
+    		$('#healthprofile').DataTable().ajax.url('/api/hrws/health_profile_view?format=datatables').load();
+    	}else{
+			$('#healthprofile').DataTable().ajax.url('/api/hrws/health_profile_view?format=datatables&status='+$(this).data('filter')).load();
+		}
+	});
+
+	$(document).on('click', 'a[data-role=updatevest]', function(){
+		var id = $(this).data('id');
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "They already return the Vest?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#3498DB",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.showLoading()
+				$.ajax({
+					url: "{% url 'updatevest' %}",
+					data: {
+						id: id
+					},
+					type: "POST"
+				})
+				.done(function(data){
+					if (data.data == 'success'){
+						Swal.fire({
+						  title: "Good job!",
+						  text: "The employee Successfully Returned the Vest",
+						  icon: "success",
+						  confirmButtonColor: "#3498DB",
+						  allowOutsideClick: false,
+						}).then((result) => {
+							if (result.isConfirmed) {
+								$('#healthprofile').DataTable().ajax.reload();
+							}
+						});
+					}
+				});
+			}
+		});
+	});
+	$(".typeahead3").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+	$(document).on('click','a[data-role=view]', function(){ // FOR MODAL PASS TO DIFFERENT MODAL
+	  $('#myModal').modal('show')
+	});
+
+	$('#health_profile').on('submit', function(e){
+	var form = new FormData(this);
+	Swal.fire({
+		title: "Are you sure",
+		text: "The health profile data is correct?",
+		icon: "info",
+		showCancelButton: true,
+		confirmButtonColor: "#3498DB",
+		confirmButtonText: "Yes",
+		closeOnConfirm: false,
+		allowOutsideClick: false,
+	}).then((result) => {
+		if (result.isConfirmed) {
+			Swal.showLoading()
+			$.ajax({
+				data        : form,
+				url         : "{% url 'health_profiling' %}",
+				type        : 'POST',
+				cache       : false,
+				contentType : false,
+				processData : false
+			})
+			.done(function(data){
+				var data = data.data;
+				if(data == "Success"){
+					Swal.fire({
+					  title: "Good job!",
+					  text: "You successfully added data",
+					  icon: "info",
+					  confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed) {
+							$('#healthprofile').DataTable().ajax.reload();
+						}
+					});
+				}else if(data == 'Fail'){
+					Swal.fire({
+					  title: "Insert Failed!",
+					  text: "Data already exists, Kindly search it instead",
+					  icon: "error",
+					  confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed) {
+							window.location.href = "{% url 'health_profiling' %}";
+						}
+					});
+				}
+			});
+		}
+		});
+		e.preventDefault();
+	});
+</script>
+{% endblock %}

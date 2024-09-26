@@ -1,0 +1,9 @@
+{% for row in shortlisted %}
+    {% if row.workflow_status == 'Shortlisted' %}
+        <p><strong>{{ row.vacancies }}</strong></p>
+        <p>{{ row.first_name }} {% if row.middle_name %}{{ row.middle_name }}{% endif %} {{ row.last_name }} {% if row.extension %}{{ row.extension }}{% endif %}</p>
+        <small>{{ row.date_workflow_added }}</small>
+        <hr>
+    {% endif %}
+{% endfor %}
+<a href="{% url 'page_shortlisted' %}" class="btn btn-info" target="_blank">See more</a>

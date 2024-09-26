@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Request for Issuance of Regional Special Order</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+    	#iso-logo{
+		    display:none;
+		}
+
+        @media print {
+			page {
+				margin: 0px;
+				padding: 0px 15px 0px 15px !important;
+				border: 0.5px solid transparent;
+				height: 297mm !important;
+				width: 100% !important;
+				zoom: 128% !important;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		  	footer{
+				position: absolute;
+				right: -150px;
+				bottom: -180px;
+			}
+			#iso-logo{
+				display:block;
+			}
+			footer, .footer-space{
+				height: 100px;
+			}
+			#signatory-content {
+				margin-top: -100px !important;
+			}
+		}
+
+		@page {
+			size: auto;
+		}
+
+		table tfoot tr td{
+			border: 0px !important;
+		}
+
+		table {
+			border: 0px !important;
+		}
+
+		footer{
+			float: right;
+			margin-top: -30px;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+        <a class="navbar-brand" href="javascript:;"><strong>Request for Issuance of Regional Special Order</strong></a>
+		<ul class="navbar-nav ml-auto">
+			<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	<page size="A4flex" class="page" style="padding: 40px 65px 65px 65px; color: black;">
+		<div class="containerX">
+			<table width="100%" style="font-size: 15px;">
+				{% getemployeebyempid rd.emp_id as rd_obj %}
+				{% getemployeebyempid hrmdd_dc.div_chief_id as hrmdd_dc_obj %}
+				{% getemployeebyempid training.created_by.section.div.div_chief_id as dc_obj %}
+				<tr>
+					<th width="20%">
+						<p style="margin-top: -15px !important;">FOR <span class="float-right">:</span></p>
+					</th>
+					<td>
+						&emsp;{{ rd_obj.pi.user.get_fullname|upper }}<br>
+						&emsp;{{ rd.name }}
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<p style="margin-top: -15px !important;">THRU <span class="float-right">:</span></p>
+					</th>
+					<td>
+						&emsp;{{ hrmdd_dc_obj.pi.user.get_fullname|upper }}<br>
+						&emsp;{{ hrmdd_dc.div_acronym }}, Chief
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<p style="margin-top: -15px !important;">FROM <span class="float-right">:</span></p>
+					</th>
+					<td contenteditable="true">
+						&emsp;{{ dc_obj.pi.user.get_fullname|upper }}<br>
+						&emsp;{{ training.created_by.section.div.div_name|upper }}
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<p style="margin-top: 10px;">SUBJECT <span class="float-right">:</span></p>
+					</th>
+					<td>
+						&emsp;Request for Issuance of Regional Special Order
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<p style="margin-top: 10px;">DATE <span class="float-right">:</span></p>
+					</th>
+					<td>
+						&emsp;{{ training.date_added|date:"d F Y"|upper }}
+					</td>
+				</tr>
+			</table>
+			<hr>
+			<p style="font-size: 15px;" class="text-justify">
+				This is to request for an issuance of a Regional Special Order for the following employees/officials to attend
+				the {{ training.training.tt_name }} on {{ training.get_inclusive_dates }} at {{ training.venue }}, to wit: <br><br>
+			</p>
+
+			<table border="1" width="100%" style="font-size: 14px;">
+				<tbody style="border: 1px black !important;">
+					{% if facilitator %}
+						<tr>
+							<th class="text-center" colspan="3" style="font-size: 15px;">
+								<strong>FACILITATOR / RESOURCE PERSON</strong>
+							</th>
+						</tr>
+						<tr>
+							<th width="7%" class="text-center">NO.</th>
+							<th width="40%">&emsp;NAME</th>
+							<th>&emsp;POSITION</th>
+						</tr>
+						{% for row in facilitator %}
+						<tr>
+							<td class="text-center">{{ forloop.counter }}</td>
+							<td>&emsp;{{ row.emp.pi.user.get_fullname|upper }}</td>
+							<td>&emsp;{{ row.emp.position.name|upper }}</td>
+						</tr>
+						{% endfor %}
+					{% endif %}
+					{% if ex_facilitator %}
+						<tr>
+							<th class="text-center" colspan="3" style="font-size: 15px;">
+								<strong>EXTERNAL FACILITATOR / RESOURCE PERSON</strong>
+							</th>
+						</tr>
+						<tr>
+							<th width="7%" class="text-center">NO.</th>
+							<th width="40%" colspan="2">&emsp;NAME</th>
+						</tr>
+						{% for row in ex_facilitator %}
+						<tr>
+							<td class="text-center">{{ forloop.counter }}</td>
+							<td colspan="2">&emsp;{{ row.rp_name|upper }}</td>
+						</tr>
+						{% endfor %}
+					{% endif %}
+					{% if internal_participants %}
+						<tr>
+							<th class="text-center" colspan="3" style="font-size: 15px;">
+								<strong>INTERNAL PARTICIPANTS</strong>
+							</th>
+						</tr>
+						<tr>
+							<th width="7%" class="text-center">NO.</th>
+							<th width="40%">&emsp;NAME</th>
+							<th>&emsp;POSITION</th>
+						</tr>
+						{% for row in internal_participants %}
+						<tr>
+							<td class="text-center">{{ forloop.counter }}</td>
+							<td>&emsp;{{ row.emp.pi.user.get_fullname|upper }}</td>
+							<td>&emsp;{{ row.emp.position.name|upper }}</td>
+						</tr>
+						{% endfor %}
+					{% endif %}
+					{% if external_participants %}
+						<tr>
+							<th class="text-center" colspan="3" style="font-size: 15px;">
+								<strong>EXTERNAL PARTICIPANTS</strong>
+							</th>
+						</tr>
+						<tr>
+							<th width="7%" class="text-center">NO.</th>
+							<th colspan="2">&emsp;NAME</th>
+						</tr>
+						{% for row in external_participants %}
+						<tr>
+							<td class="text-center">{{ forloop.counter }}</td>
+							<td colspan="2">&emsp;{{ row.participants_name|upper }}</td>
+						</tr>
+						{% endfor %}
+					{% endif %}
+					<tfoot><tr><td><div class="footer-space">&nbsp;</div></td></tr></tfoot>
+				</tbody>
+			</table>
+			<div id="signatory-content">
+				<p style="font-size: 15px;" class="text-justify">
+					<br>Thank you.<br><br><br>
+					<span contenteditable="true">{{ dc_obj.pi.user.get_fullname|upper }}</span>
+				</p>
+			</div>
+			<footer>
+				<img loading="lazy"  src="{% static 'image/socotec.png' %}" style="width: 39mm;" id="iso-logo">
+			</footer>
+        </div>
+    </page>
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+</body>
+</html>

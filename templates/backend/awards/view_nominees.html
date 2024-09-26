@@ -1,0 +1,905 @@
+{% load frontend_tags %}
+{% load tags %}
+{% block style %}
+<style>
+.hero-btn {
+  position: relative;
+  width: auto;
+  margin: auto;
+}
+.hero-btn .btn {
+  background-color: #ff0083;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  text-transform: uppercase;
+  color: #fff;
+  display: inline-block;
+  width: 200px;
+  height: 66px;
+  text-align: center;
+  line-height: 66px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-box-shadow: 0 15px 40px rgba(255, 0, 131, 0.5);
+  -webkit-box-shadow: 0 15px 40px rgba(255, 0, 131, 0.5);
+  box-shadow: 0 15px 40px rgba(255, 0, 131, 0.5);
+  -moz-transform: perspective(600px) rotateX(0deg) scale(1);
+  -ms-transform: perspective(600px) rotateX(0deg) scale(1);
+  -webkit-transform: perspective(600px) rotateX(0deg) scale(1);
+  transform: perspective(600px) rotateX(0deg) scale(1);
+  -moz-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -webkit-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+}
+.hero-btn .btn:hover {
+  background-color: #e60076;
+  -moz-box-shadow: 0 20px 40px rgba(255, 0, 131, 0.5);
+  -webkit-box-shadow: 0 20px 40px rgba(255, 0, 131, 0.5);
+  box-shadow: 0 20px 40px rgba(255, 0, 131, 0.5);
+}
+.hero-btn .btn:active {
+  -moz-transform: perspective(600px) rotateX(15deg) scale(0.9);
+  -ms-transform: perspective(600px) rotateX(15deg) scale(0.9);
+  -webkit-transform: perspective(600px) rotateX(15deg) scale(0.9);
+  transform: perspective(600px) rotateX(15deg) scale(0.9);
+  font-size: 21px;
+  -moz-box-shadow: 0 20px 40px rgba(255, 0, 131, 0.5);
+  -webkit-box-shadow: 0 20px 40px rgba(255, 0, 131, 0.5);
+  box-shadow: 0 20px 40px rgba(255, 0, 131, 0.5);
+}
+.active .hero-btn .btn:active {
+  -moz-transform: perspective(600px) rotateX(0deg) scale(1);
+  -ms-transform: perspective(600px) rotateX(0deg) scale(1);
+  -webkit-transform: perspective(600px) rotateX(0deg) scale(1);
+  transform: perspective(600px) rotateX(0deg) scale(1);
+  font-size: 22px;
+  -moz-box-shadow: 0 15px 40px rgba(255, 0, 131, 0.5);
+  -webkit-box-shadow: 0 15px 40px rgba(255, 0, 131, 0.5);
+  box-shadow: 0 15px 40px rgba(255, 0, 131, 0.5);
+}
+.hero-btn .particles-circle {
+  position: absolute;
+  background-color: #f8ac59;
+  width: 10px;
+  height: 10px;
+  top: 10px;
+  left: 50%;
+  margin-left: -5px;
+  z-index: -1;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  border-radius: 50%;
+  -moz-transform: scale(0);
+  -ms-transform: scale(0);
+  -webkit-transform: scale(0);
+  transform: scale(0);
+  visibility: hidden;
+}
+.hero-btn .particles-circle:nth-of-type(odd) {
+  border: solid 2px #f8ac59;
+  background-color: transparent;
+}
+@keyframes particles-1 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -119px;
+    top: 206px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(1) {
+  animation: particles-1 1.5s 0.025s;
+}
+@keyframes particles-2 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -10px;
+    top: 151px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(2) {
+  animation: particles-2 1.5s 0.05s;
+}
+@keyframes particles-3 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 45px;
+    top: -33px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(3) {
+  animation: particles-3 1.5s 0.075s;
+}
+@keyframes particles-4 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -22px;
+    top: -113px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(4) {
+  animation: particles-4 1.5s 0.1s;
+}
+@keyframes particles-5 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 3px;
+    top: 35px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(5) {
+  animation: particles-5 1.5s 0.125s;
+}
+@keyframes particles-6 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 83px;
+    top: 112px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(6) {
+  animation: particles-6 1.5s 0.15s;
+}
+@keyframes particles-7 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 11px;
+    top: -201px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(7) {
+  animation: particles-7 1.5s 0.175s;
+}
+@keyframes particles-8 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 106px;
+    top: 129px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(8) {
+  animation: particles-8 1.5s 0.2s;
+}
+@keyframes particles-9 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 156px;
+    top: -119px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(9) {
+  animation: particles-9 1.5s 0.225s;
+}
+@keyframes particles-10 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 59px;
+    top: 231px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(10) {
+  animation: particles-10 1.5s 0.25s;
+}
+@keyframes particles-11 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -90px;
+    top: -15px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(11) {
+  animation: particles-11 1.5s 0.275s;
+}
+@keyframes particles-12 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 193px;
+    top: -31px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(12) {
+  animation: particles-12 1.5s 0.3s;
+}
+@keyframes particles-13 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 6px;
+    top: 187px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(13) {
+  animation: particles-13 1.5s 0.325s;
+}
+@keyframes particles-14 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 111px;
+    top: -9px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(14) {
+  animation: particles-14 1.5s 0.35s;
+}
+@keyframes particles-15 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 64px;
+    top: -91px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(15) {
+  animation: particles-15 1.5s 0.375s;
+}
+@keyframes particles-16 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -192px;
+    top: -131px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(16) {
+  animation: particles-16 1.5s 0.4s;
+}
+@keyframes particles-17 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -61px;
+    top: -148px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(17) {
+  animation: particles-17 1.5s 0.425s;
+}
+@keyframes particles-18 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -43px;
+    top: 102px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(18) {
+  animation: particles-18 1.5s 0.45s;
+}
+@keyframes particles-19 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -31px;
+    top: -225px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(19) {
+  animation: particles-19 1.5s 0.475s;
+}
+@keyframes particles-20 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 163px;
+    top: 190px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(20) {
+  animation: particles-20 1.5s 0.5s;
+}
+@keyframes particles-21 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 189px;
+    top: 31px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(21) {
+  animation: particles-21 1.5s 0.525s;
+}
+@keyframes particles-22 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 22px;
+    top: -54px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(22) {
+  animation: particles-22 1.5s 0.55s;
+}
+@keyframes particles-23 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -61px;
+    top: 68px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(23) {
+  animation: particles-23 1.5s 0.575s;
+}
+@keyframes particles-24 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -73px;
+    top: -97px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(24) {
+  animation: particles-24 1.5s 0.6s;
+}
+@keyframes particles-25 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -101px;
+    top: -149px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(25) {
+  animation: particles-25 1.5s 0.625s;
+}
+@keyframes particles-26 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 61px;
+    top: 173px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(26) {
+  animation: particles-26 1.5s 0.65s;
+}
+@keyframes particles-27 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 30px;
+    top: 161px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(27) {
+  animation: particles-27 1.5s 0.675s;
+}
+@keyframes particles-28 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 160px;
+    top: -162px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(28) {
+  animation: particles-28 1.5s 0.7s;
+}
+@keyframes particles-29 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 52px;
+    top: 206px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(29) {
+  animation: particles-29 1.5s 0.725s;
+}
+@keyframes particles-30 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -162px;
+    top: -127px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(30) {
+  animation: particles-30 1.5s 0.75s;
+}
+@keyframes particles-31 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -121px;
+    top: -21px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(31) {
+  animation: particles-31 1.5s 0.775s;
+}
+@keyframes particles-32 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 39px;
+    top: -164px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(32) {
+  animation: particles-32 1.5s 0.8s;
+}
+@keyframes particles-33 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: -23px;
+    top: 193px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(33) {
+  animation: particles-33 1.5s 0.825s;
+}
+@keyframes particles-34 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 238px;
+    top: 173px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(34) {
+  animation: particles-34 1.5s 0.85s;
+}
+@keyframes particles-35 {
+  from {
+    transform: scale(1);
+    visibility: visible;
+  }
+  to {
+    left: 213px;
+    top: 239px;
+    transform: scale(0);
+    visibility: hidden;
+  }
+}
+.active .hero-btn .particles-circle:nth-of-type(35) {
+  animation: particles-35 1.5s 0.875s;
+}
+
+.v-align {
+  position: relative;
+  text-align: center;
+  left: 0;
+  width: 100%;
+  max-height: 40px;
+  top: 50%;
+  -moz-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.wrap__sparks {
+  transform: translateZ(-100px);
+}
+</style>
+{% endblock %}
+{% award_has_winner row.id as awardhaswinner %}
+<div class="modal-body">
+<button type="button" class="close text-white" data-dismiss="modal" style="color: #1b2a33 !important; opacity: 1;"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+<div class="row resignation">
+	<div class="col-sm-12">
+		<div class="row">
+			<div class="col-md-6 text-center">
+				<img loading="lazy"  alt="image" class="img-circle" src="{{ row.badge.url.url }}" style="cursor:pointer; width: 400px; height: 400px; object-fit: cover;">
+			</div>
+			<div class="col-md-6" style="margin-top: 160px;">
+				<h3 class="no-margins" style="font-weight:normal;">{{ row.classification.shortname }} {{ row.year }}</h3>
+				<h1 class="no-margins bold" style="font-weight:bold;">{{ row.name }}</h1>
+				<h3 class="" style="font-weight:normal; margin-bottom:3px !important;">{{ row.level }} / {{ row.category.name }}</h3>
+				<h4 class="" id="numberofnominees{{row.id}}" style="font-weight:normal;">Number of Nominees: {% get_numberofnominees row.id %}</h4>
+			</div>
+		</div>
+		<div class="table-responsive">
+			<table class="table table-bordered" style="font-size: 13px !important;">
+				<tr>
+					<td class="text-center" rowspan="{{ criteria.count|add:'1' }}" width="20%">
+						<strong>ASSESSMENT CRITERIA</strong>
+					</td>
+					{% if not criteria %}<td>No assessment criteria available.</td>{% endif %}
+				</tr>
+				{% if criteria %}
+					{% for row in criteria %}
+					<tr>
+						<td>
+							<strong>{{ row.name }}</strong><br>
+							{{ row.desc }}
+						</td>
+						<td class="text-center" width="15%">
+							{{ row.percentage }}%
+						</td>
+					</tr>
+					{% endfor %}
+				{% endif %}
+				<tr>
+					<td class="text-center" rowspan="{{ eligibility.count|add:'1' }}" width="20%">
+						<strong>ELIGIBILITY CRITERIA</strong>
+					</td>
+					{% if not eligibility %}<td>No eligibility criteria available.</td>{% endif %}
+				</tr>
+				{% if eligibility %}
+					{% for row in eligibility %}
+					<tr>
+						<td colspan="2">
+							{{ row.eligibility }}
+						</td>
+					</tr>
+					{% endfor %}
+				{% endif %}
+				<tr>
+					<td class="text-center">
+						<strong>ATTACHMENT</strong>
+					</td>
+					<td colspan="2">
+						{% for a in attachments %}
+							<a href="{{ a.file.url }}" target="_blank">
+								<i class="fas fa-file"></i> {{ a.name }}
+							</a>
+						{% endfor %}
+					</td>
+				</tr>
+			</table>
+		</div>
+		<hr>
+		{% if isdone %}
+			<div class="row">
+				<div class="form-group col-sm-12" style="margin-bottom:0px">
+					<button class="btn btn-info pull-right" id="btn-add"><i class="fas fa-plus"></i> Add Nominee</button>
+				</div>
+			</div>
+		{% else %}
+			{% if awardhaswinner == 1 %}
+				<div class="row">
+					<div class="form-group col-sm-12" style="margin-bottom:0px">
+						<button class="btn btn-warning pull-right" id="btn-resetresults"><i class="fa fa-trophy"></i> Reset Results</button>
+					</div>
+				</div>
+			{% endif %}
+		{% endif %}
+		<br>
+		<div class="table-responsive">
+		<table id="refreshTable" class="table table-bordered" style="font-size: 13px;">
+			<thead>
+				<tr>
+					<th width="3%">#</th>
+					{% if row.category.needs_title %}
+						<th class="capslock" width="20%">Name of {{ row.category.name }}</th>
+						<th class="capslock" width="20%">Team Leader</th>
+					{% else %}
+						<th class="capslock" width="20%">Name of Nominee</th>
+					{% endif %}
+					<th class="capslock text-center" width="20%">Nominated by</th>
+					<th class="capslock text-center" width="20%">Date of Nomination</th>
+					<th class="capslock text-center" width="8%">Status</th>
+					{% if isdone %}
+						<th class="capslock text-center" width="10%" colspan="2">Action</th>
+					{% else %}
+						<th class="capslock text-center">Results</th>
+					{% endif %}
+				</tr>
+			</thead>
+			<tbody>
+				{% if nominees %}
+				{% for rw in nominees %}
+				<tr id="{{ rw.id }}">
+					<td>{{ forloop.counter }}</td>
+					{% if row.category.needs_title %}
+						<td>{{ rw.title }}</td>
+					{% endif %}
+					<td>{{ rw.nominee.pi.user.first_name }} {{ rw.nominee.pi.user.middle_name|to_middleinitial }} {{ rw.nominee.pi.user.last_name }}</td>
+					<td class="text-center">{% if rw.nominated_by_id == request.session.emp_id %}You{% else %}{{ rw.nominated_by.pi.user.first_name }} {{ rw.nominated_by.pi.user.middle_name|to_middleinitial }} {{ rw.nominated_by.pi.user.last_name }}{% endif %}</td>
+					<td class="text-center">{{ rw.datetime|date:"F d, Y" }}</td>
+					<td class="text-center">{% if rw.status == 1 %}<i class="fas fa-check-circle text-success" style="margin-top:3px;" title="Verified and screened."></i>{% else %}<i class="fas fa-times-circle text-danger" style="margin-top:3px;" title="Unverified."></i>{% endif %}</td>
+					{% if isdone %}
+						{% if rw.status == 0 %}
+							<td class="text-center">
+								{% if rw.nominated_by_id == request.session.emp_id %}
+									<a href="javascript:;" class="nom_edit" data-id="{{ rw.id }}"><i style="margin-top:3px;" class="fas fa-edit"></i></a>
+									<a href="javascript:;" class="nom_delete" data-id="{{ rw.id }}" data-name="{{ rw.nominee.pi.user.first_name }} {{ rw.nominee.pi.user.middle_name|to_middleinitial }} {{ rw.nominee.pi.user.last_name }}"><i style="margin-top:3px;" class="fas fa-trash"></i></a>
+								{% endif %}
+							</td>
+							<td class="text-center">
+								<a href="javascript:;" class="nom_verified" data-id="{{ rw.id }}" data-name="{{ rw.nominee.pi.user.first_name }} {{ rw.nominee.pi.user.middle_name|to_middleinitial }} {{ rw.nominee.pi.user.last_name }}"><i style="margin-top:3px;" class="fas fa-check"></i></a>
+							</td>
+						{% else %}
+						<td colspan="2" class="text-center">
+							<a href="javascript:;" class="nom_verified" data-id="{{ rw.id }}" data-name="{{ rw.nominee.pi.user.first_name }} {{ rw.nominee.pi.user.middle_name|to_middleinitial }} {{ rw.nominee.pi.user.last_name }}"><i style="margin-top:3px;" class="fas fa-edit"></i></a>
+						</td>
+						{% endif %}
+					{% else %}
+						<td class="text-center">
+							{% if rw.is_winner == 1%}
+								<div class='v-align active' style="margin-top:-5px">
+									<div class='hero-btn'>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+										<span class='particles-circle'></span>
+									</div>
+								</div>
+							{% endif %}
+							<div class="item-to-click" style="cursor:pointer;">
+								{% if rw.is_winner == 1 %}
+									<i class="fas fa-trophy text-warning" style="margin-top:8px" title="Winner of the {{ rw.name }} Award"></i>
+								{% else %}
+									{% if rw.status == 1 and awardhaswinner == 0 %}
+										<i class="fas fa-trophy text-info markaswinner" data-id="{{ rw.id }}" data-name="{{ rw.nominee.pi.user.first_name }} {{ rw.nominee.pi.user.middle_name|to_middleinitial }} {{ rw.nominee.pi.user.last_name }}" style="margin-top:3px" title="Mark as Winner"></i>
+									{% endif %}
+								{% endif %}
+							</div>
+						</td>
+					{% endif %}
+				</tr>
+				{% endfor %}
+				{% else %}
+				<tr class="text-center">
+					<td colspan="7">No nominees to display.</td>
+				</tr>
+				{% endif %}
+			</tbody>
+		</table>
+		</div>
+	</div>
+</div>
+</div>
+{% block script %}
+<script>
+	$(document).ready(function(){
+		$('.item-to-click').click(function(){
+			if ($('.hero-btn').parent().hasClass('active')){
+				$('.hero-btn').parent().removeClass('active');
+			}
+
+			$('.hero-btn').parent().stop().addClass('active');
+			setTimeout(function(){
+				$('.hero-btn').parent().removeClass('active');
+			}, 2000);
+		});
+
+		$('#btn-add').on('click', function(){
+			$('#edit-modal').modal('show').find('.modal-body').empty();
+			$('#edit-modal').modal('show').find('.modal-body').load("/backend/add-nominee/" + $('#awards-id').val());
+		});
+
+		$('.nom_verified').on('click', function(){
+			var id = $(this).data('id');
+			$('#action-type').val(3);
+			$('#edit-modal').modal('show').find('#detail-content').load("/backend/eligibility-awards/checklist/" + id);
+		});
+
+		$('.markaswinner').on('click', function(){
+			var conf = confirm('Mark '+$(this).data('name')+' as the winner of this award?');
+			if (conf) {
+				$('#nominee-id').val($(this).data('id'));
+				$('#action-type').val(2);
+				verifyByPassword();
+			}
+		});
+
+		$('.nom_delete').on('click', function(){
+			var conf = confirm('Are you sure you want to delete nomination for '+$(this).data('name')+'?');
+			if (conf) {
+				$.ajax({
+					url: "/backend/delete-nominee/"+$(this).data('id'),
+					success: function(result){
+						$('#edit-modal').modal('show').find('.modal-body').load("/backend/validate-nominees/" + $('#awards-id').val());
+					}
+				});
+			}
+		});
+
+		function verifyByPassword() {
+			$('#password-modal').modal('toggle');
+		}
+
+		$('#btn-resetresults').on('click', function(){
+			var conf = confirm('Confirm reset of results for selected award?');
+			if (conf) {
+				$('#action-type').val(1);
+				verifyByPassword();
+			}
+		});
+
+		$('.nom_edit').on('click', function(){
+			$('#edit-modal').modal('show').find('.modal-body').empty();
+			$('#edit-modal').modal('show').find('.modal-body').load("/backend/edit-nominee/" + $(this).data('id'));
+		});
+	});
+
+</script>
+{% endblock %}

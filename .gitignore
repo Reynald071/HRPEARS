@@ -1,0 +1,12 @@
+.idea
+media
+__pycache__
+portal.sql
+*.env
+*.pyc
+settings.py
+global_variables.py
+.caraga_repo_git
+qrcode
+venv
+CACHE

@@ -1,0 +1,237 @@
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu">
+        <li class="nav-header fw-bold">MAIN</li>
+        <li class="nav-item">
+            <a href="{% url 'backend-dashboard' %}" class="nav-link {% if title == 'dashboard' %}active{% endif %}">
+                <p> Dashboard </p>
+            </a>
+        </li>
+        <li class="nav-header fw-bold mt-3">USER</li>
+        <li class="nav-item {% if title == 'profile' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'profile' %}active{% endif %}">
+                <p>Employee Data <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'about' %}active{% endif %}" href="{% url 'my-profile' %}">My Profile</a>
+                </li>
+
+                <li class="nav-item {% if sub_title == 'pds' %}menu-open{% endif %}">
+                    <a href="javascript:;" class="nav-link {% if sub_title == 'pds' %}active{% endif %}">
+                        <span class="nav-label">Personal Data Sheet</span>
+                        <span class="fa arrow"></span>
+                    </a>
+                    <ul class="nav nav-treeview" style="font-size: 12px;">
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'personal_info' %}active{% endif %}" href="{% url 'personal-info' %}">Personal Information</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'family_background' %}active{% endif %}" href="{% url 'family-background' %}">Family Background</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'educational_background' %}active{% endif %}" href="{% url 'educational-background' %}">Educational Background</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'civil_service' %}active{% endif %}" href="{% url 'civil-service' %}">Civil Service Eligibility</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'work_experience' %}active{% endif %}" href="{% url 'work-experience' %}">Work Experience</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'voluntary' %}active{% endif %}" href="{% url 'voluntary' %}">Voluntary Work</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'training' %}active{% endif %}" href="{% url 'training' %}">Trainings Attended</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'other' %}active{% endif %}" href="{% url 'other-information' %}">Other Information</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'additional' %}active{% endif %}" href="{% url 'additional' %}">Additional Information</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if sub_sub_title == 'reference' %}active{% endif %}" href="{% url 'attachment' %}">References</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'f_201_files' %}active{% endif %}"  href="{% url 'files_201' %}">201 Files</a>
+                </li>
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link {% if sub_title == 'cert_requests' %}active{% endif %}" href="{% url 'ticket_request' %}">Employee Requests</a>#}
+{#                </li>#}
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'travel_history' %}active{% endif %}"  href="{% url 'travel_history' %}">Travel History</a>
+                </li>
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link {% if sub_title == 'emp_ipcr' %}active{% endif %}"  href="{% url 'emp_ipcr' %}">IPCR Tracker</a>#}
+{#                </li>#}
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link" href="javascript:;">Downloadables / Printables</a>#}
+{#                    <ul class="nav nav-treeview" style="font-size: 12px;">#}
+{#                        <li class="nav-item">#}
+{#                            <a class="nav-link" target="_blank" href="{% url 'view_clearance_layout_current' %}">Clearance Form</a>#}
+{#                        </li>#}
+{#                    </ul>#}
+{#                </li>#}
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'leave_management' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'leave_management' %}active{% endif %}">
+                <p>Leave Management <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'user_leave' %}active{% endif %}" href="{% url 'leave_application' %}">Leave Requests</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'rewards_and_recognition' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'rewards_and_recognition' %}active{% endif %}">
+                <p>Rewards & Recognition <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'nominations' %}active{% endif %}" href="{% url 'nominations' %}">Nominations</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'awardsf' %}active{% endif %}" href="{% url 'deliberation' %}">Deliberation</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'travel_management' %}menu-open{% endif %}">
+            <a href="{% url 'rito' %}" class="nav-link {% if title == 'travel_management' %}active{% endif %}">
+                <p>Travel Request</p>
+            </a>
+        </li>
+        <li class="nav-item {% if title == 'learning_and_development' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'learning_and_development' %}active{% endif %}">
+                <p>Learning & Development Management <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'lds_rrso' %}active{% endif %}" href="{% url 'lds_rrso' %}">Training Requests</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'payroll' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'payroll' %}active{% endif %}">
+                <p>Payroll Management <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'payslip' %}active{% endif %}" href="{% url 'payslip' %}">Payslip</a>
+                </li>
+                {% comment %}
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'remittances' %}active{% endif %}" href="{% url 'my-profile' %}#about">Remittances</a>
+                </li>
+                {% endcomment %}
+            </ul>
+        </li>
+
+        {% if user|check_permission:'administrator' or user|check_permission:'superadmin' %}
+        <li class="nav-header fw-bold mt-3">ADMINISTRATOR</li>
+        <li class="nav-item {% if title == 'employee' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'employee' %}active{% endif %}">
+                <p>Employee Data <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'all_employee' %}active{% endif %}" href="{% url 'backend-employees' %}">Staff Inventory</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'monthly_birthday' %}active{% endif %}"  href="{% url 'monthly_birthdays' %}">Monthly Birthdays</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'file_uploading' %}active{% endif %}"  href="{% url 'file_uploading' %}">File Uploading</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if sub_title == 'position_status' %}active{% endif %}"  href="{% url 'position_status' %}">Position Status</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'recruit' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'recruit' %}active{% endif %}">
+                <p>Recruitment & Onboarding <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'job_app' %}active{% endif %}" href="{% url 'job_app_backend' %}">Job Applications</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'leave' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'leave' %}active{% endif %}">
+                <p>Leave Management <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'leave_request' %}active{% endif %}" href="{% url 'leave_request' %}">Leave Applications</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'leave_credits' %}active{% endif %}" href="{% url 'leave-credits' %}">Leave Credits</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'to' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'to' %}active{% endif %}">
+                <p>Travel Management <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'rito' %}active{% endif %}" href="{% url 'rito-request' %}">Travel Requests</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'ld_admin' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'ld_admin' %}active{% endif %}">
+                <p>Learning & Development Management <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'train_request' %}active{% endif %}" href="{% url 'ld_admin' %}">Training Requests</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'performance' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'performance' %}active{% endif %}">
+                <p>Performance Management <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'ipcr_monitoring' %}active{% endif %}" href="{% url 'ipcr_encoding' %}">IPCR Monitoring</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'ipcr_certification' %}active{% endif %}" href="{% url 'ipcr_certification' %}">Certificate of IPCR Ratings</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item {% if title == 'awards_management' %}menu-open{% endif %}">
+            <a href="javascript:;" class="nav-link {% if title == 'awards_management' %}active{% endif %}">
+                <p>Rewards & Recognition <i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview" style="font-size: 12px;">
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'awards' %}active{% endif %}" href="{% url 'awards' %}">Awards</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'awards_report' %}active{% endif %}" href="{% url 'nominees_report' %}">Nominations</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link {% if sub_title == 'deliberation_results' %}active{% endif %}" href="{% url 'deliberation-results' %}">Deliberation</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/" target="_blank">
+                <p>Libraries</p>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>

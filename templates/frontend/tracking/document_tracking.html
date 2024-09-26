@@ -1,0 +1,976 @@
+{% extends 'layout.html' %}
+{% load tags %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">My Documents</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Document Tracking
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>My Documents</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-xs-4">
+        <div class="title-action">
+            {% if user|check_permission:'document_custodian' or user|check_permission:'superadmin' %}
+				<button class="btn btn-info" data-toggle="modal" data-target="#view-custodians"><i class="fas fa-users"></i> Custodians</button>
+{#				<button class="btn btn-info" data-toggle="modal" data-target="#new-document"><i class="fas fa-plus"></i> New Document</button>#}
+			{% endif %}
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+		<div class="col-sm-12">
+		    <div class="alert alert-info">
+		        <i class="fas fa-info-circle"></i>
+		        Please be advised, the Document Tracking functionality on My PORTAL has been locked and is now available for viewing only.
+                We encourage you to utilize our new Document Tracking System, "EDTMS 2.0 - Enhanced Document Transaction Management System".
+		        Access to this system is available via the following link: <a href="https://edtms.dswd.gov.ph/" target="_blank">https://edtms.dswd.gov.ph/</a>
+            </div>
+			<div class="ibox">
+				<div class="ibox-content">
+					<div class="tabs-container">
+                        <ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#inbox">Inbox <span id="total-inbox" class="badge badge-primary"></span></a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#sentbox">Sentbox <span id="total-sentbox" class="badge badge-default"></span></a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#carbon-copy">Carbon Copy <span id="total-cc" class="badge badge-warning"></span></a></li>
+							<li><a class="nav-link" data-toggle="tab" href="#section-documents">Section Documents <span id="total-sc" class="badge badge-success"></span></a></li>
+                            {% if user|check_permission:'document_custodian' %}
+							<li><a class="nav-link" data-toggle="tab" href="#archive">Archive <span id="total-archive" class="badge badge-default"></span></a></li>
+							{% endif %}
+                        </ul>
+						<div class="tab-content" style="border: 0px !important;">
+							<div id="inbox" class="tab-pane active">
+								<div class="panel-body">
+									<div class="row">
+										<div class="col-lg-9">
+											<div class="table-responsive">
+												<table class="table table-hover table-bordered" id="table-inbox" width="100%">
+													<thead>
+														<tr>
+															<th class="capslock text-left">Action</th>
+															<th class="capslock text-center">DRN</th>
+															<th class="capslock text-left">Subject</th>
+															<th class="capslock text-center">Sender</th>
+															<th class="capslock text-center">Doc Date</th>
+															<th class="capslock text-center">From</th>
+															<th class="capslock text-center display-none">To</th>
+															<th class="capslock text-right">Status</th>
+														</tr>
+													</thead>
+												</table>
+											</div>
+										</div>
+										<div class="col-lg-3">
+											<h4>By DRN</h4>
+											<input type="text" class="form-control" id="keyword" placeholder="Enter DRN">
+											<br>
+											<h4>By status</h4>
+											<div class="list-group">
+												<a class="list-group-item active" id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+												<a class="list-group-item" id="status-1" href="javascript:;" data-role="status" data-filter="1">Forwarded</a>
+												<a class="list-group-item" id="status-2" href="javascript:;" data-role="status" data-filter="2">Received</a>
+												<a class="list-group-item" id="status-3" href="javascript:;" data-role="status" data-filter="3">Acted</a>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div id="sentbox" class="tab-pane">
+								<div class="panel-body">
+									<div class="table-responsive">
+										<table class="table table-hover table-bordered" id="table-sentbox" width="100%">
+											<thead>
+												<tr>
+													<th class="capslock text-left">Action</th>
+													<th class="capslock text-center">DRN</th>
+													<th class="capslock text-left">Subject</th>
+													<th class="capslock text-center">Sender</th>
+													<th class="capslock text-center">Doc Date</th>
+													<th class="capslock text-center">From</th>
+													<th class="capslock text-right">Status</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div id="carbon-copy" class="tab-pane">
+								<div class="panel-body">
+									<div class="table-responsive">
+										<table class="table table-hover table-bordered" id="table-cc" width="100%">
+											<thead>
+												<tr>
+													<th class="capslock text-left">Action</th>
+													<th class="capslock text-center">DRN</th>
+													<th class="capslock text-left">Subject</th>
+													<th class="capslock text-center">Sender</th>
+													<th class="capslock text-center">Doc Date</th>
+													<th class="capslock text-center">From</th>
+													<th class="capslock text-right">Status</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div id="section-documents" class="tab-pane">
+								<div class="panel-body">
+									<div class="table-responsive">
+										<table class="table table-hover table-bordered" id="table-section-documents" width="100%">
+											<thead>
+												<tr>
+													<th class="capslock text-left">Action</th>
+													<th class="capslock text-center">DRN</th>
+													<th class="capslock text-left">Subject</th>
+													<th class="capslock text-center">Sender</th>
+													<th class="capslock text-center">Doc Date</th>
+													<th class="capslock text-center">From</th>
+													<th class="capslock text-center display-none">To</th>
+													<th class="capslock text-right">Status</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+								</div>
+							</div>
+                            {% if user|check_permission:'document_custodian' %}
+							<div id="archive" class="tab-pane">
+								<div class="panel-body">
+									<div class="table-responsive">
+										<table class="table table-hover table-bordered" id="table-archive" width="100%">
+											<thead>
+												<tr>
+													<th class="capslock text-left" width="10%">Action</th>
+													<th class="capslock text-center" width="15%">DRN</th>
+													<th class="capslock text-left" width="20%">Subject</th>
+													<th class="capslock text-center">Sender</th>
+													<th class="capslock text-center">Doc Date</th>
+													<th class="capslock text-center">From</th>
+													<th class="capslock text-center display-none">To</th>
+													<th class="capslock text-right">Status</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+								</div>
+							</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal" id="view-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">VIEW DOCUMENT</h3>
+				<small>View specific document details and information.</small>
+	        </div>
+	        <div class="modal-body modal-body-real">
+			</div>
+	        <form id="submitForwardForm" enctype="multipart/form-data">
+				<div class="modal-body forward" style="border-top:1px solid #e5e6e7; display:none;">
+					{% csrf_token %}
+					<input type="hidden" name="transaction_id" id="transaction_id">
+					<div class="row">
+						<div class="form-group col-md-12">
+							<label>Action Taken<span class="asteriskField">*</span></label>
+							<textarea class="form-control" style="resize:vertical; max-height:200px; min-height:50px;" name="action_taken" required></textarea>
+						</div>
+					</div>
+					<div class="row">
+						<div class="form-group col-md-12">
+							<label>Attachments</label>
+							<input type="file" class="form-control file-control" name="attachment" multiple>
+						</div>
+					</div>
+					<div class="row">
+						<div class="form-group col-md-6">
+							<label>Forward To<span class="asteriskField">*</span></label>
+							<input type="text" class="form-control typeahead_2 filter_employee_to b-r-sm" name="trans_to_id" id="trans_to_id_view" required autocomplete="off" placeholder="e.g. [16-12345] Firstname Lastname">
+						</div>
+						<div class="form-group col-md-6">
+							<label>Division / Section</label>
+							<input type="text" class="form-control b-r-sm" id="divisionsection_view" readonly>
+						</div>
+					</div>
+					<div class="row">
+						<div class="form-group col-md-6" style="margin-bottom:0px;">
+							<label>Provide Copy to Divisions</label>
+							<select class="form-control select" name="copy_to_divisions" multiple>
+								<option></option>
+								{% for row in divisions %}
+								<option value="{{ row.id }}">{{ row.div_name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-6" style="margin-bottom:0;">
+							<label>Carbon Copy</label>
+							<select class="form-control select" name="carbon_copy" id="carbon_copy_forward" multiple>
+								<option></option>
+								{% for row in doc_controllers %}
+								<option value="{{ row.id_number }}">{{ row.fullname }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer forward" style="display:none;">
+					<input type="hidden" name="whattodo" id="whattodo">
+					<button type="submit" class="btn btn-info" onclick="$('#whattodo').val(0); $('#trans_to_id_view').removeAttr('required');">For File</button>
+					<button type="submit" class="btn btn-info" onclick="$('#whattodo').val(1); $('#trans_to_id_view').prop('required', true);">Forward</button>
+				</div>
+			</form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="view-custodians" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">LIST OF DOCUMENT CUSTODIANS</h3>
+				<small>Search for and view document custodian details.</small>
+	        </div>
+	        <div class="modal-body">
+				<div class="table-responsive">
+					<table class="table table-hover table-bordered" id="table-custodians" width="100%">
+						<thead>
+							<tr>
+								<th class="text-left">Full Name of Custodian</th>
+								<th class="text-center">Division</th>
+								<th class="text-right">Section</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="new-document" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	            <h3 class="modal-title">NEW DOCUMENT</h3>
+				<small>Create the document and forward to concerned staff.</small>
+	        </div>
+	        <form id="submitForm" enctype="multipart/form-data">
+	        <div class="modal-body">
+	        	{% csrf_token %}
+	        	<div class="row">
+		        	<div class="form-group col-md-4">
+		        		<label>Origin<span class="asteriskField">*</span></label>
+    					<select class="form-control select-doc" name="docorigin_id" id="docorigin_id" required>
+    						<option></option>
+    						{% for row in docorigin %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+		        	</div>
+					<div class="form-group col-md-4">
+						<label>Document Date<span class="asteriskField">*</span></label>
+						<input type="date" class="form-control" name="document_date" required>
+					</div>
+					<div class="form-group col-md-4">
+						<label>Deadline</label>
+						<input type="date" class="form-control" name="document_deadline">
+					</div>
+	        	</div>
+				<div class="row">
+					<div class="form-group col-md-12" style="display: none;" id="id_drn_form">
+						<label class="append_required_national">DRN Number</label>
+						<input type="text" class="form-control required_national" name="drn_number">
+					</div>
+					<div class="form-group col-md-4" style="display: none;" id="id_document_class_form">
+						<label class="append_required_local">Document Class</label>
+						<select class="form-control select-doc required_local" id="doc_class_id">
+							<option></option>
+							{% for row in docclass %}
+							<option value="{{ row.id }}">{{ row.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-group col-md-4" style="display: none;" id="id_document_form">
+						<label class="append_required_local">Document Type</label>
+						<select class="form-control select-doc required_local" name="doctype_id" id="doctype_id" disabled>
+						</select>
+					</div>
+					<div class="form-group col-md-4" style="display: none;" id="id_category_form">
+						<label class="append_required_local">Category</label>
+						<select class="form-control select-doc required_local" name="category_id">
+							<option></option>
+							{% for row in category %}
+							<option value="{{ row.id }}">{{ row.code }} - {{ row.name }} ({{ row.description }})</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Subject<span class="text-danger">*</span></label>
+						<input type="text" class="form-control" name="subject" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Sender Name<span class="text-danger">*</span></label>
+						<input type="text" class="form-control" name="sender" required>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Purpose<span class="asteriskField">*</span></label>
+						<textarea class="form-control" style="resize:vertical; max-height:200px; min-height:50px;" name="purpose" required></textarea>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+		        	<div class="form-group col-md-12" style="margin-bottom:0;">
+		        		<label>Other Document Information</label>
+						<textarea class="form-control" style="resize:vertical; max-height:200px; min-height:50px;" name="other_info"></textarea>
+		        	</div>
+	        	</div>
+	        </div>
+	        <div class="modal-body" style="border-top:1px solid #e5e6e7;">
+				<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Attachments</label>
+						<input type="file" class="form-control file-control" name="attachment" multiple>
+		        	</div>
+	        	</div>
+	        	<div class="row">
+					<div class="form-group col-md-6">
+						<label>Forward To<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control typeahead_2 filter_employee_to b-r-sm" name="trans_to_id" id="trans_to_id_new" required autocomplete="off" placeholder="e.g. [16-12345] Firstname Lastname">
+					</div>
+					<div class="form-group col-md-6">
+						<label>Division / Section</label>
+						<input type="text" class="form-control b-r-sm" id="divisionsection_new" readonly>
+					</div>
+	        	</div>
+	        	<div class="row">
+					<div class="form-group col-md-6" style="margin-bottom:0;">
+						<label>Provide Copy to Divisions</label>
+						<select class="form-control select" name="copy_to_divisions" multiple>
+    						<option></option>
+    						{% for row in divisions %}
+    						<option value="{{ row.id }}">{{ row.div_name }}</option>
+    						{% endfor %}
+    					</select>
+					</div>
+					<div class="form-group col-md-6" style="margin-bottom:0;">
+						<label>Carbon Copy</label>
+						<select class="form-control select" name="carbon_copy" id="carbon_copy" multiple>
+    						<option></option>
+    						{% for row in doc_controllers %}
+    						<option value="{{ row.id_number }}">{{ row.fullname }}</option>
+    						{% endfor %}
+    					</select>
+					</div>
+	        	</div>
+	        </div>
+	        <div class="modal-footer">
+				<input type="hidden" name="whattodo_c" id="whattodo_c">
+				<button type="submit" class="btn btn-info" onclick="$('#whattodo_c').val(0); $('#trans_to_id_new').removeAttr('required');">For File</button>
+				<button type="submit" class="btn btn-info" onclick="$('#whattodo_c').val(1); $('#trans_to_id_new').prop('required', true);">Save and Forward</button>
+	        </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+	$(document).ready(function(){
+		{% if not user|check_permission:'document_custodian' %}
+			$.get('{% url "filter_employee_by_permission" "document_custodian_pantawid" "true" %}', function(data){
+				$(".filter_employee_to").typeahead({
+					source: data,
+					highlight: true
+				});
+			},'json');
+		{% else %}
+			{% if user|check_permission:'document_custodian_pantawid' %}
+				$.get('{% url "filter_employee_by_permission" "document_custodian,document_custodian_pantawid" "true" %}', function(data){
+					$(".filter_employee_to").typeahead({
+						source: data,
+						highlight: true
+					});
+				},'json');
+			{% else %}
+				$.get('{% url "filter_employee_by_permission" "document_custodian" "true" %}', function(data){
+					$(".filter_employee_to").typeahead({
+						source: data,
+						highlight: true
+					});
+				},'json');
+			{% endif %}
+		{% endif %}
+
+		$('#trans_to_id_new').on('change', function(){
+			var val = $(this).val();
+			var split1 = val.split('[')[1];
+			var split2 = split1.split(']')[0];
+			var id_number = split2.trim();
+			$.get('{% url "get-division-and-section" 999999999 %}'.replace(999999999, id_number), function(data){
+				$('#divisionsection_new').val(data);
+			},'json');
+		});
+
+		$('#trans_to_id_view').on('change', function(){
+			var val = $(this).val();
+			var split1 = val.split('[')[1];
+			var split2 = split1.split(']')[0];
+			var id_number = split2.trim();
+			$.get('{% url "get-division-and-section" 999999999 %}'.replace(999999999, id_number), function(data){
+				$('#divisionsection_view').val(data);
+			},'json');
+		});
+
+		$('#view-modal').on('hidden.bs.modal', function(){
+            setTimeout(function(){$('body').removeClass('modal-open')}, 200);
+		});
+	
+		var select2options = {
+			width: "100%",
+			allowClear: true,
+			placeholder: '',
+			disabled: true,
+		};
+		var select2options2 = {
+			width: "100%",
+			allowClear: true,
+			placeholder: '',
+		};
+		$('.select-doc').select2(select2options2);
+		$('.select-doc-disabled').select2(select2options);
+		var doctypeCascade = Select2Cascade($("#doc_class_id"), $("#doctype_id"), "/tracking/get/doctype/:parentId:", select2options2);
+
+		$('#table-custodians').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 0, 'asc' ]],
+			'ajax': {
+				'url': '/api/document/tracking/custodian/?format=datatables',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'columns': [
+				{'data': 'fullname', className: 'text-left', 'name': 'user.first_name, user.last_name'},
+				{'data': 'division', className: 'text-center', 'searchable': false, 'orderable': false},
+				{'data': 'section', className: 'text-right', 'searchable': false, 'orderable': false},
+			]
+		});
+
+		$('#table-inbox').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 0, 'desc' ]],
+			'ajax': {
+				'url': '/api/document/tracking/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&inbox=all',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'columns': [
+				{'data': 'document_id',
+					render: function(data, type, row, meta) {
+						return '<a data-toggle="modal" data-role="view" data-target="#view-modal" data-id="'+ data +'" data-transto="'+ row['trans_to'] +'" data-filter="'+ row['action'] +'">View</a>'
+					},
+					'searchable': false
+				},
+				{'data': 'drn', className: 'text-center', 'searchable': false, 'orderable': false },
+				{'data': 'subject', className: 'text-left', 'name': 'document.subject' },
+				{'data': 'sender', className: 'text-center', 'name': 'document.sender' },
+				{'data': 'document_date', className: 'text-center', 'name': 'document.document_date', searchable: false },
+				{'data': 'trans_from', name: 'trans_from.pi.user.first_name, trans_from.pi.user.last_name, trans_from.pi.user.middle_name', className: 'text-center' },
+				{'data': 'trans_to', name: 'trans_to.pi.user.first_name, trans_from.pi.user.last_name, trans_from.pi.user.middle_name', className: 'display-none' },
+				{'data': 'action',
+					render: function(data, type, row, meta) {
+						if (data == 0) {
+							return '<span class="label label-default">Created</span>';
+						} else if (data == 1) {
+							if (row['trans_to'] == '{{ current_user }}') {
+								return '<span class="label label-primary">Forwarded to me</span>';
+							} else {
+								return '<span class="label label-primary">Forwarded</span>';
+							}
+						} else if (data == 2) {
+							if (row['trans_to'] == '{{ current_user }}') {
+								return '<span class="label label-warning">Received by me</span>';
+							} else {
+								return '<span class="label label-warning">Received</span>';
+							}
+						} else if (data == 3){
+							return '<span class="label label-success">Acted</span>';
+						}
+					},
+					className: 'text-right',
+					searchable: false,
+					orderable: false
+				},
+			]
+		});
+
+		$('#table-sentbox').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 0, 'desc' ]],
+			'ajax': {
+				'url': '/api/document/tracking/transaction/others/?format=datatables&employee_id={{ request.session.emp_id }}&sentbox=all',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'columns': [
+				{'data': 'document_id',
+					render: function(data, type, row, meta) {
+						return '<a data-toggle="modal" data-role="view" data-target="#view-modal" data-id="'+ data +'">View</a>'
+					},
+					searchable: false
+				},
+				{'data': 'drn', className: 'text-center', searchable: false, 'orderable': false },
+				{'data': 'subject', className: 'text-left', 'name': 'document.subject' },
+				{'data': 'sender', className: 'text-center', 'name': 'document.sender' },
+				{'data': 'document_date', className: 'text-center', 'name': 'document.document_date', searchable: false },
+				{'data': 'trans_from', name: 'trans_from.pi.user.first_name, trans_from.pi.user.last_name, trans_from.pi.user.middle_name', className: 'text-center' },
+				{'data': 'action',
+					render: function(data, type, row, meta) {
+						if (data == 0) {
+							return '<span class="label label-default">Created</span>';
+						} else if (data == 1) {
+							return '<span class="label label-primary">Forwarded</span>';
+						}else if (data == 2) {
+							return '<span class="label label-warning">Received</span>';
+						} else if (data == 3){
+							return '<span class="label label-success">Acted</span>';
+						}
+					},
+					className: 'text-right',
+					searchable: false,
+					orderable: false
+				},
+			]
+		});
+
+		$('#table-cc').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 0, 'desc' ]],
+			'ajax': {
+				'url': '/api/document/tracking/transaction/others/?format=datatables&employee_id={{ request.session.emp_id }}&cc=all',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'columns': [
+				{'data': 'document_id',
+					render: function(data, type, row, meta) {
+						return '<a data-toggle="modal" data-role="view" data-target="#view-modal" data-id="'+ data +'">View</a>'
+					},
+					searchable: false
+				},
+				{'data': 'drn', className: 'text-center', 'searchable': false, 'orderable': false },
+				{'data': 'subject', className: 'text-left', 'name': 'document.subject' },
+				{'data': 'sender', className: 'text-center', 'name': 'document.sender' },
+				{'data': 'document_date', className: 'text-center', 'name': 'document.document_date', searchable: false },
+				{'data': 'trans_from', name: 'trans_from.pi.user.first_name, trans_from.pi.user.last_name, trans_from.pi.user.middle_name', className: 'text-center' },
+				{'data': 'action',
+					render: function(data, type, row, meta) {
+						if (data == 0) {
+							return '<span class="label label-default">Created</span>';
+						} else if (data == 1) {
+							return '<span class="label label-primary">Forwarded</span>';
+						}else if (data == 2) {
+							return '<span class="label label-warning">Received</span>';
+						} else if (data == 3){
+							return '<span class="label label-success">Acted</span>';
+						}
+					},
+					className: 'text-right',
+					searchable: false,
+					orderable: false
+				},
+			]
+		});
+
+		$('#table-section-documents').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 0, 'desc' ]],
+			'ajax': {
+				'url': '/api/document/tracking/transaction/others/?format=datatables&employee_id={{ request.session.emp_id }}&section_documents=all',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'columns': [
+				{'data': 'document_id',
+					render: function(data, type, row, meta) {
+						return '<a data-toggle="modal" data-role="view" data-target="#view-modal" data-id="'+ data +'" data-filter="'+ row['action'] +'" data-action="in_behalf_of" data-receiver="'+ row['trans_to'] +'">View</a>'
+					},
+					searchable: false
+				},
+				{'data': 'drn', className: 'text-center', 'searchable': false, 'orderable': false },
+				{'data': 'subject', className: 'text-left', 'name': 'document.subject' },
+				{'data': 'sender', className: 'text-center', 'name': 'document.sender' },
+				{'data': 'document_date', className: 'text-center', 'name': 'document.document_date', searchable: false },
+				{'data': 'trans_from', name: 'trans_from.pi.user.first_name, trans_from.pi.user.last_name, trans_from.pi.user.middle_name', className: 'text-center' },
+				{'data': 'trans_to', name: 'trans_to.pi.user.first_name, trans_to.pi.user.last_name, trans_to.pi.user.middle_name', className: 'display-none', 'searchable': false, 'orderable': false },
+				{'data': 'action',
+					render: function(data, type, row, meta) {
+						if (data == 0) {
+							return '<span class="label label-default">Created</span>';
+						} else if (data == 1) {
+							return '<span class="label label-primary">Forwarded</span>';
+						} else if (data == 2) {
+							return '<span class="label label-warning">Received</span>';
+						} else if (data == 3){
+							return '<span class="label label-success">Acted</span>';
+						}
+					},
+					className: 'text-right',
+					searchable: false,
+					orderable: false
+				},
+			]
+		});
+
+		$('#table-archive').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 0, 'desc' ]],
+			'ajax': {
+				'url': '/api/document/tracking/transaction/archive/?format=datatables',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'columns': [
+				{'data': 'id',
+					render: function(data, type, row, meta) {
+						return '<a data-toggle="modal" data-role="view" data-target="#view-modal" data-id="'+ data +'" data-filter="'+ row['action'] +'" data-receiver="'+ row['trans_to'] +'">View</a>'
+					},
+					searchable: false
+				},
+				{'data': 'drn', 'name': 'generated_drn', className: 'text-center', 'orderable': false },
+				{'data': 'subject', className: 'text-left' },
+				{'data': 'sender', className: 'text-center' },
+				{'data': 'doc_date', className: 'text-center', searchable: false },
+				{'data': 'trans_from', searchable: false, className: 'text-center' },
+				{'data': 'trans_to', className: 'display-none', 'searchable': false, 'orderable': false },
+				{'data': 'action',
+					render: function(data, type, row, meta) {
+						if (data == 0) {
+							return '<span class="label label-default">Created</span>';
+						} else if (data == 1) {
+							if (row['trans_to'] == '{{ current_user }}') {
+								return '<span class="label label-primary">Forwarded to me</span>';
+							} else {
+								return '<span class="label label-primary">Forwarded</span>';
+							}
+						} else if (data == 2) {
+							if (row['trans_to'] == '{{ current_user }}') {
+								return '<span class="label label-warning">Received by me</span>';
+							} else {
+								return '<span class="label label-warning">Received</span>';
+							}
+						} else if (data == 3){
+							return '<span class="label label-success">Acted</span>';
+						}
+					},
+					className: 'text-right',
+					searchable: false,
+					orderable: false
+				},
+			]
+		});
+
+		$(document).on('click', 'a[data-role=status]', function(){
+			$('.list-group-item').removeClass('active');
+			$('#status-'+$(this).data('filter')).addClass('active');
+			if($(this).data('filter') == 'all'){
+				var table = $('#table-inbox').DataTable();
+				table.clear();
+				table.ajax.url('/api/document/tracking/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&keyword='+$('#keyword').val()).load(function(){
+					totalDTs();
+				});
+			}else{
+				var table = $('#table-inbox').DataTable();
+				table.clear();
+				table.ajax.url('/api/document/tracking/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&status='+$(this).data('filter')+'&keyword='+$('#keyword').val()).load();
+			}
+		});
+
+		$('#keyword').on('keyup', function(){
+			var table = $('#table-inbox').DataTable();
+			table.clear();
+			table.ajax.url('/api/document/tracking/transaction/?format=datatables&employee_id={{ request.session.emp_id }}&keyword='+$(this).val()).load();
+		});
+
+		totalDTs();
+		function totalDTs(removeBodyModal=1){
+			$.get({
+				url: '{% url "get_total_dt" %}',
+				success: function(response) {
+					$('#total-inbox').text(numberWithCommas(response.inbox));
+					$('#total-sentbox').text(numberWithCommas(response.sentbox));
+					$('#total-archive').text(numberWithCommas(response.archive));
+					$('#total-cc').text(numberWithCommas(response.cc));
+					$('#total-sc').text(numberWithCommas(response.sc));
+				}
+			});
+			if(removeBodyModal==1){
+	            $('body').removeClass('modal-open');
+			}
+			setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 100);
+		}
+
+		function numberWithCommas(x) {
+    		return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+
+		$('#tabUL').on("click", "li", function (event) {
+  			var activeTab = $(this).find('a').attr('href').split('#')[1];
+  			if(activeTab == 'inbox') {
+  				$('#table-inbox').DataTable().ajax.reload();
+  			} else if (activeTab == 'sentbox') {
+				$('#table-sentbox').DataTable().ajax.reload();
+  			} else if (activeTab == 'carbon-copy') {
+				$('#table-cc').DataTable().ajax.reload();
+  			} else if (activeTab == 'section-documents') {
+				$('#table-section-documents').DataTable().ajax.reload();
+  			} else if (activeTab == 'archive') {
+				$('#table-archive').DataTable().ajax.reload();
+  			}
+
+  			totalDTs();
+  		});
+
+		$(document).on('click', 'a[data-role=view]', function(){
+			$('#view-modal').find('.modal-body-real').empty();
+			if($(this).data('filter') != 1){
+				callPage("/tracking/document/view/" + $(this).data('id') + "/0");
+			} else {
+				if($(this).data('action') != 'in_behalf_of'){
+					if($(this).data('transto') == '{{ current_user }}') {
+						Swal.fire({
+							title: "Do you want to?",
+							text: "Mark the selected 'Forwarded' document as 'Received'?",
+							icon: "info",
+							showCancelButton: true,
+							confirmButtonText: "Yes",
+							confirmButtonColor: "#3498DB",
+							allowOutsideClick: false,
+							showLoaderOnConfirm: true,
+						}).then((result) => {
+							if (result.isConfirmed){
+								callPage("/tracking/document/view/" + $(this).data('id'));
+							} else {
+								callPage("/tracking/document/view/" + $(this).data('id') + "/0");
+							}
+						});
+					} else {
+						callPage("/tracking/document/view/" + $(this).data('id') + "/0");
+					}
+				} else {
+					{% if not user|check_permission:'document_custodian' %}
+						callPage("/tracking/document/view/" + $(this).data('id') + "/0");
+					{% else %}
+						Swal.fire({
+							title: "Do you want to?",
+							text: "Mark the selected 'Forwarded' document as 'Received' in behalf of '"+ $(this).data('receiver') +"'?",
+							icon: "info",
+							showCancelButton: true,
+							confirmButtonText: "Yes",
+							confirmButtonColor: "#3498DB",
+							allowOutsideClick: false,
+							showLoaderOnConfirm: true,
+						}).then((result) => {
+							if (result.isConfirmed){
+								callPage("/tracking/document/view/" + $(this).data('id') + "/1/1");
+							} else {
+								callPage("/tracking/document/view/" + $(this).data('id') + "/0");
+							}
+						});
+						$('#table-section-documents').DataTable().ajax.reload();
+						totalDTs(removeBodyModal=0);
+					{% endif %}
+				}
+			}
+		});
+
+		function callPage(pageRefInput) {
+			$.ajax({
+				url: pageRefInput,
+				type: "GET",
+				dataType: 'text',
+				beforeSend: function() {
+					$('#view-modal').modal('show').find('.modal-body-real').empty().html('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading..</p></div>');
+				},
+				success: function(response) {
+					$('#view-modal').modal('show').find('.modal-body-real').html(response);
+				},
+				complete: function() {
+					$('#preloader').css('display', 'none');
+				}
+			});
+		}
+
+		$('#submitForm').on('submit', function(e){
+			var form = new FormData(this);
+			e.preventDefault();
+			Swal.fire({
+				title: "Are you sure?",
+				text: "You want to save this new document?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        : form,
+						url         : '{% url "tracking-inbox" %}',
+						type        : 'POST',
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: data.value.drn,
+						html: "New document has been created. Please copy the generated DRN for your reference",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							$('.select').val("").change();
+							$('#table-sentbox').DataTable().ajax.reload();
+							$('#table-cc').DataTable().ajax.reload();
+							$('#new-document').modal('hide');
+							$('a[href="#sentbox"]').trigger('click');
+						}
+					});
+				}
+			});
+		});
+
+		$('#submitForwardForm').on('submit', function(e){
+			var form = new FormData(this);
+			e.preventDefault();
+			Swal.fire({
+				title: "Are you sure?",
+				text: "You want to execute selected action for this document?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						data        : form,
+						url         : '{% url "tracking-inbox" %}',
+						type        : 'POST',
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			}).then(function (data){
+				if (data.value.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						html: "Selected action for document has been executed.",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed){
+							$('#view-modal').modal('show').find('.modal-body-real').empty();
+							$('#view-modal').modal('show').find('.modal-body-real').load("/tracking/document/view/" + data.value.id);
+							$('#table-inbox').DataTable().ajax.reload();
+						}
+					});
+				}
+			});
+		});
+
+		$('#docorigin_id').on('change', () => {
+			let v = $('#docorigin_id').val();
+			if(v == 1){
+				x = '_national';
+				y = '_local';
+
+				$('#id_drn_form').show('slow');
+				$('#id_document_form').hide('slow');
+				$('#id_category_form').hide('slow');
+				$('#id_document_class_form').hide('slow');
+			} else {
+				y = '_national';
+				x = '_local';
+
+				$('#id_drn_form').hide('slow');
+				$('#id_document_form').show('slow');
+				$('#id_category_form').show('slow');
+				$('#id_document_class_form').show('slow');
+			}
+			$('.required'+x).each(function(){
+				$(this).attr('required', true);
+			});
+			$('.required'+y).each(function(e){
+				$(this).removeAttr('required');
+			});
+
+			$('.append_required'+x).each(function(){
+				$(this).append(' <span class="asteriskField required">*</span>');
+			});
+			$(`.append_required${y} .required`).each(function(){
+				$(this).remove();
+			});
+        });
+	});
+</script>
+{% endblock %}

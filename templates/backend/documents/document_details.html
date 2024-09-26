@@ -1,0 +1,120 @@
+{% load tags %}
+{% load static %}
+<script type="text/javascript" src="{% static 'js/humanized_time_span.js' %}"></script>
+<table class="table table-bordered">
+    <tr>
+        <td class="bold">DOCUMENT TYPE</td>
+        <td>{{ data.document_type.name }}</td>
+        <td class="bold">TRACKING NO.</td>
+        <td>{{ data.tracking_no }}</td>
+    </tr>
+    <tr>
+        <td class="bold">SUBJECT</td>
+        <td>{{ data.subject }}</td>
+        <td class="bold">PURPOSE</td>
+        <td>{{ data.purpose }}</td>
+    </tr>
+    <tr>
+        <td class="bold">FROM</td>
+        <td>{{ data.from_field }}</td>
+        <td class="bold">ORIGIN</td>
+        <td>{{ data.origin }}</td>
+    </tr>
+    <tr>
+        <td class="bold">DETAILS</td>
+        <td colspan="3">{{ data.details }}</td>
+    </tr>
+    <tr>
+        <td class="bold">PROCESS BY</td>
+        <td colspan="3">{{ data.emp.pi.user.last_name }}, {{ data.emp.pi.user.first_name }} on {{ data.date_added }}</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <label>TRAIL</label>
+            <div class="row">
+                <div id="vertical-timeline" class="vertical-container dark-timeline">
+                    {% for row in trail %}
+                    <div class="vertical-timeline-block">
+                        <div class="vertical-timeline-icon blue-bg">
+                            <i class="fa fa-file-text"></i>
+                        </div>
+                        <div class="vertical-timeline-content">
+                            <h2><strong>Forwarded to {% getemployee row.id_number as forwarded_to %} <a href="javascript:;">{{ forwarded_to.pi.user.first_name }} {{ forwarded_to.pi.user.last_name }}</a></strong></h2>
+                            <p><em>No action taken yet</em></p>
+                            <span class="vertical-date">
+                                <span id="humanized_time_span_{{ row.id }}"></span> <br>
+                                <script>$('#humanized_time_span_{{ row.id }}').html(humanized_time_span("{{ row.date|date:'Y/m/d H:i:s' }}"));</script>
+                                {{ row.date|date:'F d, Y' }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+{% if check %}
+<label>FOR ACTION</label>
+<form method="POST">
+<div class="row">
+    <div class="col-md-4">
+        <input type="hidden" name="id" value="{{ check.id }}">
+        <div class="form-group">
+            <label>Status<span class="text-danger">*</span></label>
+            <select class="form-control select" name="status" id="status" required>
+                <option></option>
+                {% for row in doc_trail %}
+                <option value="{{ row.id }}">{{ row.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="col-md-8 forwarded" style="display: none;">
+        <div class="form-group col-sm-12">
+            <label>Forwarded To</label>
+            <input type="text" class="form-control typeahead_2 filter_employee" required name="to" placeholder="e.g. [16-12345] Firstname Lastname" autocomplete="off">
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="form-group">
+            <label>Remarks</label>
+            <textarea class="form-control" name="remarks" placeholder="Write something.."></textarea>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="form-group text-right">
+            <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-info">Submit</button>
+        </div>
+    </div>
+</div>
+</form>
+{% endif %}
+{% block script %}
+<script>
+    select2Init();
+
+    $(".filter_employee").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $('#status').on('change', function(){
+        if($('#status option:selected').text() == "Forwarded"){
+            $('.forwarded').css('display', 'block');
+        }else{
+            $('.forwarded').css('display', 'none');
+        }
+    });
+</script>
+{% endblock %}

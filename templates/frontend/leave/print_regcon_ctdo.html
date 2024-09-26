@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+{% load static %}
+{% load frontend_tags %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Print Leave Application</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert.css' %}" rel="stylesheet">
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/print.css' %}" rel="stylesheet">
+	<style type="text/css">
+        @media print {
+			page {
+				margin: 0 auto;
+				padding: 20px 30px 10px 30px !important;
+				border: 0.5px solid transparent;
+				height: 205mm !important;
+				width: 100% !important;
+				zoom: 128%;
+			}
+
+			.magic-1 {
+				border-bottom: 0px !important;
+				border-right: 0px !important;
+			}
+
+			.magic-2 {
+				border-bottom: 0px !important;
+				border-left: 0px !important;
+				border-right: 0px !important;
+			}
+
+			.magic-3 {
+				border-bottom: 0px !important;
+				border-left: 0px !important;
+			}
+
+			.magic-4 {
+				border-top: 0px !important;
+				border-right: 0px !important;
+			}
+
+			.magic-5 {
+				border-top: 0px !important;
+				border-left: 0px !important;
+				border-right: 0px !important;
+			}
+
+			.magic-6 {
+				border-top: 0px !important;
+				border-left: 0px !important;
+			}
+
+			.magic-7 {
+				border-right: 0px !important;
+				border-left: 0px !important;
+			}
+		  	body{-webkit-print-color-adjust: exact;}
+        }
+
+        @page {
+			size: auto;
+		}
+
+		.containerX {
+			zoom: 60%;
+		}
+
+		body{
+			font-family: inter;
+			font-size: 15px;
+			color: black;
+		}
+
+		.no-padding{
+			padding: 2px !important;
+		}
+
+		.magic-1 {
+			border-bottom: 0px !important;
+			border-right: 0px !important;
+		}
+
+		.magic-2 {
+			border-bottom: 0px !important;
+			border-left: 0px !important;
+			border-right: 0px !important;
+		}
+
+		.magic-3 {
+			border-bottom: 0px !important;
+			border-left: 0px !important;
+		}
+
+		.magic-4 {
+			border-top: 0px !important;
+			border-right: 0px !important;
+		}
+
+		.magic-5 {
+			border-top: 0px !important;
+			border-left: 0px !important;
+			border-right: 0px !important;
+		}
+
+		.magic-6 {
+			border-top: 0px !important;
+			border-left: 0px !important;
+		}
+		.magic-7 {
+			border-right: 0px !important;
+			border-left: 0px !important;
+		}
+
+        input{
+        	text-align: center;
+        }
+
+        input[type=checkbox]{
+        	transform: scale(1.5);
+        }
+	</style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;"><strong>Leave Application ({{ data.tracking_no }}) <em><small>Note: Print in A4</small></em></strong></a>
+		<ul class="navbar-nav ml-auto">
+			<li><button class="btn btn-success" data-toggle="modal" data-target="#signatory-modal"><i class="fas fa-signature"></i> Signatories</button>&emsp;</li>
+			<li><button class="btn btn-info print-button" id="floatprint" title="Print"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	{% if classes == 1 %}
+		{% getemployeebyempid first_level as first_lvl %}
+		{% getemployeebyempid second_level as second_lvl %}
+	{% elif classes == 2 %}
+		{% if first_level == "" %}
+			{% getemployeebyempid second_level.emp_id as second_lvl %}
+		{% else %}
+			{% getemployeebyempid first_level as first_lvl %}
+			{% getemployeebyempid second_level.emp_id as second_lvl %}
+		{% endif %}
+	{% endif %}
+	<page size="A4" class="page" style="padding: 35px;">
+		<div class="containerX">
+			<div style="width:100%;">
+				<div class="float-left" style="font-size: 13px;">
+					<em>Civil Service Form No. 6<br>
+						Revised 2020</em>
+				</div>
+				<div class="float-right" style="font-size: 20px;">
+					<strong>ANNEX A</strong>
+				</div>
+				<br><br>
+				<p class="font-weight-bold text-center m-0">Republic of the Philippines</p>
+				<p class="font-weight-bold text-center m-0">DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT</p>
+				<p class="font-weight-bold text-center m-0">Caraga Region</p>
+				<p class="font-weight-bold text-center">R. Palma St, Butuan City</p>
+				<div class="float-left" style="margin-top: -90px; margin-left: 50px;">
+					<img loading="lazy"  src="{% static 'image/dswd_logo.png' %}" width="130px;" style="mix-blend-mode: multiply;">
+				</div>
+				<div class="float-right" style="margin-top: -90px; margin-right: 50px;">
+					<table class="table table-bordered" style="font-size: 12px">
+						<tr>
+							<th class="text-center">Stamp of Date of Receipt</th>
+						</tr>
+					</table>
+				</div>
+				<p class="text-center" style="font-size: 25px;">
+					<strong>APPLICATION FOR LEAVE</strong>
+				</p>
+				<br>
+				<table class="table" border="1" style="font-size: 16px; margin-top: -15px;">
+					<tr>
+						<td class="no-padding magic-1" width="30%">1. OFFICE/DEPARTMENT</td>
+						<td class="no-padding magic-2" width="25%">&nbsp;2. NAME: &emsp;&emsp;(Last)</td>
+						<td class="no-padding text-center magic-2" width="20%">(First)</td>
+						<td class="no-padding text-center magic-3">(Middle)</td>
+					</tr>
+					<tr>
+						<td class="no-padding text-center magic-4" style="font-weight: normal;">
+							<strong>{{ data.emp.section.sec_name }}</strong>
+						</td>
+						<td class="no-padding magic-5">
+							&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+							<strong>{{ data.emp.pi.user.last_name|title }}</strong>
+						</td>
+						<td class="no-padding text-center magic-5">
+							<strong>{{ data.emp.pi.user.first_name|title }}</strong>
+						</td>
+						<td class="no-padding text-center magic-6">
+							<strong>{{ data.emp.pi.user.middle_name|to_middleinitial|title }}</strong>
+						</td>
+					</tr>
+					<tr>
+						<td class="magic-1">
+							3. DATE OF FILING <u><strong>{{ data.date_filed|date:"m/d/Y" }}</strong></u>
+						</td>
+						<td class="text-center magic-7" colspan="2">
+							4. POSITION <u><strong>{{ data.emp.position.name }}</strong></u>
+						</td>
+						<td class="magic-3">
+							5. SALARY <u><strong>{{ data.emp.salary_rate }}</strong></u>
+						</td>
+					</tr>
+					<tr>
+						<th colspan="4" class="no-padding text-center" style="font-size: 18px;">6. DETAILS OF APPLICATION</th>
+					</tr>
+					<tr>
+						{% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}
+						<td colspan="2" style="font-size: 15px;">
+							<div>
+							<p>6.A TYPE OF LEAVE TO BE AVAILED OF</p>
+							{% for row in leavesubtype %}
+								{% if row.is_others != 1 %}
+									{% if row.name == leave.leaveapp.leavesubtype.name %}
+									&nbsp;<input class="icheck" type="checkbox" checked> &nbsp; {{ row.name }} <small>({{ row.description }})</small> <br style="line-height: 10px;">
+										{% if leave.leaveapp.reasons %}
+												&emsp;&emsp;&emsp;Reason for Leave: <u>{{ leave.leaveapp.reasons }}</u><br>
+										{% else %}
+											{% if leave.specify %}
+												&emsp;&emsp;&emsp;Reason for Leave: <u>{{ leave.specify }}</u><br>
+											{% elif leave.leaveapp.remarks %}
+												&emsp;&emsp;&emsp;Type of Calamity: <u>{{ leave.leaveapp.remarks }}</u><br>
+											{% endif %}
+										{% endif %}
+									{% else %}
+									&nbsp;<input class="icheck" type="checkbox"> &nbsp; {{ row.name }} <small>({{ row.description }})</small> <br style="line-height: 10px;">
+									{% endif %}
+								{% endif %}
+							{% endfor %}
+							<br>
+							&nbsp;<input class="icheck" type="checkbox" checked> &nbsp;<em>Others (specify)</em><br>
+							<label style="border-bottom: 1px solid black; width: 100%">
+								CTDO
+							</label>
+							</div>
+						</td>
+						<td colspan="2" style="font-size: 15px;">
+							<div>
+							<p>6.B DETAILS OF LEAVE</p>
+							<p>&emsp;<em>In case of Vacation/Special Privilege Leave</em></p>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'Within the Philippines' %}checked{% endif %}> &nbsp; Within the Philippines <input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'Within the Philippines' %}{{ leave.specify }}{% endif %}" size="24"><br>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'Abroad' %}checked{% endif %}> &nbsp; Abroad (specify)
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'Abroad' %}{{ leave.specify }}{% endif %}" size="26">
+							<p>&emsp;<em>In case of Sick Leave</em></p>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'In Hospital' %}checked{% endif %}> &nbsp; In Hospital (Specify Illness)
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'In Hospital' %}{{ leave.specify }}{% endif %}" size="19"><br>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'Out Patient' %}checked{% endif %}> &nbsp; Out Patient (Specify Illness)
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leavespent.name == 'Out Patient' %}{{ leave.specify }}{% endif %}" size="20"> <br>
+							<br>
+							<p>&emsp;<em>In case of Special Leave Benefits for Women</em></p>
+							&emsp;(Specify Illness) <br>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if leave.leaveapp.leavesubtype.name == 'Special Leave Benefits for Women' %}{{ leave.specify }}{% endif %}" size="35"><br>
+							<br>
+							<p>&emsp;<em>In case of Study Leave</em></p>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leavespent.name == "Completion of Master's Degree" %}checked{% endif %}> &nbsp; Completion of Master's Degree <br>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leavespent.name == 'BAR/Board Examination Review' %}checked{% endif %}> &nbsp; BAR/Board Examination Review <br>
+							<br><p>&emsp;<em>Other purpose</em></p>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leaveapp.leavesubtype.name == 'Monetization' %}checked{% endif %}> &nbsp; Monetization of Leave Credits <br>
+							&emsp;<input class="icheck" type="checkbox" {% if leave.leaveapp.leavesubtype.name == 'Terminal Leave' %}checked{% endif %}> &nbsp; Terminal Leave <br>
+							</div>
+						</td>
+						{% endif %}
+					</tr>
+					<tr>
+						<td colspan="2" style="font-size: 15px;">
+							<p>6.C NUMBER OF WORKING DAYS APPLIED FOR:</p>
+							{% if leave.leaveapp.start_date and leave.leaveapp.end_date %}
+								{% days_until leave.leaveapp.start_date|date:"Y-m-d" leave.leaveapp.end_date|date:"Y-m-d" as days_until %}
+								&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ days_until }}" class="working_days" size="50"><br>
+							{% else %}
+								&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{% if history.total_u_days > 0 %}{{ history.total_u_days }} day{{ history.total_u_days|pluralize }}{% endif %} {% if history.total_u_hours > 0 %}, {{ history.total_u_hours }} hour{{ history.total_u_hours|pluralize }}{% endif %} {% if history.total_u_minutes > 0 %}, {{ history.total_u_minutes }} minute{{ history.total_u_minutes|pluralize }},{% endif %}" class="working_days" size="50"><br>
+							{% endif %}
+							&emsp;<p>INCLUSIVE DATES</p>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ data.get_inclusive }}" size="50">
+						</td>
+						<td colspan="2" style="font-size: 15px;">
+							{% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}
+								<p>6.D COMMUTATION</p>
+								&emsp;<input type="checkbox"> &nbsp; Requested <br>
+								&emsp;<input type="checkbox"> &nbsp; Not Requested <br><br>
+								<div class="text-center">
+									<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; width:100%;"><br>
+									<label>Signature of Applicant</label>
+								</div>
+							{% else %}
+								<p>PURPOSE</p>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" value="{{ leave.leaveapp.reasons }}" size="45">
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<th colspan="4" class="no-padding text-center" style="font-size: 18px;">
+							7. DETAILS OF ACTION ON APPLICATION
+						</th>
+					</tr>
+					<tr>
+						<td colspan="2" style="font-size: 15px;">
+							<div>
+							<p>7.A {% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}CERTIFICATION OF LEAVE CREDITS{% else %}SOLO PARENT LEAVE BALANCE{% endif %}</p>
+							<p class="text-center">As of ___________________</p>
+							{% if leave.leaveapp.leavesubtype.name != 'Solo Parent' %}
+							<table class="table table-bordered">
+								<thead>
+									<tr>
+										<th></th>
+										<th class="no-padding text-center" width="35%">Vacation Leave</th>
+										<th class="no-padding text-center" width="35%">Sick Leave</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="text-center"><i>Total Earned</i></td>
+										<td class="text-center font-weight-bold">&nbsp;</td>
+										<td class="text-center font-weight-bold"></td>
+									</tr>
+									</tr>
+									<tr>
+										<td class="text-center"><i>Less this application</i></td>
+										<td class="text-center no-padding font-weight-bold">&nbsp;</td>
+										<td class="text-center no-padding font-weight-bold"></td>
+									</tr>
+									<tr>
+										<td class="text-center"><i>Balance</i></td>
+										<td class="text-center no-padding font-weight-bold">&nbsp;</td>
+										<td class="text-center no-padding font-weight-bold"></td>
+									</tr>
+								</tbody>
+							</table>
+							{% else %}
+							<table class="table-bordered" width="50%">
+								<thead>
+									<tr>
+										<th class="no-padding text-center" width="16%">Solo Parent Leave</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="text-center font-weight-bold"><br><br><br></td>
+									</tr>
+									<tr>
+										<td class="text-center no-padding font-weight-bold">&nbsp;</td>
+									</tr>
+								</tbody>
+							</table>
+							{% endif %}
+							<br>
+							<center>
+								<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; text-align: center;" value="{{ personnel_officer.key_acronym|upper }}" size="30"><br>
+								<input type="text" style="outline: 0; border: 0; font-weight: bold; text-align: center; font-size: 13px;" value="{{ personnel_officer.key_name }}" size="30"><br>
+							</center>
+							</div>
+						</td>
+						<td colspan="2" style="font-size: 15px;">
+							<p>7.B RECOMMENDATION</p>
+							&emsp;<input type="checkbox"> &nbsp; For approval <br>
+							&emsp;<input type="checkbox"> &nbsp; For disapproval due to<br>
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; width: 100%;"><br>
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; width: 100%;"><br>
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; width: 100%;"><br>
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; width: 100%;">
+							<br><br><br><br>
+							<center>
+							<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; text-align: center; text-transform: uppercase;" class="set_recommended_by" value="{% if classes == 1 or classes == 2 %}{{ first_lvl.pi.user.first_name }} {{ first_lvl.pi.user.middle_name|to_middleinitial }} {{ first_lvl.pi.user.last_name }}{% elif classes == 3 %}{% if first_level.key_acronym %}{{ first_level.key_acronym }}{% endif %}{% endif %}" size="30"><br>
+							<p class="font-weight-bold set_recommended_by_pos" contenteditable="true" style="width: 80%; text-align: center; font-size: 13px;">
+								{% if classes == 1 %}Chief, {{ first_level_pos.div_acronym }}
+								{% elif classes == 2 %}{{ first_level_pos.name }}
+								{% elif classes == 3 %}
+									{% if first_level_pos %}
+									{{ first_level_pos }}
+									{% endif %}
+								{% endif %}</p><br>
+							<p class="m-0" style="margin-top: -20px; font-size: 12px;">(Authorized Official)</p>
+							</center>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" class="magic-1" style="font-size: 15px;">
+							<p>7.C APPROVED FOR</p>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="10"> <span>days with pay</span><br>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="10"> <span>days without pay</span><br>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="10"> <span>others (Specify)</span>
+						</td>
+						<td colspan="2" class="magic-3" style="font-size: 15px;">
+							<p>7.D DISAPPROVED DUE TO:</p>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="25"><br>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="25"><br>
+							&emsp;<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold;" size="25">
+						</td>
+					</tr>
+					<tr>
+						<td colspan="4" class="magic-4" style="font-size: 15px;">
+							<br><br>
+							<div class="row">
+								<div class="col-sm-12 text-center">
+									<input type="text" style="outline: 0; border: 0; border-bottom: 1px solid black; font-weight: bold; text-align: center; text-transform: uppercase;" class="set_approved_by" value="{% if classes == 1 or classes == 2 %}{{ second_lvl.pi.user.first_name }} {{ second_lvl.pi.user.middle_name|to_middleinitial }} {{ second_lvl.pi.user.last_name }}{% elif classes == 3 %}{{ second_level.key_acronym }}{% endif %}" size="30"><br>
+									<input type="text" class="m-0 set_approved_by_pos" style="outline: 0; border: 0; font-weight: bold; text-align: center; font-size: 13px;" value="{% if classes == 1 %}{{ second_level_pos.name }}{% elif classes == 2 or classes == 3 %}{{ second_level_pos }}{% endif %}" size="30"><br>
+									<p style="font-size: 12px;">(Authorized Official)</p>
+								</div>
+							</div>
+							<div class="float-left" style="margin-top: -50px;">
+								<small><b>TRACKING NO. {{ data.tracking_no }}</b></small><br>
+								<small>Note: Print in A4. Please see instructions at the back</small>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</page>
+
+	<page size="A4" style="padding: 35px;">
+		<div class="containerX">
+			<center>
+				<img loading="lazy"  src="{% static 'image/leave_application/instructions.PNG' %}" width="1000px;" style="mix-blend-mode: multiply;">
+			</center>
+		</div>
+	</page>
+
+	<div class="modal" id="signatory-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<h3 class="modal-title">
+						SET SIGNATORIES
+					</h3>
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				</div>
+				<form id="setSignatureForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">Recommended By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="recommended_by" id="recommended_by" value="[{{ first_lvl.id_number }}] {{ first_lvl.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">Approved By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_leave" name="approved_by" id="approved_by" value="{% if second_lvl.id_number %}[{{ second_lvl.id_number }}] {{ second_lvl.pi.user.get_fullname|upper }}{% endif %}" style="text-align: left !important;" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+	<script>
+		$(document).ready(function(){
+            {% if classes != 3 %}
+				$('#signatory-modal').modal('show');
+			{% endif %}
+
+			$(".filter_employee_leave").typeahead({
+				source: function(query, process){
+					return $.get({
+						url: '{% url "filter_employee" %}',
+						data: { query: query },
+						datatype: 'json',
+						success: function (data) {
+							return process(data);
+						}
+					});
+				},
+				highlight: true,
+			});
+
+			$('#setSignatureForm').on('submit', function(e){
+				e.preventDefault();
+				var form = new FormData(this);
+				$.ajax({
+					data: form,
+					url: '{% url "set_signature_leave" %}',
+					type: 'POST',
+					success: function(response) {
+						$('.set_recommended_by').val(response.first_level);
+						$('.set_recommended_by_pos').text(response.first_level_pos);
+						$('.set_approved_by').val(response.second_level);
+						$('.set_approved_by_pos').val(response.second_level_pos);
+						$('#signatory-modal').modal('hide');
+					},
+					cache       : false,
+                    contentType : false,
+                    processData : false,
+				});
+			});
+
+			window.onafterprint = function() {
+				$.ajax({
+					url: '{% url "leave_after_print" %}',
+					data: {
+						'pk': {{ leave.leaveapp_id }}
+					},
+					type: "POST",
+				});
+			}
+		});
+	</script>
+</body>
+</html>

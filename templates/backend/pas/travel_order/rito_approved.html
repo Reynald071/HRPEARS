@@ -1,0 +1,68 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h2>RITO Approved List</h2>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                Travel Order
+            </li>
+            <li class="breadcrumb-item active">
+                RITO Approved List
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="ibox-title">
+		<h5>RITO Approved List</h5>
+		<div class="ibox-tools">
+			Showing <strong>{{ to.start_index }} - {{ to.end_index }}</strong> of <strong>{{ to.paginator.count }} items</strong>
+		</div>
+	</div>
+	<div class="ibox-content">
+		<input type="text" class="form-control" placeholder="Search Something..">
+		<br>
+		{% if rito.has_other_pages %}
+		  {% if rito.has_previous %}
+			<a class="btn btn-default btn-sm" href="?page={{ rito.previous_page_number }}"><i class="fa fa-angle-left"></i></a>
+		  {% else %}
+			<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-left"></i></a>
+		  {% endif %}
+		  {% if rito.has_next %}
+			<a class="btn btn-default btn-sm" href="?page={{ rito.next_page_number }}"><i class="fa fa-angle-right"></i></a>
+		  {% else %}
+			<a class="btn btn-default disabled btn-sm"><i class="fa fa-angle-right"></i></a>
+		  {% endif %}
+		{% endif %}
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Tracking No.</th>
+					<th>Created by</th>
+					<th>Date</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for row in to %}
+				<tr>
+					<td>{{ row.tracking_no }}</td>
+					<td>{{ row.emp.pi.user.first_name }} {{ row.emp.pi.user.middle_name|to_middleinitial }} {{ row.emp.pi.user.last_name }}</td>
+					<td>{{ row.date }}</td>
+					<td>
+						<a target="_blank" href="{% url 'view-rito' row.id %}"><i class="fas fa-eye"></i></a> &nbsp;
+						<a target="_blank" href="{% url 'generate-to' row.id %}" rel="tooltip" data-placement="bottom" title="Generate Travel Order"><i class="fas fa-print"></i></a>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+{% endblock %}

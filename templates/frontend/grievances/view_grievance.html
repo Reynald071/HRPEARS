@@ -1,0 +1,103 @@
+{% load frontend_tags %}
+{% load tags %}
+{% load static %}
+<script type="text/javascript" src="{% static 'js/humanized_time_span.js' %}"></script>
+<style>
+.list-group.clear-list.x .list-group-item.x {
+    border: 0px solid #e7eaec;
+    padding: 7px;
+}
+</style>
+<div class="row">
+	<div class="col-sm-12">
+		<div class="table-responsive">
+			<table class="table table-bordered" style="margin-bottom:0px;">
+				<tr>
+					<td style="width:20%" class="bold capslock">Client</td>
+					<td colspan="2">{{ data.client_fname }} {{ data.client_mname|to_middleinitial }} {{ data.client_lname}}</td>
+					<td style="width:20%" class="bold capslock">Tracking No</td>
+					<td class="text-right">{{ data.tracking_no }}</td>
+				</tr>
+				<tr>
+					<td style="width:20%" class="bold capslock">Address</td>
+					<td colspan="2">{% get_address data.client_prov_id data.client_citymun_id data.client_brgy_id data.client_address %}</td>
+					<td style="width:20%" class="bold capslock">Contact No</td>
+					<td class="text-right">{{ data.client_contactnumber }}</td>
+				</tr>
+				<tr>
+					<td style="width:20%" class="bold capslock">Query</td>
+					<td colspan="4" style="white-space:normal; text-align:justify;">{{ data.client_message }}</td>
+				</tr>
+				{% if data.is_confidential %}
+				<tr>
+					<td colspan="5" class="text-center" style="white-space:normal; background-color:rgba(248,172,89,0.2);"><em>This is a CONFIDENTIAL query and is only visible and accessible to AUTHORIZED grievance officer and staff.</em></td>
+				</tr>
+				{% endif %}
+				<tr>
+					<td colspan="5" style="white-space:normal;">
+						<p class="bold capslock">Trail</p>
+						{% get_grievance_trail data.id as trail %}
+						<div class="ibox">
+							<div class="ibox-content" id="ibox-content">
+								<div id="vertical-timeline" class="vertical-container dark-timeline" style="margin:0px auto;">
+								{% for t in trail %}
+									<div class="vertical-timeline-block">
+										<div class="vertical-timeline-icon blue-bg">
+											<i class="fa fa-file-text"></i>
+										</div>
+										<div class="vertical-timeline-content">
+											<div class="row">
+												<div class="col-xs-8" style="padding-left:20px;">
+													<h4>Action Taken by <a href="javascript:;">{{ t.emp.pi.user.first_name|title }} {{ t.emp.pi.user.last_name|title }}</a></h4>
+													<p>
+														{% if t.date_started %}
+															{% if t.action_taken_or_answer_to_query == '' or not t.action_taken_or_answer_to_query %}
+																<em>No action taken yet</em>
+															{% else %}
+																{{ t.action_taken_or_answer_to_query|safe }}
+															{% endif %}
+														{% else %}
+															<em>Not yet opened</em>
+														{% endif %}
+													</p>
+													<span class="vertical-date">
+														<span id="humanized_time_span_{{ t.id }}"></span>
+														{% if t.date_started %}
+															{% if t.date_completed %}
+																<script>$('#humanized_time_span_{{ t.id }}').html('Done in ' + (humanized_time_span("{{ t.date_started|date:'Y/m/d H:i:s' }}", "{{ t.date_completed|date:'Y/m/d H:i:s' }}")).replace('ago',''));</script>
+																<br>
+																<small>{{ t.date_completed|date:'F d, Y' }}</small>
+															{% else %}
+																<script>$('#humanized_time_span_{{ t.id }}').html(humanized_time_span("{{ t.date_started|date:'Y/m/d H:i:s' }}"));</script>
+																<br>
+																<small>{{ t.date_started|date:'F d, Y' }}</small>
+															{% endif %}
+														{% else %}
+															<script>$('#humanized_time_span_{{ t.id }}').html(humanized_time_span("{{ t.datetime|date:'Y/m/d H:i:s' }}"));</script>
+															<br>
+															<small>{{ t.datetime|date:'F d, Y' }}</small>
+														{% endif %}
+													</span>
+												</div>
+												<div class="col-xs-4">
+													<ul class="list-group clear-list x">
+													{% for attachment in t.get_attachments %}
+														<li class="list-group-item x">
+															<a href="{{ attachment.attachment.url }}" target="_blank"><i class="fas fa-paperclip"></i></a>&nbsp;&nbsp;{% if attachment.attachment|filename|length >= 21 %}..{{ attachment.attachment|filename|slice:"-22:" }}{% else %}{{ attachment.attachment|filename }}{% endif %}
+														</li>
+													{% endfor %}
+													</ul>
+												</div>
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+								</div>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>

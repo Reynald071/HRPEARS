@@ -1,0 +1,189 @@
+{% extends 'tracker/layout.html' %}
+{% load static %}
+{% load tags %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'tracker' %}">Home</a></li>
+                <li class="breadcrumb-item active">Ship Documents</li>
+                <li class="breadcrumb-item active">DTR</li>
+            </ol>
+        </nav>
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card">
+                    <form id="dtrForm">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <p><strong>DTR DETAILS</strong></p>
+                        <div class="form-group mb-3">
+                            <label>Document Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-control-sm" name="document_date" autocomplete="off" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Document Information <span class="text-danger">*</span></label>
+                            <textarea class="form-control form-control-sm" name="document_info" rows="3" autocomplete="off" required></textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Forward to <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm filter-employee-all" name="forward_to" autocomplete="off" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Note (Optional)</label>
+                            <textarea class="form-control form-control-sm" name="note" rows="3" autocomplete="off"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-sm">Forward Document</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="addEmployeeForm">
+                        {% csrf_token %}
+                        <label>Search Employee <span class="text-danger">*</span></label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control form-control-sm filter-transmittal-employee" name="employee_name" placeholder="e.g. [16-12345] JUAN DELA CRUZ" autocomplete="off" required>
+                            <button type="submit" class="btn btn-sm btn-info">Add employee</button>
+                        </div>
+                        </form>
+                        {% if drafts %}
+                        {% for row in drafts %}
+                        {% generate_token row.emp_id as token %}
+                        <div id="content-{{ token }}">
+                            <div class="row border-bottom mb-2">
+                                <div class="col-lg-1">
+                                    <center>
+                                        <button type="button" class="btn btn-danger btn-sm" data-role="remove-employee" data-id="{{ token }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </center>
+                                </div>
+                                <div class="col-lg-11 mb-2">
+                                    <input type="hidden" class="check-item" value="{{ row.emp_id }}" checked>
+                                    <p class="no-margins"><strong>{{ row.emp.pi.user.get_fullname|upper }}</strong></p>
+                                    <small>{{ row.emp.position.name|upper }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        <div id="employee-add-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(".filter-transmittal-employee").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#addEmployeeForm').on('submit', function(e){
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : '{% url "add_employee_transmittal" 1 %}',
+            type        : 'POST',
+            success: function(response){
+                $('#employee-add-content').append(
+                    `
+                    <div id="content-`+ response.pk +`">
+                    <div class="row border-bottom mb-2">
+                        <div class="col-lg-1">
+                            <center>
+                                <button type="button" class="btn btn-danger btn-sm" data-role="remove-employee" data-id="`+ response.pk +`">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </center>
+                        </div>
+                        <div class="col-lg-11 mb-2">
+                            <input type="hidden" class="check-item" value="`+ response.id +`" checked>
+                            <p class="no-margins"><strong>`+ response.full_name + `</strong></p>
+                            <small>` + response.position + `</small>
+                        </div>
+                    </div>
+                    </div>
+                    `
+                );
+                $('#addEmployeeForm').trigger('reset');
+            },
+            cache       : false,
+            contentType : false,
+            processData : false,
+        })
+        e.preventDefault();
+    });
+
+    $(document).on('click', 'button[data-role=remove-employee]', function(){
+        var id = $(this).data('id');
+        $.post({
+            url: '/tracker/remove/draft/',
+            data: {
+                employee_id: id,
+                docu_type: 3
+            },
+        });
+        $('#content-'+ id).remove();
+    });
+
+    $(".filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $(document).on('click', 'input[data-role=selectAll]', function(){
+        $('.check-item').prop('checked', this.checked);
+    });
+
+    $('#dtrForm').on('submit', function(e){
+        var data = [];
+    	$('.check-item').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+            }
+        });
+
+        if (data.length === 0) {
+            Swal.fire('Ooops!', 'No employee has been added to the field.', 'warning');
+        } else {
+            var form = this;
+
+            var url = '{% url "dtr_tracker" %}';
+            var title = "Are you sure";
+            var text = "You want to transmit this daily time record";
+            var data_value = 'employee_id[]';
+            var link_attr = '{% url "track_package" %}';
+
+            submitFormWithConfirmation(form, url, title, text, {data: data, data_value: data_value, link_attr: link_attr});
+        }
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

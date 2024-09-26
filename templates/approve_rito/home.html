@@ -1,0 +1,112 @@
+{% extends 'approve_rito/layout.html' %}
+{% load static %}
+{% load tags %}
+{% load frontend_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="mt-5">
+    <div class="container">
+        <div class="row mb-3 justify-content-between">
+            <div class="col-3">
+                <h1 id="title-status" class="fw-bold mt-4">All</h1>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-group">
+                            Year
+                            <div class="input-group">
+                                <input type="text" class="form-control" style="height: 34px;" id="year" value="{{ current_year }}" autocomplete="off"> <span class="input-group-btn">
+                                <button type="button" class="btn btn-info" style="height: 34px;" id="filter-year">Filter</button> </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-bordered" id="table-approve-to" width="100%">
+                    <thead>
+                        <tr>
+                            <th class="text-left" width="10%">ACTION</th>
+                            <th width="15%">TRACKING NO.</th>
+                            <th width="35%">STAFF</th>
+                            <th class="text-center" width="15%">DATE FILED</th>
+                            <th class="text-center" width="10%">STATUS</th>
+                            <th>REMARKS</th>
+                            <th class="display-none">STATUS</th>
+                            <th class="display-none">ID</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+$(document).ready(function(){
+    $('#table-approve-to').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 3, 'desc' ]],
+        'lengthMenu': [ 25, 50, 100 ],
+        'ajax': {
+            'url': '/approve-rito/supervisor/?format=datatables&status=all&year={{ current_year }}',
+            'type': 'GET',
+            'beforeSend': function (request) {
+                request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+            }
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'supervisor_action', 'searchable': false },
+            {'data': 'tracking_no',
+                render: function(data, type, row, meta) {
+                    return "<a data-role='tracking-details' data-content='" + data + "' data-id='"+ row['id'] +"'>"+ data +"</a>";
+                }
+            },
+            {'data': 'passengers', 'searchable': false },
+            {'data': 'date', 'className': 'text-center' },
+            {'data': 'travel_status_for_supervisor', 'className': 'text-right', 'searchable': false },
+            {'data': 'travel_confirmation',
+                render: function(data, type, row, meta) {
+                    return data;
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'status', 'className': 'display-none' },
+            {'data': 'id', 'className': 'display-none' }
+        ],
+        'columnDefs': [
+            {className: 'dt-center', targets: [ 4 ]},
+        ],
+    });
+
+    $('#filter-year').on('click', function(){
+        if($('#year').val() == "") {
+            Swal.fire("Ooops!", "Fields on filter by year cannot be blank.", "warning");
+        } else {
+            $('#table-approve-to').DataTable().ajax.url('/approve-rito/supervisor/?format=datatables&status=all&year=' + $('#year').val()).load();
+            $('#status-all').click();
+        }
+    });
+
+    $(document).on('click', 'button[data-role=status]', function(){
+        $('button[data-role=status]').removeClass('text-green border-bottom');
+        $(this).addClass('text-green border-bottom');
+        $('#title-status').text($(this).data('title'));
+        $('#table-approve-to').DataTable().ajax.url('/approve-rito/supervisor/?format=datatables&status=' + $(this).data('filter') + '&year=' + $('#year').val()).load();
+    });
+});
+</script>
+{% endblock %}

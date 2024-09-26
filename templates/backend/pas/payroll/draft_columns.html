@@ -1,0 +1,78 @@
+{% load payroll_tags %}
+<form id="draftColumnForm">
+{% csrf_token %}
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><strong>DETAILS</strong></a>
+                </div>
+            </div>
+            <div id="collapse1" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label>COLUMN GROUP NAME</label>
+                        <input type="text" class="form-control" name="cg_name" value="{{ data.name }}">
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" name="is_active" {% if data.is_active == 1%}checked{% endif %}> Is Active
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><strong>DRAFT COLUMNS</strong></a>
+                </div>
+            </div>
+            <div id="collapse2" class="panel-collapse collapse">
+                <div class="panel-body" style="column-count: 3;">
+                    <input type="checkbox" name="selectAllColumnsDraft"> Select All <br>
+                    {% for row in default_column %}
+                    {% get_draft_group data.id row.id as check %}
+                    {% if row.column_type_id %}
+                    <input type="checkbox" name="column_start[]" class="column" id="column{{ row.id }}" value="{{ row.id }}" {% if check %}checked{% endif %}> {{ row.attribute }} <br>
+                    {% else %}
+                    <input type="checkbox" name="column_start[]" class="column" id="column{{ row.id }}" value="{{ row.id }}" onclick="return false;" checked> {{ row.attribute }} <br>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group pull-right">
+        <a href="javascript:;" class="btn btn-default" onclick="$('#draft-columns').modal('show').find('.modal-body').empty();
+        $('#draft-columns').modal('show').find('.modal-body').load('/backend/payroll/draft/column-group/');">Return to Column Group</a>
+        <button type="submit" class="btn btn-info">
+            Save changes
+        </button>
+    </div>
+    <br><br>
+</form>
+{% block script %}
+<script>
+    $('#draftColumnForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        $.ajax({
+            data        : form,
+            url         : '{% url "draft_column_group_start" data.id %}',
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false,
+            success: function(response){
+                if (response.data == "success"){
+                    $('#draft-columns').modal('show').find('.modal-body').empty();
+                    $('#draft-columns').modal('show').find('.modal-body').load("{% url 'draft_column_group' %}");
+                }
+            }
+        });
+    });
+
+    $(':checkbox[name=selectAllColumnsDraft]').click (function () {
+        $('.column').prop('checked', this.checked);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% load tags %}
+{% load static %}
+<form id="submitCTDOForm">
+{% csrf_token %}
+<div class="modal-body">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Important Note:
+        <ul style="margin-left: 30px;">
+            <li>For your balance please refer to Personnel Administration Section before filing your ctdo application.</li>
+            <li>Filing a CTDO for half a day is accounted for as four hours.</li>
+        </ul>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-lg-12">
+            <label>Below is the number of days you wish to register for your CTDO application.</label>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Days<span class="asteriskField">*</span></label>
+                <input type="number" class="form-control" name="days" value="0" id="days">
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Hours<span class="asteriskField">*</span></label>
+                <input type="number" class="form-control" name="hours" value="0" id="hours">
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <button type="button" class="btn btn-info btn-block" style="margin-top: 23px;" id="btn-auto-utilize">Auto Utilize</button>
+        </div>
+    </div>
+    <label>COC Earned</label>
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th>Action</th>
+                <th class="text-center">Month Earned</th>
+                <th class="text-center">Days</th>
+                <th class="text-center">Hours</th>
+                <th class="text-center">Minutes</th>
+                <th class="text-center">Date Expiry</th>
+            </tr>
+            {% if coc %}
+                {% for row in coc %}
+                <tr>
+                    <td>
+                        {% generate_token row.id as token %}
+                        <a href="javascript:;" data-role="utilize" data-id="{{ token }}">Utilize</a>
+                    </td>
+                    <td class="text-center">
+                        {{ row.cocbal.month_earned }}
+                    </td>
+                    <td class="text-center">{% if row.days > 0 %}{{ row.days|floatformat:"0" }} day{{ row.days|pluralize }}{% endif %}</td>
+                    <td class="text-center">{% if row.hours > 0 %}{{ row.hours|floatformat:"0" }} hour{{ row.hours|pluralize }}{% endif %}</td>
+                    <td class="text-center">{% if row.minutes > 0 %}{{ row.minutes|floatformat:"0" }} minute{{ row.minutes|pluralize }}{% endif %}</td>
+                    <td class="text-center">{{ row.cocbal.date_expiry }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td class="text-center" colspan="2"><strong>Total Balance</strong></td>
+                    <td class="text-center">{{ total_days }}</td>
+                    <td class="text-center">{{ total_hours }}</td>
+                    <td class="text-center">{{ total_minutes }}</td>
+                    <td class="text-center"></td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No data available.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <br>
+    <label>To be utilized</label>
+    <a href="javascript:;" class="pull-right" data-role="remove">Remove All</a>
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th class="text-center">Month Earned</th>
+                <th class="text-center">Days</th>
+                <th class="text-center">Hours</th>
+                <th class="text-center">Minutes</th>
+                <th class="text-center">Date Expiry</th>
+            </tr>
+            {% if utilization %}
+                {% for row in utilization %}
+                <tr>
+                    <td class="text-center">
+                        {{ row.cocactualbal.cocbal.month_earned }}
+                    </td>
+                    <td class="text-center">{% if row.days > 0 %}{{ row.days|floatformat:"0" }} day{{ row.days|pluralize }}{% endif %}</td>
+                    <td class="text-center">{% if row.hours > 0 %}{{ row.hours|floatformat:"0" }} hour{{ row.hours|pluralize }}{% endif %}</td>
+                    <td class="text-center">{% if row.minutes > 0 %}{{ row.minutes|floatformat:"0" }} minute{{ row.minutes|pluralize }}{% endif %}</td>
+                    <td class="text-center">{{ row.cocactualbal.cocbal.date_expiry }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td class="text-center"><strong>Total Utilization</strong></td>
+                    <td class="text-center">{{ total_u_days }}</td>
+                    <td class="text-center">{{ total_u_hours }}</td>
+                    <td class="text-center">{{ total_u_minutes }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No data available.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <br>
+    <label>Please select dates on filing your CTDO's</label>
+    <input type="hidden" name="total_u_days" id="total_u_days" value="{{ total_u_days }}" required>
+    <input type="hidden" name="total_u_hours" id="total_u_hours" value="{{ total_u_hours }}" required>
+    <input type="hidden" name="total_u_minutes" id="total_u_minutes" value="{{ total_u_minutes }}" required>
+    <input type="hidden" name="total_days" value="{{ total_days|add:total_u_days }}" required>
+    <input type="hidden" name="total_hours" value="{{ total_hours|add:total_u_hours }}" required>
+    <input type="hidden" name="total_minutes" value="{{ total_minutes|add:total_u_minutes }}" required>
+    <input type="hidden" name="remarks" id="remarks" value="{{ total_minutes|add:total_u_minutes }}" required>
+    <div id="remarksContent"></div>
+    <div id="random_dates">
+        <div id="items">
+            <div class="row" id="dates_content"></div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    {% if total_utilization > 5 %}
+        <div class="alert alert-warning">
+            <i class="fas fa-info-circle"></i> You've reached the limit for this month's CTDO application submissions. Please note that you are only permitted to apply 40 hours (5 days) per month.
+        </div>
+    {% else %}
+    <button type="submit" class="btn btn-info">Submit</button>
+    {% endif %}
+</div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    select2Init();
+    function select2Init() {
+        $('.select').select2({
+            width: "100%",
+            allowClear: true,
+            placeholder: 'Choose',
+        });
+    }
+
+    $('#days').val(localStorage.getItem('days'));
+    $('#hours').val(localStorage.getItem('hours'));
+
+    function convertToMinutes(days, hours, minutes) {
+        return days * 8 * 60 + hours * 60 + minutes;
+    }
+
+    function convertToDaysHoursMinutes(minutes) {
+        var days = Math.floor(minutes / (8 * 60));
+        minutes -= days * 8 * 60;
+        var hours = Math.floor(minutes / 60);
+        minutes -= hours * 60;
+        return [days, hours, minutes];
+    }
+
+    var totalInMinutes = convertToMinutes(parseInt($('#total_u_days').val()),
+                                        parseInt($('#total_u_hours').val()),
+                                        parseInt($('#total_u_minutes').val()));
+    var inputInMinutes = convertToMinutes(parseInt(localStorage.getItem('days')),
+                                        parseInt(localStorage.getItem('hours')), 0);
+    var remainingInMinutes = inputInMinutes - totalInMinutes;
+    var remainingBalance = convertToDaysHoursMinutes(remainingInMinutes).map(function(value) {
+        return isNaN(value) ? 0 : value;
+    });;
+
+    if(localStorage.getItem('days') == 0) {
+        $('#dates_content').html(`
+            <div class="form-group col-lg-6">
+                <input type="date" class="form-control b-r-sm dates" name="dates[]" required>
+            </div>
+            <div class="form-group col-lg-6">
+                <select class="form-control select" name="type[]" required>
+                    <option value="whole day">Whole Day</option>
+                    <option value="half day">Half Day</option>
+                </select>
+            </div>
+        `);
+
+        select2Init();
+    } else {
+        var template = "";
+        for (var i = 0; i < localStorage.getItem('days'); i++) {
+            template += `
+            <div class="form-group col-lg-6">
+                <input type="date" class="form-control b-r-sm dates" name="dates[]" required>
+            </div>
+            <div class="form-group col-lg-6">
+                <select class="form-control select" name="type[]" required>
+                    <option value="whole day">Whole Day</option>
+                    <option value="half day">Half Day</option>
+                </select>
+            </div>
+            `
+        }
+        $('#dates_content').html(template);
+        select2Init();
+    }
+
+    var text_remarks = `Outstanding COC Balance for Payroll Deduction: ${remainingBalance[0]} days, ${remainingBalance[1]} hours, ${remainingBalance[2]} minutes`;
+
+    if(text_remarks != 'Outstanding COC Balance for Payroll Deduction: 0 days, 0 hours, 0 minutes') {
+        $('#remarksContent').html(
+            `<div class="alert alert-warning">
+                <i class="fas fa-info-circle"></i>
+                Note: Outstanding COC Balance for Payroll Deduction: ${remainingBalance[0]} days, ${remainingBalance[1]} hours, ${remainingBalance[2]} minutes
+            </div><br>
+            `
+        );
+        $('#total_u_days').val(localStorage.getItem('days'));
+        $('#total_u_hours').val(localStorage.getItem('hours'));
+        $('#total_u_minutes').val(0);
+        $('#remarks').val(`Outstanding COC Balance for Payroll Deduction: ${remainingBalance[0]} days, ${remainingBalance[1]} hours, ${remainingBalance[2]} minutes`);
+    } else {
+        $('#total_u_days').val("{{ total_u_days }}");
+        $('#total_u_hours').val("{{ total_u_hours }}");
+        $('#total_u_minutes').val("{{ total_u_minutes }}");
+        $('#remarksContent').html('');
+        $('#remarks').val('');
+    }
+
+    $('#btn-auto-utilize').on('click', function(){
+        if($('#days').val() != "" || $('#hours').val() != "") {
+            var list = {
+                'days': $('#days').val(),
+                'hours': $('#hours').val(),
+            }
+
+            var url = '{% url "auto_utilize_coc_earned" %}';
+            var title = "Are you sure";
+            var text = "You want to use the auto utilization";
+            var loadContent = "#coc-earned-content";
+            var loadUrl = "/personnel/coc/earned/"
+
+            localStorage.setItem('days', $('#days').val());
+            localStorage.setItem('hours', $('#hours').val());
+
+            submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+        } else {
+            Swal.fire('Ooops!', 'Please provide the required information in the fields designated for days and hours.', 'warning');
+        }
+    });
+
+    $(document).on('click', 'a[data-role=remove]', function(){
+        var list = {
+            'token': '{{ request.session.emp_id }}',
+        }
+
+        var url = '/personnel/utilize/coc/remove/';
+        var title = "Are you sure";
+        var text = "You want to remove this utilization";
+        var loadContent = "#coc-earned-content";
+        var loadUrl = "/personnel/coc/earned/";
+
+        localStorage.setItem('days', 0);
+        localStorage.setItem('hours', 0);
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+    });
+
+    $('#filter_dates').on('change', function(){
+		if($(this).val() == "range"){
+			$('#random_dates').css('display', 'none');
+			$('.dates').removeAttr('required');
+
+			$('#inclusive_dates').css('display', '');
+			$('#start_date').attr('required', 'required');
+			$('#end_date').attr('required', 'required');
+		}else if ($(this).val() == "random"){
+			$('#inclusive_dates').css('display', 'none');
+			$('#start_date').removeAttr('required');
+			$('#end_date').removeAttr('required');
+
+			$('#random_dates').css('display', '');
+			$('.dates').attr('required', 'required');
+		}
+	});
+
+	$('.add').on('click', function(){
+		$('#items').append('<div class="row"><div class="form-group col-md-12"><div class="input-group"><input type="date" class="form-control b-r-sm dates" name="dates[]" required> <span class="input-group-btn"> <button type="button" class="btn btn-danger remove_field" style="height: 34px;"><i class="fas fa-minus"></i></button> </span></div></div></div>')
+	});
+
+	$('#items').on('click', '.remove_field', function(e){
+		$(this).parent().parent().parent().remove();
+	});
+
+	$('#submitCTDOForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "ctdo_requests" %}';
+        var title = "Are you sure";
+        var text = "You want to submit this CTDO requests?";
+        var modal_id = '#apply-ctdo';
+        var table_id = '#ctdo-table';
+        var loadContent = "#coc-earned-content";
+        var loadUrl = "/personnel/coc/earned/"
+
+        localStorage.setItem('days', 0);
+        localStorage.setItem('hours', 0);
+
+        submitFormWithConfirmation(form, url, title, text, {modal_id: modal_id, table_id: table_id, loadContent: loadContent, loadUrl: loadUrl});
+		e.preventDefault();
+    });
+</script>
+{% endblock %}

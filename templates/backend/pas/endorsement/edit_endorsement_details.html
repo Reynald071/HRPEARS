@@ -1,0 +1,141 @@
+<form id="editEmployeeForm">
+<div class="modal-body">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Employee Name<span class="asteriskField">*</span></label>
+                <input type="text" class="form-control filter-employee-all" value="[{{ employee.emp.id_number }}] {{ employee.emp.pi.user.get_fullname|upper }}" name="employee_name" autocomplete="off" required/>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Position<span class="asteriskField">*</span></label>
+                <select class="form-control select" name="position" required>
+                    <option></option>
+                    {% for row in position %}
+                        {% if row.id == employee.position_id %}
+                            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                        {% else %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-2">
+            <div class="form-group">
+                <label>Basic Monthly Salary<span class="asteriskField">*</span></label>
+                <input type="text" class="form-control" value="{{ employee.basic_salary }}" name="basic_salary" autocomplete="off" required/>
+            </div>
+        </div>
+        <div class="col-lg-2">
+            <div class="form-group">
+                <label>Premium Rate<span class="asteriskField">*</span></label>
+                <input type="text" class="form-control" value="{{ employee.premium_rate }}" name="premium_rate" autocomplete="off" required/>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Effectivity of Contract<span class="asteriskField">*</span></label>
+                <input type="date" value="{{ employee.effectivity_contract|date:'Y-m-d' }}" class="form-control" name="effectivity_contract" autocomplete="off" required/>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>End of Contract</label>
+                <input type="date" value="{{ employee.end_of_contract|date:'Y-m-d' }}" class="form-control" name="end_of_contract" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Employment Status<span class="asteriskField">*</span></label>
+                <select class="form-control select" name="empstatus" required>
+                    <option></option>
+                    {% for row in empstatus %}
+                        {% if row.id == employee.empstatus_id %}
+                            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                        {% else %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="form-group">
+                <label>Fund Charge<span class="asteriskField">*</span></label>
+                <select class="form-control select" name="fundcharge" required>
+                    <option></option>
+                    {% for row in fundcharge %}
+                        {% if row.id == employee.fundcharge_id %}
+                            <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                        {% else %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Account Number (LBP)</label>
+                <input type="text" class="form-control" value="{{ employee.emp.account_number }}" name="account_number" id="account_number" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Remarks</label>
+                <input type="text" value="{{ employee.remarks }}" class="form-control" name="remarks" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label>Vice</label>
+                <input type="text" value="[{{ employee.vice_id_number }}] {{ employee.vice }}" class="form-control filter-employee-all" name="vice" autocomplete="off">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="submit" class="btn btn-info">Save changes</button>
+</div>
+</form>
+{% block script %}
+<script>
+    $('.select').select2({
+        width: "100%",
+        allowClear: true,
+        placeholder: 'Choose',
+    });
+
+    $(".filter-employee-all").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#editEmployeeForm').on('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var url = '{% url "edit_endorsement_details" pk %}';
+        var title = "Are you sure";
+        var text = "You want to edit this employee on the endorsement";
+        var modal_id = "#edit-details-endorsement-modal";
+        var table_id = "#table-endorsement-people"
+        submitFormWithConfirmation(form, url, title, text, {table_id: table_id, modal_id: modal_id});
+    });
+</script>
+{% endblock %}

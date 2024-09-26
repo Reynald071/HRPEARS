@@ -1,0 +1,440 @@
+{% load tags %}
+{% load static %}
+<form id="updateCTDOForm">
+    {% csrf_token %}
+    <div class="modal-body">
+        {% if ctdo.status == 1 %}
+            <div class="alert alert-info"><i class="fas fa-info-circle"></i> This CTDO requests has been <strong>approved.</strong></div>
+            <br>
+        {% elif ctdo.status == 2 %}
+            <div class="alert alert-warning"><i class="fas fa-info-circle"></i> This CTDO requests has been <strong>cancelled.</strong></div>
+            <br>
+        {% endif %}
+      <div class="row" id="filter_content">
+          <div class="form-group col-md-12">
+              <label>Filter Dates By<span class="text-danger">*</span></label>
+              <select class="form-control update-select" id="edit_filter_dates" required>
+                  <option></option>
+                  <option value="range" {% if ctdo.start_date %}selected{% endif %}>Range</option>
+                  <option value="random" {% if not ctdo.start_date %}selected{% endif %}>Custom</option>
+              </select>
+          </div>
+      </div>
+      <div class="row" id="edit_inclusive_dates" style="display:none;">
+          <div class="form-group col-md-6">
+              <label>Start Date<span class="text-danger">*</span></label>
+              <input type="date" name="start_date" id="edit_start_date" value="{{ ctdo.start_date|date:'Y-m-d' }}" class="form-control b-r-sm">
+          </div>
+          <div class="form-group col-md-6">
+              <label>End Date<span class="text-danger">*</span></label>
+              <input type="date" name="end_date" id="edit_end_date" value="{{ ctdo.end_date|date:'Y-m-d' }}" class="form-control b-r-sm">
+          </div>
+      </div>
+      {% if ctdo_random_dates %}
+      <div id="edit_random_dates">
+          <div id="edit_items">
+              {% for row in ctdo_random_dates %}
+                <div class="row">
+                    <div class="form-group col-lg-6">
+                        <input type="date" class="form-control b-r-sm edit_dates" value="{{ row.date|date:'Y-m-d' }}" name="dates[]">
+                    </div>
+                    <div class="form-group col-lg-6">
+                        <select class="form-control update-select" name="type[]" required>
+                            <option value="whole day" {% if row.type == 'whole day' %}selected{% endif %}>Whole Day</option>
+                            <option value="half day" {% if row.type == 'half day' %}selected{% endif %}>Half Day</option>
+                        </select>
+                    </div>
+                </div>
+            {% endfor %}
+          </div>
+      </div>
+      {% else %}
+        <div id="edit_random_dates">
+            <div id="edit_items">
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <div class="input-group">
+                            <input type="date" class="form-control b-r-sm edit_dates" value="{{ row.date|date:'Y-m-d' }}" name="dates[]"> <span class="input-group-btn"> <button type="button" class="btn btn-info edit_add" style="height: 34px;"><i class="fas fa-plus"></i></button> </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      {% endif %}
+        <div class="row">
+            <div class="col-lg-12">
+                <label>Print Logs</label>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <tbody>
+                            {% if print_attempt %}
+                            {% for row in print_attempt %}
+                            <tr>
+                                <td>Print attempt at {{ row.datetime|date:"F m, Y H:i A" }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>No available data.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% if not coc_utilization %}
+        <br>
+        <div class="row">
+            <div class="col-lg-12">
+                <label>Below is the number of days you wish to register for this CTDO application.</label>
+            </div>
+            <div class="col-lg-4">
+                <div class="form-group">
+                    <label>Days<span class="asteriskField">*</span></label>
+                    <input type="number" class="form-control" name="days" value="0" id="days">
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="form-group">
+                    <label>Hours<span class="asteriskField">*</span></label>
+                    <input type="number" class="form-control" name="hours" value="0" id="hours">
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <button type="button" class="btn btn-info btn-block" style="margin-top: 23px;" id="btn-auto-utilize">Auto Utilize</button>
+            </div>
+        </div>
+        {% endif %}
+        <br>
+        <label>COC Earned</label>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <th class="text-center">Month Earned</th>
+                    <th class="text-center">Days</th>
+                    <th class="text-center">Hours</th>
+                    <th class="text-center">Minutes</th>
+                    <th class="text-center">Date Expiry</th>
+                </tr>
+                {% if coc_actual_balance %}
+                    {% for row in coc_actual_balance %}
+                    <tr>
+                        <td class="text-center">
+                            {{ row.cocbal.month_earned }}
+                        </td>
+                        <td class="text-center">{% if row.days > 0 %}{{ row.days|floatformat:"0" }} day{{ row.days|pluralize }}{% endif %}</td>
+                        <td class="text-center">{% if row.hours > 0 %}{{ row.hours|floatformat:"0" }} hour{{ row.hours|pluralize }}{% endif %}</td>
+                        <td class="text-center">{% if row.minutes > 0 %}{{ row.minutes|floatformat:"0" }} minute{{ row.minutes|pluralize }}{% endif %}</td>
+                        <td class="text-center">{{ row.cocbal.date_expiry }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td class="text-center"><strong>Total Balance</strong></td>
+                        <td class="text-center">{{ total_days }}</td>
+                        <td class="text-center">{{ total_hours }}</td>
+                        <td class="text-center">{{ total_minutes }}</td>
+                        <td class="text-center"></td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No data available.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        {% if coc_utilization %}
+            <br>
+            <label>COC Utilize</label>
+            <a href="javascript:;" class="pull-right" data-role="remove">Remove All</a>
+            <table class="table table-bordered">
+                <tr>
+                    <th class="text-center">Month/Year Earned</th>
+                    <th class="text-center">Days</th>
+                    <th class="text-center">Hours</th>
+                    <th class="text-center">Minutes</th>
+                </tr>
+                {% for row in coc_utilization %}
+                <tr>
+                    <td class="text-center">{{ row.cocactualbal.cocbal.month_earned }}</td>
+                    <td class="text-center">{{ row.days }}</td>
+                    <td class="text-center">{{ row.hours }}</td>
+                    <td class="text-center">{{ row.minutes }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        <br>
+        <div class="row">
+            <div class="col-sm-12">
+                <h4 class="no-margins">LEAVE CREDITS MANAGEMENT</h4>
+                <small>Please make sure you do not leave blank on this field.</small>
+                <a href="javascript:;" id="add-leave-credits" class="btn btn-info pull-right"><i class="fas fa-plus"></i> Add</a>
+                <br><br>
+                <div id="items">
+                    {% if credits_history %}
+                        {% for credit in credits_history %}
+                        {% if forloop.first %}
+                            <div class="row" id="credit{{ credit.id }}">
+                                <div class="form-group col-md-8">
+                                    <label>Deduct / Add on<span class="text-danger">*</span></label>
+                                    <select class="form-control update-select b-r-sm" name="deduct_on[]">
+                                        <option value=""></option>
+                                        {% for row in leave_type %}
+                                            {% if credit.deduct_on_id == row.id %}
+                                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                                            {% else %}
+                                            <option value="{{ row.id }}">{{ row.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Days<span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control b-r-sm" name="days[]" value="{{ credit.days }}"> <span class="input-group-btn"> <button type="button" class="btn btn-danger" data-role="remove-leave-credits" data-id="{{ credit.id }}" style="height: 34px;"><i class="fas fa-minus"></i></button> </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="row" id="credit{{ credit.id }}">
+                                <div class="form-group col-md-8">
+                                    <label>Deduct / Add on<span class="text-danger">*</span></label>
+                                    <select class="form-control update-select b-r-sm" name="deduct_on[]">
+                                        <option value=""></option>
+                                        {% for row in leave_type %}
+                                            {% if credit.deduct_on_id == row.id %}
+                                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                                            {% else %}
+                                            <option value="{{ row.id }}">{{ row.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Days<span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control b-r-sm" name="days[]" value="{{ credit.days }}"> <span class="input-group-btn"> <button type="button" class="btn btn-danger" data-role="remove-leave-credits" data-id="{{ credit.id }}" style="height: 34px;"><i class="fas fa-minus"></i></button> </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="row">
+                            <div class="form-group col-md-8">
+                                <label>Deduct / Add on<span class="text-danger">*</span></label>
+                                <select class="form-control update-select b-r-sm" name="deduct_on[]">
+                                    <option value=""></option>
+                                    {% for row in leave_type %}
+                                    {% if leave.leaveapp.leavesubtype.leavetype_id == row.id %}
+                                    <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                                    {% else %}
+                                    <option value="{{ row.id }}">{{ row.name }}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Days<span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="days[]"><span class="input-group-btn"><button type="button" class="btn btn-danger remove_field"><i class="fas fa-minus"></i></button></span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-lg-12">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Particular</th>
+                        <th class="text-center">Days</th>
+                        <th class="text-center">Hours</th>
+                        <th class="text-center">Minutes</th>
+                    </tr>
+                    <tr>
+                        <th>Available Balance</th>
+                        <td>
+                            <input type="number" class="form-control" style="text-align: center;" name="total_days" value="{% if coc_history_balance.total_days %}{{ coc_history_balance.total_days }}{% else %}0{% endif %}" required>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" style="text-align: center;" name="total_hours" value="{% if coc_history_balance.total_hours %}{{ coc_history_balance.total_hours }}{% else %}0{% endif %}" required>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" style="text-align: center;" name="total_minutes" value="{% if coc_history_balance.total_minutes %}{{ coc_history_balance.total_minutes }}{% else %}0{% endif %}" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Utilize Balance</th>
+                        <td>
+                            <input type="number" class="form-control" style="text-align: center;" name="total_u_days" value="{% if coc_history_balance.total_u_days %}{{ coc_history_balance.total_u_days }}{% else %}0{% endif %}" required>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" style="text-align: center;" name="total_u_hours" value="{% if coc_history_balance.total_u_hours %}{{ coc_history_balance.total_u_hours }}{% else %}0{% endif %}" required>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" style="text-align: center;" name="total_u_minutes" value="{% if coc_history_balance.total_u_minutes %}{{ coc_history_balance.total_u_minutes }}{% else %}0{% endif %}" required>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <br>
+        <div class="form-group">
+            <textarea class="form-control" name="remarks" placeholder="Write remarks..">{% if ctdo.remarks %}{{ ctdo.remarks }}{% endif %}</textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        {% generate_token pk as print_token %}
+        <a type="button" class="btn btn-default pull-left" href="{% url 'print_coc_previous' print_token %}" target="_blank"><i class="fas fa-print"></i> Print COC</a>
+        <button type="submit" class="btn btn-info btn-outline">Update</button>
+        {% if ctdo.status != 2 %}
+        <a href="javascript:;" data-role="cancel" data-id="{{ pk }}" class="btn btn-warning btn-outline">Cancel</a>
+        {% endif %}
+        {% if ctdo.status != 1 %}
+        <a href="javascript:;" data-role="approve" data-id="{{ pk }}" class="btn btn-info">Approve</a>
+        {% endif %}
+    </div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    select2Init();
+
+    function select2Init() {
+        $('.update-select').select2({
+            width: "100%",
+            allowClear: true,
+            placeholder: 'Choose',
+        });
+    }
+
+    var credits_manager = 1;
+    $('#add-leave-credits').on('click', function(){
+		if(credits_manager <= 5){
+			$('#items').append('<div class="row"><div class="form-group col-md-8"><select class="form-control update-select b-r-sm" name="deduct_on[]"><option value=""></option>{% for row in leave_type %}<option value="{{ row.id }}">{{ row.name }}</option>{% endfor %}</select></div><div class="form-group col-md-4"><div class="input-group"><input type="text" class="form-control" name="days[]" required><span class="input-group-btn"><button type="button" class="btn btn-danger remove_field"><i class="fas fa-minus"></i></button></span></div>');
+			select2Init();
+			credits_manager++;
+		}
+	});
+
+	$(document).on('click', 'button[data-role=remove-leave-credits]', function(){
+		var id = $(this).data('id');
+
+		var list = {
+            'id': id,
+        }
+
+        var url = '{% url "remove_credits_history" %}';
+        var title = "Are you sure";
+        var text = "You want to delete this leave credits";
+        var loadContent = "#ctdo-update-content";
+        var loadUrl = "/backend/ctdo/update/{{ ctdo.id }}";
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+	});
+
+
+	$('#items').on('click', '.remove_field', function(){
+		$(this).parent().parent().parent().parent().remove();
+		credits_manager--;
+	});
+
+    $('#btn-auto-utilize').on('click', function(){
+        if($('#days').val() != "" || $('#hours').val() != "") {
+            var list = {
+                'days': $('#days').val(),
+                'hours': $('#hours').val(),
+                'ctdoreq_id': '{{ ctdo.id }}'
+            }
+
+            var url = '{% url "auto_utilize_coc_earned_admin" %}';
+            var title = "Are you sure";
+            var text = "You want to use the auto utilization";
+            var loadContent = "#ctdo-update-content";
+            var loadUrl = "/backend/ctdo/update/{{ ctdo.id }}";
+
+            submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+        } else {
+            Swal.fire('Ooops!', 'Please provide the required information in the fields designated for days and hours.', 'warning');
+        }
+    });
+
+    $(document).on('click', 'a[data-role=remove]', function(){
+        var list = {
+            'ctdoreq_id': '{{ ctdo.id }}',
+            'token': '{{ ctdo.emp_id }}',
+        }
+
+        var url = '/personnel/utilize/coc/remove/';
+        var title = "Are you sure";
+        var text = "You want to remove this utilization";
+        var loadContent = "#ctdo-update-content";
+        var loadUrl = "/backend/ctdo/update/{{ ctdo.id }}";
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadContent: loadContent, loadUrl: loadUrl});
+    });
+    
+    $(document).ready(function(){
+        $('#updateCTDOForm').on('submit', function(e){
+            var form = this;
+
+            var url = '{% url "admin_ctdo_update" pk %}';
+            var title = "Are you sure";
+            var text = "you want to update this ctdo requests?";
+            var table_id = '#ctdo-admin-table';
+            var loadContent = "#ctdo-update-content";
+            var loadUrl = "/backend/ctdo/update/{{ ctdo.id }}";
+
+            submitFormWithConfirmation(form, url, title, text, {table_id: table_id, loadContent: loadContent, loadUrl: loadUrl});
+            e.preventDefault();
+        });
+        
+        if($('#edit_filter_dates option:selected').val() == "range"){
+            $('#edit_random_dates').css('display', 'none');
+            $('.edit_dates').removeAttr('required');
+
+            $('#edit_inclusive_dates').css('display', '');
+            $('#edit_start_date').attr('required', 'required');
+            $('#edit_end_date').attr('required', 'required');
+        } else if ($('#edit_filter_dates option:selected').val() == "random") {
+            $('#edit_inclusive_dates').css('display', 'none');
+            $('#edit_start_date').removeAttr('required');
+            $('#edit_end_date').removeAttr('required');
+
+            $('#edit_random_dates').css('display', '');
+            $('.edit_dates').attr('required', 'required');
+        }
+        
+        $('#edit_filter_dates').on('select2:select', function(){
+            if($(this).val() == "range"){
+                $('#edit_random_dates').css('display', 'none');
+                $('.edit_dates').removeAttr('required');
+
+                $('#edit_inclusive_dates').css('display', '');
+                $('#edit_start_date').attr('required', 'required');
+                $('#edit_end_date').attr('required', 'required');
+            }else if ($(this).val() == "random"){
+                $('#edit_inclusive_dates').css('display', 'none');
+                $('#edit_start_date').removeAttr('required');
+                $('#edit_end_date').removeAttr('required');
+
+                $('#edit_random_dates').css('display', '');
+                $('.edit_dates').attr('required', 'required');
+            }
+        });
+
+        $('.edit_add').on('click', function(){
+            $('#edit_items').append('<div class="row"><div class="form-group col-md-12"><div class="input-group"><input type="date" class="form-control b-r-sm dates" name="dates[]"> <span class="input-group-btn"> <button type="button" class="btn btn-danger edit_remove_field" style="height: 34px;"><i class="fas fa-minus"></i></button> </span></div></div></div>')
+        });
+        
+        $('#edit_items').on('click', '.edit_remove_field', function(e){
+            $(this).parent().parent().parent().remove();
+        });
+    });
+</script>
+{% endblock %}

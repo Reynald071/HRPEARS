@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Certificate of IPCR Ratings</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/adminlte.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+    <style>
+		#footer{
+			display: none;
+		}
+
+        @media print {
+			page {
+				margin: 0px;
+				padding: 20 50px 20px 50px !important;
+				border: 0.5px solid transparent;
+				height: 205mm !important;
+				width: 100%;
+				zoom: 140%;
+			}
+		  	::-webkit-input-placeholder { /* WebKit browsers */
+		      	color: transparent;
+		  	}
+		  	:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+		      	color: transparent;
+		  	}
+		  	::-moz-placeholder { /* Mozilla Firefox 19+ */
+		      	color: transparent;
+		  	}
+		  	:-ms-input-placeholder { /* Internet Explorer 10+ */
+		      	color: transparent;
+		  	}
+		  	#footer{
+				display: block;
+				position: absolute;
+				right: -180px;
+			}
+		}
+		@page {
+			size: auto;
+		}
+		td{
+			padding: 0px !important;
+		}
+    </style>
+</head>
+<nav class="main-header navbar navbar-expand navbar-light navbar-white m-0">
+	<div class="container">
+		<a class="navbar-brand" href="javascript:;">Certificate of IPCR Ratings</a>
+		<ul class="navbar-nav ml-auto">
+			{% track_drn emp.id cy as generated_drn %}
+			<li><button type="button" class="btn btn-success" data-toggle="modal" data-target="#update-drn-modal"><i class="fas fa-file"></i> Update DRN</button>&emsp;</li>
+			<li><button class="btn btn-success" data-toggle="modal" data-target="#signatory-modal"><i class="fas fa-signature"></i> Signatories</button>&emsp;</li>
+			<li><button type="button" class="btn btn-info print-button" id="floatprint"><i class="fas fa-print"></i> Print</button></li>
+		</ul>
+	</div>
+</nav>
+<body>
+	<page size="A4flex" class="page" style="padding: 50px;">
+		<div class="containerX">
+			<img loading="lazy"  src="{% static 'image/dswd_logo_3.png' %}" width="20%">&emsp;&emsp;&emsp;
+            <br>
+            <span style="font-family: Times New Roman; font-size: 10.7px;"><em>DSWD-GF-010</em> | <em>REV 01 / 17 AUG 2022</em></span>
+{#            <img loading="lazy"  src="{% static 'image/fo_insignia.png' %}" width="22%" style="margin-top: -50px; margin-left: 30px;">#}
+            &emsp;&emsp;
+            <img loading="lazy"  src="{% static 'image/bagong_pilipinas.png' %}" width="10%" style="margin-top: -50px;">
+			<hr>
+			<span class="pull-right" style="font-family: Arial; font-size: 10.7px" id="generate_drn">
+				{% if generated_drn %}DRN: <strong><u>{{ generated_drn }}</u></strong>{% endif %}
+			</span>
+			<br><br>
+			<h6 class="text-center"><strong>CERTIFICATE OF PERFORMANCE RATING</strong></h6>
+			<br><br>
+			<p class="text-justify" style="font-size: 14px;">&emsp;&emsp;&emsp;&emsp;This is to certify that to this date and upon
+				verification with the records in the Human Resource Planning and Performance Management Section, Mr./Ms. <u><strong>{{ emp.pi.user.get_fullname|upper }}</strong></u>,
+				has the following Performance Ratings, to wit:
+			</p>
+			<br>
+			<table width="100%" style="font-size: 14px;">
+				<tr>
+					<td width="32%">
+						Name of Employee
+					</td>
+					<th>: {{ emp.pi.user.get_fullname|upper }}</th>
+				</tr>
+				<tr>
+					<td>
+						Current Position
+					</td>
+					<th>: {{ emp.position.name|upper }}</th>
+				</tr>
+				<tr>
+					<td>
+						Division / Area of Assignment
+					</td>
+					<th>: {{ emp.section.div.div_name }} / <br>&nbsp;&nbsp;{{ emp.section.sec_name }}</th>
+				</tr>
+			</table>
+			<br>
+			<table border="1" width="100%" style="font-size: 14px;">
+				<tr>
+					<th class="text-center">Calendar Year</th>
+					<th class="text-center">Numerical Rating</th>
+					<th class="text-center">Descriptive Rating</th>
+				</tr>
+				{% for row in year %}
+				<tr>
+					<td>&emsp;{{ row }}</td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td class="text-right">First Semester&emsp;</td>
+					<td class="text-center">
+						{% get_ipcr_rating emp.id row 1 as first_semester %}
+						{% if first_semester != "Not Available" %}{{ first_semester.ipcr|floatformat:5 }}{% else %}{{ first_semester }}{% endif %}
+					</td>
+					<td class="text-center">
+						{% get_adjectival_rating first_semester.ipcr row as adjectival_rating_1 %}
+						{% if adjectival_rating_1 %}{{ adjectival_rating_1 }}{% else %}{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td class="text-right">Second Semester&emsp;</td>
+					<td class="text-center">
+						{% get_ipcr_rating emp.id row 2 as second_semester %}
+						{% if second_semester != "Not Available" %}{{ second_semester.ipcr|floatformat:5 }}{% else %}{{ second_semester }}{% endif %}
+					</td>
+					<td class="text-center">
+                        {% get_adjectival_rating second_semester.ipcr row as adjectival_rating_2 %}
+						{% if adjectival_rating_2 %}{{ adjectival_rating_2 }}{% endif %}
+                    </td>
+				</tr>
+				<tr>
+					<th class="text-right">
+						{% if not first_semester.ipcr %}
+							Second Semester
+						{% elif not second_semester.ipcr %}
+							First Semester
+						{% else %}
+							Annual
+						{% endif %}
+						Rating&emsp;</th>
+					<th class="text-center">
+						{% get_annual_ipc_rating first_semester.ipcr second_semester.ipcr as average %}
+						{% if average %}{{ average|floatformat:5 }}{% endif %}
+					</th>
+					<th class="text-center">
+						{% get_adjectival_rating average row as adjectival_rating_annual %}
+						{% if adjectival_rating_annual %}{{ adjectival_rating_annual }}{% endif %}
+					</th>
+				</tr>
+				{% endfor %}
+			</table>
+			<br>
+			<p class="text-justify" style="font-size: 14px;">&emsp;&emsp;&emsp;&emsp;This is to further certify that the above information are true and correct.
+				<br><br>
+				&emsp;&emsp;&emsp;&emsp;This certification is issued upon the request of Mr./Ms. <u><strong>{{ emp.pi.user.last_name|upper }}</strong></u> for whatever legal purpose this may serve best.
+				<br><br>
+				&emsp;&emsp;&emsp;&emsp;Given this <u><strong>{{ today|date:'jS' }}</strong></u> day of <u><strong>{{ today|date:'F Y' }}</strong></u> at DSWD Field Office
+				X, Masterson Avenue, Upper Carmen, Cagayan de Oro City, 9000, Misamis Oriental.
+			</p>
+			<br><br><br><br>
+			<p class="text-center" style="font-size: 14px;">
+				{% getemployeebyempid signatory.emp_id as employee %}
+				<u><strong><span id="set_approved_by">{{ employee.pi.user.get_fullname|upper }}</span></strong></u><br>
+				<span id="set_approved_by_pos">{{ signatory.name }}</span>
+			</p>
+			<br>
+			<div id="footer">
+				<img loading="lazy"  src="{% static 'image/footer.png' %}" width="85%">
+			</div>
+        </div>
+    </page>
+	<div class="modal" id="signatory-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<h3 class="modal-title" style="font-size: 16px;">SET SIGNATORIES</h3>
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				</div>
+				<form id="setSignatureForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">Approved By<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control filter_employee_pr" name="approved_by" id="approved_by" value="[{{ employee.id_number }}] {{ employee.pi.user.get_fullname|upper }}" style="text-align: left !important;" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+    <div class="modal" id="update-drn-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content animated bounceInDown">
+				<div class="modal-header bg-info">
+					<h3 class="modal-title" style="font-size: 16px;">UPDATE DRN</h3>
+					<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				</div>
+				<form id="updateDRNForm">
+				{% csrf_token %}
+				<div class="modal-body">
+                    <input type="hidden" value="{{ cy }}" name="pk" required>
+                    <input type="hidden" value="{{ emp.id }}" name="emp_id" required>
+					<div class="form-group">
+						<label style="font-size: 13px; color: #1b2a33;">DRN<span class="asteriskField">*</span></label>
+						<input type="text" class="form-control" name="drn" id="drn" value="{{ generated_drn }}" autocomplete="off">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-info">Apply</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+	<script src="{% static 'js/plugins/typehead/bootstrap3-typeahead.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+	<script>
+		$(document).ready(function(){
+            $('#updateDRNForm').on('submit', function(e){
+                var form = this;
+
+                var url = '{% url "update_performance_rating_drn" %}';
+                var title = "Are you sure";
+                var text = "You want to update this DRN";
+                var reload = true;
+
+                submitFormWithConfirmation(form, url, title, text, {reload: reload});
+
+                e.preventDefault();
+            });
+
+			$('#signatory-modal').modal('show');
+			
+			$(".filter_employee_pr").typeahead({
+				source: function(query, process){
+					return $.get({
+						url: '{% url "filter_employee" %}',
+						data: { query: query },
+						datatype: 'json',
+						success: function (data) {
+							return process(data);
+						}
+					});
+				},
+				highlight: true,
+			});
+			
+			$('#setSignatureForm').on('submit', function(e){
+				e.preventDefault();
+				var form = new FormData(this);
+				$.ajax({
+					data: form,
+					url: '{% url "set_signature_leave" %}',
+					type: 'POST',
+					success: function(response) {
+						$('#set_approved_by').text(response.second_level);
+						$('#set_approved_by_pos').text(response.second_level_pos);
+						$('#signatory-modal').modal('hide');
+					},
+					cache       : false,
+                    contentType : false,
+                    processData : false,
+				});
+			});
+			
+			$('#generateDRNForm').on('submit', function(e){
+				var form = new FormData(this);
+				Swal.fire({
+					title: "Are you sure?",
+					text: "You want to generate a DRN for this document",
+					icon: "info",
+					showCancelButton: true,
+					confirmButtonText: "Yes",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+					showLoaderOnConfirm: true,
+					preConfirm: function (){
+						return $.ajax({
+							data        : form,
+							url         : '{% url "generate_drn_for_ipcr" %}',
+							type        : 'POST',
+							cache       : false,
+							contentType : false,
+							processData : false,
+						});
+					},
+				}).then(function (data){
+					if (data.value.data == "success"){
+						Swal.fire({
+							title: data.value.drn,
+							html: "New DRN has been created. Please copy the generated DRN to your designated document.",
+							icon: "success",
+							confirmButtonColor: "#3498DB",
+							allowOutsideClick: false,
+						}).then((result) => {
+							if (result.isConfirmed){
+								window.location.reload();
+							}
+						});
+					} else {
+						Swal.fire({
+							title: "Ooops!",
+							html: data.value.msg,
+							icon: "warning",
+						})
+					}
+				});
+				e.preventDefault();
+			});
+		});
+	</script>
+</body>
+</html>

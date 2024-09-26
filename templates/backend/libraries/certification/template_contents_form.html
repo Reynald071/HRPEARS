@@ -1,0 +1,59 @@
+<div id="div-disabled" {% if disabled is not None%}class="div-disabled"{% endif %}>
+    <div class="row" style="margin:0px !important; border-color:rgb(231, 234, 236) !important; padding:5px;">
+        <div id="keyword_roster" class="col-sm-12" style="background:#f5f5f5; border: 1px dashed #cecece !important; padding:5px 5px 0px 5px;">
+            <small class="label" style="line-height:18px; display:inline-block; margin-bottom:5px;" draggable="false">Keyword Roster</small>
+        </div>
+    </div>
+
+    <form id="tc-form">
+        {% csrf_token %}
+        <input type="hidden" name="content_id" value="{% if content %}{{ content.id }}{% endif %}">
+        <textarea name="content" class="summernote">
+            {% if content %}
+                {{ content.content.strip }}
+            {% endif %}
+        </textarea>
+    </form>
+</div>
+
+{% block script %}
+<script>
+    $(document).ready(function() {
+		$('#tc-form').on('submit', function(e){
+			$.ajax({
+				url: "/backend/template-contents-form/{{ pk }}",
+				data: new FormData(this),
+				type: "POST",
+				cache       : false,
+				contentType : false,
+				processData : false
+			})
+			.done(function(data){
+                $('#template-content-modal').find('#template-details').empty();
+                $('#template-content-modal').find('#template-details').load("/backend/template-contents/{{ template }}"+" #toAdd").hide().fadeIn();
+
+                toastrOptions();
+                toastr.success("Your template has been saved successfully.", "Saving template..");
+			});
+			e.preventDefault();
+		});
+
+        $('.summernote').summernote({
+            height: $(window).height() * 0.7,
+            dialogsInBody: true,
+            dialogsFade: true,
+            codeviewFilterRegex: 'custom-regex',
+            disableDragAndDrop: true,
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    });
+</script>
+{% endblock %}

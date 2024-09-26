@@ -1,0 +1,175 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-xs-8">
+        <h1 class="bold">My Transmittal</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Documents
+            </li>
+            <li class="breadcrumb-item">
+                <strong>My Transmittal</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs" id="tabUL">
+                            <li class="active"><a class="nav-link" data-toggle="tab" href="#new-workflow">New</a></li>
+                            <li><a class="nav-link" data-toggle="tab" href="#old-workflow">Old (Personnel Payroll System)</a></li>
+                        </ul>
+                        <div class="tab-content" style="border: 0px !important;">
+                            <div id="new-workflow" class="tab-pane active">
+                                <div class="panel-body table-responsive">
+                                    <table class="table table-bordered table-hover" id="employee-new-transmittal-table" width="100%">
+                                        <thead>
+                                            <th class="display-none">Tracking No</th>
+                                            <th>Action</th>
+                                            <th>Status</th>
+                                            <th>Document Name</th>
+                                            <th>Details</th>
+                                            <th>Document Date</th>
+                                            <th>Date Received / Forwarded</th>
+                                            <th>Date Approved / Disapproved</th>
+                                            <th>Registered by</th>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                            <div id="old-workflow" class="tab-pane">
+                                <div class="panel-body table-responsive">
+                                    <table class="table table-bordered table-hover" id="employee-old-transmittal-table" width="100%">
+                                        <thead>
+                                            <th class="display-none">ID</th>
+                                            <th class="text-center" width="12%">Status</th>
+                                            <th width="15%">Document Name</th>
+                                            <th width="15%" class="text-center">Document Date</th>
+                                            <th width="20%" class="text-center">Date Received / Forwarded</th>
+                                            <th width="12%" class="text-center">Forwarded To</th>
+                                            <th class="text-center">Other Document Information</th>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="view-transmittal-modal" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+			<div class="modal-header bg-info">
+	            <h4 class="modal-title">TRANSMITTAL DETAILS</h4>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <div class="modal-body"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $('#employee-new-transmittal-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/transmittal/employee/?format=datatables&pk={{ employee.id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'tracking_no', 'className': 'display-none' },
+            {'data': 'id',
+                'render': function(data, type, row, meta){
+                    template = '<a href="javascript:;" data-role="view-incoming" data-id="'+ data +'">Details</a>'
+                    return template
+                }
+            },
+            {'data': 'status',
+                'render': function(data, type, row, meta){
+                    if(data == 0) {
+                        return '<span class="label label-default">Incoming</span>';
+                    }else if(data == 1) {
+                        return '<span class="label label-primary">Outgoing</span>';
+                    }else if(data == 2) {
+                        return '<span class="label label-success">Approved</span>';
+                    }else if(data == 3) {
+                        return '<span class="label label-danger">Disapproved</span>';
+                    }else if(data == 4) {
+                        return '<span class="label label-warning">Returned</span>';
+                    }
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'document_name', 'name': 'document_name.name' },
+            {'data': 'details' },
+            {'data': 'document_date', 'className': 'text-center', 'searchable': false },
+            {'data': 'date', 'className': 'text-center', 'searchable': false },
+            {'data': 'date_approved', 'className': 'text-center', 'searchable': false },
+            {'data': 'registered_by', 'className': 'text-center', 'searchable': false},
+        ],
+    });
+
+    $('#employee-old-transmittal-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 0, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/transmittal/employee/old/?format=datatables&id_number={{ employee.id_number }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'tracking_id', 'className': 'display-none'},
+            {'data': 'transaction_type',
+                'render': function(data, type, row, meta){
+                    if(data == "Incoming") {
+                        return '<span class="label label-default">Incoming</span>';
+                    }else if(data == "Outgoing") {
+                        return '<span class="label label-primary">Outgoing</span>';
+                    }else if(data == "Approved") {
+                        return '<span class="label label-success">Approved</span>';
+                    }
+                },
+                'className': 'text-center',
+                'searchable': false
+            },
+            {'data': 'document_name', 'name': 'document_name.name' },
+            {'data': 'date_document', 'className': 'text-center', 'searchable': false },
+            {'data': 'date_received', 'className': 'text-center', 'searchable': false },
+            {'data': 'forwarded_to' },
+            {'data': 'details', 'className': 'text-center' },
+        ],
+    });
+
+    $(document).on('click', 'a[data-role=view-incoming]', function(){
+        var id = $(this).data('id');
+        $('#view-transmittal-modal').modal('show').find('.modal-body').load('/view/transmittal/' + id);
+    });
+</script>
+{% endblock %}

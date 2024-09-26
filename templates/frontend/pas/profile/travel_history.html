@@ -1,0 +1,103 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">{{ tab_title }}</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    {{ tab_parent }}
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>{{ tab_title }}</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+                    <table class="table table-bordered table-responsive" style="zoom: 95% !important;" id="travel-history-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th class="text-left" rowspan="2">ACTION</th>
+                                <th width="10%" rowspan="2">TRACKING NO.</th>
+                                <th width="10%" rowspan="2">MERGE IN</th>
+                                <th class="text-left" width="20%" rowspan="2">PLACE</th>
+                                <th class="text-center" colspan="2" width="15%">INCLUSIVE DATES</th>
+                                <th class="text-center" width="20%" rowspan="2">PURPOSE</th>
+                                <th class="text-center" width="20%" rowspan="2">EXPECTED OUTPUT</th>
+                                <th class="text-center" rowspan="2">MEANS OF TRANSPORTATION</th>
+                                <th class="text-center" rowspan="2">CLAIMS</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center">FROM</th>
+                                <th class="text-center">TO</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+       TravelHistoryTable();
+
+        function TravelHistoryTable(){
+            $('#travel-history-table').DataTable({
+                'serverSide': true,
+                'processing': true,
+                'deferRender': true,
+                'lengthMenu': [ 25, 50, 100 ],
+                'order': [[ 4, 'desc' ]],
+                'ajax': {
+                    'url': '/api/travel/history/?format=datatables&employee_id=' + '{% getHash request.session.emp_id as employee_id %}{{ employee_id }}',
+                    'type': 'GET',
+                },
+                'fnCreatedRow': function (row, data, index) {
+                    $(row).attr('id', data['id']);
+                },
+                "columnDefs": [
+                    { "orderable": false, "targets": [0] }
+                ],
+                'columns': [
+                    {'data': 'attachment',
+                        'searchable': false,
+                        'render': function(data, type, row, meta) {
+                            if(typeof data !== 'undefined'){
+                                return "<a href='/media/"+ data +"' target='_blank'>Download</a>"
+                            } else {
+                                return ""
+                            }
+                        },
+                    },
+                    {'data': 'tracking_no', 'name': 'detail.rito.tracking_no' },
+                    {'data': 'tracking_merge', 'name': 'detail.rito.tracking_merge' },
+                    {'data': 'place', 'name': 'detail.place' },
+                    {'data': 'inclusive_from', 'name': 'detail.inclusive_from', 'className': 'text-center' },
+                    {'data': 'inclusive_to', 'name': 'detail.inclusive_to', 'className': 'text-center' },
+                    {'data': 'purpose', 'name': 'detail.purpose', 'className': 'text-center' },
+                    {'data': 'expected_output', 'name': 'detail.expected_output', 'className': 'text-center'},
+                    {'data': 'mot', 'name': 'detail.mot.name', 'className': 'text-center'},
+                    {'data': 'claims', 'name': 'detail.claims.name', 'className': 'text-center'},
+                ],
+            });
+        }
+    });
+</script>
+{% endblock %}

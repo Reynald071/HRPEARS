@@ -1,0 +1,104 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">File Uploading</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					Administrator
+				</li>
+				<li class="breadcrumb-item">
+					Employee Data
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>File Uploading</strong>
+				</li>
+			</ol>
+		</div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Employee</label>
+                                <input type="text" required class="form-control form-control-sm typeahead_2 filter_employee_all" name="search_employee" id="search_employee" value="{{ request.POST.search_employee }}" placeholder="[10-00000000] FIRST NAME MIDDLE INITIAL LAST NAME" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <div class="btn-group btn-group-justified" role="group" aria-label="..." style="margin-top: 25px">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-info" id="btn-search-employee">
+                                        <span class="loading open-circle" style="display:none;"></span> Search
+                                    </button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-default" id="btn-search-reset">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="content-files"></div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(".filter_employee_all").typeahead({
+		source: function(query, process){
+			return $.get({
+				url: '{% url "filter_employee_all" %}',
+				data: { query: query },
+				datatype: 'json',
+				success: function (data) {
+					return process(data);
+				}
+			});
+		},
+		highlight: true,
+	});
+
+    $('#btn-search-reset').on('click', function(){
+	    $('#search_employee').val('');
+	    $('#content-files').empty();
+	});
+
+    $('#btn-search-employee').on('click', function(){
+        var employee = $('#search_employee').val().match(/\[(.*?)\]/);
+        call201Page('/backend/file-uploading/' + employee[1], $('#content-files'));
+	});
+
+    function call201Page(pageRefInput, content) {
+        $.ajax({
+            url: pageRefInput,
+            type: "GET",
+            dataType: 'text',
+            beforeSend: function () {
+                content.empty();
+                content.append('<div class="spinner-example" id="preloader"><div class="sk-spinner sk-spinner-double-bounce"><div class="sk-double-bounce1"></div><div class="sk-double-bounce2"></div></div><br><p class="text-center">Loading...</p></div>');
+            },
+            success: function (response) {
+                content.html(response);
+            },
+            complete: function () {
+                $('#preloader').css('display', 'none');
+            }
+        });
+    }
+</script>
+{% endblock %}

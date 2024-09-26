@@ -1,0 +1,105 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Daily Time Records Manage</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Employees
+            </li>
+            <li class="breadcrumb-item">
+                Monitoring
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'wfh_dtr' %}">Daily Time Records</a>
+            </li>
+            <li class="breadcrumb-item active">
+                <strong>Manage</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+	<div class="row">
+        <div class="col-lg-4">
+            <div class="ibox">
+                <form id="submitForm">
+                {% csrf_token %}
+                <div class="ibox-content">
+                    <p><strong>MANAGE DTR</strong></p>
+                    <div class="form-group">
+                        <label>Employee Name</label>
+                        <input type="text" class="form-control filter_employee" name="employee_name" id="employee_name" placeholder="e.g. [16-12345] FIRSTNAME MIDDLENAME LASTNAME" autocomplete="off" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned to</label>
+                        <input type="text" class="form-control filter_employee" name="assigned_to" placeholder="e.g. [16-12345] FIRSTNAME MIDDLENAME LASTNAME" autocomplete="off" required>
+                    </div>
+                    <br>
+					<button type="submit" class="btn btn-info">Save changes</button>
+                </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div id="dtr-manage-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $('#dtr-manage-content').load('{% url "manage_dtr_layout" %}');
+
+    $(".filter_employee").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#submitForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "manage_dtr" %}';
+        var title = "Are you sure";
+        var text = "You want to assign this employee to be managed by the designated";
+        var loadUrl = '{% url "manage_dtr_layout" %}';
+        var loadContent = '#dtr-manage-content';
+
+        submitFormWithConfirmation(form, url, title, text, {loadUrl: loadUrl, loadContent: loadContent});
+
+        e.preventDefault();
+    });
+
+    $(document).on('click', 'a[data-role=delete-assignee]', function(){
+        var list = {
+            'pk': $(this).data('id'),
+        }
+
+        var url = '{% url "delete_dtr_assignee" %}';
+        var title = "Are you sure";
+        var text = "You want to delete this employee";
+        var loadUrl = '{% url "manage_dtr_layout" %}';
+        var loadContent = '#dtr-manage-content';
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {loadUrl: loadUrl, loadContent: loadContent});
+    });
+</script>
+{% endblock %}

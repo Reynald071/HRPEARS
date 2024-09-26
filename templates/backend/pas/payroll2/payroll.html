@@ -1,0 +1,399 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load humanize %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">Payroll Uploading</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Management
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                Uploading
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button class="btn btn-default" data-toggle="modal" data-target="#generate_template"><i class="fas fa-sticky-note"></i> Generate Template</button>
+            <button class="btn btn-default" data-toggle="modal" data-target="#bulk-delete"><i class="fas fa-trash"></i> Bulk Delete</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-sm-9">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <button class="btn btn-info" data-toggle="modal" data-target="#import"><i class="fas fa-file-import"></i> Upload Payroll</button>
+                    <button class="btn btn-default" data-toggle="modal" data-target="#print"><i class="fas fa-print"></i> Print Payroll</button>
+                    <button class="btn btn-default" id="delete-button"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="payroll-admin-table" width="100%" style="white-space:nowrap !important;">
+                        <thead>
+                            <td><input name="select_all" type="checkbox"/></td>
+                            {% for row in columns %}
+                                <th>{{ row.attribute }}</th>
+                            {% endfor %}
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+			<div class="ibox">
+				<div class="ibox-title bg-primary">
+					<h5>FILTER</h5>
+				</div>
+				<div class="ibox-content">
+                    <h4>By year</h4>
+                    <div class="input-group">
+						<input type="text" class="form-control b-r-sm" id="year" value="{{ current_year }}" autocomplete="off"> <span class="input-group-btn">
+						<button type="button" class="btn btn-info" style="height: 34px;" id="filter-year">Filter</button> </span>
+					</div>
+				</div>
+			</div>
+		</div>
+    </div>
+</div>
+<div class="modal" id="import" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">BULK IMPORT TEMPLATE</h3>
+                <small>Please make sure to convert the generated template to csv file.</small>
+            </div>
+            <form id="submitForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> <strong>IMPORTANT NOTE</strong> before uploading <br><br>
+                    <ul style="margin-left: 15px;">
+                        <li>Only <strong>CSV</strong> file is allowed. If you have xlsx format please do convert it to csv file.</li>
+                        <li><strong>Period From</strong> and <strong>Period To</strong> format should be 'yyyy-mm-dd'. </li>
+                        <li><strong>SG-STEP INC</strong> format to 'Salary Grade-Step Increment' (e.g 11-01)</li>
+                        <li>Columns from <strong>Monthly Rate</strong> to <strong>Amount Due</strong> should be number (remove comma or any kind of separator if not necessary). </li>
+                        <li><strong>Payroll Incharge</strong> column make sure to complete your full name (e.g. First Name Middle Initial Last Name).</li>
+                        <li>Leave the column blank with values 0.</li>
+						<li>If above mentioned is completed you can now proceed to upload your csv file.</li>
+                    </ul>
+                </div>
+                <br>
+                <div class="form-group">
+                    <input type="file" class="form-control file-control" name="file">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-info">
+                        <span class="loading open-circle" style="display:none;"></span> Import
+                    </button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="print" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">PRINT PAYROLL</h3>
+                <small>Please make sure to input the correct DV Number you uploaded.</small>
+            </div>
+            <form action="{% url 'print_payroll' %}" method="POST" target="_blank">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>DV Number</label>
+                    <input type="text" class="form-control" name="dv_number" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-info">Print</button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="bulk-delete" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-danger">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">BULK DELETE</h3>
+                <small>Please make sure to input the correct DV Number you uploaded.</small>
+            </div>
+            <form id="deleteForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>DV Number</label>
+                    <input type="text" class="form-control" name="dv_number" id="dv_number" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="generate_template" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">GENERATE YOUR OWN PAYROLL TEMPLATE</h3>
+                <small>Please check if columns is available on you payroll.</small>
+            </div>
+            <form action="{% url 'new_generate_template' %}" method="POST">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Template Filename</label>
+                    <input type="text" class="form-control" id="filename" name="filename" autocomplete="off" required>
+                </div>
+                <div style="column-count: 3;">
+                    <input type="checkbox" name="selectAllColumns"> Select All <br>
+                    {% for row in columns %}
+                    {% if row.column_type_id %}
+                    <input type="checkbox" name="column[]" class="column" id="column{{ row.id }}" value="{{ row.attribute }}"> {{ row.attribute }} <br>
+                    {% else %}
+                    <input type="checkbox" name="column[]" class="column" id="column{{ row.id }}" value="{{ row.attribute }}" onclick="return false;" checked> {{ row.attribute }} <br>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <br>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-info" id="template-button">
+                        <span class="loading open-circle" style="display:none;"></span> Create Template
+                    </button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $('#payroll-admin-table').DataTable({
+            "fixedHeader": true,
+            "pageLength": 10,
+            "responsive": true,
+            "scrollX": true,
+            "scrollY": true,
+            "processing": true,
+            "autoFill": true,
+            "ordering": false,
+            "ajax": "{% url 'get_payroll_list' current_year %}",
+            "dom": '<"html5buttons"B>lTfgitpr',
+            'fixedColumns':   {
+                left: 2
+            },
+            "buttons": [
+                { extend: 'csv'},
+            ],
+            "columns": [
+                { "data": "",
+                  "render": function(data, type, row, meta){
+                    return "<input type='checkbox' class='checkbox' value='" + row["_id"]["$oid"] +"'>"
+                  }
+                },
+                {% for row in columns %}
+                    {% if row.column_type_id != 7 %}
+                    {"data": "{{ row.attribute }}",
+                        'render': function(data, type, row, meta) {
+                            if(isNaN(data)) {
+                                return parseFloat(0).toFixed(2);
+                            } else {
+                                if (data === "") {
+                                    return parseFloat(0).toFixed(2);
+                                } else {
+                                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                                }
+                            }
+                        }
+                    },
+                    {% else %}
+                        {% if row.attribute == "Monthly Rate" %}
+                            { "data": "{{ row.attribute }}",
+                                'render': function(data, type, row, meta) {
+                                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                                }
+                            },
+                        {% else %}
+                            { "data": "{{ row.attribute }}" },
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            ]
+        });
+
+        $.fn.dataTable.ext.errMode = 'none';
+
+        $(':checkbox[name=select_all]').click (function () {
+            $('.checkbox').prop('checked', this.checked);
+        });
+
+        $('#template-button').click(function() {
+            setTimeout(function () {
+               $(".loader-wrapper").fadeOut("slow");
+               $('#filename').val('');
+               $('#generate_template').modal('toggle');
+            }, 500);
+        });
+    });
+
+    $('#filter-year').on('click', function(){
+        var table = $('#payroll-admin-table').DataTable();
+        table.clear();
+        table.ajax.url('/backend/payroll/list/uploading/' + $('#year').val()).load();
+    });
+
+    $('#delete-button').on('click', function(){
+        var data = [];
+        var counter = 0;
+        $('.checkbox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if(counter > 0) {
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to delete this data?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                confirmButtonColor: "#3498DB",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.ajax({
+                        data        : { id: data },
+                        url         : '{% url "delete_payroll_one" %}',
+                        type        : 'POST',
+                    });
+                },
+            }).then(function (response){
+                if (response.value.data == "success"){
+                    Swal.fire({
+                        title: "Good job!",
+                        html: response.value.msg,
+                        icon: "success",
+                        confirmButtonColor: "#3498DB",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.isConfirmed){
+                            window.location.href = "{% url 'payroll_uploading' %}";
+                        }
+                    });
+                }
+            });
+        } else {
+            Swal.fire('Ooops!','There are currently no selected entry to process.', 'warning');
+        }
+    });
+
+
+    $('#submitForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+	    $.ajax({
+	        data: form,
+	        url : '{% url "payroll_uploading" %}',
+	        type: 'POST',
+	        beforeSend: function(){
+                $('.loading').css('display', '');
+                $('button').prop("disabled", true);
+            },
+	        success: function(response){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        window.location.href = "{% url 'payroll_uploading' %}";
+                    }
+                });
+	        },
+	        complete: function(){
+	            $('.loading').css('display', 'none');
+                $('button').prop("disabled", false);
+            },
+	        cache: false,
+	        contentType: false,
+	        processData: false,
+        });
+    });
+
+    $('#deleteForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to delete '" + $('#dv_number').val() + "'?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            confirmButtonColor: "#3498DB",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "delete_payroll_many" %}',
+                    type        : 'POST',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                });
+            },
+        }).then(function (response){
+            if (response.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        window.location.href = "{% url 'payroll_uploading' %}";
+                    }
+                });
+            }
+        });
+    });
+
+    $(':checkbox[name=selectAllColumns]').click (function () {
+        $('.column').prop('checked', this.checked);
+    });
+</script>
+{% endblock %}

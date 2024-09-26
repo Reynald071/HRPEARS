@@ -1,0 +1,63 @@
+<form id="updateIDPForm">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div class="form-group">
+            <label>Year<span class="asteriskField">*</span></label>
+            <input type="text" class="form-control" min="1900" max="2099" value="{{ idp.year }}" name="year" required>
+        </div>
+        <div class="form-group">
+            <label>Aim<span class="asteriskField">*</span></label>
+            <textarea class="form-control" rows="5" name="aim" required>{{ idp.aim }}</textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-info">Submit</button>
+    </div>
+</form>
+{% block script %}
+<script>
+    $('#updateIDPForm').on('submit', function(e){
+        var form = new FormData(this);
+	    e.preventDefault();
+		Swal.fire({
+		    title: "Are you sure?",
+		    text: "You want to update this Individual Development Plan",
+		    icon: "info",
+		    showCancelButton: true,
+		    confirmButtonText: "Yes",
+		    confirmButtonColor: "#3498DB",
+		    allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "update_idp_details" idp.id %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+		}).then(function (response){
+		    if (response.value.data == "success"){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.value.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#updateIDPForm').trigger('reset');
+                        $('#table-idp').DataTable().ajax.reload();
+                        $('#update_idp').modal('hide');
+                    }
+                });
+            } else {
+                Swal.fire('Ooops!', response.value.msg, 'warning');
+            }
+		});
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

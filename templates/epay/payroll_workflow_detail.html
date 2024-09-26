@@ -1,0 +1,95 @@
+{% load static %}
+<form id="updateForm">
+{% csrf_token %}
+<div class="modal-body">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="mb-3">
+                <label>Start Date</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_start_date">Use Current Date</button>
+                <input type="datetime-local" class="form-control form-control-sm" value="{{ payroll.start_date|date:'Y-m-d\TH:i' }}" name="start_date" id="edit_start_date">
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="mb-3">
+                <label>End Date</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_end_date">Use Current Date</button>
+                <input type="datetime-local" class="form-control form-control-sm" value="{{ payroll.end_date|date:'Y-m-d\TH:i' }}" name="end_date" id="edit_end_date">
+            </div>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label>Payroll Type</label>
+        <select class="form-control form-control-sm" name="type" required>
+            <option value="Payroll" {% if payroll.type == 'Payroll' %}selected{% endif %}>Payroll</option>
+            <option value="Remittances" {% if payroll.type == 'Remittances' %}selected{% endif %}>Remittances</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Date Transmitted</label> <button type="button" class="btn btn-info btn-xs float-end" id="btn_edit_date_transmitted">Use Current Date</button>
+        <input type="datetime-local" class="form-control form-control-sm" value="{{ payroll.date_transmitted|date:'Y-m-d\TH:i' }}" name="date_transmitted" id="edit_date_transmitted">
+    </div>
+    <div class="mb-3">
+        <label>Sync Infimos DV No.</label>
+        <input type="text" class="form-control form-control-sm" name="dv_no" id="dv_no" value="{{ payroll.dv_no }}">
+    </div>
+    {% if forward_payroll %}
+    <div class="mb-3" id="forward-payroll-input">
+        <label>Forward Payroll</label>
+        <input type="text" class="form-control form-control-sm filter-employee" value="[{{ forward_payroll.assignee.id_number }}] {{ forward_payroll.assignee.pi.user.get_fullname|upper }}" name="forward_payroll" autocomplete="off">
+    </div>
+    {% else %}
+        <div class="mb-3" id="forward-payroll-input">
+            <label>Forward Payroll</label>
+            <input type="text" class="form-control form-control-sm filter-employee" name="forward_payroll" autocomplete="off" value="[16-08871] RENSON L. PRECIOSO">
+        </div>
+    {% endif %}
+</div>
+<div class="modal-footer">
+    <div>
+        <button type="submit" class="btn btn-info btn-sm float-end">Save changes</button>
+    </div>
+</div>
+</form>
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    $(".filter-employee").typeahead({
+        source: function(query, process){
+            return $.get({
+                url: '{% url "filter_employee_all" %}',
+                data: { query: query },
+                datatype: 'json',
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        highlight: true,
+    });
+
+    $('#btn_edit_start_date').on('click', function(){
+        $('#edit_start_date').val(getCurrentDate);
+    });
+
+    $('#btn_edit_end_date').on('click', function(){
+        $('#edit_end_date').val(getCurrentDate);
+    });
+
+    $('#btn_edit_date_transmitted').on('click', function(){
+        $('#edit_date_transmitted').val(getCurrentDate);
+    });
+
+    $('#updateForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% url "view_payroll_workflow_detail" pk %}';
+        var title = "Are you sure";
+        var text = "You want to update this payroll creation";
+        var modal_id = '#payroll-detail-modal';
+        var table_id = '#table-payroll-timeline';
+
+        submitFormWithConfirmation(form, url, title, text, {modal_id: modal_id, table_id: table_id});
+
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

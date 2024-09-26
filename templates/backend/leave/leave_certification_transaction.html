@@ -1,0 +1,62 @@
+<div class="pull-right">
+    <div class="btn-group">
+        <button type="button" class="btn btn-info btn-generate-lc-transaction dropdown-toggle" data-toggle="dropdown">
+            Create Template
+        </button>
+        <ul class="dropdown-menu" style="margin-left: -110px;">
+            {% for row in certification_type %}
+            <li><a href="javascript:;" data-role="template" data-id="{{ row.id }}">{{ row.name|upper }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<br><br><br>
+<table class="table table-bordered" id="lc-transaction-table" width="100%">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>Title</th>
+            <th>DRN</th>
+            <th>Created By</th>
+        </tr>
+    </thead>
+</table>
+{% block script %}
+<script>
+    $('#lc-transaction-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 1, 'desc' ]],
+        'ajax': {
+            'url': '/api/leave/certification/transaction/?format=datatables&employee_id={{ employee.id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function (data, type, row, meta) {
+                    var template = '<a href="/backend/leave/certification/print/'+ data + '" target="_blank">Print</a>';
+                    template += ' | <a href="javascript:;" data-role="edit" data-id="'+ data +'">Edit</a>'
+                    return template;
+                }
+            },
+            {'data': 'title' },
+            {'data': 'drn' },
+            {'data': 'created_by' },
+        ],
+    });
+    
+    $(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        callCertificateLayoutPage('/backend/leave/certification/template/edit/' + id);
+    });
+    
+    $(document).on('click', 'a[data-role=template]', function(){
+        var id = $(this).data('id');
+        callCertificateLayoutPage('/backend/leave/certification/template/' + id + '/{{ employee.id_number }}');
+    });
+</script>
+{% endblock %}

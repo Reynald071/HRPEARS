@@ -1,0 +1,243 @@
+<center>
+	<img loading="lazy"  src="{{ data.emp.picture.url }}" id="picture" class="img-circle" style="width: 200px; height: 200px; object-fit: cover; margin-bottom: 10px;">
+<h2>{{ data.emp.pi.user.get_fullname }}</h2>
+</center>
+{% csrf_token %}
+<form method="GET" action="{% url 'individual_print' %}" target="blank" style="margin-bottom:10px">
+<input type="text" name="individual_print_name" id="individual_print" value="{{data.id}}" hidden>
+<button class="btn-info btn pull-right" type="submit"><i class="fas fa-print"></i> Print</button>
+<select class="form-control pull-right" style="width:140px;" type="text" name="specific" required>
+    <option></option>
+    {% for row in commorbid %}
+    <option value="{{row.Commorbidity}}">{{row.Commorbidity}}</option>
+    {% endfor %}
+</select>
+</form>
+<br>
+<br>
+
+<form id="add_data">
+    <input type="text" name="health_profile_id" id="health_profile_id" value="{{data.id}}" hidden>
+    <div class="table-responsive">
+        <table width="100%" cellspacing="0" class="table table-bordered" id="input_fields_wrap">
+            <tr>
+                <td>
+                    <label for="recipient-name" class="col-form-label">Commorbidity<span class="asteriskField">*</span> </label>
+                    <select class="form-control select" style="width:100%;" id="commorbid" name="commorbid" required="true">
+                        <option></option>
+                        {% for row in commorbid %}
+                        <option value="{{row.id}}">{{row.Commorbidity}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td id="sp">
+                    <label for="recipient-name" class="col-form-label">Systolic Blood Pressure<span class="asteriskField">*</span> </label>
+                    <input type="number" class="form-control" id="systolic" name="systolic" placeholder="Upper reading" style="width:100%;">
+                </td>
+                <td id="dp">
+                    <label for="recipient-name" class="col-form-label">Diastolic Blood Pressure<span class="asteriskField">*</span> </label>
+                    <input type="number" class="form-control" id="diastolic" name="diastolic" placeholder="Lower reading" style="width:100%;">
+                </td>
+                <td id="bs">
+                    <label for="recipient-name" class="col-form-label">Blood Sugar<span class="asteriskField">*</span> </label>
+                    <input type="number" class="form-control" id="rbp" name="bs" placeholder="Upper reading" style="width:100%;">
+                </td>
+                <td id="Oxemeter">
+                    <label for="recipient-name" class="col-form-label">Oxemeter<span class="asteriskField">*</span> </label>
+                    <input type="text" class="form-control" id="oxemeter" name="oxemeter" placeholder="Upper reading" style="width:100%;">
+                </td>
+                <td id="result">
+                    <label for="recipient-name" class="col-form-label">Result<span class="asteriskField">*</span> </label>
+                    <input type="text" class="form-control" id="result_bp" name="result" placeholder="Result" style="width:100%;">
+                </td>
+                <td id="remarks">
+                    <label for="recipient-name" class="col-form-label">Remarks<span class="asteriskField">*</span> </label>
+                    <input type="text" class="form-control" id="" name="remarks" placeholder="Remarks" style="width:100%;" required>
+                </td>
+                <td id="date">
+                    <label for="recipient-name" class="col-form-label">Date<span class="asteriskField">*</span> </label>
+                    <input type="date" class="form-control" id="" name="date" placeholder="Result" style="width:100%;" required>
+                </td>
+                <td>
+                    <center>
+                        <button type="submit" class="btn btn-info">Save</button>
+                    </center>
+                </td>
+            </tr>
+        </table>
+    </div>
+</form>
+<br>
+<div class="tabs-container" style="border: 0px !important;">
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a aria-controls="announcement" role="tab" data-toggle="tab" href="#tab-1" class="bg-transparent" style="border: 0px !important;">Hypertensive</a></li>
+        <li role="presentation"><a aria-controls="employee" role="tab" data-toggle="tab" href="#tab-2" class="bg-transparent" style="border: 0px !important;">Other Commorbidity</a></li>
+    </ul>
+    <div class="tab-content">
+       <div role="tabpanel" id="tab-1" class="tab-pane active">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive text-nowrap table-scroll">
+                        <br>
+                        <table class="table table-hover" id="healthprofile_data" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="capslock" style="display:none;">Action</th>
+                                    <th class="capslock">Commorbidity</th>
+                                    <th class="capslock">Systolic</th>
+                                    <th class="capslock">Diastolic</th>
+                                    <th class="capslock">Oxemeter</th>
+                                    <th class="capslock">Result</th>
+                                    <th class="capslock">Remarks</th>
+                                    <th class="capslock">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in data1 %}
+                                <tr>
+                                    <td style="display:none;">{{row.id}}</td>
+                                    <td>{{row.emp_commorbid.Commorbidity}}</td>
+                                    <td>{{row.systolic_bs}}</td>
+                                    <td>{{row.diastolic_bs}}</td>
+                                    <td>{{row.oxemeter}}</td>
+                                    <td>{{row.result}}</td>
+                                    <td>{{row.remarks}}</td>
+                                    <td>{{row.date}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div role="tabpanel" id="tab-2" class="tab-pane">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive text-nowrap table-scroll">
+                        <br>
+                        <table class="table table-hover" id="healthprofile_data" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="capslock" style="display:none;">Action</th>
+                                    <th class="capslock">Commorbidity</th>
+                                    <th class="capslock">Blood Sugar</th>
+                                    <th class="capslock">Oxemeter</th>
+                                    <th class="capslock">Result</th>
+                                    <th class="capslock">Remarks</th>
+                                    <th class="capslock">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in data2 %}
+                                <tr>
+                                    <td style="display:none;">{{row.id}}</td>
+                                    <td>{{row.emp_commorbid.Commorbidity}}</td>
+                                    <td>{{row.bs}}</td>
+                                    <td>{{row.oxemeter}}</td>
+                                    <td>{{row.result}}</td>
+                                    <td>{{row.remarks}}</td>
+                                    <td>{{row.date}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$("#sp").hide();
+$("#dp").hide();
+$("#result").hide();
+$(function(){
+    $("#commorbid").on("keyup change", function(e) {
+        if($(this).val() =="1"){
+            $("#bs").hide();
+            $("#sp").show();
+            $("#dp").show();
+            $("#result").show();
+            $("#systolic, #diastolic, #result_bp").on("keyup change", function(e) {
+                if($("#systolic").val() == ""){
+                    $('#result_bp').val("");
+                }else{
+                    if($("#systolic").val() >= 100 && $("#systolic").val() <= 120 && $("#diastolic").val() >= 66 && $("#diastolic").val() <= 80){
+                        $('#result_bp').val("Normal");
+                    }else if($("#systolic").val() < 100){
+                        $('#result_bp').val("LowBlood-Pressure");
+                    }else if($("#systolic").val() > 120 && $("#systolic").val() <= 139){
+                        $('#result_bp').val("Pre-Hypertensive");
+                    }else if($("#systolic").val() > 139){
+                        $('#result_bp').val("High-Blood");
+                    }else if($("#systolic").val() >= 100 && $("#systolic").val() <= 120 && $("#diastolic").val() > 80){
+                        $('#result_bp').val("High-Diastolic");
+                    }else if($("#systolic").val() >= 100 && $("#systolic").val() <= 120 && $("#diastolic").val() < 60){
+                        $('#result_bp').val("Low-Diastolic");
+                    }
+                }
+            });
+        }else if($(this).val() =="2"){
+            $("#sp").hide();
+            $("#dp").hide();
+            $("#result").show();
+            $("#bs").show();
+            $("#rbp").on("keyup change", function(e) {
+                if($(this).val() < "201"){
+                    $('#result_bp').val("Normal")
+                }else{
+                    $('#result_bp').val("Hyperglycemia")
+                }
+            });
+        }else{
+            $("#sp").hide();
+            $("#dp").hide();
+            $("#result").hide();
+            $("#bs").hide();
+        }
+    })
+});
+
+$('#add_data').on('submit', function(e){
+var form = new FormData(this);
+Swal.fire({
+    title: "Are you sure",
+    text: "You want to submit this data?",
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#3498DB",
+    confirmButtonText: "Yes",
+    closeOnConfirm: false,
+    allowOutsideClick: false,
+}).then((result) => {
+    if (result.isConfirmed) {
+        Swal.showLoading()
+        $.ajax({
+            data        : form,
+            url         : "{% url 'health_profiling' %}",
+            type        : 'POST',
+            cache       : false,
+            contentType : false,
+            processData : false
+        })
+        .done(function(data){
+            var data = data.data;
+            if(data  == "Success"){
+                Swal.fire({
+                  title: "Good job!",
+                  text: "You successfully added the data",
+                  icon: "info",
+                  confirmButtonColor: "#3498DB",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                    	$('#emp_profile_modal').modal('show').find('#load_data').load('/welfare/health_profile/modal_emp_profile/{{pk}}');
+                    }
+                });
+            }
+        });
+    }
+    });
+    e.preventDefault();
+});
+</script>

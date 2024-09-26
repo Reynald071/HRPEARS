@@ -1,0 +1,520 @@
+{% block style %}
+<style type="text/css">
+	.notboldandbig th {
+		font-weight: normal;
+		font-size: 95%;
+    }
+</style>
+{% endblock %}
+<div class="row" id="page-content">
+	<div class="col-sm-12">
+        <div class="table-responsive">
+        <form id="submitProfileForm" role="form" name="submitProfileForm">
+		{% csrf_token %}
+		<div class="pull-left">
+			<div class="form-group">
+				<label>Choose Shortcuts</label>
+				<select class="form-control shortcuts select">
+					{% for row in shortcuts %}
+					{% if row.name == "Personal Information" %}
+					<option value="{{ row.backend_url }}" selected>{{ row.name }}</option>
+					{% else %}
+					<option value="{{ row.backend_url }}">{{ row.name }}</option>
+					{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="pull-right" style="margin-top:23px;">
+			<div class="form-group">
+				<button type="submit" class="btn btn-info">Save changes</button>
+				<div class="btn-group">
+				<a class="btn btn-default disabled">Previous</a>
+				<button type="button" id="btn-next-fb" class="btn btn-default">Next</button>
+				</div>
+			</div>
+		</div>
+		<table class="table table-bordered notboldandbig">
+    		<thead>
+    			<th colspan="6">
+    				<h3>I. PERSONAL INFORMATION</h3>
+    			</th>
+    		</thead>
+    		<tbody style="font-size: 11px;">
+    			<tr>
+    				<th width="15%">SURNAME</th>
+    				<td class="nopadding" colspan="5"><input type="text" class="form-control input-sm bold borderless" value="{{ pds.user.last_name|upper }}" name="surname"></td>
+    			</tr>
+    			<tr>
+    				<th>FIRST NAME</th>
+    				<td class="nopadding" colspan="3"><input type="text" class="form-control input-sm bold borderless" value="{{ pds.user.first_name|upper }}" id="fname" name="fname"></td>
+    				<th>EXTENSION</th>
+    				<td class="nopadding">
+    					<select class="form-control input-sm select" name="ext" id="ext">
+    						<option></option>
+    						{% for row in ext %}
+    						<option value="{{ row.id }}">{{ row.name|upper }}</option>
+    						{% endfor %}
+    					</select>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>MIDDLE NAME</th>
+    				<td class="nopadding" colspan="5">
+    					<input type="text" class="form-control input-sm bold borderless" value="{{ pds.user.middle_name|upper }}" name="mname">
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>DATE OF BIRTH</th>
+    				<td class="nopadding">
+    					<input type="date" class="form-control bold input-sm borderless" name="dob" id="dob" value="{{ pds.dob|date:'Y-m-d' }}" required>
+    				</td>
+    				<th rowspan="3" width="15%">
+        				CITIZENSHIP
+        				<br><br>
+						<p style="font-size:10px; text-align:center; font-weight: normal;">(if holder of dual citizenship,<br>please indicate the details)</p>
+					</th>
+					<td colspan="1" rowspan="2">
+						<input class="icheck" type="checkbox" name="isfilipino" value="1" {% if pds.isfilipino == 1%}checked{% endif %}> Filipino
+					</td>
+					<td colspan="2" style="border-left: 0px solid transparent !important" rowspan="2">
+						<input class="icheck" type="checkbox" name="isdualcit" id="isdualcit" onclick="CheckDualCitizenship();" {% if pds.isdualcitizenship == 1 %}checked{% endif %}> Dual Citizenship <br>
+						<input class="icheck" type="checkbox" name="isbybirth" {% if pds.dc_bybirth == 1 %}checked{% endif %}> by birth&emsp;
+						<input class="icheck" type="checkbox" class="ml-2" name="isbynaturalization" {% if pds.dc_bynaturalization == 1 %}checked{% endif %}> by naturalization
+					</td>
+    			</tr>
+    			<tr>
+    				<th>PLACE OF BIRTH</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless" name="pob" value="{% if pds.pob %}{{ pds.pob|upper }}{% else %}N/A{% endif %}">
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>SEX</th>
+    				<td class="nopadding">
+                        <select class="form-control input-sm select" name="gender" id="gender">
+    						<option></option>
+    						<option value="1">Male</option>
+    						<option value="2">Female</option>
+    					</select>
+    				</td>
+    				<td class="nopadding" colspan="3">
+                        {% if pds.country_id %}
+                        <select class="form-control input-sm select" name="countries" id="countries">
+                            <option></option>
+                            {% for row in countries %}
+                            {% if row.id == pds.country_id %}
+                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                            {% else %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <select class="form-control input-sm select" name="countries" id="countries" disabled>
+                            <option></option>
+                            {% for row in countries %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </td>
+    			</tr>
+    			<tr>
+    				<th>CIVIL STATUS</th>
+    				<td class="nopadding">
+    					<select class="form-control input-sm select" name="cs" id="cs">
+    						<option></option>
+    						{% for row in cs %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+    				</td>
+    				<th rowspan="3">
+    					RESIDENTIAL ADDRESS
+    					<div style="margin-top: 100px;" class="text-center">ZIP CODE</div>
+    				</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm borderless bold" name="ra_house_no" value="{% if address.ra_house_no %}{{ address.ra_house_no|upper }}{% else %}N/A{% endif %}">
+    					<small><i>House/Block/Lot No.</i></small>
+    				</td>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm borderless bold " name="ra_street" value="{% if address.ra_street %}{{ address.ra_street|upper }}{% else %}N/A{% endif %}">
+    					<small><i>Street</i></small>
+    				</td>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless" name="ra_village" value="{% if address.ra_village %}{{ address.ra_village|upper }}{% else %}N/A{% endif %}">
+    					<small><i>Subdivision/Village</i></small>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>HEIGHT (m)</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless" name="height" value="{% if pds.height %}{{ pds.height }}{% else %}N/A{% endif %}" required>
+    				</td>
+    				<td class="nopadding">
+    					<select class="form-control input-sm select" id="rs-province" name="ra_prov_code">
+    						<option></option>
+    						{% for row in prov %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+    					<small><i>Province</i></small>
+    				</td>
+    				<td class="nopadding">
+                        {% if address.ra_city %}
+                        <select class="form-control input-sm select" id="rs-city" name="ra_city" required>
+                            <option></option>
+                            {% for row in ra_city %}
+                            <option value="{{ row.code }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <select class="form-control input-sm select" id="rs-city" name="ra_city" required disabled></select>
+                        {% endif %}
+                        <small><i>City / Municipality</i></small>
+    				</td>
+    				<td class="nopadding">
+                        {% if address.ra_brgy %}
+                        <select class="form-control input-sm select" id="rs-brgy" name="ra_brgy" required>
+                            {% for row in ra_brgy %}
+                            <option></option>
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <select class="form-control input-sm select" id="rs-brgy" name="ra_brgy" required disabled></select>
+                        {% endif %}
+    					<small><i>Barangay</i></small>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>WEIGHT (kg)</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless"  name="weight" value="{% if pds.weight %}{{ pds.weight }}{% else %}N/A{% endif %}" required>
+    				</td>
+    				<td class="nopadding" colspan="3">
+    					<input type="text" class="form-control input-sm bold borderless" name="ra_zipcode" value="{% if address.ra_zipcode %}{{ address.ra_zipcode }}{% else %}N/A{% endif %}" onkeypress="return isNumberKey(event)">
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>BLOOD TYPE</th>
+    				<td class="nopadding">
+    					<select class="form-control input-sm select" id="bt" name="bt">
+    						<option></option>
+    						{% for row in bt %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+    						{% endfor %}
+    					</select>
+    				</td>
+    				<th rowspan="3">
+    					PERMANENT ADDRESS
+    					<div style="margin-top: 100px;" class="text-center">ZIP CODE</div>
+    				</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless" name="pa_house_no" value="{% if address.pa_house_no %}{{ address.pa_house_no|upper }}{% else %}N/A{% endif %}" required>
+    					<p><small><i>House/Block/Lot No.</i></small></p>
+    				</td>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless" name="pa_street" value="{% if address.pa_street %}{{ address.pa_street|upper }}{% else %}N/A{% endif %}" required>
+    					<p><small><i>Street</i></small></p>
+    				</td>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless" name="pa_village" value="{% if address.pa_village %}{{ address.pa_village|upper }}{% else %}N/A{% endif %}">
+    					<p><small><i>Subdivision/Village</i></small></p>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>GSIS ID NO.</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control input-sm bold borderless" name="gsis_no" value="{{ numbers.gsis_no }}">
+    				</td>
+    				<td class="nopadding">
+						<select class="form-control input-sm select" id="pa-province" name="pa_prov_code" required>
+                            <option></option>
+    						{% for row in prov %}
+                            {% if row.id == address.pa_prov_code %}
+                            <option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+                            {% else %}
+    						<option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endif %}
+    						{% endfor %}
+    					</select>
+    					<small><i>Province</i></small>
+    				</td>
+    				<td class="nopadding">
+                        {% if address.pa_city %}
+                        <select class="form-control input-sm select" id="pa-city" name="pa_city" required>
+                            <option></option>
+							{% for row in pa_city %}
+                            <option value="{{ row.code }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+    					<select class="form-control input-sm select" id="pa-city" name="pa_city" required disabled></select>
+    					{% endif %}
+                        <small><i>City / Municipality</i></small>
+                    </td>
+    				<td class="nopadding">
+                        {% if address.pa_brgy %}
+
+                        <select class="form-control input-sm select" id="pa-brgy" name="pa_brgy" required>
+                            <option></option>
+                            {% for row in pa_brgy %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <select class="form-control input-sm select" id="pa-brgy" name="pa_brgy" required disabled></select>
+                        {% endif %}
+    					<small><i>Barangay</i></small>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>PAG-IBIG ID NO.</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control bold input-sm borderless" value="{{ numbers.pagibig_no }}" name="pagibig_no">
+    				</td>
+    				<td class="nopadding" colspan="3">
+    					<input type="text" class="form-control bold input-sm borderless" value="{% if address.pa_zipcode %}{{ address.pa_zipcode }}{% else %}N/A{% endif %}" name="pa_zipcode" onkeypress="return isNumberKey(event)" required>
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>PHILHEALTH NO.</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control bold input-sm borderless" value="{{ numbers.philhealth_no }}" name="philhealth_no">
+    				</td>
+    				<th>TELEPHONE NO.</th>
+    				<td class="nopadding" colspan="3">
+    					<input type="text" maxlength="10" class="form-control bold input-sm borderless" name="telephone_no" onkeypress="return isNumberKeyDash(event)" value="{% if pds.telephone_no %}{{ pds.telephone_no }}{% else %}N/A{% endif %}">
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>SSS NO.</th>
+    				<td class="nopadding"><input type="text" class="form-control bold input-sm borderless" value="{{ numbers.sss_no }}" name="sss_no"></td>
+    				<th>MOBILE NO.</th>
+    				<td class="nopadding" colspan="3">
+    					<input type="text" maxlength="11" name="mobile_no" class="form-control bold input-sm borderless" onkeypress="return isNumberKey(event)" value="{% if pds.mobile_no %}{{ pds.mobile_no }}{% endif %}">
+    				</td>
+    			</tr>
+    			<tr>
+    				<th>TIN NO.</th>
+    				<td class="nopadding">
+    					<input type="text" class="form-control bold input-sm borderless" name="tin_no" value="{{ numbers.tin_no }}">
+    				</td>
+    				<th>E-MAIL ADDRESS (if any)</th>
+    				<td class="nopadding" colspan="3">
+    					<input type="text" class="form-control bold input-sm borderless" name="email" style="text-transform: lowercase !important;" value="{{ pds.user.email }}">
+    				</td>
+    			</tr>
+    		</tbody>
+    	</table>
+		</form>
+        </div>
+	</div>
+</div>
+<script>
+    $('.select').select2({
+		width: "100%",
+		allowClear: true,
+		placeholder: 'Choose',
+	});
+
+	$('#btn-next-fb').on('click', function(){
+		callPage("{% url 'update_family_background' pds.id %}");
+    });
+
+    function isNumberKey(evt)
+    {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    function isNumberKeyDash(evt)
+    {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode != 45 && charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+	CheckDualCitizenship();
+
+    function CheckDualCitizenship(){
+        checkbox = document.getElementById("isdualcit");
+
+        if (checkbox.checked == true){
+           $('#countries').prop('disabled', false);
+        } else {
+			$('#countries').select2('val', '');
+           	$('#countries').prop('disabled', true);
+        }
+    }
+
+
+    $(document).ready(function(){
+    	$('#gender').select2('val', '{{ pds.gender }}');
+		$('#cs').select2('val', '{{ pds.cs_id }}');
+		$('#bt').select2('val', '{{ pds.bt_id }}');
+		$('#ext').select2('val', '{{ pds.ext_id }}');
+		$('#rs-province').select2('val', '{{ address.ra_prov_code }}');
+		// $('#pa-province').select2('val', '{{ address.pa_prov_code }}');
+
+		if ($('#pa-province').val()){
+            $('#pa-city').select2('val', '{{ address.pa_city }}');
+		}
+
+        if ($('#rs-province').val()){
+            $('#rs-city').select2('val', '{{ address.ra_city }}');
+        }
+        if ($('#rs-city').val()){
+            $('#rs-brgy').select2('val', '{{ address.ra_brgy }}');
+        }
+        if ($('#pa-city').val()){
+            $('#pa-brgy').select2('val', '{{ address.pa_brgy }}');
+        }
+
+        $('#rs-province').on('change', function(e){
+            var rs_id = $(this).val();
+            $.ajax({
+                url: "{% url 'show-city' %}",
+                data: {
+                    prov_code: rs_id
+                },
+                type: "POST"
+            })
+            .done(function(data){
+                $('#rs-city').prop('disabled', false);
+                $('#rs-brgy').prop('disabled', false);
+
+                if (data.data){
+                    var data = data.data;
+
+                    $('#rs-city').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['city_name'],data[i]['id']);
+                        $('#rs-city').append(newOption);
+                    }
+                    $('#rs-city').select2('val','');
+
+                } else {
+                    $('#rs-city').val(null).trigger('change');
+                    $('#rs-brgy').val(null).trigger('change');
+                    $('#rs-city').prop('disabled', true);
+                    $('#rs-brgy').prop('disabled', true);
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#rs-city').on('change', function(e){
+            var rs_city_code = $(this).val();
+            $.ajax({
+                url: "{% url 'show-brgy' %}",
+                data: {
+                    city_code: rs_city_code
+                },
+                type: "POST"
+            })
+            .done(function(data){
+                if (data.data){
+                    var data = data.data;
+                    $('#rs-brgy').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['brgy_name'],data[i]['id']);
+                        $('#rs-brgy').append(newOption);
+                    }
+                    $('#rs-brgy').select2('val','');
+                } else {
+                    $('#rs-brgy').val(null).trigger('change');
+                }
+            });
+
+            e.preventDefault();
+        });
+
+        $('#pa-province').on('change', function(e){
+            var pa_id = $(this).val();
+
+            $.ajax({
+                url: "{% url 'show-city' %}",
+                data: {
+                    prov_code: pa_id
+                },
+                type: "POST"
+            })
+            .done(function(data){
+                $('#pa-city').prop('disabled', false);
+                $('#pa-brgy').prop('disabled', false);
+
+                if (data.data){
+                    var data = data.data;
+                    $('#pa-city').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['city_name'],data[i]['id']);
+                        $('#pa-city').append(newOption);
+                    }
+                    $('#pa-city').select2('val','');
+                } else {
+                    $('#pa-city').val(null).trigger('change');
+                    $('#pa-brgy').val(null).trigger('change');
+                    $('#pa-city').prop('disabled', true);
+                    $('#pa-brgy').prop('disabled', true);
+                }
+            });
+            e.preventDefault();
+        });
+
+        $('#pa-city').on('change', function(e){
+            var pa_city_code = $(this).val();
+            $.ajax({
+                url: "{% url 'show-brgy' %}",
+                data: {
+                    city_code: pa_city_code
+                },
+                type: "POST"
+            })
+            .done(function(data){
+                if (data.data){
+                    var data = data.data;
+                    $('#pa-brgy').empty();
+                    for(var i=0; i< data.length; i++){
+                        var newOption = new Option(data[i]['brgy_name'],data[i]['id']);
+                        $('#pa-brgy').append(newOption);
+                    }
+                    $('#pa-brgy').select2('val','');
+                } else {
+                    $('#pa-brgy').val(null).trigger('change');
+                }
+            });
+
+            e.preventDefault();
+        });
+
+        $('#submitProfileForm').on('submit', function(e){
+            var form = new FormData(this);
+            form.append('user_id', '{{ pds.user_id }}');
+            $.ajax({
+                data        : form,
+                url         : "{% url 'update_personal_information' pds.id %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                Swal.fire("Well done!", "Personal Information has been saved successfully.", "success");
+            });
+            e.preventDefault();
+        });
+	});
+
+	$('.shortcuts').on('select2:select', function(){
+		callPage($(this).val() + {{ pds.id }});
+    });
+</script>

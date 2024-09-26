@@ -1,0 +1,201 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<style>
+    [type="file"] {
+        border: 0;
+        padding: 0;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">{{ tab_title }}</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <strong>{{ tab_parent }}</strong>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>{{ tab_title }}</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-4 pt-3">
+            <div class="float-md-right">
+                <button class="btn btn-info" data-toggle="modal" data-target="#new_training"><i class="fas fa-plus"></i> New Training</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-lg-12">
+            <div class="card card-info card-outline">
+                <div class="card-body">
+                    <table class="table table-bordered table-hover" id="lds-rso-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Training</th>
+                                <th class="text-center">Venue</th>
+                                <th class="text-center">Inclusive Dates</th>
+                                <th class="text-center">RRSO Status | RSO Status | Attachment</th>
+                                <th class="text-right">Date Added</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="new_training" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+                    NEW TRAINING
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <form id="submitForm">
+            <div class="modal-body">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Title<span class="asteriskField">*</span></label>
+                    <div class="pull-right"><input type="checkbox" name="is_online_platform"> Is online platform?</div>
+                    <input type="text" class="form-control" name="title" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label id="venue">Venue </label> (if online platform please indicate if it's Zoom, Google Meet or any other online platform) <label><span class="asteriskField">*</span></label>
+                    <textarea class="form-control" name="venue" rows="3" autocomplete="off" required></textarea>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <label>Start Date<span class="asteriskField">*</span></label>
+                            <input type="date" class="form-control" name="start_date" required>
+                        </div>
+                        <div class="col-lg-6">
+                            <label>End Date<span class="asteriskField">*</span></label>
+                            <input type="date" class="form-control" name="end_date" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info">Submit</button>
+            </div>
+            </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="training_details" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+                    TRAINING DETAILS
+                </h3>
+                <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+            <div id="details-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+$(document).ready(function(){
+    $('#submitForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to add new training?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#3498DB",
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+                    url         : '{% url "lds_rrso" %}',
+                    type        : 'POST',
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+		    },
+        }).then(function (response){
+            if (response.value.data == "success"){
+				Swal.fire({
+				  title: "Good job!",
+				  text: response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#submitForm').trigger('reset');
+						$('#new_training').modal('hide');
+						$('#lds-rso-table').DataTable().ajax.reload();
+					}
+				});
+			} else {
+				Swal.fire({
+				  title: "Unauthorized transaction",
+				  text: response.value.errors,
+				  icon: "error",
+				  confirmButtonColor: "#3498DB",
+				});
+			}
+        });
+        e.preventDefault();
+	});
+
+	$('#lds-rso-table').DataTable({
+        'serverSide': true,
+        'processing': true,
+        'deferRender': true,
+        'order': [[ 5, 'desc' ]],
+        'lengthMenu': [25,50,100],
+        'ajax': {
+            'url': '/api/learning-and-development/?format=datatables&pk=' + '{% getHash request.session.emp_id as employee_id %}{{ employee_id }}',
+            'type': 'GET',
+        },
+        'fnCreatedRow': function (row, data, index) {
+            $(row).attr('id', data['id']);
+        },
+        'columns': [
+            {'data': 'id',
+                'render': function(data, type, row, meta){
+                    return '<a href="javascript:;" data-role="details" data-id="'+ data +'">Details</a>'
+                }
+            },
+            {'data': 'training_title', 'name': 'training.tt_name'},
+            {'data': 'venue', 'className': 'text-center'},
+            {'data': 'inclusive_dates', 'searchable': false, 'className': 'text-center'},
+            {'data': 'status', 'className': 'text-center'},
+            {'data': 'date_added', 'className': 'text-right'}
+        ],
+    });
+
+    $('#training_details').on('hidden.bs.modal', function () {
+        $('#lds-rso-table').DataTable().ajax.reload();
+    });
+
+    $(document).on('click', 'a[data-role=details]', function(){
+        var id = $(this).data('id');
+        $('#training_details').modal('show').find('#details-content').load('/learning-and-development/details/' + id);
+    });
+});
+</script>
+{% endblock %}

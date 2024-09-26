@@ -1,0 +1,317 @@
+{% extends 'tracker/layout.html' %}
+{% load static %}
+{% load tags %}
+{% block content %}
+<div class="mt-3">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'tracker' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'track_package' %}">Sent</a></li>
+                <li class="breadcrumb-item active">Details</li>
+            </ol>
+        </nav>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="float-end">
+                            {% generate_token package.id as token %}
+                            <a href="{% url 'print_transmittal' token %}" target="_blank" class="btn btn-info btn-sm">
+                                <i class="fas fa-print"></i> Print Transmittal
+                            </a>
+                            {% if user|check_permission:'transmittal' or user|check_permission:'superadmin'%}
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#cc-document-modal" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-copy"></i> CC Document
+                            </button>
+                            {% endif %}
+                        </div>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>TRACKING NO.</strong></td>
+                                <td>{{ package.tracking_no }}</td>
+                                <td><strong>TRANSACTION DATE</strong></td>
+                                <td>{{ package.date_created }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CREATED BY</strong></td>
+                                <td>{{ package.createdby.pi.user.get_fullname }}</td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered">
+                            {% for row in empstatus %}
+                            <thead>
+                                <th colspan="4">{{ row.name|upper }}</th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>DOCUMENT TYPE</th>
+                                    <th class="text-center">DOCUMENT DATE</th>
+                                    <th class="text-center">OTHER INFORMATION</th>
+                                    <th class="text-center">DOCUMENT OWNER</th>
+                                </tr>
+                                {% for pi_row in package_item %}
+                                    {% if row.id == pi_row.emp.empstatus_id %}
+                                        <tr>
+                                            <td>{{ pi_row.package.doctype.name }}</td>
+                                            <td class="text-center">{{ pi_row.document_date }}</td>
+                                            <td class="text-center">{{ pi_row.other_info }}</td>
+                                            <td class="text-center">{{ pi_row.emp.pi.user.get_fullname }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                        {% if package.get_latest_status.forwarded_id == request.session.emp_id %}
+                            {% if package.get_latest_status.status.name != 'Received' %}
+                            <button type="button" class="btn btn-info btn-sm" id="btn-mark-as-received">Mark as Received</button>
+                            {% endif %}
+                            <button type="button" class="btn btn-light btn-sm" id="btn-forward-document">Forward Document</button>
+                            {% if user|check_permission:'transmittal' or user|check_permission:'superadmin'%}
+                                {% if package.get_latest_status.status.name != 'For File' %}
+                                <button type="button" class="btn btn-light btn-sm" id="btn-for-file">For File</button>
+                                {% endif %}
+                            {% endif %}
+                            {% if package.get_latest_status.status.name != 'For Return' %}
+                            <a href="{% generate_token package.id as token %}{% url 'track_for_return' token %}" target="_blank" class="btn btn-danger btn-sm">For Return</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="p-3">
+                            <p><strong>TRACK AND TRACE</strong></p>
+                            <hr>
+                            <ul class="timeline-with-icons">
+                                {% for row in package_history %}
+                                    {% if forloop.first %}
+                                        <li class="timeline-item">
+                                            <div>
+                                                <span class="timeline-icon">
+                                                    <i class="text-primary fa-sm fa-fw"></i>
+                                                </span>
+                                                <h6 class="text-green"><strong>
+                                                    {{ row.transaction.doctype.name|upper }} {{ row.status.name|upper }}
+                                                    {% if row.status_id == 1 %}
+                                                        TO {{ row.forwarded.pi.user.get_fullname|upper }}
+                                                    {% elif row.status_id == 3 %}
+                                                        BY {{ row.forwarded.pi.user.get_fullname|upper }}
+                                                    {% else %}
+                                                        {{ row.forwarded.pi.user.get_fullname|upper }}
+                                                    {% endif %}
+                                                    </strong>
+                                                </h6>
+                                                {% if row.notes %}<p>{{ row.notes }}</p>{% endif %}
+                                                <p>{{ row.datetime }}</p>
+                                            </div>
+                                        </li>
+                                    {% else %}
+                                        <li class="timeline-item">
+                                            <div>
+                                                <span class="timeline-icon">
+                                                    <i class="text-primary fa-sm fa-fw"></i>
+                                                </span>
+                                                <h6><strong>
+                                                    {{ row.transaction.doctype.name|upper }} {{ row.status.name|upper }}
+                                                    {% if row.status_id == 1 %}
+                                                        TO {{ row.forwarded.pi.user.get_fullname|upper }}
+                                                    {% elif row.status_id == 3 %}
+                                                        BY {{ row.forwarded.pi.user.get_fullname|upper }}
+                                                    {% else %}
+                                                        {{ row.forwarded.pi.user.get_fullname|upper }}
+                                                    {% endif %}
+                                                    </strong>
+                                                </h6>
+                                                {% if row.notes %}<p>{{ row.notes }}</p>{% endif %}
+                                                <p>{{ row.datetime }}</p>
+                                            </div>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% if package_cc %}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="p-3">
+                            <p><strong>CARBON COPIED TO</strong></p>
+                            <hr>
+                            <ul>
+                            {% for row in package_cc %}
+                                <li>{{ row.cc.pi.user.get_fullname }}</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="cc-document-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>CC DOCUMENTS</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="ccForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label>Copy To <span class="text-danger">*</span></label>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control form-control-sm filter-employee-all" name="cc_to[]" autocomplete="off" required>
+                        <button class="btn btn-info btn-sm" type="button" data-role="add-cc-employee"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div class="copy-content-input"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info btn-sm">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="forward-document-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><strong>FORWARD DOCUMENT</strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="forwardForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label>Tracking Status <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm" name="tracker_status" required>
+                    {% for row in tracker_status %}
+                        <option value="{{ row.id }}">{{ row.name }}</option>
+                    {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mb-3">
+                    <label>Forward to <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm filter-employee-all" name="forward_to" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <textarea class="form-control form-control-sm" rows="5" name="remarks" autocomplete="off"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-info btn-sm">Forward</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+    filterEmployeeAll();
+    function filterEmployeeAll() {
+        $(".filter-employee-all").typeahead({
+            source: function(query, process){
+                return $.get({
+                    url: '{% url "filter_employee_all" %}',
+                    data: { query: query },
+                    datatype: 'json',
+                    success: function (data) {
+                        return process(data);
+                    }
+                });
+            },
+            highlight: true,
+        });
+    }
+
+    $(document).on('click', 'button[data-role=add-cc-employee]', function(){
+        var template = `
+            <div class="input-group mb-3">
+                <input type="text" class="form-control form-control-sm filter-employee-all" name="cc_to[]" autocomplete="off" required>
+                <button class="btn btn-danger btn-sm" type="button" data-role="remove-cc-employee"><i class="fas fa-minus"></i></button>
+            </div>
+        `
+
+        $('.copy-content-input').append(template);
+        filterEmployeeAll();
+    });
+
+    $(document).on('click', 'button[data-role=remove-cc-employee]', function() {
+        $(this).parent().remove();
+    });
+
+    $('#btn-mark-as-received').on('click', function(){
+        var list = {
+            'package_id': {{ package.id }},
+            'emp_id': {{ request.session.emp_id }},
+            'type': '3'
+        }
+
+        var url = '{% url "track_package_received" %}';
+        var title = "Are you sure";
+        var text = "You want to received this package";
+        var link_attr = '{% generate_token package.id as token %}{% url "track_package_details" token %}';
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {link_attr: link_attr});
+    });
+
+    $('#btn-forward-document').on('click', function(){
+        $('#forward-document-modal').modal('show');
+    });
+
+    $('#forwardForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% generate_token package.id as token %}{% url "track_package_forwarded" token %}';
+        var title = "Are you sure";
+        var text = "You want to forward this package";
+        var modal_id = "#forward-document-modal";
+        var link_attr = '{% generate_token package.id as token %}{% url "track_package_details" token %}';
+
+        submitFormWithConfirmation(form, url, title, text, {link_attr: link_attr, modal_id: modal_id});
+
+        e.preventDefault();
+    });
+
+    $('#ccForm').on('submit', function(e){
+        var form = this;
+
+        var url = '{% generate_token package.id as token %}{% url "track_package_cc" token %}';
+        var title = "Are you sure";
+        var text = "You want to cc this package";
+        var modal_id = "#cc-document-modal";
+        var link_attr = '{% generate_token package.id as token %}{% url "track_package_details" token %}';
+
+        submitFormWithConfirmation(form, url, title, text, {link_attr: link_attr, modal_id: modal_id});
+
+        e.preventDefault();
+    });
+
+    $('#btn-for-file').on('click', function(){
+        var list = {
+            'package_id': {{ package.id }},
+            'emp_id': {{ request.session.emp_id }},
+            'type': '4'
+        }
+
+        var url = '{% url "track_package_for_file" %}';
+        var title = "Are you sure";
+        var text = "You want to set this package as for filing";
+        var link_attr = '{% generate_token package.id as token %}{% url "track_package_details" token %}';
+
+        submitDataWithoutFormConfirmation(list, url, title, text, {link_attr: link_attr});
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,187 @@
+	<form id="update_emp_assistance">
+		<center>
+			<img loading="lazy"  src="{{ data.emp.picture.url }}" id="picture" class="img-circle" style="width: 200px; height: 200px; object-fit: cover; margin-bottom: 10px;">
+		</center>
+		<br>
+        <div class="tabs-container" style="border: 0px !important;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a aria-controls="announcement" role="tab" data-toggle="tab" href="#tab-1" class="bg-transparent" style="border: 0px !important;">Basic Information</a></li>
+                <li role="presentation"><a aria-controls="employee" role="tab" data-toggle="tab" href="#tab-2" class="bg-transparent" style="border: 0px !important;">Result of Interview</a></li>
+            </ul>
+            <div class="tab-content">
+               <div role="tabpanel" id="tab-1" class="tab-pane active">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive text-nowrap table-scroll">
+                                <br>
+                                <input type="text" value="{{data.id}}" name="assistance_id" hidden>
+                                <div class="list-group">
+                                    <div class="row">
+                                        <div class="col-xs-6 col-sm-6 col-md-6">
+                                            <label class="bmd-label-floating">Request Date</label>
+                                            <div class="form-group">
+                                            <input type="text" name="first_name" id="first_name" class="form-control input-sm" value="{{data.rq_date}}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                    <label class="bmd-label-floating">Employee Info<span class="asteriskField">*</span></label>
+                                    <input type="text" class="form-control typeahead2"  name="idnumber" value="{{data.emp.pi.user.get_fullname}}"  autocomplete="off">
+                                        <div class="row">
+                                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                                <label class="bmd-label-floating">Informant,IF ANY (If None, Put N/a) </label>
+                                                <div class="form-group">
+                                                <input type="text" name="first_name" id="first_name" class="form-control input-sm" value="{{data.informant}}">
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                                <label class="bmd-label-floating">Informant Contact Number</label>
+                                                <div class="form-group">
+                                                    <input type="text" name="last_name" id="last_name" class="form-control input-sm" value="{{data.informant_contact}}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label class="bmd-label-floating">Nature of Request</label>
+                                        <input type="text" class="form-control"  name="Nor" value="{{data.brief_request}}" autocomplete="off">
+                                    </div>
+                                    <div class="form-group" id="med">
+                                        <h5>Type of Assistance<span class="asteriskField">*</span></h5>
+                                        <input class="form-control" name="result_interview" value="{% if data.cr_financial.name == None %}{% else %}{{data.cr_financial.name}}{% endif %}{% if data.cr_mental.name == None %}{% else %}{{data.cr_mental.name}}{% endif %}{% if data.cr_other.name == None %}{% else %}{{data.cr_other.name}}{% endif %}{% if data.cr_fa_others == None %}{% else %}Other Type of Assistance {% endif %}" id="exampleFormControlTextarea1" rows="3" readonly>
+                                        <br>
+                                        <h5>Others type of Assistance (Specified):</h5>
+                                        <input type="text" value="{{data.cr_financial_others}}" name="other_finance" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <h5>Document Attached</h5>
+                                        <textarea class="form-control" name="result_interview" id="exampleFormControlTextarea1" rows="6" readonly>{% if data.docx_valid_id == None %}{% else %}{{data.docx_valid_id}}.{% endif %}{% if data.docx_barangay_cert == None %}{% else %} {{data.docx_barangay_cert}}.{% endif %}{% if data.docx_case_study == None %}{% else %} {{data.docx_case_study}}.{% endif %}{% if data.docx_clinical_abstract == None %}{% else %} {{data.docx_clinical_abstract}}.{% endif %}{% if data.docx_host_bill == None %}{% else %} {{data.docx_host_bill}}.{% endif %}{% if data.docx_prescription == None %}{% else %} {{data.docx_prescription}}.{% endif %}{% if data.docx_lab_request == None %}{% else %} {{data.docx_lab_request}}.{% endif %}{% if data.docx_showing == None %}{% else %} {{data.docx_showing}}.{% endif %}{% if data.docx_police_blotter == None %}{% else %} {{data.docx_police_blotter}}.{% endif %}{% if data.docx_funeral_contract == None %}{% else %} {{data.docx_funeral_contract}}.{% endif %}{% if data.docx_death_cert == None %}{% else %} {{data.docx_death_cert}}.{% endif %}{% if data.docx_permit_to_transfer == None %}{% else %} {{data.docx_permit_to_transfer}}.{% endif %}</textarea>
+                                    </div>
+                                    <div class="form-group" id="med">
+                                        <h5>Other Document (Specified:)<span class="asteriskField">*</span></h5>
+                                        <textarea class="form-control" name="document_specified" id="exampleFormControlTextarea1" rows="3">{{data.other_docx}}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" id="tab-2" class="tab-pane">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive text-nowrap table-scroll">
+                                <br>
+                                <div class="list-group">
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                                <label class="bmd-label-floating">Quantity or Unit<span class="asteriskField">*</span></label>
+                                                <div class="form-group">
+                                                <input type="text" name="unit" id="" class="form-control input-sm" value="{{data.unit_quantity}}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                                <label class="bmd-label-floating">Date Received<span class="asteriskField">*</span></label>
+                                                <div class="form-group">
+                                                    <input type="text" name="date_received" id="" class="form-control input-sm" value="{{data.date_received}}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                                <label class="bmd-label-floating">Date Endorse to CIS<span class="asteriskField">*</span></label>
+                                                <div class="form-group">
+                                                    <input type="text" name="date_endorse" id="" class="form-control input-sm" value="{{data.date_endorse_cis}}" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="med">
+                                        <h5>RESULT OF INTERVIEW WITH<span class="asteriskField">*</span></h5>
+                                        <textarea class="form-control" name="result_interview" id="exampleFormControlTextarea1" rows="3">{{data.result_of_interview}}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <h5>ACTION PROVIDED/GIVEN<span class="asteriskField">*</span></h5>
+                                        <textarea class="form-control" name="action_provided" id="" rows="3">{{data.action_provided}}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <h5>REMARKS, IF ANY<span class="asteriskField">*</span></h5>
+                                        <textarea class="form-control" name="remarks" id="" rows="3">{{data.remarks}}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                                <label class="bmd-label-floating">Officer-in-Charge</label>
+                                                <div class="form-group">
+                                                <input type="text" name="officer_in_charge" id="first_name" class="form-control input-sm" value="{{data.officer_in_charge}}">
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 col-sm-6 col-md-6">
+                                                <label class="bmd-label-floating">Period Applied</label>
+                                                <div class="form-group">
+                                                    <input type="text" name="last_name" id="last_name" class="form-control input-sm" value="{{data.date_approved}}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Upload PDF File here</label>
+                                        <input name="file" type="file" class="form-control file-control" required>
+                                    <table id="file_type_upload">
+                                        <tbody>
+                                            <td><h3>Attachment Here: <a target="_blank" href="{{file.attachment_data.url }}"><i class='bx bx-file'></i>{{file.attachment_data}}</a></h3></td>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                <div class="pull-right">
+                                    <button type="submit" class="btn btn-info">Update</button>
+                                </div>
+                                <br>
+                                <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</form>
+	<script>
+    $('#update_emp_assistance').on('submit', function(e){
+    var form = new FormData(this);
+    Swal.fire({
+        title: "Are you sure",
+        text: "You want to Update Employees Assistance?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3498DB",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false,
+        allowOutsideClick: false,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.showLoading()
+            $.ajax({
+                data        : form,
+                url         : "{% url 'employee_assistance' %}",
+                type        : 'POST',
+                cache       : false,
+                contentType : false,
+                processData : false
+            })
+            .done(function(data){
+                var data = data.data;
+                if(data){
+                    Swal.fire({
+                      title: "Good job!",
+                      text: "You successfully updated the data",
+                      icon: "info",
+                      confirmButtonColor: "#3498DB",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                        	$('#emp_ass_show').modal('show').find('#load_data').load('/welfare/assistance/modalforemp_assistance/{{pk}}');
+                        }
+                    });
+                }
+            });
+        }
+        });
+        e.preventDefault();
+    });
+	</script>

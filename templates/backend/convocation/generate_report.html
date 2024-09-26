@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+{% load static %}
+{% load tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DSWD My PORTAL | Generate Report Convocation Attendance</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'image/logo.ico' %}"/>
+	<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/mod.css' %}" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+	<link href="{% static 'css/print.css' %}" rel="stylesheet">
+</head>
+<nav class="navbar navbar-default" style="font-family: 'Inter';">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<i class="fas fa-bars"></i>
+			</button>
+			<a class="navbar-brand" href="javascript:;">Generate Report - Monday Convocation</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><button type="button" class="btn btn-info" class="print-button" id="floatprint" style="font-size: 14px; margin-top: 8px;"><i class="fas fa-print"></i> Print</button>&emsp;</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<body>
+    <page size="A4" layout="landscape" class="page" style="padding: 40px;">
+        <div class="row">
+            <h3 class="text-center"><strong>MONDAY CONVOCATION REPORTORIAL</strong></h3>
+            <p class="text-center">Date: {{ select_date }}</p>
+            <br>
+            <h5 class="text-center">TOTAL BASED</h5>
+            <table class="table table-bordered">
+                <tr>
+                    <th>Division</th>
+                    <th class="text-center">Total Employee</th>
+                    <th class="text-center">Actual Time In</th>
+                    <th class="text-center">Actual Time In Percentage</th>
+                    <th class="text-center">Actual Time Out</th>
+                    <th class="text-center">Actual Time Out Percentage</th>
+                </tr>
+                {% for row in division %}
+                    {% get_total_convocation_by_division row.id select_date 0 as total_time_in %}
+                    {% get_total_convocation_by_division row.id select_date 1 as total_time_out %}
+                    {% get_total_by_division row.id 'Field Office Caraga' as total_division %}
+                    {% get_attendance_percentage total_time_in total_division as total_time_in_percentage %}
+                    {% get_attendance_percentage total_time_out total_division as total_time_out_percentage %}
+                <tr>
+                    <td>{{ row.div_name }}</td>
+                    <td class="text-center division">{{ total_division }}</td>
+                    <td class="text-center total_time_in">{{ total_time_in }}</td>
+                    <td class="text-center">{{ total_time_in_percentage|floatformat:2 }} %</td>
+                    <td class="text-center total_time_out">{{ total_time_out }}</td>
+                    <td class="text-center">{{ total_time_out_percentage|floatformat:2 }} %</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td class="text-center"><strong>TOTAL</strong></td>
+                    <td class="text-center"><span id="total_employee"></span></td>
+                    <td class="text-center"><span id="total_time_in"></span></td>
+                    <td></td>
+                    <td class="text-center"><span id="total_time_out"></span></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+    </page>
+    <page size="A4flex" class="page" style="padding: 40px;">
+        <div class="row">
+            <h5 class="text-center">MASTERLIST</h5>
+            <table class="table table-bordered">
+                {% for row in division %}
+                <tr>
+                    <th colspan="3">{{ row.div_name|upper }}</th>
+                </tr>
+                <tr>
+                    <th>Employee Name</th>
+                    <th>Area of Assignment</th>
+                    <th class="text-center">Time In</th>
+                    <th class="text-center">Time Out</th>
+                </tr>
+                    {% for employee in employees %}
+                    {% if row.id == employee.section.div_id %}
+                    <tr>
+                        {% get_time_in_and_out select_date 0 employee.id as time_in %}
+                        {% get_time_in_and_out select_date 1 employee.id as time_out %}
+                        <td>{{ employee.pi.user.get_fullname|upper }}</td>
+                        <td>{{ employee.aoa.name|upper }}</td>
+                        <td class="text-center">{% if time_in %}{{ time_in|date:'h:i A' }}{% endif %}</td>
+                        <td class="text-center">{% if time_out %}{{ time_out|date:'h:i A' }}{% endif %}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </table>
+        </div>
+    </page>
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/sweetalert/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script>
+        total_division = 0;
+        $('.division').each(function(){
+           total_division += Number($(this).text());
+        });
+
+        $('#total_employee').text(total_division);
+
+        total_timein = 0;
+        $('.total_time_in').each(function(){
+           total_timein += Number($(this).text());
+        });
+
+        $('#total_time_in').text(total_timein);
+
+        total_timeout = 0;
+        $('.total_time_out').each(function(){
+           total_timeout += Number($(this).text());
+        });
+
+        $('#total_time_out').text(total_timeout);
+
+    </script>
+</body>
+</html>

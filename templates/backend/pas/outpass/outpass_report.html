@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h2><i class="fas fa-print"></i> Generate Reports</h2>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content">
+	<div class="ibox-content">
+        <form method="POST" action="{% url 'outpass-generate-report' %}" target="_blank">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-12">
+                <label>Select any date included in week</label>
+                <div class="form-group">
+                    <input type="week" class="form-control" name="datesearch" autocomplete="off" required>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-info">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

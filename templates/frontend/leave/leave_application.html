@@ -1,0 +1,410 @@
+{% extends 'layout.html' %}
+{% load frontend_tags %}
+{% load tags %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row px-3 pt-3">
+		<div class="col-lg-8">
+			<h1 class="font-weight-bold">{{ tab_title }}</h1>
+			<ol class="breadcrumb bg-transparent p-0">
+				<li class="breadcrumb-item">
+					<a href="{% url 'backend-dashboard' %}">Home</a>
+				</li>
+				<li class="breadcrumb-item">
+					{{ tab_parent }}
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>{{ tab_title }}</strong>
+				</li>
+			</ol>
+		</div>
+		<div class="col-lg-4 pt-3">
+			<div class="float-md-right">
+				<button class="btn btn-info" data-toggle="modal" data-target="#apply-leave"><i class="fas fa-plus"></i> Request for Leave</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-sm-9">
+			<div class="card card-info card-outline">
+				<div class="card-body">
+					<div class="table-responsive">
+						<table id="leave-table" class="table table-bordered table-hover" style="zoom:95% !important;" width="100%">
+							<thead>
+								<tr>
+									<th class="capslock text-left" width="15%">Action</th>
+									<th width="10%">TRACKING NO.</th>
+									<th class="capslock">Leave Type</th>
+									<th class="capslock text-center">Inclusive Dates</th>
+									<th class="capslock text-center">Date of Filing</th>
+									<th class="capslock text-right">Status</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="card">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">FILTER</h5>
+				</div>
+				<div class="card-body">
+                    <h4>By status</h4>
+					<div class="list-group">
+						<a class="list-group-item list-group-item-action active"  id="status-all" href="javascript:;" data-role="status" data-filter="all">All</a>
+						<a class="list-group-item list-group-item-action"  id="status-0" href="javascript:;" data-role="status" data-filter="0">Pending</a>
+						<a class="list-group-item list-group-item-action"  id="status-1" href="javascript:;" data-role="status" data-filter="1">Approved</a>
+						<a class="list-group-item list-group-item-action" id="status-2" href="javascript:;" data-role="status" data-filter="2">Cancelled</a>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">LEAVE CREDITS</h5>
+				</div>
+				<div class="card-body">
+					<div class="list-group">
+                        {% for row in leave_credits %}
+    						<a {% if row.updated_on %}rel="tooltip" data-placement="top" title="As of {{ row.updated_on|date:'F d, Y' }}"{% endif %} class="list-group-item list-group-item-action">{{ row.leavetype.name }}<span class="pull-right">{{ row.leave_total }}</span></a>
+                        {% endfor %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal" id="apply-leave" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					{{ tab_title|upper }}
+
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+	        <form id="submitLeaveForm">
+	        <div class="modal-body">
+				{% csrf_token %}
+	        	<div class="row">
+		        	<div class="form-group col-md-12">
+		        		<label>Type of Leave<span class="asteriskField">*</span></label>
+		        		<select class="form-control select" name="leavesubtype" id="leavesubtype" required>
+		        			<option></option>
+		        			{% for row in leavesubtype %}
+ 		        			<option value="{{ row.leavesubtype.id }}">{{ row.leavesubtype.name }} {% if row.leavesubtype.description %}({{ row.leavesubtype.description}}){% endif %}</option>
+							{% endfor %}
+		        		</select>
+		        	</div>
+	        	</div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="row content"></div>
+                    </div>
+                </div>
+				<div class="row" id="filter_content" style="display: none;">
+					<div class="form-group col-md-12">
+						<label>Filter Dates By<span class="asteriskField">*</span></label>
+						<select class="form-control select" id="filter_dates" required>
+							<option></option>
+							<option value="range">Range</option>
+							<option value="random">Custom</option>
+						</select>
+					</div>
+				</div>
+	        	<div class="row" id="inclusive_dates" style="display:none;">
+		        	<div class="form-group col-md-6">
+		        		<label>Start Date<span class="asteriskField">*</span></label>
+		        		<input type="date" name="start_date" id="start_date" class="form-control b-r-sm">
+		        	</div>
+		        	<div class="form-group col-md-6">
+		        		<label>End Date<span class="asteriskField">*</span></label>
+		        		<input type="date" name="end_date" id="end_date" class="form-control b-r-sm">
+		        	</div>
+	        	</div>
+				<div id="random_dates" style="display:none;">
+					<div id="items">
+						<div class="row">
+							<div class="form-group col-md-12">
+								<div class="input-group">
+									<input type="date" class="form-control b-r-sm dates" name="dates[]">
+									<div class="input-group-append"> <button type="button" class="btn btn-info add"><i class="fas fa-plus"></i></button> </div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+            <div class="modal-footer">
+				<button type="submit" class="btn btn-info">Submit</button>
+            </div>
+	        </form>
+	    </div>
+	</div>
+</div>
+<div class="modal" id="edit-leave" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content animated bounceInDown">
+	        <div class="modal-header bg-info">
+	            <h3 class="modal-title">
+					EDIT LEAVE APPLICATION
+
+				</h3>
+				<button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	        </div>
+			<div id="edit-content"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).on('click', 'a[data-role=status]', function(){
+    	$('.list-group-item').removeClass('active');
+		$('#status-'+$(this).data('filter')).addClass('active');
+    	if($(this).data('filter') == 'all'){
+    		$('#leave-table').DataTable().ajax.url('/api/leave/application/?format=datatables&employee_id={% getHash request.session.emp_id %}').load();
+    	}else{
+			$('#leave-table').DataTable().ajax.url('/api/leave/application/?format=datatables&employee_id={% getHash request.session.emp_id %}&status='+$(this).data('filter')).load();
+		}
+	});
+
+	LeaveTable();
+	function LeaveTable(){
+		$('#leave-table').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 25, 50, 100 ],
+			'order': [[ 4, 'desc' ]],
+			'ajax': {
+				'url': '/api/leave/application/?format=datatables&employee_id={% getHash request.session.emp_id %}',
+				'type': 'GET',
+				'beforeSend': function (request) {
+					request.setRequestHeader("Authorization", "Token 82b88a7bdac1ea3868361448927035e93b0dc19d")
+				}
+			},
+			'fnCreatedRow': function (row, data, index) {
+				$(row).attr('id', data['id']);
+			},
+			"columnDefs": [
+				{ "orderable": false, "targets": [0, 2, 5] },
+				{ "orderable": true, "targets": [1, 3, 4] }
+			],
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+                        var currentDate = new Date();
+                        var filingDate = new Date(row['date_of_filing'].split(' ')[0]);
+						template = "<a href='/leave/requests/print/"+ data +"' target='_blank'>Details</a>";
+						if (row['status'] == 0) {
+                            if (currentDate.toDateString() == filingDate.toDateString()) {
+                                template += " | <a href='javascript:void(0)' data-role='edit' data-id='"+ data + "' data-filter='" + row['tracking_no'] + "'>Edit</a>"
+                                template += " | <a href='javascript:void(0)' data-role='cancel' data-id='"+ data + "'>Cancel</a>"
+                            }
+						}
+						return template;
+					},
+				},
+				{'data': 'tracking_no'},
+				{'data': 'leavesubtype_name', 'className': 'text-center', 'name': 'leavesubtype.name'},
+				{'data': 'inclusive_dates', 'className': 'text-center', 'name': 'remarks, start_date, end_date' },
+				{'data': 'date_of_filing', 'className': 'text-center' },
+				{'data': 'status',
+					'searchable': false,
+					'render': function(data, type, row, meta) {
+						if(row['status'] == 0){
+							return '<span class="badge badge-primary">Pending</span>';
+						}else if (row['status'] == 1){
+							return '<span class="badge badge-success">Approved</span>';
+						} else if (row['status'] == 2){
+							return '<span class="badge badge-warning">Cancelled</span>';
+						} else {
+							return '<span class="badge badge-danger">Disapproved</span>'
+						}
+					},
+					'className': 'text-right'
+				},
+			]
+		});
+	}
+
+	function _0x5d52(){var _0x4ded4e=['#random_dates','removeAttr','css','change','2630rkYaRd','14ZOJvgv','3049dVCgjv','random','5125824TgSIIr','#filter_dates','46640tihpkM','display','#end_date','1126KqZBHN','none','2830788UbeCnG','8272845iqMDmM','785JDfIaA','required','6577408CoBHmu','val','attr','52314UVKTjv','#start_date'];_0x5d52=function(){return _0x4ded4e;};return _0x5d52();}var _0x411ec3=_0x241f;function _0x241f(_0x1321eb,_0x334266){var _0x5d52e0=_0x5d52();return _0x241f=function(_0x241f11,_0x346300){_0x241f11=_0x241f11-0x1db;var _0x36351e=_0x5d52e0[_0x241f11];return _0x36351e;},_0x241f(_0x1321eb,_0x334266);}(function(_0x2d3708,_0xdd2bc5){var _0x207ecf=_0x241f,_0x44f521=_0x2d3708();while(!![]){try{var _0x6169a2=-parseInt(_0x207ecf(0x1ea))/0x1*(-parseInt(_0x207ecf(0x1f1))/0x2)+parseInt(_0x207ecf(0x1db))/0x3+-parseInt(_0x207ecf(0x1ec))/0x4+parseInt(_0x207ecf(0x1dd))/0x5*(parseInt(_0x207ecf(0x1e2))/0x6)+parseInt(_0x207ecf(0x1e9))/0x7*(-parseInt(_0x207ecf(0x1df))/0x8)+parseInt(_0x207ecf(0x1dc))/0x9+parseInt(_0x207ecf(0x1e8))/0xa*(-parseInt(_0x207ecf(0x1ee))/0xb);if(_0x6169a2===_0xdd2bc5)break;else _0x44f521['push'](_0x44f521['shift']());}catch(_0x388628){_0x44f521['push'](_0x44f521['shift']());}}}(_0x5d52,0xdd84f),$(_0x411ec3(0x1ed))['on'](_0x411ec3(0x1e7),function(){var _0xcfc9b3=_0x411ec3;if($(this)[_0xcfc9b3(0x1e0)]()=='range')$(_0xcfc9b3(0x1e4))[_0xcfc9b3(0x1e6)](_0xcfc9b3(0x1ef),_0xcfc9b3(0x1f2)),$('.dates')[_0xcfc9b3(0x1e5)](_0xcfc9b3(0x1de)),$('#inclusive_dates')[_0xcfc9b3(0x1e6)]('display',''),$(_0xcfc9b3(0x1e3))[_0xcfc9b3(0x1e1)](_0xcfc9b3(0x1de),_0xcfc9b3(0x1de)),$(_0xcfc9b3(0x1f0))['attr']('required',_0xcfc9b3(0x1de));else $(this)['val']()==_0xcfc9b3(0x1eb)&&($('#inclusive_dates')['css'](_0xcfc9b3(0x1ef),_0xcfc9b3(0x1f2)),$('#start_date')[_0xcfc9b3(0x1e5)](_0xcfc9b3(0x1de)),$(_0xcfc9b3(0x1f0))[_0xcfc9b3(0x1e5)](_0xcfc9b3(0x1de)),$(_0xcfc9b3(0x1e4))[_0xcfc9b3(0x1e6)](_0xcfc9b3(0x1ef),''),$('.dates')['attr'](_0xcfc9b3(0x1de),_0xcfc9b3(0x1de)));}));
+
+	function _0x5150(_0x5ed411,_0x3bdde1){var _0x21a40c=_0x21a4();return _0x5150=function(_0x515033,_0x35e5c6){_0x515033=_0x515033-0xf5;var _0x13d72f=_0x21a40c[_0x515033];return _0x13d72f;},_0x5150(_0x5ed411,_0x3bdde1);}var _0x40e5d0=_0x5150;function _0x21a4(){var _0x4688a7=['<div\x20class=\x22row\x22><div\x20class=\x22form-group\x20col-md-12\x22><div\x20class=\x22input-group\x22><input\x20type=\x22date\x22\x20class=\x22form-control\x20b-r-sm\x20dates\x22\x20name=\x22dates[]\x22>\x20<span\x20class=\x22input-group-btn\x22>\x20<button\x20type=\x22button\x22\x20class=\x22btn\x20btn-danger\x20remove_field\x22\x20style=\x22height:\x2034px;\x22><i\x20class=\x22fas\x20fa-minus\x22></i></button>\x20</span></div></div></div>','1VXGoUs','179524rFvuQG','602381WZVgaF','5744272zuJyZo','parent','1323800ncbuaN','32394JsoTga','1670nlvJYE','665StrkIt','remove','.remove_field','16357PpeEJM','9SesAQX','#items','822166ZjDSwL','36mjwbQc','42pNdauv','click'];_0x21a4=function(){return _0x4688a7;};return _0x21a4();}(function(_0x512d91,_0x2b4f5a){var _0x22bbc7=_0x5150,_0x36d62a=_0x512d91();while(!![]){try{var _0x2c4a21=-parseInt(_0x22bbc7(0x105))/0x1*(-parseInt(_0x22bbc7(0x100))/0x2)+-parseInt(_0x22bbc7(0x102))/0x3*(parseInt(_0x22bbc7(0x106))/0x4)+parseInt(_0x22bbc7(0xf7))/0x5+parseInt(_0x22bbc7(0xf8))/0x6*(-parseInt(_0x22bbc7(0xfa))/0x7)+parseInt(_0x22bbc7(0xf5))/0x8*(parseInt(_0x22bbc7(0xfe))/0x9)+parseInt(_0x22bbc7(0xf9))/0xa*(parseInt(_0x22bbc7(0xfd))/0xb)+parseInt(_0x22bbc7(0x101))/0xc*(-parseInt(_0x22bbc7(0x107))/0xd);if(_0x2c4a21===_0x2b4f5a)break;else _0x36d62a['push'](_0x36d62a['shift']());}catch(_0x2ccf5d){_0x36d62a['push'](_0x36d62a['shift']());}}}(_0x21a4,0x585e4),$('.add')['on'](_0x40e5d0(0x103),function(){var _0x15e27c=_0x40e5d0;$(_0x15e27c(0xff))['append'](_0x15e27c(0x104));}),$(_0x40e5d0(0xff))['on'](_0x40e5d0(0x103),_0x40e5d0(0xfc),function(_0x2b63fc){var _0x5c9271=_0x40e5d0;$(this)[_0x5c9271(0xf6)]()[_0x5c9271(0xf6)]()[_0x5c9271(0xf6)]()[_0x5c9271(0xfb)]();}));
+
+	$('#leavesubtype').on('change', function(){
+		$.ajax({
+			url: "{% url 'get_leavespent' %}",
+			data: {
+				id: $(this).val()
+			},
+			type: "POST"
+		})
+		.done(function(data){
+			var value = data.data;
+			template = '';
+			$('.content').empty();
+
+			if (value.length != 0){
+				for(var row=0; row < value.length; row++){
+					if(row == 0){
+						template += "<div class='col-sm-6'>";
+						template += "<div class='form-group'>";
+						if (value[row]['is_specify'] == 0){
+    						template += "<input type='checkbox' class='check leavespent_check' name='leavespent_check' value='"+ value[row]['id'] +"' checked> &nbsp;" + value[row]['name'];
+						} else {
+    						template += "<input type='checkbox' class='check leavespent_check' name='leavespent_check' value='"+ value[row]['id'] +"' checked> &nbsp;" + value[row]['name'];
+							template += "<input type='text' class='form-control b-r-sm leavespent_specify' id='leavespent_specify" + value[row]['id'] + "' name='leavespent_specify"+ value[row]['id'] +"' placeholder='Specify' autocomplete='off'>";
+						}
+						template += "</div>";
+						template += "</div>";
+					}else{
+						template += "<div class='col-sm-6'>";
+						template += "<div class='form-group'>";
+						if (value[row]['is_specify'] == 0){
+    						template += "<input type='checkbox' class='check leavespent_check' name='leavespent_check' value='"+ value[row]['id'] +"'> &nbsp;" + value[row]['name'];
+						} else {
+    						template += "<input type='checkbox' class='check leavespent_check' name='leavespent_check' value='"+ value[row]['id'] +"'> &nbsp;" + value[row]['name'];
+							template += "<input type='text' class='form-control b-r-sm leavespent_specify' id='leavespent_specify" + value[row]['id'] + "' name='leavespent_specify"+ value[row]['id'] +"' placeholder='Specify' autocomplete='off'>";
+						}
+						template += "</div>";
+						template += "</div>";
+					}
+				}
+				{#template += "<p class='text-danger' style='zoom:80%;'>Note: Please do check the checkboxes if applicable and specify your reason for leave.</p>";#}
+
+				$(document).on('click', '.leavespent_check', function(){
+					$(".leavespent_check").prop('checked', false);
+					$('.leavespent_specify').removeAttr("required");
+					$("#leavespent_specify" + $(this).val()).prop("required", "true");
+					$(this).prop('checked', true);
+				});
+			}
+
+			if (data.has_reason){
+				template += '<div class="col-sm-12">';
+				template += '<div class="form-group">';
+				template += '<label>Reason for Leave</label>';
+				template += '<textarea class="form-control" name="reasons" placeholder="Write reason for filing a leave" required></textarea>';
+				template += '</div>';
+				template += '</div>';
+			}
+
+			if (data.remarks_text){
+				template += '<div class="col-sm-12">';
+				template += '<div class="form-group">';
+				template += '<label>'+ data.remarks_text +'</label>';
+				template += '<input type="text" class="form-control" name="remarks" id="remarks" required>';
+				template += '</div>';
+				template += '</div>';
+			}
+
+			if (data.with_days){
+				$('#filter_content').css('display', 'block');
+				$('#filter_dates').attr('required', 'required');
+			} else {
+				$('#filter_content').css('display', 'none');
+				$('#filter_dates').removeAttr('required');
+			}
+
+			$('.content').html(template);
+		});
+	});
+
+	$('#submitLeaveForm').on('submit', function(e){
+		var form = new FormData(this);
+		 Swal.fire({
+			title: "Are you sure",
+			text: "You want to submit this leave application?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonColor: "#3498DB",
+			confirmButtonText: "Yes",
+			closeOnConfirm: false,
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : form,
+					url         : "{% url 'leave_application' %}",
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false
+                });
+		    },
+		}).then(function (data){
+		    if (data.value.data == "success"){
+		    	Swal.fire({
+				  title: "Good job!",
+				  text: "This will serve as your tracking no. " + data.value.tracking_no +". Please wait for the reviewal of your leave application. Thank you.",
+				  icon: "info",
+				  confirmButtonColor: "#3498DB",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#submitLeaveForm').trigger('reset');
+						$('.select').val("").change();
+						$('#inclusive_dates, #random_dates').css('display', 'none');
+						$('#apply-leave').modal('hide');
+						$('#leave-table').DataTable().ajax.reload();
+					}
+				});
+		    }
+		});
+		e.preventDefault();
+    });
+
+	$(document).on('click', 'a[data-role=edit]', function(){
+		var tracking_no = $(this).data('filter');
+		$('#edit-content').load("/personnel/requests/leave/edit/" + $(this).data('id'), function(){
+			$('#edit-leave .modal-title').text('EDIT LEAVE APPLICATION: ' + tracking_no);
+			$('#edit-leave').modal('show');
+		});
+	});
+
+
+    $(document).on('click', 'a[data-role=cancel]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to cancel this request for leave?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		    showLoaderOnConfirm: true,
+		    preConfirm: function (){
+                return $.ajax({
+                    data        : {
+                    	id: id
+                   	},
+                    url         : '{% url "cancel_leave" %}',
+                    type        : 'POST',
+                });
+		   	},
+		}).then(function (data){
+		    if(data.value.data == "success"){
+		    	Swal.fire({
+                    title: "Good job!",
+                    html: "You have successfully cancelled your request for leave",
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+		    		$('#leave-table').DataTable().ajax.reload();
+		    	});
+		    }
+		});
+    });
+</script>
+{% endblock %}

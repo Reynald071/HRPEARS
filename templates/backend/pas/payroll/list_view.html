@@ -1,0 +1,540 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load humanize %}
+{% load payroll_tags %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+<link href="{% static 'css/plugins/textSpinners/spinners.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-8">
+        <h1 class="bold">{{ data.description }}</h1>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'backend-dashboard' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                Payroll
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'payroll_list' %}">List</a>
+            </li>
+            <li class="breadcrumb-item">
+                {{ data.purpose.name }}
+            </li>
+            <li class="breadcrumb-item">
+                {{ data.dv_no }}
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-4">
+        <div class="title-action">
+            <button class="btn btn-info" data-target="#import" data-toggle="modal"><i class="fas fa-file-import"></i> {% if payroll %}Reu{% else %}U{% endif %}pload Payroll</button>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <h3 class="bold">Payroll Summary</h3>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h5 class="bold">Amount Accrued</h5>
+                            <p>{{ amount_accrude.value__sum|floatformat:2|intcomma }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="bold">Total Deductions</h5>
+                            <p>{{ total_deductions.value__sum|floatformat:2|intcomma }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="bold">Amount Due</h5>
+                            <p>{{ amount_due.value__sum|floatformat:2|intcomma }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="pull-left">
+                        <div class="btn-group">
+                            <a data-toggle="dropdown" class="btn btn-info dropdown-toggle"><i class="fas fa-print"></i> Print Payroll <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" target="_blank" href="{% url 'print_payroll' pk 'with DTR' %}">with DTR</a></li>
+                                <li><a class="dropdown-item" target="_blank" href="{% url 'print_payroll' pk 'without DTR' %}">without DTR</a></li>
+                                <li><a class="dropdown-item" target="_blank" href="{% url 'print_payroll' pk 'to Print' %}">to Print</a></li>
+                                <li><a class="dropdown-item" target="_blank" href="{% url 'print_payroll' pk 'Completed' %}">Completed</a></li>
+                                <li class="divider"></li>
+                                <li><a class="dropdown-item" data-target="#print-dv" data-toggle="modal">by DV Number</a></li>
+                            </ul>
+                        </div>
+                        {% if data.auto_calculate %}<a href="{% url 'recalculate_url' pk %}" class="btn btn-warning"><i class="fas fa-calculator"></i> Recalculate</a>{% endif %}
+                        <div class="btn-group">
+                            <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><i class="fas fa-file-export"></i> Status to <span class="caret"></span></button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="javascript:;" id="with_dtr_selected">with DTR</a></li>
+                                <li><a class="dropdown-item" href="javascript:;" id="without_dtr_selected">without DTR</a></li>
+                                <li><a class="dropdown-item" href="javascript:;" id="print_selected">Print</a></li>
+                                <li><a class="dropdown-item" href="javascript:;" id="completed_selected">Completed</a></li>
+                                <li class="divider"></li>
+                                <li><a class="dropdown-item" href="javascript:;" id="delete_selected">Delete</a></li>
+                            </ul>
+                        </div>
+                        <a class="btn btn-default" data-toggle="modal" data-target="#assign-dv"><i class="fas fa-list-alt"></i> Assign DV Number</a>
+                        {% if data.status != 1 %}
+                        <a href="{% url 'lock_payroll' pk %}" class="btn btn-default"><i class="far fa-credit-card"></i> Link to Payslip</a>
+                        {% else %}
+                        <a href="{% url 'unlock_payroll' pk %}" class="btn btn-default"><i class="fas fa-credit-card"></i> Unlink to Payslip</a>
+                        {% endif %}
+                    </div>
+                    <div class="pull-right" style="padding-right:5px">
+                        Showing {{ payroll.start_index }} - {{ payroll.end_index }} of {{ payroll.paginator.count }} entries&emsp;
+                        <div class="btn-group">
+                            {% if payroll.has_other_pages %}
+                                {% if payroll.has_previous %}
+                                    <a class="btn btn-default" href="?page={{ payroll.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Previous</a>
+                                {% endif %}
+                                {% for row in payroll.paginator.page_range %}
+                                    {% if payroll.number == row %}
+                                        <a class="btn btn-info" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% elif row > payroll.number|add:-3 and row < payroll.number|add:3 %}
+                                        <a class="btn btn-default" href="?page={{ row }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ row }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if payroll.has_next %}
+                                    <a class="btn btn-default" href="?page={{ payroll.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                                {% else %}
+                                    <a class="btn btn-default disabled">Next</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <a class="btn btn-default" href="{% url 'payrolL_list_view' data.id %}">Refresh</a>
+                    </div>
+                    <br><br><br>
+                    <form method="get" id="table_search">
+                        <div class="input-group form-group">
+                            <span class="input-group-addon"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search by keyword.." name="search" id="search" value="{{ request.GET.search }}" autocomplete="off">
+                        </div>
+                    </form>
+                    {% if payroll %}
+                    <div class="table-freeze">
+                        <table id="table-basic" class="table table-bordered table-hover text-nowrap" style="font-size: 11px; margin-bottom: 0px;">
+                            <thead>
+                                <tr>
+                                    <th class="text-left">Action</th>
+                                    <th>
+                                        <input type="checkbox" name="selectAll">
+                                    </th>
+                                    <th>ID Number</th>
+                                    {% for row in columns %}
+                                    {% get_column_name row.column_id as column %}
+                                    <th>{{ column.attribute }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in payroll %}
+                                <tr style="{% if amount_due <= 2500 %}background-color: #ffcccc;{% endif %}">
+                                    <td class="text-left">
+                                        <a href="javascript:;" data-role="details" data-id="{{ pk }}" data-filter="{{ row.emp_id }}">Details</a>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="checkBox[]" class="checkBox" value="{{ row.emp_id }}">
+                                    </td>
+                                    <td>{% get_employee_details row.emp_id as id_number %}{{ id_number.id_number }}</td>
+                                    {% for c in columns %}
+                                    {% get_payroll_value pk c.column_id row.emp_id as payroll %}
+                                    {% get_column_name c.column_id as column %}
+                                    {% if c.column_id == 112 %}
+                                    <td class="col{{ payroll.column.order }}">
+                                        {% if payroll.value == 'without DTR' %}
+                                        <span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %} class="label label-default">
+                                            {{ payroll.value|upper }}
+                                        </span>
+                                        {% elif payroll.value == 'with DTR' %}
+                                        <span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %} class="label label-primary">
+                                            {{ payroll.value|upper }}
+                                        </span>
+                                        {% elif payroll.value == 'to Print' %}
+                                        <span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %} class="label label-warning">
+                                            {{ payroll.value|upper }}
+                                        </span>
+                                        {% elif payroll.value == 'Completed' %}
+                                        <span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %} class="label label-success">
+                                            {{ payroll.value|upper }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    {% else %}
+                                        {% if column.order <= 8 %}
+                                        <td class="col{{ payroll.column.order }}">
+                                            <span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %}>{{ payroll.value|upper }}</span>
+                                        </td>
+                                        {% else %}
+                                        <td class="col{{ payroll.column.order }}">
+                                            <span {% if payroll.remarks %}rel="tooltip" data-placement="top" title="{{ payroll.remarks }}"{% endif %}>{{ payroll.value|floatformat:2 }}</span>
+                                        </td>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <img loading="lazy"  src="{% static 'image/no-results.png' %}" class="img-responsive" style="margin: 0 auto;">
+                        <p class="text-center">To display the data available. Kindly use the search input by typing keyword.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="import" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">BULK IMPORT TEMPLATE</h3>
+                <small>Please make sure to convert the generated template to csv file.</small>
+            </div>
+            <form id="submitForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="file" class="form-control file-control" name="file">
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" name="auto_calculate" value="1"> Auto Calculate
+                </div>
+                <div class="form-group pull-right">
+                    <button type="submit" class="btn btn-info">
+                        <span class="loading open-circle" style="display:none;"></span> Import
+                    </button>
+                </div>
+                <br><br>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="detail_view" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+                <h3 class="modal-title">PAYROLL DETAILS</h3>
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body payroll-detail-view">
+                <div class="spinner-example preloader">
+                    <div class="sk-spinner sk-spinner-double-bounce">
+                        <div class="sk-double-bounce1"></div>
+                        <div class="sk-double-bounce2"></div>
+                    </div> <br>
+                    <p class="text-center">Loading..</p>
+                </div>
+                <div id="payroll_content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="assign-dv" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">ASSIGN DV NUMBER</h3>
+
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>DV Number</label>
+                    <input type="text" class="form-control" name="dv_number" id="dv_number" autocomplete="off">
+                </div>
+                <div class="form-group pull-right">
+                    <button id="btn-assign-dv" class="btn btn-info">Save changes</button>
+                </div>
+                <br><br>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="print-dv" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content animated bounceInDown">
+            <div class="modal-header bg-info">
+	            <button type="button" class="close text-white" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h3 class="modal-title">PRINT PAYROLL BY DV NUMBER</h3>
+
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>DV Number</label>
+                    <input type="text" class="form-control" name="print_dv_number" id="print_dv_number" autocomplete="off">
+                </div>
+                <div class="form-group pull-right">
+                    <button id="btn-print-dv" class="btn btn-info">Save changes</button>
+                </div>
+                <br><br>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(':checkbox[name=selectAll]').click (function () {
+        $('.checkBox').prop('checked', this.checked);
+    });
+
+    $('#btn-print-dv').click(function(){
+        window.open('/backend/payroll/print/payroll/list/{{ pk }}/' + $('#print_dv_number').val(), '_blank');
+    });
+
+
+    $('#btn-assign-dv').click(function(){
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if (counter > 0) {
+            Swal.fire({
+              title: "Are you sure",
+              text: "You want to assign the dv number on the selected data?",
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonColor: "#3498DB",
+              confirmButtonText: "Yes",
+              allowOutsideClick: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    statusSelected(data, type="dv_number");
+                }
+            });
+        } else {
+            Swal.fire('Ooops!','There are currently no selected entry to process.', 'warning');
+        }
+    });
+
+    $('#without_dtr_selected').click (function() {
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if (counter > 0) {
+            Swal.fire({
+              title: "Are you sure",
+              text: "You want to change status the selected data?",
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonColor: "#3498DB",
+              confirmButtonText: "Yes",
+              allowOutsideClick: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    statusSelected(data, type="without_dtr");
+                }
+            });
+        } else {
+            Swal.fire('Ooops!','There are currently no selected entry to process.', 'warning');
+        }
+    });
+
+    $('#with_dtr_selected').click (function() {
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if (counter > 0) {
+            Swal.fire({
+              title: "Are you sure",
+              text: "You want to change status the selected data?",
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonColor: "#3498DB",
+              confirmButtonText: "Yes",
+              allowOutsideClick: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    statusSelected(data, type="with_dtr");
+                }
+            });
+        } else {
+            Swal.fire('Ooops!','There are currently no selected entry to process.', 'warning');
+        }
+    });
+
+    $('#print_selected').click (function() {
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if (counter > 0) {
+            Swal.fire({
+              title: "Are you sure",
+              text: "You want to change status the selected data?",
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonColor: "#3498DB",
+              confirmButtonText: "Yes",
+              allowOutsideClick: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    statusSelected(data, type="to_print");
+                }
+            });
+        } else {
+            Swal.fire('Ooops!','There are currently no selected entry to process.', 'warning');
+        }
+    });
+
+    $('#completed_selected').click (function() {
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if ($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if (counter > 0) {
+            Swal.fire({
+              title: "Are you sure",
+              text: "You want to change status the selected data?",
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonColor: "#3498DB",
+              confirmButtonText: "Yes",
+              allowOutsideClick: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    statusSelected(data, type="completed");
+                }
+            });
+        } else {
+            Swal.fire('Ooops!','There are currently no selected entry to process.', 'warning');
+        }
+    });
+
+    $('#delete_selected').click (function() {
+        var counter = 0;
+        var data = [];
+        $('.checkBox').each(function(){
+            if($(this).prop('checked') == true){
+                data.push($(this).val());
+                counter++;
+            }
+        });
+        if(counter > 0) {
+            Swal.fire({
+              title: "Are you sure",
+              text: "You want to change delete the selected data?",
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonColor: "#3498DB",
+              confirmButtonText: "Yes",
+              allowOutsideClick: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    statusSelected(data, type="delete");
+                }
+            });
+        } else {
+            Swal.fire('Ooops!','There are currently no selected entry to process.', 'warning');
+        }
+    });
+
+    function statusSelected(data, type){
+        $.ajax({
+            data        : {
+                data: data,
+                payroll_id: '{{ pk }}',
+                dv_number: $('#dv_number').val(),
+                type: type,
+            },
+            url         : "{% url 'status_dtr' %}",
+            type        : 'POST',
+        })
+        .done(function(data){
+            if (data.data == 'success'){
+                window.location.href = "{% url 'payrolL_list_view' data.id %}";
+            }
+        });
+    }
+
+    $('#submitForm').on('submit', function(e){
+        e.preventDefault();
+        var form = new FormData(this);
+	    $.ajax({
+	        data: form,
+	        url : '{% url "import_template" data.id %}',
+	        type: 'POST',
+	        beforeSend: function(){
+                $('.loading').css('display', '');
+                $('button').prop("disabled", true);
+            },
+	        success: function(response){
+                Swal.fire({
+                    title: "Good job!",
+                    html: response.msg,
+                    icon: "success",
+                    confirmButtonColor: "#3498DB",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        window.location.href = "{% url 'payrolL_list_view' data.id %}";
+                    }
+                });
+	        },
+	        complete: function(){
+	            $('.loading').css('display', 'none');
+                $('button').prop("disabled", false);
+            },
+	        cache: false,
+	        contentType: false,
+	        processData: false,
+        });
+    });
+
+    $(document).on('click', 'a[data-role=details]', function(){
+        $('#detail_view').modal('show').find('.modal-body #payroll_content').empty();
+        $('#detail_view').modal('show').find('.modal-body #payroll_content').load("/backend/payroll/detail/view/" + $(this).data('id') + "/" + $(this).data('filter') + "/True");
+    });
+
+    $(".table-freeze").freezeTable({
+        'freezeHead': true,
+        'scrollable': true,
+        'columnNum' : 10,
+    });
+</script>
+{% endblock %}

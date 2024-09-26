@@ -1,0 +1,79 @@
+{% load static %}
+{% load frontend_tags %}
+{% block style %}
+<link href="{% static 'font-awesome/css/all.css' %}" rel="stylesheet">
+<style type="text/css">
+	.font-century{
+		color: black;
+		font-family: Century Gothic;
+	}
+
+	.font-medium{
+		font-size: 18.67px;
+	}
+	.font-regular{
+		font-size: 16px;
+	}
+
+	@page  
+	{ 
+	    size: auto;
+	    margin: 0mm 25mm 0mm 25mm;  
+	}
+	@media print{
+		#margin-top{
+			line-height: 176px !important;
+		}
+	}
+</style>
+{% endblock %}
+<label class="pull-left">Certificate Preview</label>
+<br style="line-height: 30px;">
+<div style="border: 1px solid black; padding-left: 48px; padding-right: 48px; padding-top: 48px;">
+<div id="coo-print-data">
+<br id="margin-top" style="line-height: 56px;">
+<h3 class="font-century text-center font-medium">CERTIFICATE OF EMPLOYMENT AND ONENESS OF NAME</h3><br style="line-height: 36px;">
+	<div style="text-align: justify;">
+		<p class="font-regular font-century">&emsp;This is to certify that 
+			<strong>
+			{% if employee.pi.gender == 1 %}MR. {% else %}MS. {% endif %}
+			{{ employee.pi.user.first_name|upper }} {{ employee.pi.user.middle_name|to_middleinitial }} {{ employee.pi.user.last_name|upper }}
+			</strong>
+			{% if employee.pi.user.is_active == 1%}is currently {% else %}was{% endif %}
+			 employed under {{ employee.empstatus.name }} employment status with the Department of Social Welfare and Development (DSWD) Field Office Caraga Region as {{ employee.position.name }} 
+			{% if employee.empstatus_id == 4 or employee.empstatus_id == 6 %}
+			{% else %}
+			under {{ employee.project.name|upper }}.
+			{% endif %}
+			</p><br style="line-height: 12px;">
+		<p class="font-regular font-century">&emsp;This is to inform your office that the Pag-Ibig remittance we have made under the name <strong><span id="dynamic-text"></span></strong> should have been the account of 
+			<strong>
+			{% if employee.pi.gender == 1 %}MR. {% else %}MS. {% endif %}
+			{{ employee.pi.user.first_name|upper }} {{ employee.pi.user.middle_name|to_middleinitial }} {{ employee.pi.user.last_name|upper }}.
+			</strong>
+		</p><br style="line-height: 12px;">
+		<p class="font-regular font-century">&emsp;This is to further certify that 
+			<strong>
+			<span id="dynamic-2-text" class="upper"></span>and {% if employee.pi.gender == 1 %}MR. {% else %}MS. {% endif %}
+			{{ employee.pi.user.first_name|upper }} {{ employee.pi.user.middle_name|to_middleinitial }} {{ employee.pi.user.last_name|upper }}
+			</strong> refer to as one and the same person and that 
+			<strong>
+			{% if employee.pi.gender == 1 %}MR. {% else %}MS. {% endif %}
+			{{ employee.pi.user.first_name|upper }} {{ employee.pi.user.middle_name|to_middleinitial }} {{ employee.pi.user.last_name|upper }}
+			</strong> should be the name to be retained in your file.</p><br style="line-height: 12px;">
+		<p class="font-regular font-century">&emsp;This certification is given upon the request of subject staff for correction and merging of {% if employee.pi.gender == 1 %}his {% else %}her {% endif %} Pag-Ibig records.</p><br style="line-height: 12px;">
+		<p class="font-regular font-century">&emsp;Done this <span id="day"></span> day of <span id="month"></span> <span id="year"></span> at DSWD Field Office Caraga, Capitol Site, Butuan City.</p>
+	</div>
+	<br style="line-height: 48px;">
+	<p class="no-margins text-center" style="font-family: Verdana; font-size: 16px; color: black;"><strong>{{ template.signatory }}</strong></p>
+	<p class="text-center" style="font-family: Verdana; font-size: 14.67px; color: black;">{{ template.designation }}</p>
+</div>
+</div>
+{% block script %}
+<script type="text/javascript">
+	var date = new Date();
+    $('#day').text(ordinal_suffix_of(date.getDate()));
+	$('#month').text(monthNames[date.getMonth()]);
+	$('#year').text(date.getFullYear());
+</script>
+{% endblock %}

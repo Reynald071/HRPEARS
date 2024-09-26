@@ -1,0 +1,638 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/adjustments.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-3 pt-3">
+        <div class="col-lg-8">
+            <h1 class="font-weight-bold">Update Awards</h1>
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'backend-dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    Admin
+                </li>
+                <li class="breadcrumb-item">
+                    Rewards & Recognition
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'awards' %}">Awards</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>Update</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<div class="content-wrapper p-4 ml-0">
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="card">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">Award Details</h5>
+				</div>
+				<form id="submitForm" enctype="multipart/form-data">
+				{% csrf_token %}
+				<input type="hidden" name="action" value="update">
+				<div class="card-body">
+						<div class="row">
+							<div class="col-sm-12">
+								<div class="form-group">
+									<label>Award Name*</label>
+									<input type="text" name="award_name" class="form-control b-r-sm" value="{{ awards.name }}" required>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-6">
+								<label>Category*</label>
+								<select class="form-control select" name="category" required>
+									<option></option>
+									{% for row in category %}
+									{% if row.id == awards.category_id %}
+									<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+									{% else %}
+									<option value="{{ row.id }}">{{ row.name }}</option>
+									{% endif %}
+									{% endfor %}
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>Year*</label>
+									<input type="number" name="year" class="form-control b-r-sm" value="{{ awards.year }}" required>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label>Level*</label>
+									<select class="form-control select" name="level" required>
+										<option></option>
+										{% for row in level %}
+										{% if row.id == awards.level_id %}
+										<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+										{% else %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label>Classification*</label>
+									<select class="form-control select" name="classification" required>
+										<option></option>
+										{% for row in classification %}
+										{% if row.id == awards.classification_id %}
+										<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+										{% else %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="col-sm-4">
+								<div class="form-group">
+									<label>Badge*</label>
+									<select class="form-control select" name="badge" required>
+										<option></option>
+										{% for row in badge %}
+										{% if row.id == awards.badge_id %}
+										<option value="{{ row.id }}" selected="selected">{{ row.name }}</option>
+										{% else %}
+										<option value="{{ row.id }}">{{ row.name }}</option>
+										{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12" id="wrappernomination" style="border-radius: 2px; border: 1px solid #e5e6e7; padding:10px 20px 0px 20px; margin-bottom:15px;">
+						<div class="row">
+							<div class="col-sm-12">
+								<div class="form-group">
+									<label>Needs Nomination*</label>
+									<select id="nom" class="form-control select" name="nomination" required>
+										{% if awards.is_nomination == 1 %}
+											<option value="1" selected>Yes</option>
+											<option value="0">No</option>
+										{% else %}
+											<option value="1">Yes</option>
+											<option value="0" selected>No</option>
+										{% endif %}
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>Start of Nomination*</label>
+									<input id="nom_s" type="date" class="form-control" name="nomination_start" value="{{ awards.nomination_start|date:'Y-m-d' }}" {% if awards.is_nomination == 1 %}required{% else %}disabled{% endif %}>
+								</div>
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>End of Nomination*</label>
+									<input id="nom_e" type="date" class="form-control" name="nomination_end" value="{{ awards.nomination_end|date:'Y-m-d' }}" {% if awards.is_nomination == 1 %}required{% else %}disabled{% endif %}>
+								</div>
+							</div>
+						</div>
+						</div>
+						<div class="col-md-12" id="wrapperattachment" style="border-radius: 4px; border: 1px solid #e5e6e7; padding:10px 20px 0px 20px; margin-bottom:15px;">
+							<div class="row">
+								{% if attachments.count > 0%}
+								{% for row in attachments %}
+								<div class="col-5 nopadding-left">
+									<div id="div_id_file" class="form-group">
+										<input type="hidden" name="att-id[]" value="{{ row.id }}">
+										{% if forloop.counter == 1 %}
+										<label class="control-label  requiredField">
+											Attachment<span class="asteriskField">*</span>
+										</label>
+										{% endif %}
+										<div class="controls">
+											<a>Current File: {{ row.file }}</a>
+											<input type="file" name="file[]" class="clearablefileinput attfile">
+						                </div>
+									</div>
+								</div>
+								<div class="col-7 nopadding-left" style="padding-left:10px !important;">
+									<div id="div_id_name2" class="form-group">
+										{% if forloop.counter == 1 %}
+										<label class="control-label  requiredField">
+											Description<span class="asteriskField">*</span>
+										</label>
+										{% endif %}
+                						<div class="controls ">
+											<div class="input-group">
+							                    <input type="text" name="description[]" class="textinput form-control"  value="{{ row.name }}" required>
+												<span class="input-group-append">
+														{% if forloop.counter == 1 %}
+															<button type="button" class="btn btn-info" id="btn-addattachment"><i class="fas fa-plus"></i></button>
+														{% else %}
+															<button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>
+														{% endif %}
+											  	</span>
+											</div>
+						                </div>
+									</div>
+								</div>
+								{% endfor %}
+								{% else %}
+								<div class="col-5 nopadding-left">
+									<div id="div_id_file" class="form-group">
+										<input type="hidden" name="att-id[]">
+										<label class="control-label  requiredField">
+											Attachment<span class="asteriskField">*</span>
+										</label>
+										<div class="controls">
+											<input type="file" name="file-add[]" class="clearablefileinput attfile">
+						                </div>
+									</div>
+								</div>
+								<div class="col-7 nopadding-left" style="padding-left:10px !important;">
+									<div id="div_id_name2" class="form-group">
+										<label class="control-label  requiredField">
+											Description<span class="asteriskField">*</span>
+										</label>
+                						<div class="controls ">
+											<div class="input-group">
+							                    <input type="text" name="description-add[]" class="textinput form-control" required>
+												<span class="input-group-append">
+													<button type="button" class="btn btn-info" id="btn-addattachment"><i class="fas fa-plus"></i></button>
+											  	</span>
+											</div>
+						                </div>
+									</div>
+								</div>
+								{% endif %}
+							</div>
+						</div>
+						<div class="col-md-12" id="wrappercontent" style="border-radius: 4px; border: 1px solid #e5e6e7; padding:10px 20px 0px 20px; margin-bottom:15px;">
+							<div class="row">
+								{% if prizes.count > 0 %}
+								{% for row in prizes %}
+                                <div class="row col-12">
+                                <div class="col-6 nopadding-left">
+                                    <div id="div_id_name" class="form-group">
+                                        <input type="hidden" name="prize-id[]" value="{{ row.id }}">
+                                        {% if forloop.counter == 1 %}
+                                        <label class="control-label  requiredField">
+                                            Prize<span class="asteriskField">*</span>
+                                        </label>
+                                        {% endif %}
+                                        <div class="controls">
+                                            <input type="text" name="prize[]" class="textinput form-control" value="{{ row.name }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3 nopadding-left">
+                                    <div id="div_id_unit" class="form-group">
+                                        {% if forloop.counter == 1 %}
+                                        <label class="control-label  requiredField">
+                                            Unit<span class="asteriskField">*</span>
+                                        </label>
+                                        {% endif %}
+                                        <div class="controls ">
+                                            <input type="text" name="unit[]" maxlength="150" class="textinput form-control" value="{{ row.unit }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3 nopadding-left">
+                                    <div id="div_id_quantity" class="form-group">
+                                        {% if forloop.counter == 1 %}
+                                        <label class="control-label  requiredField">
+                                            Qty<span class="asteriskField">*</span>
+                                        </label>
+                                        {% endif %}
+                                        <div class="controls ">
+                                            <div class="input-group">
+                                                <input type="number" name="quantity[]" step="0.01" class="numberinput form-control" value="{{ row.quantity }}">
+                                                <span class="input-group-append">
+                                                    {% if forloop.counter == 1 %}
+                                                        <button type="button" id="btn-addprize" class="btn btn-info"><i class="fas fa-plus"></i></button>
+                                                    {% else %}
+                                                        <button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+								{% endfor %}
+								{% else %}
+                                <div class="row col-12">
+                                <div class="col-6 nopadding-left">
+                                    <div id="div_id_name" class="form-group">
+                                        <input type="hidden" name="prize-id[]">
+                                        <label class="control-label  requiredField">
+                                            Prize
+                                        </label>
+                                        <div class="controls">
+                                            <input type="text" name="prize[]" class="textinput form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3 nopadding-left">
+                                    <div id="div_id_unit" class="form-group">
+                                        <label class="control-label  requiredField">
+                                            Unit
+                                        </label>
+                                        <div class="controls ">
+                                            <input type="text" name="unit[]" maxlength="150" class="textinput form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3 nopadding-left">
+                                    <div id="div_id_quantity" class="form-group">
+                                        <label class="control-label  requiredField">
+                                            Qty
+                                        </label>
+                                        <div class="controls ">
+                                            <div class="input-group">
+                                                <input type="number" name="quantity[]" step="0.01" class="numberinput form-control">
+                                                <span class="input-group-append">
+                                                    <button type="button" id="btn-addprize" class="btn btn-info"><i class="fas fa-plus"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+								{% endif %}
+							</div>
+						</div>
+					<button type="submit" class="btn btn-info">Save changes</button>
+				</div>
+				</form>
+			</div>
+			<div class="card">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">Criteria for Deliberation</h5>
+				</div>
+				<form id="submitCriteriaForm" enctype="multipart/form-data">
+				{% csrf_token %}
+				<input type="hidden" name="action" value="criteria">
+				<input type="hidden" name="award_name" value="{{ awards.name }}">
+				<div class="card-body">
+					<div class="col-md-12" id="wrappercriteria" style="border-radius: 4px; border: 1px solid #e5e6e7; padding:10px 5px 0px 5px; margin-bottom:15px;">
+						<div class="row">
+							{% if criteria.count > 0 %}
+							{% for row in criteria %}
+							<div class="row col-sm-12">
+								<div class="col-4 nopadding-left" style="padding-left:20px !important;">
+									<div id="criteria_name" class="form-group">
+										<input type="hidden" name="criteria_id[]" value="{{ row.id }}">
+										{% if forloop.counter == 1 %}
+										<label class="control-label  requiredField">
+											Criteria<span class="asteriskField">*</span>
+										</label>
+										{% endif %}
+										<div class="controls">
+											<input type="text" name="criteria_name[]" class="textinput form-control" value="{{ row.name }}" required>
+										</div>
+									</div>
+								</div>
+								<div class="col-5 nopadding-left">
+									<div id="criteria_desc" class="form-group">
+										{% if forloop.counter == 1 %}
+										<label class="control-label  requiredField">
+											Description
+										</label>
+										{% endif %}
+										<div class="controls ">
+											<input type="text" name="criteria_desc[]" class="textinput form-control" value="{% if row.desc %}{{ row.desc }}{% endif %}">
+										</div>
+									</div>
+								</div>
+								<div class="col-3 nopadding-left">
+									<div id="criteria_percentage" class="form-group">
+										{% if forloop.counter == 1 %}
+										<label class="control-label  requiredField">
+											Pctg<span class="asteriskField">*</span>
+										</label>
+										{% endif %}
+										<div class="controls ">
+											<div class="input-group">
+												<input type="number" name="criteria_percentage[]" step="1" min="0" max="100" class="numberinput form-control" value="{{ row.percentage }}" required>
+												<span class="input-group-append">
+													{% if forloop.counter == 1 %}
+														<button type="button" id="btn-addcriteria" class="btn btn-info"><i class="fas fa-plus"></i></button>
+													{% else %}
+														<button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>
+													{% endif %}
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							{% endfor %}
+							{% else %}
+							<div class="row col-sm-12">
+								<div class="col-4 nopadding-left" style="padding-left:20px !important;">
+									<div id="criteria_name" class="form-group">
+										<input type="hidden" name="criteria_id[]">
+										<label class="control-label  requiredField">
+											Criteria<span class="asteriskField">*</span>
+										</label>
+										<div class="controls">
+											<input type="text" name="criteria_name[]" class="textinput form-control" required>
+										</div>
+									</div>
+								</div>
+								<div class="col-5 nopadding-left">
+									<div id="criteria_desc" class="form-group">
+										<label class="control-label">
+											Description
+										</label>
+										<div class="controls">
+											<input type="text" name="criteria_desc[]" class="textinput form-control">
+										</div>
+									</div>
+								</div>
+								<div class="col-3 nopadding-left">
+									<div id="criteria_percentage" class="form-group">
+										<label class="control-label  requiredField">
+											Pctg<span class="asteriskField">*</span>
+										</label>
+										<div class="controls ">
+											<div class="input-group">
+												<input type="number" name="criteria_percentage[]" step="1" min="0" max="100" class="numberinput form-control" required>
+												<span class="input-group-append">
+													<button type="button" id="btn-addcriteria" class="btn btn-info"><i class="fas fa-plus"></i></button>
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							{% endif %}
+						</div>
+					</div>
+					<button type="submit" class="btn btn-info">Save changes</button>
+				</div>
+				</form>
+			</div>
+			<div class="card">
+				<div class="card-header bg-info">
+					<h5 class="card-title font-weight-bold">Eligibility Criteria</h5>
+				</div>
+				<div class="card-body" id="eligibility-content"></div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+	$(document).ready(function(){
+		$('#nom').on('change', function(){
+			if ($(this).val() == 1){
+				$('#nom_s').prop('disabled', false);
+				$('#nom_e').prop('disabled', false);
+				$('#nom_s').prop('required',true);
+				$('#nom_e').prop('required',true);
+			} else {
+				$('#nom_s').prop('disabled', true);
+				$('#nom_e').prop('disabled', true);
+				$('#nom_s').val('');
+				$('#nom_e').val('');
+				$('#nom_s').removeAttr('required');
+				$('#nom_e').removeAttr('required');
+			}
+		});
+
+		$('#eligibility-content').load('{% url "awards_eligibility_criteria" awards.id %}');
+
+		$('#nom_s').on('change', function(){
+			document.getElementById("nom_s").setAttribute("max", $(this).val());
+			document.getElementById("nom_e").setAttribute("min", $(this).val());
+		});
+
+		$('#nom_e').on('change', function(){
+			document.getElementById("nom_s").setAttribute("max", $(this).val());
+			document.getElementById("nom_e").setAttribute("min", $(this).val());
+		});
+
+		var fieldHTML = '<div class="row">\
+							<div class="row col-12">\
+							<div class="col-6 nopadding-left">\
+								<div id="div_id_name" class="form-group">\
+									<input type="hidden" name="prize-id[]">\
+									<div class="controls ">\
+										<input type="text" name="prize[]" class="textinput form-control">\
+									</div>\
+								</div>\
+							</div>\
+							<div class="col-3 nopadding-left">\
+								<div id="div_id_unit" class="form-group">\
+									<div class="controls ">\
+										<input type="text" name="unit[]" maxlength="150" class="textinput form-control">\
+									</div>\
+								</div>\
+							</div>\
+							<div class="col-3 nopadding-left">\
+								<div id="div_id_quantity" class="form-group">\
+									<div class="controls ">\
+										<div class="input-group">\
+											<input type="number" name="quantity[]" step="0.01" class="numberinput form-control">\
+											<span class="input-group-append">\
+												<button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>\
+											</span>\
+										</div>\
+									</div>\
+								</div>\
+							</div>\
+							</div>\
+					    </div>';
+
+		var fieldAttachment = '<div class="row">\
+									<div class="col-5 nopadding-left">\
+										<div id="div_id_file" class="form-group">\
+											<input type="hidden" name="att-id[]">\
+											<div class="controls">\
+												<input type="file" name="file-add[]" class="clearablefileinput attfile" required>\
+											</div>\
+										</div>\
+									</div>\
+									<div class="col-7 nopadding-left" style="padding-left:10px !important;">\
+										<div id="div_id_name2" class="form-group">\
+											<div class="controls ">\
+												<div class="input-group">\
+													<input type="text" name="description-add[]" class="textinput form-control" required>\
+													<span class="input-group-append">\
+														<button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>\
+													</span>\
+												</div>\
+											</div>\
+										</div>\
+									</div>\
+							    </div>';
+
+		var fieldCriteria = '<div class="row">\
+							<div class="row col-sm-12">\
+								<div class="col-4 nopadding-left" style="padding-left:20px !important;">\
+									<div id="criteria_name" class="form-group">\
+										<input type="hidden" name="criteria_id[]">\
+										<div class="controls">\
+											<input type="text" name="criteria_name[]" class="textinput form-control" required>\
+										</div>\
+									</div>\
+								</div>\
+								<div class="col-5 nopadding-left">\
+									<div id="criteria_desc" class="form-group">\
+										<div class="controls">\
+											<input type="text" name="criteria_desc[]" class="textinput form-control">\
+										</div>\
+									</div>\
+								</div>\
+								<div class="col-3 nopadding-left">\
+									<div id="criteria_percentage" class="form-group">\
+										<div class="controls ">\
+											<div class="input-group">\
+												<input type="number" name="criteria_percentage[]" step="1" min="0" max="100" class="numberinput form-control" required>\
+												<span class="input-group-append">\
+													<button type="button" class="btn btn-danger removefield"><i class="fa fa-minus"></i></button>\
+												</span>\
+											</div>\
+										</div>\
+									</div>\
+								</div>\
+							</div>\
+							</div>';
+
+		$('#btn-addprize').on('click', function(){
+			$('#wrappercontent').append(fieldHTML);
+		});
+
+		$('#btn-addcriteria').on('click', function(){
+			$('#wrappercriteria').append(fieldCriteria);
+		});
+
+		$('#btn-addattachment').on('click', function(){
+			$('#wrapperattachment').append(fieldAttachment);
+		});
+
+		$('#wrappercontent').on('click', '.removefield', function(e){
+			e.preventDefault();
+			$(this).parent().parent().parent().parent().parent().parent().remove();
+		});
+
+		$('#wrappercriteria').on('click', '.removefield', function(e){
+			e.preventDefault();
+			$(this).parent().parent().parent().parent().parent().parent().remove();
+		});
+
+		$('#wrapperattachment').on('click', '.removefield', function(e){
+			e.preventDefault();
+			$(this).parent().parent().parent().parent().parent().parent().remove();
+		});
+
+		$('#submitForm').on('submit', function(e){
+			$.ajax({
+				url: window.location.pathname,
+				data: new FormData(this),
+				type: "POST",
+				cache       : false,
+				contentType : false,
+				processData : false
+			})
+			.done(function(data){
+				if (data.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						text: data.msg,
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed){
+							window.location.reload();
+						}
+					});
+                }
+			});
+			e.preventDefault();
+		});
+
+		$('#submitCriteriaForm').on('submit', function(e){
+			$.ajax({
+				url: window.location.pathname,
+				data: new FormData(this),
+				type: "POST",
+				cache       : false,
+				contentType : false,
+				processData : false
+			})
+			.done(function(data){
+				if (data.data == "success"){
+					Swal.fire({
+						title: "Good job!",
+						text: data.msg,
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+					}).then((result) => {
+						if (result.isConfirmed){
+							window.location.reload();
+						}
+					});
+                }
+			});
+			e.preventDefault();
+		});
+	});
+
+</script>
+{% endblock %}

@@ -118,21 +118,21 @@
                 </li>
             </ul>
         </li>
-        <li class="nav-item {% if title == 'payroll' %}menu-open{% endif %}">
-            <a href="javascript:;" class="nav-link {% if title == 'payroll' %}active{% endif %}">
-                <p>Payroll Management <i class="right fas fa-angle-left"></i></p>
-            </a>
-            <ul class="nav nav-treeview" style="font-size: 12px;">
-                <li class="nav-item">
-                    <a class="nav-link {% if sub_title == 'payslip' %}active{% endif %}" href="{% url 'payslip' %}">Payslip</a>
-                </li>
-                {% comment %}
-                <li class="nav-item">
-                    <a class="nav-link {% if sub_title == 'remittances' %}active{% endif %}" href="{% url 'my-profile' %}#about">Remittances</a>
-                </li>
-                {% endcomment %}
-            </ul>
-        </li>
+{#        <li class="nav-item {% if title == 'payroll' %}menu-open{% endif %}"> #}
+{#            <a href="javascript:;" class="nav-link {% if title == 'payroll' %}active{% endif %}">#}
+{#                <p>Payroll Management <i class="right fas fa-angle-left"></i></p>#}
+{#            </a>#}
+{#            <ul class="nav nav-treeview" style="font-size: 12px;">#}
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link {% if sub_title == 'payslip' %}active{% endif %}" href="{% url 'payslip' %}">Payslip</a>#}
+{#                </li>#}
+{#                {% comment %}#}
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link {% if sub_title == 'remittances' %}active{% endif %}" href="{% url 'my-profile' %}#about">Remittances</a>#}
+{#                </li>#}
+{#                {% endcomment %}#}
+{#            </ul>#}
+{#        </li>#}
 
         {% if user|check_permission:'administrator' or user|check_permission:'superadmin' %}
         <li class="nav-header fw-bold mt-3">ADMINISTRATOR</li>

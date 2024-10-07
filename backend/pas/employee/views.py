@@ -272,7 +272,7 @@ def generate_id_number():
     month_str = f"{current_month:02}"
 
     # Define the prefix based on the current year and month
-    id_prefix = f"04-{current_year:02}{month_str}"
+    id_prefix = f"10-{current_year:02}{month_str}"
 
     # Find the maximum ID number that starts with the prefix
     max_id = Empprofile.objects.filter(

@@ -103,11 +103,11 @@
                 </li>
             </ul>
         </li>
-        <li class="nav-item {% if title == 'travel_management' %}menu-open{% endif %}">
-            <a href="{% url 'rito' %}" class="nav-link {% if title == 'travel_management' %}active{% endif %}">
-                <p>Travel Request</p>
-            </a>
-        </li>
+{#        <li class="nav-item {% if title == 'travel_management' %}menu-open{% endif %}">#}
+{#            <a href="{% url 'rito' %}" class="nav-link {% if title == 'travel_management' %}active{% endif %}">#}
+{#                <p>Travel Request</p>#}
+{#            </a>#}
+{#        </li>#}
         <li class="nav-item {% if title == 'learning_and_development' %}menu-open{% endif %}">
             <a href="javascript:;" class="nav-link {% if title == 'learning_and_development' %}active{% endif %}">
                 <p>Learning & Development Management <i class="right fas fa-angle-left"></i></p>
@@ -178,16 +178,16 @@
                 </li>
             </ul>
         </li>
-        <li class="nav-item {% if title == 'to' %}menu-open{% endif %}">
-            <a href="javascript:;" class="nav-link {% if title == 'to' %}active{% endif %}">
-                <p>Travel Management <i class="right fas fa-angle-left"></i></p>
-            </a>
-            <ul class="nav nav-treeview" style="font-size: 12px;">
-                <li class="nav-item ">
-                    <a class="nav-link {% if sub_title == 'rito' %}active{% endif %}" href="{% url 'rito-request' %}">Travel Requests</a>
-                </li>
-            </ul>
-        </li>
+{#        <li class="nav-item {% if title == 'to' %}menu-open{% endif %}">#}
+{#            <a href="javascript:;" class="nav-link {% if title == 'to' %}active{% endif %}">#}
+{#                <p>Travel Management <i class="right fas fa-angle-left"></i></p>#}
+{#            </a>#}
+{#              <ul class="nav nav-treeview" style="font-size: 12px;">#}
+{#                  <li class="nav-item ">#}
+{#                      <a class="nav-link {% if sub_title == 'rito' %}active{% endif %}" href="{% url 'rito-request' %}">Travel Requests</a>#}
+{#                  </li>#}
+{#              </ul>#}
+{#          </li>#}
         <li class="nav-item {% if title == 'ld_admin' %}menu-open{% endif %}">
             <a href="javascript:;" class="nav-link {% if title == 'ld_admin' %}active{% endif %}">
                 <p>Learning & Development Management <i class="right fas fa-angle-left"></i></p>
